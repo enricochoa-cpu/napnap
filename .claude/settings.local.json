@@ -1,0 +1,5 @@
+{
+  "memories": [
+    "Baby Sleep Tracker - Comandos del proyecto: npm run dev (servidor de desarrollo en localhost:5173), npm run build (compilar TypeScript y construir para producción), npm run lint (ejecutar ESLint), npm run preview (previsualizar build de producción)"
+  ]
+}
