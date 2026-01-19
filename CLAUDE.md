@@ -70,3 +70,25 @@ All theme values are CSS variables in `:root`:
 - Teal (`--nap-color`): Daytime naps
 - Lavender (`--night-color`): Night sleep
 - Gold (`--wake-color`): Wake up actions, totals, highlights
+
+## Product Research
+
+**IMPORTANT**: Before making any UX/UI decisions, product improvements, or adding new features, always consult the research documents in `product-research/`.
+
+### Research Documents
+- `research-openai.docx`: Competitor analysis (Napper app) with UX insights
+- Additional research files added to this folder should be reviewed for relevant insights
+
+### When to Consult Research
+- Designing new features or screens
+- Improving existing UI components
+- Making layout or navigation decisions
+- Choosing interaction patterns
+- Selecting visual design approaches
+
+### Key Principles from Research
+- Optimize for night-time/low-light use (large touch targets, high contrast, minimal brightness)
+- Minimize cognitive load for sleep-deprived parents
+- Prioritize one-handed operation
+- Use calming, low-saturation colors
+- Prevent accidental actions with confirmation modals
