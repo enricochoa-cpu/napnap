@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { CircularClock } from './components/CircularClock';
 import { BabyProfile } from './components/BabyProfile';
 import { SleepForm } from './components/SleepForm';
@@ -11,6 +11,18 @@ import { useSleepEntries } from './hooks/useSleepEntries';
 import { formatDate, formatDateTime } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
+// Encouraging messages for parents
+const PARENT_MESSAGES = [
+  "You're doing amazing",
+  "Rest when baby rests",
+  "Every day gets easier",
+  "Trust your instincts",
+  "You've got this",
+  "One nap at a time",
+  "You're a great parent",
+  "Take care of yourself too",
+];
+
 type View = 'home' | 'history' | 'profile' | 'add';
 
 function App() {
@@ -22,9 +34,25 @@ function App() {
     endSleep,
     getEntriesForDate,
     activeSleep,
+    awakeMinutes,
     getDailySummary,
     entries,
   } = useSleepEntries();
+
+  // Get encouraging message (changes daily)
+  const encouragingMessage = useMemo(() => {
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+    return PARENT_MESSAGES[dayOfYear % PARENT_MESSAGES.length];
+  }, []);
+
+  // Format awake time for display
+  const formatAwakeTime = (minutes: number | null) => {
+    if (minutes === null) return null;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours === 0) return `${mins}m`;
+    return `${hours}h ${mins}m`;
+  };
 
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
@@ -110,14 +138,31 @@ function App() {
   const renderHomeView = () => (
     <div className="flex flex-col items-center pt-8 pb-32 px-4 fade-in">
       {/* Header - Minimal */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <h1 className="text-display-lg text-[var(--text-primary)]">
           {profile?.name || 'Baby'}
         </h1>
-        <p className="text-[var(--text-muted)] font-display mt-1">
-          {activeSleep
-            ? activeSleep.type === 'nap' ? 'Napping' : 'Sleeping'
-            : 'Awake'}
+
+        {/* Awake Time Counter - Prominent */}
+        {activeSleep ? (
+          <p className="text-[var(--success-color)] font-display font-semibold text-lg mt-2">
+            {activeSleep.type === 'nap' ? 'Napping' : 'Sleeping'}
+          </p>
+        ) : awakeMinutes !== null ? (
+          <div className="mt-2">
+            <p className="text-[var(--wake-color)] font-display font-bold text-2xl">
+              Awake {formatAwakeTime(awakeMinutes)}
+            </p>
+          </div>
+        ) : (
+          <p className="text-[var(--text-muted)] font-display mt-2">
+            Ready to track sleep
+          </p>
+        )}
+
+        {/* Encouraging Message */}
+        <p className="text-[var(--text-muted)] font-display text-sm mt-3 italic">
+          {encouragingMessage}
         </p>
       </div>
 
