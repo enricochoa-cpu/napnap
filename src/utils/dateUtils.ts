@@ -83,3 +83,63 @@ export function getPreviousDay(date: Date | string): Date {
 export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
+
+// Wake window ranges by age (in minutes)
+// Based on pediatric sleep research
+interface WakeWindowRange {
+  min: number;
+  max: number;
+}
+
+export function getWakeWindowForAge(dateOfBirth: string): WakeWindowRange {
+  const dob = parseISO(dateOfBirth);
+  const now = new Date();
+  const ageInWeeks = Math.floor(differenceInDays(now, dob) / 7);
+  const ageInMonths = differenceInMonths(now, dob);
+
+  // 0-4 weeks: 35-60 minutes
+  if (ageInWeeks < 4) {
+    return { min: 35, max: 60 };
+  }
+  // 4-12 weeks: 60-90 minutes
+  if (ageInWeeks < 12) {
+    return { min: 60, max: 90 };
+  }
+  // 3-4 months: 75-120 minutes
+  if (ageInMonths < 5) {
+    return { min: 75, max: 120 };
+  }
+  // 5-7 months: 2-3 hours (120-180 minutes)
+  if (ageInMonths < 8) {
+    return { min: 120, max: 180 };
+  }
+  // 7-10 months: 2.5-3.5 hours (150-210 minutes)
+  if (ageInMonths < 11) {
+    return { min: 150, max: 210 };
+  }
+  // 11-14 months: 3-4 hours (180-240 minutes)
+  if (ageInMonths < 15) {
+    return { min: 180, max: 240 };
+  }
+  // 14-24 months: 4-6 hours (240-360 minutes)
+  return { min: 240, max: 360 };
+}
+
+export function calculateSuggestedNapTime(
+  dateOfBirth: string,
+  lastWakeTime: string,
+  lastNapDurationMinutes: number | null
+): Date {
+  const wakeWindow = getWakeWindowForAge(dateOfBirth);
+
+  // Use the middle of the range as the base
+  let suggestedWindowMinutes = Math.round((wakeWindow.min + wakeWindow.max) / 2);
+
+  // If last nap was short (< 45 min), reduce window by 20%
+  if (lastNapDurationMinutes !== null && lastNapDurationMinutes < 45) {
+    suggestedWindowMinutes = Math.round(suggestedWindowMinutes * 0.8);
+  }
+
+  const wakeTime = parseISO(lastWakeTime);
+  return new Date(wakeTime.getTime() + suggestedWindowMinutes * 60 * 1000);
+}

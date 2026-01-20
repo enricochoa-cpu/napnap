@@ -8,7 +8,7 @@ import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
-import { formatDate, formatDateTime } from './utils/dateUtils';
+import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
 // Encouraging messages for parents
@@ -35,6 +35,7 @@ function App() {
     getEntriesForDate,
     activeSleep,
     awakeMinutes,
+    lastCompletedSleep,
     getDailySummary,
     entries,
   } = useSleepEntries();
@@ -53,6 +54,25 @@ function App() {
     if (hours === 0) return `${mins}m`;
     return `${hours}h ${mins}m`;
   };
+
+  // Calculate suggested next nap time
+  const suggestedNapTime = useMemo(() => {
+    // Need profile with DOB and last completed sleep
+    if (!profile?.dateOfBirth || !lastCompletedSleep?.endTime) return null;
+    // Don't show if baby is currently sleeping
+    if (activeSleep) return null;
+
+    // Calculate last nap duration (if it was a nap, not night sleep)
+    const lastNapDuration = lastCompletedSleep.type === 'nap'
+      ? calculateDuration(lastCompletedSleep.startTime, lastCompletedSleep.endTime)
+      : null;
+
+    return calculateSuggestedNapTime(
+      profile.dateOfBirth,
+      lastCompletedSleep.endTime,
+      lastNapDuration
+    );
+  }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep]);
 
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
@@ -153,6 +173,15 @@ function App() {
             <p className="text-[var(--wake-color)] font-display font-bold text-2xl">
               Awake {formatAwakeTime(awakeMinutes)}
             </p>
+            {/* Suggested Next Nap Time */}
+            {suggestedNapTime && (
+              <p className="text-[var(--nap-color)] font-display font-medium text-base mt-1">
+                {suggestedNapTime > new Date()
+                  ? `Next nap around ${formatTime(suggestedNapTime)}`
+                  : `Nap time now`
+                }
+              </p>
+            )}
           </div>
         ) : (
           <p className="text-[var(--text-muted)] font-display mt-2">
