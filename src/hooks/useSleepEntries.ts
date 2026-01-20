@@ -1,7 +1,27 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { formatDate, calculateDuration } from '../utils/dateUtils';
+import { parseISO, formatISO } from 'date-fns';
 import type { SleepEntry } from '../types';
+
+// Convert local datetime-local string to ISO string for Supabase
+const toSupabaseTimestamp = (localDateTime: string): string => {
+  // datetime-local gives us "2024-01-20T15:30", we need to add timezone
+  const date = new Date(localDateTime);
+  return formatISO(date);
+};
+
+// Convert Supabase UTC timestamp to local datetime-local format
+const fromSupabaseTimestamp = (utcTimestamp: string): string => {
+  const date = parseISO(utcTimestamp);
+  // Format as local datetime-local format (without timezone, but in local time)
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 export function useSleepEntries() {
   const [entries, setEntries] = useState<SleepEntry[]>([]);
@@ -33,9 +53,9 @@ export function useSleepEntries() {
       if (data) {
         const mappedEntries: SleepEntry[] = data.map((entry) => ({
           id: entry.id,
-          date: formatDate(entry.start_time),
-          startTime: entry.start_time,
-          endTime: entry.end_time,
+          date: formatDate(fromSupabaseTimestamp(entry.start_time)),
+          startTime: fromSupabaseTimestamp(entry.start_time),
+          endTime: entry.end_time ? fromSupabaseTimestamp(entry.end_time) : null,
           type: entry.type as 'nap' | 'night',
           notes: entry.notes || undefined,
         }));
@@ -57,8 +77,8 @@ export function useSleepEntries() {
         .from('sleep_entries')
         .insert({
           user_id: user.id,
-          start_time: data.startTime,
-          end_time: data.endTime,
+          start_time: toSupabaseTimestamp(data.startTime),
+          end_time: data.endTime ? toSupabaseTimestamp(data.endTime) : null,
           type: data.type,
           notes: data.notes || null,
         })
@@ -73,8 +93,8 @@ export function useSleepEntries() {
       const newEntry: SleepEntry = {
         id: inserted.id,
         date: formatDate(data.startTime),
-        startTime: inserted.start_time,
-        endTime: inserted.end_time,
+        startTime: data.startTime,
+        endTime: data.endTime || null,
         type: inserted.type as 'nap' | 'night',
         notes: inserted.notes || undefined,
       };
@@ -90,8 +110,8 @@ export function useSleepEntries() {
   const updateEntry = useCallback(async (id: string, data: Partial<Omit<SleepEntry, 'id'>>) => {
     try {
       const updateData: Record<string, unknown> = {};
-      if (data.startTime !== undefined) updateData.start_time = data.startTime;
-      if (data.endTime !== undefined) updateData.end_time = data.endTime;
+      if (data.startTime !== undefined) updateData.start_time = toSupabaseTimestamp(data.startTime);
+      if (data.endTime !== undefined) updateData.end_time = data.endTime ? toSupabaseTimestamp(data.endTime) : null;
       if (data.type !== undefined) updateData.type = data.type;
       if (data.notes !== undefined) updateData.notes = data.notes || null;
 
