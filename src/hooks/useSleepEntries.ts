@@ -1,45 +1,145 @@
-import { useCallback, useMemo } from 'react';
-import { useLocalStorage } from './useLocalStorage';
-import { STORAGE_KEYS } from '../utils/storage';
-import { generateId, formatDate, calculateDuration } from '../utils/dateUtils';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase } from '../lib/supabase';
+import { formatDate, calculateDuration } from '../utils/dateUtils';
 import type { SleepEntry } from '../types';
 
 export function useSleepEntries() {
-  const [entries, setEntries] = useLocalStorage<SleepEntry[]>(
-    STORAGE_KEYS.SLEEP_ENTRIES,
-    []
-  );
+  const [entries, setEntries] = useState<SleepEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addEntry = useCallback((data: Omit<SleepEntry, 'id' | 'date'>) => {
-    const newEntry: SleepEntry = {
-      ...data,
-      id: generateId(),
-      date: formatDate(data.startTime),
-    };
-    setEntries((prev) => [...prev, newEntry]);
-    return newEntry;
-  }, [setEntries]);
+  // Fetch entries on mount
+  useEffect(() => {
+    fetchEntries();
+  }, []);
 
-  const updateEntry = useCallback((id: string, data: Partial<Omit<SleepEntry, 'id'>>) => {
-    setEntries((prev) =>
-      prev.map((entry) => {
-        if (entry.id !== id) return entry;
-        const updated = { ...entry, ...data };
-        // Update date if startTime changed
-        if (data.startTime) {
-          updated.date = formatDate(data.startTime);
-        }
-        return updated;
-      })
-    );
-  }, [setEntries]);
+  const fetchEntries = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
-  const deleteEntry = useCallback((id: string) => {
-    setEntries((prev) => prev.filter((entry) => entry.id !== id));
-  }, [setEntries]);
+      const { data, error } = await supabase
+        .from('sleep_entries')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('start_time', { ascending: false });
 
-  const endSleep = useCallback((id: string, endTime: string) => {
-    updateEntry(id, { endTime });
+      if (error) {
+        console.error('Error fetching entries:', error);
+      }
+
+      if (data) {
+        const mappedEntries: SleepEntry[] = data.map((entry) => ({
+          id: entry.id,
+          date: formatDate(entry.start_time),
+          startTime: entry.start_time,
+          endTime: entry.end_time,
+          type: entry.type as 'nap' | 'night',
+          notes: entry.notes || undefined,
+        }));
+        setEntries(mappedEntries);
+      }
+    } catch (error) {
+      console.error('Error fetching entries:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addEntry = useCallback(async (data: Omit<SleepEntry, 'id' | 'date'>) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: inserted, error } = await supabase
+        .from('sleep_entries')
+        .insert({
+          user_id: user.id,
+          start_time: data.startTime,
+          end_time: data.endTime,
+          type: data.type,
+          notes: data.notes || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding entry:', error);
+        return null;
+      }
+
+      const newEntry: SleepEntry = {
+        id: inserted.id,
+        date: formatDate(data.startTime),
+        startTime: inserted.start_time,
+        endTime: inserted.end_time,
+        type: inserted.type as 'nap' | 'night',
+        notes: inserted.notes || undefined,
+      };
+
+      setEntries((prev) => [newEntry, ...prev]);
+      return newEntry;
+    } catch (error) {
+      console.error('Error adding entry:', error);
+      return null;
+    }
+  }, []);
+
+  const updateEntry = useCallback(async (id: string, data: Partial<Omit<SleepEntry, 'id'>>) => {
+    try {
+      const updateData: Record<string, unknown> = {};
+      if (data.startTime !== undefined) updateData.start_time = data.startTime;
+      if (data.endTime !== undefined) updateData.end_time = data.endTime;
+      if (data.type !== undefined) updateData.type = data.type;
+      if (data.notes !== undefined) updateData.notes = data.notes || null;
+
+      const { error } = await supabase
+        .from('sleep_entries')
+        .update(updateData)
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error updating entry:', error);
+        return;
+      }
+
+      setEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== id) return entry;
+          const updated = { ...entry, ...data };
+          if (data.startTime) {
+            updated.date = formatDate(data.startTime);
+          }
+          return updated;
+        })
+      );
+    } catch (error) {
+      console.error('Error updating entry:', error);
+    }
+  }, []);
+
+  const deleteEntry = useCallback(async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('sleep_entries')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('Error deleting entry:', error);
+        return;
+      }
+
+      setEntries((prev) => prev.filter((entry) => entry.id !== id));
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+    }
+  }, []);
+
+  const endSleep = useCallback(async (id: string, endTime: string) => {
+    await updateEntry(id, { endTime });
   }, [updateEntry]);
 
   const getEntriesForDate = useCallback((date: string) => {
@@ -96,6 +196,7 @@ export function useSleepEntries() {
 
   return {
     entries,
+    loading,
     addEntry,
     updateEntry,
     deleteEntry,
