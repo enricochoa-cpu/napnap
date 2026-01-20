@@ -6,9 +6,10 @@ interface CircularClockProps {
   entries: SleepEntry[];
   selectedDate: string;
   activeSleep: SleepEntry | null;
+  suggestedNapTime?: Date | null;
 }
 
-export function CircularClock({ entries, selectedDate, activeSleep }: CircularClockProps) {
+export function CircularClock({ entries, selectedDate, activeSleep, suggestedNapTime }: CircularClockProps) {
   const currentTime = new Date();
   const dayStart = startOfDay(parseISO(selectedDate));
 
@@ -73,26 +74,57 @@ export function CircularClock({ entries, selectedDate, activeSleep }: CircularCl
     };
   };
 
-  // Calculate next sleep info
-  const getTimeUntilNext = () => {
+  // Calculate center display info
+  const getCenterInfo = () => {
+    // Baby is sleeping
     if (activeSleep) {
       const duration = differenceInMinutes(currentTime, parseISO(activeSleep.startTime));
       const hours = Math.floor(duration / 60);
       const mins = duration % 60;
       return {
+        type: 'sleeping' as const,
         label: activeSleep.type === 'nap' ? 'Napping' : 'Sleeping',
-        time: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`,
-        isActive: true,
+        mainText: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`,
+        subText: null,
       };
     }
+
+    // Baby is awake with suggested nap time
+    if (suggestedNapTime) {
+      const minutesUntilNap = differenceInMinutes(suggestedNapTime, currentTime);
+
+      if (minutesUntilNap <= 0) {
+        // Nap time has passed
+        return {
+          type: 'naptime' as const,
+          label: 'Nap time',
+          mainText: 'now',
+          subText: null,
+        };
+      }
+
+      const hours = Math.floor(minutesUntilNap / 60);
+      const mins = minutesUntilNap % 60;
+      const countdownText = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+
+      return {
+        type: 'countdown' as const,
+        label: 'Next nap in',
+        mainText: countdownText,
+        subText: `Aprox. ${format(suggestedNapTime, 'h:mm a')}`,
+      };
+    }
+
+    // No data - just show current time
     return {
+      type: 'awake' as const,
       label: 'Awake',
-      time: '',
-      isActive: false,
+      mainText: format(currentTime, 'h:mm a'),
+      subText: null,
     };
   };
 
-  const nextInfo = getTimeUntilNext();
+  const centerInfo = getCenterInfo();
 
   return (
     <div className="relative flex flex-col items-center">
@@ -180,25 +212,46 @@ export function CircularClock({ entries, selectedDate, activeSleep }: CircularCl
       {/* Center content */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="text-center">
-          {nextInfo.isActive ? (
+          {centerInfo.type === 'sleeping' ? (
             <>
               <div className="flex items-center justify-center gap-1 mb-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span className="text-emerald-400 text-xs font-display font-medium">
-                  {nextInfo.label}
+                  {centerInfo.label}
                 </span>
               </div>
               <span className="text-white text-2xl font-display font-bold">
-                {nextInfo.time}
+                {centerInfo.mainText}
               </span>
+            </>
+          ) : centerInfo.type === 'countdown' ? (
+            <>
+              <span className="text-[#5eadb0] text-xs font-display font-medium">
+                {centerInfo.label}
+              </span>
+              <div className="text-white text-2xl font-display font-bold mt-0.5">
+                {centerInfo.mainText}
+              </div>
+              <span className="text-white/50 text-[10px] font-display">
+                {centerInfo.subText}
+              </span>
+            </>
+          ) : centerInfo.type === 'naptime' ? (
+            <>
+              <span className="text-[#f0c674] text-xs font-display font-medium">
+                {centerInfo.label}
+              </span>
+              <div className="text-[#f0c674] text-2xl font-display font-bold mt-0.5">
+                {centerInfo.mainText}
+              </div>
             </>
           ) : (
             <>
               <span className="text-white/60 text-xs font-display">
-                {nextInfo.label}
+                {centerInfo.label}
               </span>
               <div className="text-white text-lg font-display font-medium mt-1">
-                {format(currentTime, 'h:mm a')}
+                {centerInfo.mainText}
               </div>
             </>
           )}

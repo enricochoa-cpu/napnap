@@ -200,6 +200,7 @@ function App() {
         entries={todayEntries}
         selectedDate={formatDate(new Date())}
         activeSleep={activeSleep}
+        suggestedNapTime={suggestedNapTime}
       />
 
       {/* Quick Stats */}
