@@ -8,6 +8,7 @@ import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
+import { useAuth } from './hooks/useAuth';
 import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
@@ -26,6 +27,7 @@ const PARENT_MESSAGES = [
 type View = 'home' | 'history' | 'profile' | 'add';
 
 function App() {
+  const { user, signOut } = useAuth();
   const { profile, createProfile, updateProfile } = useBabyProfile();
   const {
     addEntry,
@@ -268,6 +270,32 @@ function App() {
         onSave={createProfile}
         onUpdate={updateProfile}
       />
+
+      {/* Account Section */}
+      <div className="card p-4 mt-6">
+        <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] mb-3">Account</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[var(--bg-soft)] flex items-center justify-center">
+              <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm text-[var(--text-primary)] font-medium truncate max-w-[180px]">
+                {user?.email}
+              </p>
+              <p className="text-xs text-[var(--text-muted)]">Signed in</p>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut()}
+            className="text-sm text-[var(--danger-color)] font-display font-medium"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
     </div>
   );
 
