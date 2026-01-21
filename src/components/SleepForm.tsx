@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import type { SleepEntry } from '../types';
 import { formatDateTime } from '../utils/dateUtils';
 
+type FormMode = 'nap' | 'night' | 'wakeup';
+
 interface SleepFormProps {
   entry?: SleepEntry | null;
   onSubmit: (data: Omit<SleepEntry, 'id' | 'date'>) => void;
@@ -10,10 +12,11 @@ interface SleepFormProps {
 }
 
 export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepFormProps) {
+  const [mode, setMode] = useState<FormMode>(entry?.type || 'nap');
   const [formData, setFormData] = useState({
     startTime: entry?.startTime || formatDateTime(new Date()),
     endTime: entry?.endTime || '',
-    type: entry?.type || 'nap' as const,
+    wakeupTime: formatDateTime(new Date()),
     notes: entry?.notes || '',
   });
 
@@ -26,12 +29,14 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
         setFormData((prev) => ({
           ...prev,
           startTime: formatDateTime(now),
+          wakeupTime: formatDateTime(now),
         }));
       } else {
         selectedDateObj.setHours(12, 0, 0, 0);
         setFormData((prev) => ({
           ...prev,
           startTime: formatDateTime(selectedDateObj),
+          wakeupTime: formatDateTime(selectedDateObj),
         }));
       }
     }
@@ -39,12 +44,26 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({
-      startTime: formData.startTime,
-      endTime: formData.endTime || null,
-      type: formData.type,
-      notes: formData.notes || undefined,
-    });
+
+    if (mode === 'wakeup') {
+      // For wake-up, create a night sleep entry with the wake-up time as end time
+      // Default bedtime to 10 hours before wake-up
+      const wakeupDate = new Date(formData.wakeupTime);
+      const bedtimeDate = new Date(wakeupDate.getTime() - 10 * 60 * 60 * 1000);
+      onSubmit({
+        startTime: formatDateTime(bedtimeDate),
+        endTime: formData.wakeupTime,
+        type: 'night',
+        notes: formData.notes || undefined,
+      });
+    } else {
+      onSubmit({
+        startTime: formData.startTime,
+        endTime: formData.endTime || null,
+        type: mode,
+        notes: formData.notes || undefined,
+      });
+    }
   };
 
   const handleChange = (
@@ -66,74 +85,111 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
         {/* Sleep Type Toggle */}
         <div>
           <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3 font-display">
-            Sleep Type
+            Entry Type
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               type="button"
-              onClick={() => setFormData((prev) => ({ ...prev, type: 'nap' }))}
+              onClick={() => setMode('wakeup')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                formData.type === 'nap'
+                mode === 'wakeup'
+                  ? 'border-[var(--wake-color)] bg-[var(--wake-color)]/10'
+                  : 'border-white/10 hover:border-white/20'
+              }`}
+            >
+              <svg className={`w-8 h-8 ${mode === 'wakeup' ? 'text-[var(--wake-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span className={`font-display font-medium text-sm ${mode === 'wakeup' ? 'text-[var(--wake-color)]' : 'text-[var(--text-muted)]'}`}>
+                Woke Up
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('nap')}
+              className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
+                mode === 'nap'
                   ? 'border-[var(--nap-color)] bg-[var(--nap-color)]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              <svg className={`w-8 h-8 ${formData.type === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={`w-8 h-8 ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
-              <span className={`font-display font-medium ${formData.type === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`}>
+              <span className={`font-display font-medium text-sm ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`}>
                 Nap
               </span>
             </button>
             <button
               type="button"
-              onClick={() => setFormData((prev) => ({ ...prev, type: 'night' }))}
+              onClick={() => setMode('night')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
-                formData.type === 'night'
+                mode === 'night'
                   ? 'border-[var(--night-color)] bg-[var(--night-color)]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              <svg className={`w-8 h-8 ${formData.type === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="currentColor" viewBox="0 0 24 24">
+              <svg className={`w-8 h-8 ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="currentColor" viewBox="0 0 24 24">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-              <span className={`font-display font-medium ${formData.type === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
-                Night
+              <span className={`font-display font-medium text-sm ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
+                Bedtime
               </span>
             </button>
           </div>
         </div>
 
-        {/* Start Time */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-            Start Time
-          </label>
-          <input
-            type="datetime-local"
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleChange}
-            required
-            className="input"
-          />
-        </div>
+        {/* Wakeup Time - only shown for wakeup mode */}
+        {mode === 'wakeup' && (
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+              Wake Up Time
+            </label>
+            <input
+              type="datetime-local"
+              name="wakeupTime"
+              value={formData.wakeupTime}
+              onChange={handleChange}
+              required
+              className="input"
+            />
+          </div>
+        )}
 
-        {/* End Time */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-            End Time
-            <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
-          </label>
-          <input
-            type="datetime-local"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            min={formData.startTime}
-            className="input"
-          />
-        </div>
+        {/* Start Time - only shown for nap/night mode */}
+        {mode !== 'wakeup' && (
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+              {mode === 'night' ? 'Bedtime' : 'Start Time'}
+            </label>
+            <input
+              type="datetime-local"
+              name="startTime"
+              value={formData.startTime}
+              onChange={handleChange}
+              required
+              className="input"
+            />
+          </div>
+        )}
+
+        {/* End Time - only shown for nap/night mode */}
+        {mode !== 'wakeup' && (
+          <div>
+            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+              {mode === 'night' ? 'Wake Up Time' : 'End Time'}
+              <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
+            </label>
+            <input
+              type="datetime-local"
+              name="endTime"
+              value={formData.endTime}
+              onChange={handleChange}
+              min={formData.startTime}
+              className="input"
+            />
+          </div>
+        )}
 
         {/* Notes */}
         <div>
@@ -153,8 +209,13 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn btn-nap flex-1">
-            {entry ? 'Save Changes' : 'Add Entry'}
+          <button
+            type="submit"
+            className={`btn flex-1 ${
+              mode === 'wakeup' ? 'btn-wake' : mode === 'nap' ? 'btn-nap' : 'btn-night'
+            }`}
+          >
+            {entry ? 'Save Changes' : mode === 'wakeup' ? 'Log Wake Up' : 'Add Entry'}
           </button>
           <button
             type="button"

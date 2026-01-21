@@ -9,7 +9,7 @@ import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useAuth } from './hooks/useAuth';
-import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration } from './utils/dateUtils';
+import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration, getRecommendedSchedule, calculateAllNapWindows, calculateAge } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
 // Encouraging messages for parents
@@ -75,6 +75,18 @@ function App() {
       lastNapDuration
     );
   }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep]);
+
+  // Calculate recommended daily schedule (wake time and bedtime)
+  const recommendedSchedule = useMemo(() => {
+    if (!profile?.dateOfBirth) return null;
+    return getRecommendedSchedule(profile.dateOfBirth);
+  }, [profile?.dateOfBirth]);
+
+  // Calculate all recommended nap windows for the day
+  const napWindows = useMemo(() => {
+    if (!profile?.dateOfBirth) return [];
+    return calculateAllNapWindows(profile.dateOfBirth);
+  }, [profile?.dateOfBirth]);
 
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
@@ -156,6 +168,36 @@ function App() {
     addEntry(data);
   };
 
+  // Handle logging wake-up time
+  const handleLogWakeUp = () => {
+    // If there's an active night sleep, end it
+    if (activeSleep && activeSleep.type === 'night') {
+      handleEndSleep(activeSleep.id);
+      return;
+    }
+
+    // Find any active (unended) night sleep from previous days
+    const activeNightSleep = entries.find(
+      (e) => e.type === 'night' && e.endTime === null
+    );
+
+    if (activeNightSleep) {
+      endSleep(activeNightSleep.id, formatDateTime(new Date()));
+      return;
+    }
+
+    // No active night sleep - create a completed night sleep entry
+    // Default to 8 hours ago as bedtime
+    const now = new Date();
+    const defaultBedtime = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+    const data = {
+      startTime: formatDateTime(defaultBedtime),
+      endTime: formatDateTime(now),
+      type: 'night' as const,
+    };
+    addEntry(data);
+  };
+
   // Home View - Minimalist with circular clock
   const renderHomeView = () => (
     <div className="flex flex-col items-center pt-8 pb-32 px-4 fade-in">
@@ -203,6 +245,10 @@ function App() {
         selectedDate={formatDate(new Date())}
         activeSleep={activeSleep}
         suggestedNapTime={suggestedNapTime}
+        recommendedWakeTime={recommendedSchedule?.wakeTime}
+        recommendedBedtime={recommendedSchedule?.bedtime}
+        napWindows={napWindows}
+        babyAge={profile?.dateOfBirth ? calculateAge(profile.dateOfBirth) : undefined}
       />
 
       {/* Quick Stats */}
@@ -253,6 +299,8 @@ function App() {
         </div>
         <SleepList
           entries={dayEntries}
+          allEntries={entries}
+          selectedDate={selectedDate}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onEndSleep={handleEndSleep}
@@ -339,16 +387,30 @@ function App() {
                 Wake Up
               </button>
             ) : (
-              <div className="flex gap-3">
+              <div className="flex gap-2">
+                {/* Woke Up button */}
                 <button
-                  onClick={() => handleStartSleep('nap')}
-                  className="btn btn-nap flex-1"
+                  onClick={handleLogWakeUp}
+                  className="btn btn-wake flex-1"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
-                  Start Nap
+                  Woke Up
                 </button>
+                {/* Nap button */}
+                <button
+                  onClick={() => handleStartSleep('nap')}
+                  className="btn btn-nap flex-1"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="4" strokeWidth={2} />
+                    <path strokeLinecap="round" strokeWidth={2} d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.41 1.41M8.34 15.66l-1.41 1.41m0-12.02l1.41 1.41m7.32 7.32l1.41 1.41" />
+                    <ellipse cx="8" cy="14" rx="6" ry="4" fill="currentColor" opacity="0.3" />
+                  </svg>
+                  Nap
+                </button>
+                {/* Bedtime button */}
                 <button
                   onClick={() => handleStartSleep('night')}
                   className="btn btn-night flex-1"
@@ -356,7 +418,7 @@ function App() {
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
                   </svg>
-                  Night Sleep
+                  Bedtime
                 </button>
               </div>
             )}

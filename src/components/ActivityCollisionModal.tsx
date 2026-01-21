@@ -1,5 +1,12 @@
 import type { SleepEntry } from '../types';
 import { formatTime } from '../utils/dateUtils';
+import { format, parseISO } from 'date-fns';
+
+// Format date for display in collision modal
+function formatEntryDate(dateTime: string): string {
+  const date = parseISO(dateTime);
+  return format(date, 'MMM d, yyyy');
+}
 
 interface ActivityCollisionModalProps {
   existingEntry: SleepEntry;
@@ -43,10 +50,13 @@ export function ActivityCollisionModal({
           <span className={existingEntry.type === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--night-color)]'}>
             {existingEntry.type === 'nap' ? 'nap' : 'night sleep'}
           </span>{' '}
-          that started at{' '}
+          from{' '}
           <span className="text-[var(--text-primary)] font-medium">
-            {formatTime(existingEntry.startTime)}
+            {formatEntryDate(existingEntry.startTime)}
           </span>
+          {!existingEntry.endTime && (
+            <span className="text-[var(--success-color)]"> (still ongoing)</span>
+          )}
         </p>
 
         {/* Existing Entry Preview */}
@@ -69,11 +79,12 @@ export function ActivityCollisionModal({
             </div>
             <div>
               <p className="font-display font-medium text-[var(--text-primary)]">
-                {formatTime(existingEntry.startTime)}
+                {formatEntryDate(existingEntry.startTime)} at {formatTime(existingEntry.startTime)}
                 {existingEntry.endTime && ` → ${formatTime(existingEntry.endTime)}`}
               </p>
               <p className="text-sm text-[var(--text-muted)]">
                 {existingEntry.type === 'nap' ? 'Nap' : 'Night sleep'}
+                {!existingEntry.endTime && ' · Still ongoing'}
                 {existingEntry.notes && ` · ${existingEntry.notes}`}
               </p>
             </div>

@@ -143,3 +143,93 @@ export function calculateSuggestedNapTime(
   const wakeTime = parseISO(lastWakeTime);
   return new Date(wakeTime.getTime() + suggestedWindowMinutes * 60 * 1000);
 }
+
+// Recommended daily schedule based on baby's age
+// Returns wake time and bedtime as { hour, minute } objects
+export interface DailySchedule {
+  wakeTime: { hour: number; minute: number };
+  bedtime: { hour: number; minute: number };
+  numberOfNaps: number;
+}
+
+export function getRecommendedSchedule(dateOfBirth: string): DailySchedule {
+  const dob = parseISO(dateOfBirth);
+  const now = new Date();
+  const ageInMonths = differenceInMonths(now, dob);
+
+  // 0-3 months: Very flexible, but suggest 7am wake, 8pm bedtime
+  if (ageInMonths < 4) {
+    return {
+      wakeTime: { hour: 7, minute: 0 },
+      bedtime: { hour: 20, minute: 0 },
+      numberOfNaps: 4,
+    };
+  }
+  // 4-6 months: 3 naps, 7am wake, 7:30pm bedtime
+  if (ageInMonths < 7) {
+    return {
+      wakeTime: { hour: 7, minute: 0 },
+      bedtime: { hour: 19, minute: 30 },
+      numberOfNaps: 3,
+    };
+  }
+  // 7-9 months: 2 naps, 6:30am wake, 7pm bedtime
+  if (ageInMonths < 10) {
+    return {
+      wakeTime: { hour: 6, minute: 30 },
+      bedtime: { hour: 19, minute: 0 },
+      numberOfNaps: 2,
+    };
+  }
+  // 10-14 months: 2 naps, 6:30am wake, 7pm bedtime
+  if (ageInMonths < 15) {
+    return {
+      wakeTime: { hour: 6, minute: 30 },
+      bedtime: { hour: 19, minute: 0 },
+      numberOfNaps: 2,
+    };
+  }
+  // 15-24 months: 1 nap, 7am wake, 7:30pm bedtime
+  return {
+    wakeTime: { hour: 7, minute: 0 },
+    bedtime: { hour: 19, minute: 30 },
+    numberOfNaps: 1,
+  };
+}
+
+// Calculate all recommended nap windows for the day
+// Returns array of { hour, minute } for each suggested nap time
+export interface NapWindow {
+  hour: number;
+  minute: number;
+}
+
+export function calculateAllNapWindows(dateOfBirth: string): NapWindow[] {
+  const schedule = getRecommendedSchedule(dateOfBirth);
+  const wakeWindow = getWakeWindowForAge(dateOfBirth);
+
+  // Use middle of wake window range
+  const avgWakeWindowMinutes = Math.round((wakeWindow.min + wakeWindow.max) / 2);
+
+  const napWindows: NapWindow[] = [];
+  const wakeMinutes = schedule.wakeTime.hour * 60 + schedule.wakeTime.minute;
+  const bedMinutes = schedule.bedtime.hour * 60 + schedule.bedtime.minute;
+
+  // Start from wake time and add naps based on wake windows
+  let currentMinutes = wakeMinutes + avgWakeWindowMinutes;
+
+  for (let i = 0; i < schedule.numberOfNaps; i++) {
+    // Don't add nap if it would be too close to bedtime (within 2 hours)
+    if (currentMinutes > bedMinutes - 120) break;
+
+    const hour = Math.floor(currentMinutes / 60);
+    const minute = currentMinutes % 60;
+    napWindows.push({ hour, minute });
+
+    // Assume average nap duration of 1-1.5 hours for calculation
+    const avgNapDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
+    currentMinutes += avgNapDuration + avgWakeWindowMinutes;
+  }
+
+  return napWindows;
+}
