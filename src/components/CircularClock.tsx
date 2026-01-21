@@ -37,25 +37,35 @@ export function CircularClock({
   const wakeTime = recommendedWakeTime || { hour: 7, minute: 0 };
   const bedTime = recommendedBedtime || { hour: 19, minute: 0 };
 
-  // Calculate minutes from midnight for wake time
+  // Calculate minutes from midnight for wake and bed times
   const wakeMinutes = wakeTime.hour * 60 + wakeTime.minute;
+  const bedMinutes = bedTime.hour * 60 + bedTime.minute;
+
+  // Calculate wake window duration (handle overnight case)
+  const wakeWindowMinutes = bedMinutes > wakeMinutes
+    ? bedMinutes - wakeMinutes
+    : (1440 - wakeMinutes) + bedMinutes;
 
   // Biological clock mapping:
-  // - Wake time (e.g., 7 AM) at 9 o'clock position (left, 180° SVG)
+  // - Wake time at 9 o'clock position (left, 180° SVG)
   // - Midday at 12 o'clock position (top, 270° SVG)
-  // - Bedtime (e.g., 7 PM) at 3 o'clock position (right, 0° SVG)
-  // - Midnight at 6 o'clock position (bottom, 90° SVG)
+  // - Bedtime at 3 o'clock position (right, 360°/0° SVG)
+  // The arc spans 180° for the ENTIRE wake window (not 24 hours)
 
-  // Convert clock time (minutes from midnight) to SVG angle
-  // The clock anchors wake time at 9 o'clock (180°)
+  // Convert clock time to SVG angle
+  // Maps the wake window (e.g., 12 hours) to 180° arc (from 180° to 360°)
   const timeToAngle = (minutesFromMidnight: number) => {
-    // Calculate minutes since wake time (handle wrap around midnight)
+    // Calculate minutes since wake time
     let minutesSinceWake = minutesFromMidnight - wakeMinutes;
     if (minutesSinceWake < 0) {
-      minutesSinceWake += 1440; // Add 24 hours
+      minutesSinceWake += 1440; // Handle times before wake (wrap around)
     }
-    // Map 24 hours (1440 min) to 360°, starting at 180° (9 o'clock)
-    return (minutesSinceWake / 1440) * 360 + 180;
+
+    // Clamp to wake window
+    const clampedMinutes = Math.min(minutesSinceWake, wakeWindowMinutes);
+
+    // Map wake window to 180° arc (from 180° to 360°)
+    return 180 + (clampedMinutes / wakeWindowMinutes) * 180;
   };
 
   // Current time in minutes from midnight
@@ -105,20 +115,6 @@ export function CircularClock({
     }>;
   }, [entries, dayStart, currentTime, wakeMinutes]);
 
-  // Generate hour markers for full 24-hour cycle
-  const hourMarkers = useMemo(() => {
-    const markers = [];
-    for (let hour = 0; hour < 24; hour++) {
-      const minutes = hour * 60;
-      const angle = timeToAngle(minutes);
-      // Mark key hours: wake, midday (12), bedtime, midnight (0)
-      const isMainHour = hour === 0 || hour === 6 || hour === 12 || hour === 18 ||
-                         hour === wakeTime.hour || hour === bedTime.hour;
-      markers.push({ hour, angle, isMainHour });
-    }
-    return markers;
-  }, [wakeMinutes, wakeTime.hour, bedTime.hour]);
-
   // SVG arc path generator
   const describeArc = (startAngle: number, endAngle: number, radius: number) => {
     const start = polarToCartesian(100, 100, radius, startAngle);
@@ -136,16 +132,84 @@ export function CircularClock({
     };
   };
 
-  // Calculate nap window angles
-  const napWindowAngles = useMemo(() => {
-    return napWindows.map((nap) => {
-      const napMinutes = nap.hour * 60 + nap.minute;
-      return {
-        angle: timeToAngle(napMinutes),
-        time: `${nap.hour > 12 ? nap.hour - 12 : nap.hour || 12}:${nap.minute.toString().padStart(2, '0')} ${nap.hour >= 12 ? 'PM' : 'AM'}`,
-      };
+  // Get recommended nap duration based on baby's age (in minutes)
+  const getRecommendedNapDuration = (): number => {
+    if (!babyAge) return 60; // Default 1 hour
+
+    // Parse age string to get approximate months
+    const monthsMatch = babyAge.match(/(\d+)\s*month/);
+    const yearsMatch = babyAge.match(/(\d+)\s*year/);
+
+    let ageInMonths = 0;
+    if (yearsMatch) {
+      ageInMonths = parseInt(yearsMatch[1]) * 12;
+    }
+    if (monthsMatch) {
+      ageInMonths += parseInt(monthsMatch[1]);
+    }
+
+    // Nap durations by age
+    if (ageInMonths < 4) return 45;      // 0-3 months: 45 min
+    if (ageInMonths < 7) return 60;      // 4-6 months: 1 hour
+    if (ageInMonths < 10) return 75;     // 7-9 months: 1.25 hours
+    if (ageInMonths < 15) return 90;     // 10-14 months: 1.5 hours
+    return 120;                           // 15+ months: 2 hours (single longer nap)
+  };
+
+  const recommendedNapDuration = getRecommendedNapDuration();
+
+  // Get the latest logged nap end time (or start time if ongoing) for filtering
+  const latestLoggedNapTime = useMemo(() => {
+    const naps = entries.filter(e => e.type === 'nap');
+    if (naps.length === 0) return null;
+
+    // Find the nap with the latest end time (or start time if ongoing)
+    let latestTime = 0;
+    naps.forEach(nap => {
+      const endTime = nap.endTime ? parseISO(nap.endTime) : currentTime;
+      const endMinutes = differenceInMinutes(endTime, dayStart);
+      if (endMinutes > latestTime) {
+        latestTime = endMinutes;
+      }
     });
-  }, [napWindows, wakeMinutes]);
+    return latestTime;
+  }, [entries, dayStart, currentTime]);
+
+  // Calculate nap window angles - filter out those before logged naps
+  const napWindowAngles = useMemo(() => {
+    return napWindows
+      .map((nap) => {
+        const napStartMinutes = nap.hour * 60 + nap.minute;
+        const napEndMinutes = napStartMinutes + recommendedNapDuration;
+
+        // Only include naps within the wake window
+        if (napStartMinutes < wakeMinutes || napEndMinutes > bedMinutes) {
+          return null;
+        }
+
+        return {
+          startAngle: timeToAngle(napStartMinutes),
+          endAngle: timeToAngle(napEndMinutes),
+          startMinutes: napStartMinutes,
+          endMinutes: napEndMinutes,
+          startTime: `${nap.hour > 12 ? nap.hour - 12 : nap.hour || 12}:${nap.minute.toString().padStart(2, '0')} ${nap.hour >= 12 ? 'PM' : 'AM'}`,
+          endTime: (() => {
+            const endHour = Math.floor(napEndMinutes / 60);
+            const endMin = napEndMinutes % 60;
+            const displayHour = endHour > 12 ? endHour - 12 : endHour || 12;
+            return `${displayHour}:${endMin.toString().padStart(2, '0')} ${endHour >= 12 ? 'PM' : 'AM'}`;
+          })(),
+        };
+      })
+      .filter((nap): nap is NonNullable<typeof nap> => {
+        if (nap === null) return false;
+        // If there are logged naps, only show recommended windows AFTER the latest logged nap
+        if (latestLoggedNapTime !== null) {
+          return nap.startMinutes > latestLoggedNapTime;
+        }
+        return true;
+      });
+  }, [napWindows, wakeMinutes, bedMinutes, recommendedNapDuration, latestLoggedNapTime]);
 
   // Positions for sunrise (9 o'clock) and sunset (3 o'clock)
   const sunriseAngle = 180; // 9 o'clock position (left)
@@ -168,14 +232,14 @@ export function CircularClock({
     return segments
       .filter((seg) => seg.type === 'nap')
       .map((segment) => {
-        // Calculate center angle and arc length
+        // Calculate center angle and arc span
         const centerAngle = (segment.startAngle + segment.endAngle) / 2;
         const arcSpan = segment.endAngle - segment.startAngle;
 
-        // Calculate pill dimensions based on duration
-        // Minimum pill width, scales with duration
-        const pillWidth = Math.max(20, Math.min(40, arcSpan * 0.8));
-        const pillHeight = 18;
+        // Calculate pill width based on arc span (proportional to duration)
+        // Arc span is now properly scaled to wake window
+        const pillWidth = Math.max(22, Math.min(50, arcSpan * 1.2));
+        const pillHeight = 20;
 
         // Position at the clock radius
         const pos = polarToCartesian(100, 100, 85, centerAngle);
@@ -270,67 +334,31 @@ export function CircularClock({
 
       <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-72 md:h-72">
         <defs>
-          {/* Gradient for daytime arc (upper half: 9 o'clock to 3 o'clock via top) */}
+          {/* Gradient for daytime arc: warm yellow → neutral gray → warm orange */}
           <linearGradient id="dayGradient" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%" stopColor="#f0c674" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="#87CEEB" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#ff7e5f" stopOpacity="0.4" />
-          </linearGradient>
-          {/* Gradient for nighttime arc (lower half: 3 o'clock to 9 o'clock via bottom) */}
-          <linearGradient id="nightGradient" x1="100%" y1="50%" x2="0%" y2="50%">
-            <stop offset="0%" stopColor="#ff7e5f" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#7c85c4" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#f0c674" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#f0c674" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#808580" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#bd5e4a" stopOpacity="0.6" />
           </linearGradient>
         </defs>
 
-        {/* Daytime arc (upper half: sunrise to sunset) */}
+        {/* Minimal night arc (bottom half) - very subtle */}
+        <path
+          d={describeArc(0, 180, 85)}
+          fill="none"
+          stroke="rgba(124, 133, 196, 0.15)"
+          strokeWidth="24"
+        />
+
+        {/* Daytime arc (upper half: sunrise to sunset) - the main visual element */}
         <path
           d={describeArc(180, 360, 85)}
           fill="none"
           stroke="url(#dayGradient)"
           strokeWidth="24"
-        />
-        {/* Nighttime arc (lower half: sunset to sunrise) */}
-        <path
-          d={describeArc(0, 180, 85)}
-          fill="none"
-          stroke="url(#nightGradient)"
-          strokeWidth="24"
+          strokeLinecap="round"
         />
 
-        {/* Hour markers */}
-        {hourMarkers.map(({ hour, angle, isMainHour }) => {
-          const inner = polarToCartesian(100, 100, isMainHour ? 68 : 72, angle);
-          const outer = polarToCartesian(100, 100, 62, angle);
-          const labelPos = polarToCartesian(100, 100, 52, angle);
-
-          return (
-            <g key={hour}>
-              <line
-                x1={inner.x}
-                y1={inner.y}
-                x2={outer.x}
-                y2={outer.y}
-                stroke={isMainHour ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'}
-                strokeWidth={isMainHour ? 2 : 1}
-              />
-              {isMainHour && (
-                <text
-                  x={labelPos.x}
-                  y={labelPos.y}
-                  fill="rgba(255,255,255,0.5)"
-                  fontSize="7"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  className="font-display"
-                >
-                  {hour === 0 ? '12a' : hour === 12 ? '12p' : hour > 12 ? `${hour - 12}p` : `${hour}a`}
-                </text>
-              )}
-            </g>
-          );
-        })}
 
         {/* Night sleep segments (arcs) */}
         {segments
@@ -396,19 +424,20 @@ export function CircularClock({
           </g>
         ))}
 
-        {/* Current time indicator (only on today) */}
+        {/* Current time indicator (only on today) - subtle needle */}
         {currentAngle !== null && (
           <g transform={`rotate(${currentAngle}, 100, 100)`}>
             <line
               x1="100"
               y1="100"
-              x2="185"
+              x2="182"
               y2="100"
               stroke="#f0c674"
-              strokeWidth="2"
+              strokeWidth="1.5"
               strokeLinecap="round"
+              opacity="0.8"
             />
-            <circle cx="185" cy="100" r="4" fill="#f0c674" />
+            <circle cx="182" cy="100" r="3" fill="#f0c674" opacity="0.6" />
           </g>
         )}
 
@@ -436,20 +465,20 @@ export function CircularClock({
               />
             );
           })}
-          {/* Time label */}
-          <text
-            x="-22"
-            y="0"
-            fill="#f0c674"
-            fontSize="6"
-            textAnchor="end"
-            dominantBaseline="middle"
-            className="font-display"
-            fontWeight="500"
-          >
-            {wakeTimeLabel}
-          </text>
         </g>
+        {/* Sunrise time label (outside circle) */}
+        <text
+          x={polarToCartesian(100, 100, 112, sunriseAngle).x}
+          y={polarToCartesian(100, 100, 112, sunriseAngle).y}
+          fill="#f0c674"
+          fontSize="7"
+          textAnchor="end"
+          dominantBaseline="middle"
+          className="font-display"
+          fontWeight="600"
+        >
+          {wakeTimeLabel}
+        </text>
 
         {/* Sunset icon at 3 o'clock (right) */}
         <g transform={`translate(${sunsetPos.x}, ${sunsetPos.y})`}>
@@ -484,53 +513,109 @@ export function CircularClock({
               />
             );
           })}
-          {/* Time label */}
-          <text
-            x="22"
-            y="0"
-            fill="#ff7e5f"
-            fontSize="6"
-            textAnchor="start"
-            dominantBaseline="middle"
-            className="font-display"
-            fontWeight="500"
-          >
-            {bedTimeLabel}
-          </text>
         </g>
+        {/* Sunset time label (outside circle) */}
+        <text
+          x={polarToCartesian(100, 100, 112, sunsetAngle).x}
+          y={polarToCartesian(100, 100, 112, sunsetAngle).y}
+          fill="#ff7e5f"
+          fontSize="7"
+          textAnchor="start"
+          dominantBaseline="middle"
+          className="font-display"
+          fontWeight="600"
+        >
+          {bedTimeLabel}
+        </text>
 
-        {/* Nap window markers - Sun with cloud */}
+        {/* Recommended nap window markers - Pill with dotted border */}
         {napWindowAngles.map((nap, index) => {
-          const pos = polarToCartesian(100, 100, 85, nap.angle);
+          // Calculate center angle and arc span
+          const centerAngle = (nap.startAngle + nap.endAngle) / 2;
+          const arcSpan = nap.endAngle - nap.startAngle;
+
+          // Calculate pill dimensions based on duration
+          const pillWidth = Math.max(24, Math.min(45, arcSpan * 0.8));
+          const pillHeight = 18;
+
+          // Position at the clock radius
+          const pos = polarToCartesian(100, 100, 85, centerAngle);
+
+          // Positions for time labels (outside the circle)
+          const startLabelPos = polarToCartesian(100, 100, 110, nap.startAngle);
+          const endLabelPos = polarToCartesian(100, 100, 110, nap.endAngle);
+
           return (
-            <g key={index} transform={`translate(${pos.x}, ${pos.y})`}>
-              {/* Half sun (behind cloud) */}
-              <circle cx="4" cy="0" r="6" fill="#f0c674" opacity="0.8" />
-              {/* Sun rays peeking out */}
-              {[45, 90, 135].map((angle) => {
-                const rad = (angle * Math.PI) / 180;
-                const x1 = 4 + 7 * Math.cos(rad);
-                const y1 = 7 * Math.sin(rad);
-                const x2 = 4 + 10 * Math.cos(rad);
-                const y2 = 10 * Math.sin(rad);
-                return (
-                  <line
-                    key={angle}
-                    x1={x1}
-                    y1={y1}
-                    x2={x2}
-                    y2={y2}
-                    stroke="#f0c674"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    opacity="0.7"
-                  />
-                );
-              })}
-              {/* Cloud covering half the sun */}
-              <ellipse cx="-2" cy="2" rx="7" ry="4" fill="white" opacity="0.9" />
-              <circle cx="-5" cy="0" r="3.5" fill="white" opacity="0.9" />
-              <circle cx="1" cy="-1" r="3" fill="white" opacity="0.9" />
+            <g key={index}>
+              {/* Pill shape with dotted border */}
+              <g transform={`translate(${pos.x}, ${pos.y}) rotate(${centerAngle})`}>
+                {/* Pill background */}
+                <rect
+                  x={-pillWidth / 2}
+                  y={-pillHeight / 2}
+                  width={pillWidth}
+                  height={pillHeight}
+                  rx={pillHeight / 2}
+                  ry={pillHeight / 2}
+                  fill="rgba(30, 40, 69, 0.6)"
+                  stroke="#8b9dc3"
+                  strokeWidth="1.5"
+                  strokeDasharray="3,2"
+                  opacity="0.7"
+                />
+                {/* Cloud + Sun icon inside pill */}
+                <g transform={`rotate(${-centerAngle})`}>
+                  {/* Small sun behind cloud */}
+                  <circle cx="3" cy="-1" r="4" fill="#f0c674" opacity="0.7" />
+                  {/* Sun rays */}
+                  {[0, 60, 120].map((angle) => {
+                    const rad = (angle * Math.PI) / 180;
+                    return (
+                      <line
+                        key={angle}
+                        x1={3 + 5 * Math.cos(rad)}
+                        y1={-1 + 5 * Math.sin(rad)}
+                        x2={3 + 7 * Math.cos(rad)}
+                        y2={-1 + 7 * Math.sin(rad)}
+                        stroke="#f0c674"
+                        strokeWidth="1"
+                        strokeLinecap="round"
+                        opacity="0.5"
+                      />
+                    );
+                  })}
+                  {/* Cloud */}
+                  <ellipse cx="-1" cy="2" rx="5" ry="3" fill="white" opacity="0.7" />
+                  <circle cx="-4" cy="0" r="2.5" fill="white" opacity="0.7" />
+                  <circle cx="2" cy="0" r="2" fill="white" opacity="0.7" />
+                </g>
+              </g>
+
+              {/* Start time label (outside circle) */}
+              <text
+                x={startLabelPos.x}
+                y={startLabelPos.y}
+                fill="rgba(139, 157, 195, 0.8)"
+                fontSize="5"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="font-display"
+              >
+                {nap.startTime}
+              </text>
+
+              {/* End time label (outside circle) */}
+              <text
+                x={endLabelPos.x}
+                y={endLabelPos.y}
+                fill="rgba(139, 157, 195, 0.8)"
+                fontSize="5"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="font-display"
+              >
+                {nap.endTime}
+              </text>
             </g>
           );
         })}
@@ -600,9 +685,9 @@ export function CircularClock({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
         <div className="flex items-center gap-1.5">
-          {/* Nap pill icon */}
+          {/* Logged nap pill icon (solid border) */}
           <svg width="20" height="12" viewBox="0 0 20 12">
             <rect
               x="1"
@@ -620,6 +705,28 @@ export function CircularClock({
             <circle cx="6" cy="5" r="1.5" fill="white" opacity="0.9" />
           </svg>
           <span className="text-white/60 text-xs font-display">Nap</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {/* Recommended nap pill icon (dotted border) */}
+          <svg width="20" height="12" viewBox="0 0 20 12">
+            <rect
+              x="1"
+              y="1"
+              width="18"
+              height="10"
+              rx="5"
+              ry="5"
+              fill="rgba(30, 40, 69, 0.6)"
+              stroke="#8b9dc3"
+              strokeWidth="1"
+              strokeDasharray="2,1"
+              opacity="0.7"
+            />
+            <circle cx="12" cy="5" r="2.5" fill="#f0c674" opacity="0.6" />
+            <ellipse cx="8" cy="7" rx="3" ry="2" fill="white" opacity="0.6" />
+            <circle cx="6" cy="5" r="1.5" fill="white" opacity="0.6" />
+          </svg>
+          <span className="text-white/60 text-xs font-display">Suggested</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#7c85c4]" />

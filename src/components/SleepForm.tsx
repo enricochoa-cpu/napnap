@@ -4,6 +4,26 @@ import { formatDateTime } from '../utils/dateUtils';
 
 type FormMode = 'nap' | 'night' | 'wakeup';
 
+// Helper to extract time (HH:mm) from datetime string
+const extractTime = (datetime: string): string => {
+  if (!datetime) return '';
+  const timePart = datetime.split('T')[1];
+  return timePart ? timePart.substring(0, 5) : '';
+};
+
+// Helper to combine date and time into datetime string
+const combineDateTime = (date: string, time: string): string => {
+  return `${date}T${time}`;
+};
+
+// Helper to get current time as HH:mm
+const getCurrentTime = (): string => {
+  const now = new Date();
+  const hours = now.getHours().toString().padStart(2, '0');
+  const minutes = now.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 interface SleepFormProps {
   entry?: SleepEntry | null;
   onSubmit: (data: Omit<SleepEntry, 'id' | 'date'>) => void;
@@ -14,6 +34,10 @@ interface SleepFormProps {
 export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepFormProps) {
   const [mode, setMode] = useState<FormMode>(entry?.type || 'nap');
   const [formData, setFormData] = useState({
+    // For naps: just store time (HH:mm)
+    napStartTime: entry ? extractTime(entry.startTime) : getCurrentTime(),
+    napEndTime: entry?.endTime ? extractTime(entry.endTime) : '',
+    // For night/wakeup: store full datetime
     startTime: entry?.startTime || formatDateTime(new Date()),
     endTime: entry?.endTime || '',
     wakeupTime: formatDateTime(new Date()),
@@ -24,21 +48,18 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
     if (!entry) {
       const now = new Date();
       const selectedDateObj = new Date(selectedDate);
+      const isToday = selectedDateObj.toDateString() === now.toDateString();
 
-      if (selectedDateObj.toDateString() === now.toDateString()) {
-        setFormData((prev) => ({
-          ...prev,
-          startTime: formatDateTime(now),
-          wakeupTime: formatDateTime(now),
-        }));
-      } else {
-        selectedDateObj.setHours(12, 0, 0, 0);
-        setFormData((prev) => ({
-          ...prev,
-          startTime: formatDateTime(selectedDateObj),
-          wakeupTime: formatDateTime(selectedDateObj),
-        }));
-      }
+      const currentTime = getCurrentTime();
+      const defaultTime = isToday ? currentTime : '12:00';
+
+      setFormData((prev) => ({
+        ...prev,
+        napStartTime: defaultTime,
+        napEndTime: '',
+        startTime: isToday ? formatDateTime(now) : formatDateTime(selectedDateObj),
+        wakeupTime: isToday ? formatDateTime(now) : formatDateTime(selectedDateObj),
+      }));
     }
   }, [selectedDate, entry]);
 
@@ -56,7 +77,20 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
         type: 'night',
         notes: formData.notes || undefined,
       });
+    } else if (mode === 'nap') {
+      // For naps, combine selectedDate with time inputs
+      const startDateTime = combineDateTime(selectedDate, formData.napStartTime);
+      const endDateTime = formData.napEndTime
+        ? combineDateTime(selectedDate, formData.napEndTime)
+        : null;
+      onSubmit({
+        startTime: startDateTime,
+        endTime: endDateTime,
+        type: 'nap',
+        notes: formData.notes || undefined,
+      });
     } else {
+      // For night/bedtime, use full datetime
       onSubmit({
         startTime: formData.startTime,
         endTime: formData.endTime || null,
@@ -156,39 +190,70 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
           </div>
         )}
 
-        {/* Start Time - only shown for nap/night mode */}
-        {mode !== 'wakeup' && (
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-              {mode === 'night' ? 'Bedtime' : 'Start Time'}
-            </label>
-            <input
-              type="datetime-local"
-              name="startTime"
-              value={formData.startTime}
-              onChange={handleChange}
-              required
-              className="input"
-            />
-          </div>
+        {/* Nap time inputs - time only */}
+        {mode === 'nap' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                Start Time
+              </label>
+              <input
+                type="time"
+                name="napStartTime"
+                value={formData.napStartTime}
+                onChange={handleChange}
+                required
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                End Time
+                <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
+              </label>
+              <input
+                type="time"
+                name="napEndTime"
+                value={formData.napEndTime}
+                onChange={handleChange}
+                min={formData.napStartTime}
+                className="input"
+              />
+            </div>
+          </>
         )}
 
-        {/* End Time - only shown for nap/night mode */}
-        {mode !== 'wakeup' && (
-          <div>
-            <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-              {mode === 'night' ? 'Wake Up Time' : 'End Time'}
-              <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
-            </label>
-            <input
-              type="datetime-local"
-              name="endTime"
-              value={formData.endTime}
-              onChange={handleChange}
-              min={formData.startTime}
-              className="input"
-            />
-          </div>
+        {/* Night/Bedtime inputs - full datetime */}
+        {mode === 'night' && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                Bedtime
+              </label>
+              <input
+                type="datetime-local"
+                name="startTime"
+                value={formData.startTime}
+                onChange={handleChange}
+                required
+                className="input"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                Wake Up Time
+                <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
+              </label>
+              <input
+                type="datetime-local"
+                name="endTime"
+                value={formData.endTime}
+                onChange={handleChange}
+                min={formData.startTime}
+                className="input"
+              />
+            </div>
+          </>
         )}
 
         {/* Notes */}
