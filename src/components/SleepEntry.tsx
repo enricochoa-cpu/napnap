@@ -1,10 +1,10 @@
 import type { SleepEntry as SleepEntryType } from '../types';
 import { formatTime, calculateDuration, formatDuration } from '../utils/dateUtils';
 
-// Get nap ordinal label in Spanish
+// Get nap ordinal label in English
 function getNapOrdinal(num: number): string {
-  const ordinals = ['Primera', 'Segunda', 'Tercera', 'Cuarta', 'Quinta'];
-  return ordinals[num - 1] || `${num}ª`;
+  const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
+  return ordinals[num - 1] || `${num}th`;
 }
 
 // Shared props for action buttons
@@ -133,7 +133,7 @@ export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: Nap
         {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="font-display font-medium text-[var(--night-color)]">
-            {getNapOrdinal(napNumber)} siesta
+            {getNapOrdinal(napNumber)} nap
           </p>
           <p className="text-sm text-[var(--text-muted)]">
             {formatDuration(duration)}

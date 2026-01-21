@@ -95,7 +95,7 @@ function App() {
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
 
   const dayEntries = getEntriesForDate(selectedDate);
-  const daySummary = getDailySummary(selectedDate);
+  const daySummary = getDailySummary(selectedDate, entries);
   const todayEntries = getEntriesForDate(formatDate(new Date()));
 
   // Check for collision with existing entries
@@ -282,7 +282,7 @@ function App() {
         <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
-      <DailySummary summary={getDailySummary(selectedDate)} />
+      <DailySummary summary={getDailySummary(selectedDate, entries)} />
 
       <div className="mt-6">
         <div className="flex justify-between items-center mb-4">

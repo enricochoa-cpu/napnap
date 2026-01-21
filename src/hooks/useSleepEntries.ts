@@ -189,7 +189,7 @@ export function useSleepEntries() {
     return Math.floor((now.getTime() - lastWakeTime.getTime()) / (1000 * 60));
   }, [activeSleep, lastCompletedSleep]);
 
-  const getDailySummary = useCallback((date: string) => {
+  const getDailySummary = useCallback((date: string, allEntries: SleepEntry[]) => {
     const dayEntries = getEntriesForDate(date);
 
     const napEntries = dayEntries.filter((e) => e.type === 'nap');
@@ -205,12 +205,71 @@ export function useSleepEntries() {
       0
     );
 
+    // Calculate average wake window for the day
+    // Wake windows are gaps between sleep periods
+    const wakeWindows: number[] = [];
+
+    // Find wake-up time for this day (from night entries that ended on this date)
+    const nightEntriesWithWakeup = allEntries.filter(
+      (e) => e.type === 'night' && e.endTime && e.endTime.split('T')[0] === date
+    );
+    const wakeUpTime = nightEntriesWithWakeup.length > 0
+      ? nightEntriesWithWakeup[0].endTime
+      : null;
+
+    // Sort naps chronologically
+    const sortedNaps = [...napEntries].sort(
+      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+
+    // Sort bedtimes chronologically
+    const sortedBedtimes = [...nightEntries].sort(
+      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+
+    // Calculate wake window from wake-up to first nap
+    if (wakeUpTime && sortedNaps.length > 0) {
+      const wakeToFirstNap = Math.round(
+        (new Date(sortedNaps[0].startTime).getTime() - new Date(wakeUpTime).getTime()) / (1000 * 60)
+      );
+      if (wakeToFirstNap > 0) wakeWindows.push(wakeToFirstNap);
+    }
+
+    // Calculate wake windows between naps
+    for (let i = 0; i < sortedNaps.length - 1; i++) {
+      const currentNap = sortedNaps[i];
+      const nextNap = sortedNaps[i + 1];
+      if (currentNap.endTime) {
+        const betweenNaps = Math.round(
+          (new Date(nextNap.startTime).getTime() - new Date(currentNap.endTime).getTime()) / (1000 * 60)
+        );
+        if (betweenNaps > 0) wakeWindows.push(betweenNaps);
+      }
+    }
+
+    // Calculate wake window from last nap to bedtime
+    if (sortedNaps.length > 0 && sortedBedtimes.length > 0) {
+      const lastNap = sortedNaps[sortedNaps.length - 1];
+      if (lastNap.endTime) {
+        const napToBedtime = Math.round(
+          (new Date(sortedBedtimes[0].startTime).getTime() - new Date(lastNap.endTime).getTime()) / (1000 * 60)
+        );
+        if (napToBedtime > 0) wakeWindows.push(napToBedtime);
+      }
+    }
+
+    // Calculate average wake window
+    const averageWakeWindowMinutes = wakeWindows.length > 0
+      ? Math.round(wakeWindows.reduce((sum, w) => sum + w, 0) / wakeWindows.length)
+      : null;
+
     return {
       totalNapMinutes,
       totalNightMinutes,
       totalSleepMinutes: totalNapMinutes + totalNightMinutes,
       napCount: napEntries.length,
       nightCount: nightEntries.length,
+      averageWakeWindowMinutes,
     };
   }, [getEntriesForDate]);
 
