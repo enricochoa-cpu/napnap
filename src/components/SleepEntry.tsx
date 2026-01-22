@@ -10,44 +10,27 @@ function getNapOrdinal(num: number): string {
 // Shared props for action buttons
 interface EntryActionsProps {
   entry: SleepEntryType;
-  onEdit: (entry: SleepEntryType) => void;
-  onDelete: (id: string) => void;
   onEndSleep?: (id: string) => void;
 }
 
-// Action buttons component
-function EntryActions({ entry, onEdit, onDelete, onEndSleep }: EntryActionsProps) {
+// Action buttons component - only shows wake up button for active entries
+function EntryActions({ entry, onEndSleep }: EntryActionsProps) {
   const isActive = entry.endTime === null;
+
+  if (!isActive || !onEndSleep) return null;
 
   return (
     <div className="flex items-center gap-1">
-      {isActive && onEndSleep && (
-        <button
-          onClick={() => onEndSleep(entry.id)}
-          className="p-2 rounded-full bg-[var(--wake-color)]/10 text-[var(--wake-color)] hover:bg-[var(--wake-color)]/20 transition-colors"
-          title="Wake up"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-        </button>
-      )}
       <button
-        onClick={() => onEdit(entry)}
-        className="p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/5 transition-colors"
-        title="Edit"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEndSleep(entry.id);
+        }}
+        className="p-2 rounded-full bg-[var(--wake-color)]/10 text-[var(--wake-color)] hover:bg-[var(--wake-color)]/20 transition-colors"
+        title="Wake up"
       >
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
-      </button>
-      <button
-        onClick={() => onDelete(entry.id)}
-        className="p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
-        title="Delete"
-      >
-        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       </button>
     </div>
@@ -58,11 +41,10 @@ function EntryActions({ entry, onEdit, onDelete, onEndSleep }: EntryActionsProps
 interface BedtimeEntryProps {
   entry: SleepEntryType;
   onEdit: (entry: SleepEntryType) => void;
-  onDelete: (id: string) => void;
   onEndSleep: (id: string) => void;
 }
 
-export function BedtimeEntry({ entry, onEdit, onDelete, onEndSleep }: BedtimeEntryProps) {
+export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
   const isActive = entry.endTime === null;
 
   return (
@@ -71,34 +53,40 @@ export function BedtimeEntry({ entry, onEdit, onDelete, onEndSleep }: BedtimeEnt
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff7e5f]" />
 
       <div className="flex items-center gap-4 py-4 pl-5 pr-4">
-        {/* Icon */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
-          <svg className="w-5 h-5 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
-            <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2} strokeLinecap="round" />
-          </svg>
-        </div>
+        {/* Tappable content area */}
+        <button
+          onClick={() => onEdit(entry)}
+          className="flex items-center gap-4 flex-1 min-w-0 text-left"
+        >
+          {/* Icon */}
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
+            <svg className="w-5 h-5 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
+              <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2} strokeLinecap="round" />
+            </svg>
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-white">
-            Bedtime
-          </p>
-          {isActive && (
-            <p className="text-sm text-[var(--success-color)]">
-              Sleeping...
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="font-display font-bold text-white">
+              Bedtime
             </p>
-          )}
-        </div>
+            {isActive && (
+              <p className="text-sm text-[var(--success-color)]">
+                Sleeping...
+              </p>
+            )}
+          </div>
 
-        {/* Time */}
-        <span className="font-display text-lg text-[var(--text-primary)]">
-          {formatTime(entry.startTime)}
-        </span>
+          {/* Time */}
+          <span className="font-display text-lg text-[var(--text-primary)]">
+            {formatTime(entry.startTime)}
+          </span>
+        </button>
 
         {/* Actions */}
-        <EntryActions entry={entry} onEdit={onEdit} onDelete={onDelete} onEndSleep={onEndSleep} />
+        <EntryActions entry={entry} onEndSleep={onEndSleep} />
       </div>
     </div>
   );
@@ -109,11 +97,10 @@ interface NapEntryProps {
   entry: SleepEntryType;
   napNumber: number;
   onEdit: (entry: SleepEntryType) => void;
-  onDelete: (id: string) => void;
   onEndSleep: (id: string) => void;
 }
 
-export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: NapEntryProps) {
+export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps) {
   const isActive = entry.endTime === null;
   const duration = calculateDuration(entry.startTime, entry.endTime);
 
@@ -123,32 +110,38 @@ export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: Nap
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--night-color)]" />
 
       <div className="flex items-center gap-4 py-4 pl-5 pr-4">
-        {/* Icon - cloud for naps */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--night-color)]/20">
-          <svg className="w-5 h-5 text-[var(--night-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-          </svg>
-        </div>
+        {/* Tappable content area */}
+        <button
+          onClick={() => onEdit(entry)}
+          className="flex items-center gap-4 flex-1 min-w-0 text-left"
+        >
+          {/* Icon - cloud for naps */}
+          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--night-color)]/20">
+            <svg className="w-5 h-5 text-[var(--night-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+            </svg>
+          </div>
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-white">
-            {getNapOrdinal(napNumber)} nap
-          </p>
-          <p className="text-sm text-white/70">
-            {formatDuration(duration)}
-            {isActive && <span className="text-[var(--success-color)]"> (ongoing)</span>}
-          </p>
-        </div>
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="font-display font-bold text-white">
+              {getNapOrdinal(napNumber)} nap
+            </p>
+            <p className="text-sm text-white/70">
+              {formatDuration(duration)}
+              {isActive && <span className="text-[var(--success-color)]"> (ongoing)</span>}
+            </p>
+          </div>
 
-        {/* Time range */}
-        <span className="font-display text-lg text-[var(--text-primary)]">
-          {formatTime(entry.startTime)}
-          {entry.endTime && ` - ${formatTime(entry.endTime)}`}
-        </span>
+          {/* Time range */}
+          <span className="font-display text-lg text-[var(--text-primary)]">
+            {formatTime(entry.startTime)}
+            {entry.endTime && ` - ${formatTime(entry.endTime)}`}
+          </span>
+        </button>
 
         {/* Actions */}
-        <EntryActions entry={entry} onEdit={onEdit} onDelete={onDelete} onEndSleep={onEndSleep} />
+        <EntryActions entry={entry} onEndSleep={onEndSleep} />
       </div>
     </div>
   );
@@ -202,7 +195,7 @@ export function WakeWindowSeparator({ durationMinutes }: WakeWindowSeparatorProp
     : `${minutes}m`;
 
   return (
-    <div className="flex items-center gap-3 py-2 px-4">
+    <div className="flex items-center justify-center gap-3 py-2 px-4">
       {/* Small moon icon */}
       <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -226,7 +219,7 @@ export function NightSleepSummary({ durationMinutes }: NightSleepSummaryProps) {
   const durationText = `${hours}h ${minutes.toString().padStart(2, '0')}m`;
 
   return (
-    <div className="flex items-center gap-3 py-2 px-4">
+    <div className="flex items-center justify-center gap-3 py-2 px-4">
       {/* Crescent moon icon */}
       <svg className="w-5 h-5 text-[var(--text-secondary)]" fill="currentColor" viewBox="0 0 24 24">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
@@ -245,15 +238,14 @@ export { WakeUpEntry as MilestoneCard };
 interface SleepEntryProps {
   entry: SleepEntryType;
   onEdit: (entry: SleepEntryType) => void;
-  onDelete: (id: string) => void;
   onEndSleep: (id: string) => void;
 }
 
-export function SleepEntryCard({ entry, onEdit, onDelete, onEndSleep }: SleepEntryProps) {
+export function SleepEntryCard({ entry, onEdit, onEndSleep }: SleepEntryProps) {
   // This is now a wrapper that delegates to the appropriate component
   if (entry.type === 'night') {
-    return <BedtimeEntry entry={entry} onEdit={onEdit} onDelete={onDelete} onEndSleep={onEndSleep} />;
+    return <BedtimeEntry entry={entry} onEdit={onEdit} onEndSleep={onEndSleep} />;
   }
   // For naps, default to nap number 1 (SleepList will use NapEntry directly with proper numbering)
-  return <NapEntry entry={entry} napNumber={1} onEdit={onEdit} onDelete={onDelete} onEndSleep={onEndSleep} />;
+  return <NapEntry entry={entry} napNumber={1} onEdit={onEdit} onEndSleep={onEndSleep} />;
 }

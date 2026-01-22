@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { BabyProfile } from '../types';
+import type { BabyProfile, UserProfile } from '../types';
 
 export function useBabyProfile() {
   const [profile, setProfile] = useState<BabyProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch profile on mount
@@ -39,6 +40,18 @@ export function useBabyProfile() {
           weight: data.baby_weight || 0,
           height: data.baby_height || 0,
         });
+        setUserProfile({
+          email: user.email || '',
+          userName: data.user_name || '',
+          userRole: data.user_role || 'other',
+        });
+      } else {
+        // No profile yet, but still set user email
+        setUserProfile({
+          email: user.email || '',
+          userName: '',
+          userRole: 'other',
+        });
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -47,7 +60,7 @@ export function useBabyProfile() {
     }
   };
 
-  const createProfile = useCallback(async (data: Omit<BabyProfile, 'id'>) => {
+  const createProfile = useCallback(async (data: Omit<BabyProfile, 'id'> & Partial<Omit<UserProfile, 'email'>>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
@@ -61,6 +74,8 @@ export function useBabyProfile() {
           baby_gender: data.gender,
           baby_weight: data.weight || null,
           baby_height: data.height || null,
+          user_name: data.userName || null,
+          user_role: data.userRole || null,
         });
 
       if (error) {
@@ -69,10 +84,19 @@ export function useBabyProfile() {
       }
 
       const newProfile: BabyProfile = {
-        ...data,
         id: user.id,
+        name: data.name,
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        weight: data.weight,
+        height: data.height,
       };
       setProfile(newProfile);
+      setUserProfile({
+        email: user.email || '',
+        userName: data.userName || '',
+        userRole: data.userRole || 'other',
+      });
       return newProfile;
     } catch (error) {
       console.error('Error creating profile:', error);
@@ -80,7 +104,7 @@ export function useBabyProfile() {
     }
   }, []);
 
-  const updateProfile = useCallback(async (data: Partial<Omit<BabyProfile, 'id'>>) => {
+  const updateProfile = useCallback(async (data: Partial<Omit<BabyProfile, 'id'>> & Partial<Omit<UserProfile, 'email'>>) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -91,6 +115,8 @@ export function useBabyProfile() {
       if (data.gender !== undefined) updateData.baby_gender = data.gender;
       if (data.weight !== undefined) updateData.baby_weight = data.weight || null;
       if (data.height !== undefined) updateData.baby_height = data.height || null;
+      if (data.userName !== undefined) updateData.user_name = data.userName || null;
+      if (data.userRole !== undefined) updateData.user_role = data.userRole || null;
 
       const { error } = await supabase
         .from('profiles')
@@ -102,10 +128,26 @@ export function useBabyProfile() {
         return;
       }
 
-      setProfile((prev) => {
-        if (!prev) return prev;
-        return { ...prev, ...data };
-      });
+      // Update baby profile state
+      if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.weight !== undefined || data.height !== undefined) {
+        setProfile((prev) => {
+          if (!prev) return prev;
+          const { userName, userRole, ...babyData } = data;
+          return { ...prev, ...babyData };
+        });
+      }
+
+      // Update user profile state
+      if (data.userName !== undefined || data.userRole !== undefined) {
+        setUserProfile((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            ...(data.userName !== undefined && { userName: data.userName }),
+            ...(data.userRole !== undefined && { userRole: data.userRole }),
+          };
+        });
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
     }
@@ -134,6 +176,7 @@ export function useBabyProfile() {
 
   return {
     profile,
+    userProfile,
     loading,
     createProfile,
     updateProfile,

@@ -28,10 +28,11 @@ interface SleepFormProps {
   entry?: SleepEntry | null;
   onSubmit: (data: Omit<SleepEntry, 'id' | 'date'>) => void;
   onCancel: () => void;
+  onDelete?: (id: string) => void;
   selectedDate: string;
 }
 
-export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepFormProps) {
+export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }: SleepFormProps) {
   const [mode, setMode] = useState<FormMode>(entry?.type || 'nap');
   const [formData, setFormData] = useState({
     // For naps: just store time (HH:mm)
@@ -110,11 +111,32 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
     }));
   };
 
+  const handleDelete = () => {
+    if (entry && onDelete && confirm('Delete this sleep entry?')) {
+      onDelete(entry.id);
+      onCancel();
+    }
+  };
+
   return (
     <div className="card p-6">
-      <h2 className="text-display-sm mb-6">
-        {entry ? 'Edit Sleep Entry' : 'Add Sleep Entry'}
-      </h2>
+      <div className="flex justify-between items-start mb-6">
+        <h2 className="text-display-sm">
+          {entry ? 'Edit Sleep Entry' : 'Add Sleep Entry'}
+        </h2>
+        {entry && onDelete && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            className="p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
+            title="Delete"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
+      </div>
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Sleep Type Toggle */}
         <div>
@@ -131,6 +153,7 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
+              {/* Sun icon - same as WakeUpEntry */}
               <svg className={`w-8 h-8 ${mode === 'wakeup' ? 'text-[var(--wake-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
@@ -143,14 +166,15 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
               onClick={() => setMode('nap')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
                 mode === 'nap'
-                  ? 'border-[var(--nap-color)] bg-[var(--nap-color)]/10'
+                  ? 'border-[var(--night-color)] bg-[var(--night-color)]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              <svg className={`w-8 h-8 ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              {/* Cloud icon - same as NapEntry */}
+              <svg className={`w-8 h-8 ${mode === 'nap' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
               </svg>
-              <span className={`font-display font-medium text-sm ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`}>
+              <span className={`font-display font-medium text-sm ${mode === 'nap' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
                 Nap
               </span>
             </button>
@@ -159,14 +183,17 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
               onClick={() => setMode('night')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
                 mode === 'night'
-                  ? 'border-[var(--night-color)] bg-[var(--night-color)]/10'
+                  ? 'border-[#ff7e5f] bg-[#ff7e5f]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              <svg className={`w-8 h-8 ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="currentColor" viewBox="0 0 24 24">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              {/* Bedtime/sunset icon - same as BedtimeEntry */}
+              <svg className={`w-8 h-8 ${mode === 'night' ? 'text-[#ff7e5f]' : 'text-[var(--text-muted)]'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
+                <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2} strokeLinecap="round" />
               </svg>
-              <span className={`font-display font-medium text-sm ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
+              <span className={`font-display font-medium text-sm ${mode === 'night' ? 'text-[#ff7e5f]' : 'text-[var(--text-muted)]'}`}>
                 Bedtime
               </span>
             </button>
@@ -277,7 +304,7 @@ export function SleepForm({ entry, onSubmit, onCancel, selectedDate }: SleepForm
           <button
             type="submit"
             className={`btn flex-1 ${
-              mode === 'wakeup' ? 'btn-wake' : mode === 'nap' ? 'btn-nap' : 'btn-night'
+              mode === 'wakeup' ? 'btn-wake' : mode === 'nap' ? 'btn-night' : 'bg-[#ff7e5f] hover:bg-[#ff7e5f]/90 text-white'
             }`}
           >
             {entry ? 'Save Changes' : mode === 'wakeup' ? 'Log Wake Up' : 'Add Entry'}

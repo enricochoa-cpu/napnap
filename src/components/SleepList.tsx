@@ -13,7 +13,6 @@ interface SleepListProps {
   allEntries: SleepEntry[];
   selectedDate: string;
   onEdit: (entry: SleepEntry) => void;
-  onDelete: (id: string) => void;
   onEndSleep: (id: string) => void;
 }
 
@@ -37,7 +36,7 @@ function calculateMinutesBetween(start: string, end: string): number {
   return Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60));
 }
 
-export function SleepList({ entries, allEntries, selectedDate, onEdit, onDelete, onEndSleep }: SleepListProps) {
+export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSleep }: SleepListProps) {
   // Build the complete timeline with all items
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
@@ -233,7 +232,6 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onDelete,
               <BedtimeEntry
                 entry={item.entry}
                 onEdit={onEdit}
-                onDelete={onDelete}
                 onEndSleep={onEndSleep}
               />
             )}
@@ -242,7 +240,6 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onDelete,
                 entry={item.entry}
                 napNumber={item.napNumber}
                 onEdit={onEdit}
-                onDelete={onDelete}
                 onEndSleep={onEndSleep}
               />
             )}

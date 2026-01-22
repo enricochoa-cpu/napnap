@@ -11,20 +11,38 @@ npm run lint     # Run ESLint
 npm run preview  # Preview production build locally
 ```
 
+## Environment Setup
+
+Copy `.env.example` to `.env.local` and configure Supabase credentials:
+
+```bash
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+Get these values from your Supabase project dashboard: https://app.supabase.com/project/_/settings/api
+
 ## Architecture
 
-Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep patterns. All data persists in localStorage.
+Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep patterns. Data persists in Supabase with user authentication.
 
 ### Data Flow
-- **Hooks** (`src/hooks/`) manage all state and localStorage persistence
+- **Supabase** (`src/lib/supabase.ts`) provides the backend client for auth and database operations
+- **Hooks** (`src/hooks/`) manage state and Supabase persistence
 - **Components** are presentational and receive data/callbacks via props
+- `useAuth` handles user authentication (sign up, sign in, sign out, password reset)
 - `useSleepEntries` handles all sleep CRUD operations and provides computed values (active sleep, daily summaries)
-- `useBabyProfile` handles baby profile CRUD
-- `useLocalStorage` is the generic persistence hook used by the other hooks
+- `useBabyProfile` handles baby and user profile CRUD via Supabase
+- `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
 - `BabyProfile`: Baby info (name, DOB, gender, weight, height)
+- `UserProfile`: User info (email, userName, userRole: dad/mum/other)
 - `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
+
+### Database Types (`src/lib/supabase.ts`)
+- `DbProfile`: Supabase profiles table schema
+- `DbSleepEntry`: Supabase sleep_entries table schema
 
 ### Component Responsibilities
 - `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar
@@ -76,8 +94,9 @@ All theme values are CSS variables in `:root`:
 **IMPORTANT**: Before making any UX/UI decisions, product improvements, or adding new features, always consult the research documents in `product-research/`.
 
 ### Research Documents
-- `research-openai.docx`: Competitor analysis (Napper app) with UX insights
-- Additional research files added to this folder should be reviewed for relevant insights
+- `one-pager-research.rtf`: Product research one-pager
+- `users-feedback.rtf`: User feedback and insights
+- `ux-ui-findings.pdf`: UX/UI research findings and recommendations
 
 ### When to Consult Research
 - Designing new features or screens

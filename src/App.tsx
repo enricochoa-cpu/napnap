@@ -24,11 +24,11 @@ const PARENT_MESSAGES = [
   "Take care of yourself too",
 ];
 
-type View = 'home' | 'history' | 'profile' | 'add';
+type View = 'home' | 'history' | 'stats' | 'profile' | 'add';
 
 function App() {
-  const { user, signOut } = useAuth();
-  const { profile, createProfile, updateProfile } = useBabyProfile();
+  const { signOut } = useAuth();
+  const { profile, userProfile, createProfile, updateProfile } = useBabyProfile();
   const {
     addEntry,
     updateEntry,
@@ -141,12 +141,6 @@ function App() {
   const handleEdit = (entry: SleepEntry) => {
     setEditingEntry(entry);
     setCurrentView('add');
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm('Delete this sleep entry?')) {
-      deleteEntry(id);
-    }
   };
 
   const handleEndSleep = (id: string) => {
@@ -282,67 +276,57 @@ function App() {
         <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
-      <DailySummary summary={getDailySummary(selectedDate, entries)} />
-
-      <div className="mt-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-display-sm">Sleep Log</h2>
-          <button
-            onClick={() => {
-              setEditingEntry(null);
-              setCurrentView('add');
-            }}
-            className="text-[var(--nap-color)] font-display font-medium text-sm"
-          >
-            + Add Entry
-          </button>
-        </div>
-        <SleepList
-          entries={dayEntries}
-          allEntries={entries}
-          selectedDate={selectedDate}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onEndSleep={handleEndSleep}
-        />
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-display-sm">Sleep Log</h2>
+        <button
+          onClick={() => {
+            setEditingEntry(null);
+            setCurrentView('add');
+          }}
+          className="text-[var(--nap-color)] font-display font-medium text-sm"
+        >
+          + Add Entry
+        </button>
       </div>
+      <SleepList
+        entries={dayEntries}
+        allEntries={entries}
+        selectedDate={selectedDate}
+        onEdit={handleEdit}
+        onEndSleep={handleEndSleep}
+      />
+    </div>
+  );
+
+  // Stats View
+  const renderStatsView = () => (
+    <div className="pb-32 px-4 fade-in">
+      <div className="pt-6 mb-6">
+        <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      </div>
+
+      <DailySummary summary={getDailySummary(selectedDate, entries)} />
     </div>
   );
 
   // Profile View
   const renderProfileView = () => (
     <div className="pb-32 px-4 pt-6 fade-in">
-      <h2 className="text-display-md mb-6">Profile</h2>
       <BabyProfile
         profile={profile}
+        userProfile={userProfile}
         onSave={createProfile}
         onUpdate={updateProfile}
       />
 
-      {/* Account Section */}
-      <div className="card p-4 mt-6">
-        <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] mb-3">Account</h3>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--bg-soft)] flex items-center justify-center">
-              <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-sm text-[var(--text-primary)] font-medium truncate max-w-[180px]">
-                {user?.email}
-              </p>
-              <p className="text-xs text-[var(--text-muted)]">Signed in</p>
-            </div>
-          </div>
-          <button
-            onClick={() => signOut()}
-            className="text-sm text-[var(--danger-color)] font-display font-medium"
-          >
-            Sign Out
-          </button>
-        </div>
+      {/* Sign Out Button */}
+      <div className="mt-6 text-center">
+        <button
+          onClick={() => signOut()}
+          className="text-sm text-[var(--danger-color)] font-display font-medium"
+        >
+          Sign Out
+        </button>
       </div>
     </div>
   );
@@ -357,6 +341,11 @@ function App() {
           setCurrentView('home');
           setEditingEntry(null);
         }}
+        onDelete={(id) => {
+          deleteEntry(id);
+          setCurrentView('home');
+          setEditingEntry(null);
+        }}
         selectedDate={selectedDate}
       />
     </div>
@@ -368,6 +357,7 @@ function App() {
       <main className="max-w-lg mx-auto">
         {currentView === 'home' && renderHomeView()}
         {currentView === 'history' && renderHistoryView()}
+        {currentView === 'stats' && renderStatsView()}
         {currentView === 'profile' && renderProfileView()}
         {currentView === 'add' && renderAddView()}
       </main>
@@ -450,6 +440,17 @@ function App() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <span className="text-xs font-display font-medium">History</span>
+          </button>
+          <button
+            onClick={() => setCurrentView('stats')}
+            className={`flex-1 py-4 flex flex-col items-center gap-1 ${
+              currentView === 'stats' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'
+            }`}
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span className="text-xs font-display font-medium">Stats</span>
           </button>
           <button
             onClick={() => setCurrentView('profile')}

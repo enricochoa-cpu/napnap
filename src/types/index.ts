@@ -7,6 +7,12 @@ export interface BabyProfile {
   height: number; // in cm
 }
 
+export interface UserProfile {
+  email: string; // from auth, read-only
+  userName: string;
+  userRole: 'dad' | 'mum' | 'other';
+}
+
 export interface SleepEntry {
   id: string;
   date: string; // ISO date (YYYY-MM-DD)
