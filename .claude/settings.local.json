@@ -1,4 +1,14 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run build:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd biological day clock and improve sleep entry workflow\n\n- Add circular clock showing biological day \\(wake-to-bedtime\\)\n- Show sunrise/sunset icons with time labels on clock\n- Display recommended nap windows as pill-shaped elements\n- Add \"Woke Up\", \"Nap\", \"Bedtime\" action buttons on Today screen\n- Add wake-up entry type to SleepForm with datetime picker\n- Show night entries as bedtime cards with sunset icon\n- Fix wake-up times to display on correct day in sleep log\n- Improve collision modal to show full date and ongoing status\n- Add recommended schedule calculation based on baby''s age\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push)",
+      "Bash(git commit:*)"
+    ]
+  },
   "memories": [
     "Baby Sleep Tracker - Comandos del proyecto: npm run dev (servidor de desarrollo en localhost:5173), npm run build (compilar TypeScript y construir para producción), npm run lint (ejecutar ESLint), npm run preview (previsualizar build de producción)"
   ]

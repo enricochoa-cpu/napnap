@@ -37,35 +37,19 @@ export function CircularClock({
   const wakeTime = recommendedWakeTime || { hour: 7, minute: 0 };
   const bedTime = recommendedBedtime || { hour: 19, minute: 0 };
 
-  // Calculate minutes from midnight for wake and bed times
+  // Calculate minutes from midnight for wake and bed times (used for icon positioning and nap window filtering)
   const wakeMinutes = wakeTime.hour * 60 + wakeTime.minute;
   const bedMinutes = bedTime.hour * 60 + bedTime.minute;
 
-  // Calculate wake window duration (handle overnight case)
-  const wakeWindowMinutes = bedMinutes > wakeMinutes
-    ? bedMinutes - wakeMinutes
-    : (1440 - wakeMinutes) + bedMinutes;
-
-  // Biological clock mapping:
-  // - Wake time at 9 o'clock position (left, 180° SVG)
-  // - Midday at 12 o'clock position (top, 270° SVG)
-  // - Bedtime at 3 o'clock position (right, 360°/0° SVG)
-  // The arc spans 180° for the ENTIRE wake window (not 24 hours)
-
-  // Convert clock time to SVG angle
-  // Maps the wake window (e.g., 12 hours) to 180° arc (from 180° to 360°)
-  const timeToAngle = (minutesFromMidnight: number) => {
-    // Calculate minutes since wake time
-    let minutesSinceWake = minutesFromMidnight - wakeMinutes;
-    if (minutesSinceWake < 0) {
-      minutesSinceWake += 1440; // Handle times before wake (wrap around)
-    }
-
-    // Clamp to wake window
-    const clampedMinutes = Math.min(minutesSinceWake, wakeWindowMinutes);
-
-    // Map wake window to 180° arc (from 180° to 360°)
-    return 180 + (clampedMinutes / wakeWindowMinutes) * 180;
+  // Convert time (minutes from midnight) to SVG angle
+  // In SVG: 0° = 3 o'clock (right), 90° = 6 o'clock (bottom), 180° = 9 o'clock (left), 270° = 12 o'clock (top)
+  // We want midnight at top (270°), so we offset by 270°
+  const timeToAngle = (minutesFromMidnight: number): number => {
+    // Convert minutes to degrees (1440 minutes = 360 degrees)
+    const degrees = (minutesFromMidnight / 1440) * 360;
+    // Rotate so midnight (0 min) is at top (270° in SVG)
+    // Add 270 to shift the circle, then mod 360 to keep in valid range
+    return (degrees + 270) % 360;
   };
 
   // Current time in minutes from midnight
@@ -81,7 +65,7 @@ export function CircularClock({
       const startMinutes = differenceInMinutes(startTime, dayStart);
       const endMinutes = differenceInMinutes(endTime, dayStart);
 
-      // Clamp to valid range (0-1440)
+      // Clamp to valid range (0-1440 minutes in a day)
       const clampedStart = Math.max(0, Math.min(1440, startMinutes));
       const clampedEnd = Math.max(0, Math.min(1440, endMinutes));
 
@@ -90,7 +74,8 @@ export function CircularClock({
       const startAngle = timeToAngle(clampedStart);
       let endAngle = timeToAngle(clampedEnd);
 
-      // Handle arc that crosses the wake time position
+      // Handle sleep that crosses midnight (e.g., 11 PM to 2 AM)
+      // If end angle is smaller than start angle, we crossed midnight
       if (endAngle < startAngle) {
         endAngle += 360;
       }
@@ -123,35 +108,15 @@ export function CircularClock({
     };
   };
 
-  // SVG arc path generator
-  // sweepFlag: 0 = counter-clockwise, 1 = clockwise
-  const describeArc = (startAngle: number, endAngle: number, radius: number, sweepFlag: 0 | 1 = 1) => {
+  // SVG arc path generator for sleep segments
+  const describeArc = (startAngle: number, endAngle: number, radius: number) => {
     const start = polarToCartesian(100, 100, radius, startAngle);
     const end = polarToCartesian(100, 100, radius, endAngle);
-    // For the top arc (day), we want the smaller arc (largeArcFlag = 0)
-    const largeArcFlag = 0;
+    // Use large arc flag based on arc span
+    const arcSpan = endAngle - startAngle;
+    const largeArcFlag = arcSpan > 180 ? 1 : 0;
 
-    return ['M', start.x, start.y, 'A', radius, radius, 0, largeArcFlag, sweepFlag, end.x, end.y].join(' ');
-  };
-
-  // Create day arc path - goes from left (180°) to right (0°) OVER THE TOP
-  const createDayArcPath = (radius: number) => {
-    const startX = 100 - radius; // Left point (180°)
-    const startY = 100;
-    const endX = 100 + radius;   // Right point (0°/360°)
-    const endY = 100;
-    // sweep-flag = 0 means counter-clockwise, which goes UP and over the top
-    return `M ${startX} ${startY} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`;
-  };
-
-  // Create night arc path - goes from right (0°) to left (180°) through the BOTTOM
-  const createNightArcPath = (radius: number) => {
-    const startX = 100 + radius; // Right point (0°)
-    const startY = 100;
-    const endX = 100 - radius;   // Left point (180°)
-    const endY = 100;
-    // sweep-flag = 0 means counter-clockwise, which goes DOWN through the bottom
-    return `M ${startX} ${startY} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`;
+    return ['M', start.x, start.y, 'A', radius, radius, 0, largeArcFlag, 1, end.x, end.y].join(' ');
   };
 
   // Get recommended nap duration based on baby's age (in minutes)
@@ -353,30 +318,15 @@ export function CircularClock({
       )}
 
       <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-72 md:h-72">
-        <defs>
-          {/* Gradient for daytime arc: warm yellow → gray/lavender → warm orange */}
-          <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#f0c674" />
-            <stop offset="50%" stopColor="#8b9dc3" />
-            <stop offset="100%" stopColor="#ff7e5f" />
-          </linearGradient>
-        </defs>
-
-        {/* Minimal night arc (bottom half) - very subtle, optional */}
-        <path
-          d={createNightArcPath(85)}
+        {/* Subtle background circle - represents 24-hour clock face */}
+        <circle
+          cx="100"
+          cy="100"
+          r="88"
           fill="none"
-          stroke="rgba(124, 133, 196, 0.1)"
-          strokeWidth="20"
-        />
-
-        {/* Daytime arc (upper half: sunrise to sunset) - horseshoe over the top */}
-        <path
-          d={createDayArcPath(85)}
-          fill="none"
-          stroke="url(#dayGradient)"
-          strokeWidth="38"
-          strokeLinecap="round"
+          stroke="rgba(139, 157, 195, 0.15)"
+          strokeWidth="2"
+          opacity="0.5"
         />
 
 
