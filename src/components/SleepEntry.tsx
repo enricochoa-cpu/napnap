@@ -66,13 +66,13 @@ export function BedtimeEntry({ entry, onEdit, onDelete, onEndSleep }: BedtimeEnt
   const isActive = entry.endTime === null;
 
   return (
-    <div className={`relative rounded-xl bg-[var(--bg-card)] overflow-hidden ${isActive ? 'ring-1 ring-[var(--success-color)]/30' : ''}`}>
+    <div className={`relative rounded-xl bg-[#ff7e5f]/10 overflow-hidden ${isActive ? 'ring-1 ring-[var(--success-color)]/30' : ''}`}>
       {/* Left color bar */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#ff7e5f]" />
 
       <div className="flex items-center gap-4 py-4 pl-5 pr-4">
         {/* Icon */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/15">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
           <svg className="w-5 h-5 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
@@ -82,7 +82,7 @@ export function BedtimeEntry({ entry, onEdit, onDelete, onEndSleep }: BedtimeEnt
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-medium text-[#ff7e5f]">
+          <p className="font-display font-bold text-white">
             Bedtime
           </p>
           {isActive && (
@@ -118,13 +118,13 @@ export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: Nap
   const duration = calculateDuration(entry.startTime, entry.endTime);
 
   return (
-    <div className={`relative rounded-xl bg-[var(--bg-card)] overflow-hidden ${isActive ? 'ring-1 ring-[var(--success-color)]/30' : ''}`}>
+    <div className={`relative rounded-xl bg-[var(--night-color)]/10 overflow-hidden ${isActive ? 'ring-1 ring-[var(--success-color)]/30' : ''}`}>
       {/* Left color bar - purple for naps */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--night-color)]" />
 
       <div className="flex items-center gap-4 py-4 pl-5 pr-4">
         {/* Icon - cloud for naps */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--night-color)]/15">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--night-color)]/20">
           <svg className="w-5 h-5 text-[var(--night-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
           </svg>
@@ -132,7 +132,7 @@ export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: Nap
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-medium text-[var(--night-color)]">
+          <p className="font-display font-bold text-white">
             {getNapOrdinal(napNumber)} nap
           </p>
           <p className="text-sm text-[var(--text-muted)]">
@@ -161,13 +161,13 @@ interface WakeUpEntryProps {
 
 export function WakeUpEntry({ time }: WakeUpEntryProps) {
   return (
-    <div className="relative rounded-xl bg-[var(--bg-card)] overflow-hidden">
+    <div className="relative rounded-xl bg-[var(--wake-color)]/10 overflow-hidden">
       {/* Left color bar - gold for wake-up */}
       <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--wake-color)]" />
 
       <div className="flex items-center gap-4 py-4 pl-5 pr-4">
         {/* Icon - sun for wake-up */}
-        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--wake-color)]/15">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--wake-color)]/20">
           <svg className="w-5 h-5 text-[var(--wake-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
@@ -175,7 +175,7 @@ export function WakeUpEntry({ time }: WakeUpEntryProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-medium text-[var(--wake-color)]">
+          <p className="font-display font-bold text-white">
             Wake up
           </p>
         </div>
