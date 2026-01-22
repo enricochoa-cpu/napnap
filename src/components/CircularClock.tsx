@@ -198,10 +198,13 @@ export function CircularClock({
       });
   }, [napWindows, wakeMinutes, bedMinutes, recommendedNapDuration, latestLoggedNapTime]);
 
-  // Positions for sunrise and sunset - at the ends of the day arc
-  // They sit at the endpoints where the arc meets the horizontal center line
-  const sunrisePos = { x: 15, y: 100 };  // Left side, on the arc endpoint
-  const sunsetPos = { x: 185, y: 100 };  // Right side, on the arc endpoint
+  // Calculate wake and bed icon positions using timeToAngle
+  const wakeAngle = timeToAngle(wakeMinutes);
+  const bedAngle = timeToAngle(bedMinutes);
+
+  // Position icons at radius 88 around the circle
+  const wakeIconPos = polarToCartesian(100, 100, 88, wakeAngle);
+  const bedIconPos = polarToCartesian(100, 100, 88, bedAngle);
 
   // Format time labels for sunrise/sunset
   const formatTimeLabel = (time: TimeMarker) => {
@@ -411,17 +414,28 @@ export function CircularClock({
           </g>
         )}
 
-        {/* Sunrise icon at 9 o'clock (left) */}
-        <g transform={`translate(${sunrisePos.x}, ${sunrisePos.y})`}>
-          {/* Sun circle */}
-          <circle cx="0" cy="0" r="8" fill="#f0c674" />
-          {/* Sun rays */}
+        {/* Wake time icon - SOLID border (already happened) */}
+        <g transform={`translate(${wakeIconPos.x}, ${wakeIconPos.y})`}>
+          {/* Solid circle background with golden border */}
+          <circle
+            cx="0"
+            cy="0"
+            r="22"
+            fill="#2a3655"
+            stroke="#f0c674"
+            strokeWidth="3"
+          />
+
+          {/* Sun icon (centered) */}
+          <circle cx="0" cy="0" r="9" fill="#f0c674" />
+
+          {/* Sun rays (8 rays at 45° intervals) */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
             const rad = (angle * Math.PI) / 180;
-            const x1 = 10 * Math.cos(rad);
-            const y1 = 10 * Math.sin(rad);
-            const x2 = 14 * Math.cos(rad);
-            const y2 = 14 * Math.sin(rad);
+            const x1 = 12 * Math.cos(rad);
+            const y1 = 12 * Math.sin(rad);
+            const x2 = 16 * Math.cos(rad);
+            const y2 = 16 * Math.sin(rad);
             return (
               <line
                 key={angle}
@@ -430,70 +444,95 @@ export function CircularClock({
                 x2={x2}
                 y2={y2}
                 stroke="#f0c674"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
               />
             );
           })}
         </g>
-        {/* Sunrise time label (below the icon) */}
+        {/* Wake time label (below icon) */}
         <text
-          x={sunrisePos.x}
-          y={sunrisePos.y + 22}
+          x={wakeIconPos.x}
+          y={wakeIconPos.y + 32}
           fill="#f0c674"
-          fontSize="8"
+          fontSize="16"
+          fontWeight="700"
           textAnchor="middle"
-          dominantBaseline="middle"
           className="font-display"
-          fontWeight="600"
         >
           {wakeTimeLabel}
         </text>
 
-        {/* Sunset icon at 3 o'clock (right) */}
-        <g transform={`translate(${sunsetPos.x}, ${sunsetPos.y})`}>
+        {/* Bedtime icon - DOTTED border (predicted) */}
+        <g transform={`translate(${bedIconPos.x}, ${bedIconPos.y})`}>
+          {/* Dotted circle border */}
+          <circle
+            cx="0"
+            cy="0"
+            r="22"
+            fill="#2a3655"
+            stroke="#ff7e5f"
+            strokeWidth="2.5"
+            strokeDasharray="4,3"
+            opacity="0.9"
+          />
+
           {/* Horizon line */}
-          <line x1="-12" y1="0" x2="12" y2="0" stroke="#ff7e5f" strokeWidth="2" />
-          {/* Sun half-circle (setting) */}
+          <line
+            x1="-11"
+            y1="0"
+            x2="11"
+            y2="0"
+            stroke="#ff7e5f"
+            strokeWidth="2.5"
+          />
+
+          {/* Setting sun (half circle below horizon) */}
           <path
             d="M -8 0 A 8 8 0 0 1 8 0"
             fill="#ff7e5f"
-            stroke="none"
           />
-          {/* Gradient glow */}
-          <circle cx="0" cy="-2" r="5" fill="#ff9966" opacity="0.5" />
-          {/* Rays above horizon */}
-          {[-45, 0, 45].map((angle) => {
+
+          {/* Glow effect */}
+          <circle
+            cx="0"
+            cy="-3"
+            r="6"
+            fill="#ff9966"
+            opacity="0.4"
+          />
+
+          {/* Rays above horizon only (3 rays) */}
+          {[-50, 0, 50].map((angle) => {
             const rad = ((angle - 90) * Math.PI) / 180;
-            const x1 = 10 * Math.cos(rad);
-            const y1 = 10 * Math.sin(rad);
-            const x2 = 14 * Math.cos(rad);
-            const y2 = 14 * Math.sin(rad);
+            const x1 = 12 * Math.cos(rad);
+            const y1 = Math.min(12 * Math.sin(rad), -1);
+            const x2 = 16 * Math.cos(rad);
+            const y2 = Math.min(16 * Math.sin(rad), -1);
             return (
               <line
                 key={angle}
                 x1={x1}
-                y1={Math.min(y1, 0)}
+                y1={y1}
                 x2={x2}
-                y2={Math.min(y2, 0)}
+                y2={y2}
                 stroke="#ff7e5f"
                 strokeWidth="2"
                 strokeLinecap="round"
-                opacity="0.8"
+                opacity="0.75"
               />
             );
           })}
         </g>
-        {/* Sunset time label (below the icon) */}
+        {/* Bed time label (below icon) */}
         <text
-          x={sunsetPos.x}
-          y={sunsetPos.y + 22}
+          x={bedIconPos.x}
+          y={bedIconPos.y + 32}
           fill="#ff7e5f"
-          fontSize="8"
+          fontSize="16"
+          fontWeight="700"
           textAnchor="middle"
-          dominantBaseline="middle"
           className="font-display"
-          fontWeight="600"
         >
           {bedTimeLabel}
         </text>
