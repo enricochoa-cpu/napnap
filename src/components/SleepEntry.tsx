@@ -135,7 +135,7 @@ export function NapEntry({ entry, napNumber, onEdit, onDelete, onEndSleep }: Nap
           <p className="font-display font-bold text-white">
             {getNapOrdinal(napNumber)} nap
           </p>
-          <p className="text-sm text-[var(--text-muted)]">
+          <p className="text-sm text-white/70">
             {formatDuration(duration)}
             {isActive && <span className="text-[var(--success-color)]"> (ongoing)</span>}
           </p>
