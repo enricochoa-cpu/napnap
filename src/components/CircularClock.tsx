@@ -2,6 +2,22 @@ import { useMemo } from 'react';
 import type { SleepEntry } from '../types';
 import { parseISO, format, differenceInMinutes, startOfDay, isToday as checkIsToday } from 'date-fns';
 
+/**
+ * CircularClock - 24-hour biological clock visualization
+ *
+ * Time label positioning:
+ * - Logged naps: NO labels (already happened)
+ * - Active nap: Start + end times at ±15° offset, radius 108
+ * - Expected naps: Start + end times at ±15° offset, radius 108
+ * - Wake/Bed: Single time label below icon at y+32
+ *
+ * Radius values:
+ * - Background circle: 88
+ * - Icon/nap positioning: 88
+ * - Night arc radius: 88
+ * - Time labels: 108 (outside icons)
+ */
+
 interface TimeMarker {
   hour: number;
   minute: number;
@@ -307,7 +323,7 @@ export function CircularClock({
           .map((segment) => (
             <path
               key={segment.id}
-              d={describeArc(segment.startAngle, segment.endAngle, 85)}
+              d={describeArc(segment.startAngle, segment.endAngle, 88)}
               fill="none"
               stroke="#7c85c4"
               strokeWidth="24"
@@ -752,79 +768,96 @@ export function CircularClock({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-3 mt-4">
-        <div className="flex items-center gap-1.5">
-          {/* Logged nap pill icon (solid border) */}
-          <svg width="20" height="12" viewBox="0 0 20 12">
-            <rect
-              x="1"
-              y="1"
-              width="18"
-              height="10"
-              rx="5"
-              ry="5"
-              fill="rgba(30, 40, 69, 0.9)"
+      <div className="flex flex-wrap items-center justify-center gap-4 mt-5">
+        {/* Logged Nap */}
+        <div className="flex items-center gap-2">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              fill="rgba(30, 40, 69, 0.95)"
               stroke="#8b9dc3"
-              strokeWidth="1"
+              strokeWidth="2"
+              strokeDasharray="3,2"
             />
-            <circle cx="12" cy="5" r="2.5" fill="#f0c674" opacity="0.9" />
-            <ellipse cx="8" cy="7" rx="3" ry="2" fill="white" opacity="0.9" />
-            <circle cx="6" cy="5" r="1.5" fill="white" opacity="0.9" />
+            {/* Sun */}
+            <circle cx="14" cy="10" r="3" fill="#f0c674" opacity="0.95" />
+            {/* Sun rays */}
+            <line x1="14" y1="6" x2="14" y2="4" stroke="#f0c674" strokeWidth="1" opacity="0.9" />
+            <line x1="16.5" y1="7.5" x2="17.5" y2="6.5" stroke="#f0c674" strokeWidth="1" opacity="0.9" />
+            {/* Cloud */}
+            <ellipse cx="11" cy="13" rx="4" ry="3" fill="white" opacity="0.95" />
+            <circle cx="8" cy="11" r="2.5" fill="white" opacity="0.95" />
+            <circle cx="13" cy="11" r="2" fill="white" opacity="0.95" />
           </svg>
-          <span className="text-white/60 text-xs font-display">Nap</span>
+          <span className="text-white/65 text-xs font-display">Nap</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          {/* Recommended nap pill icon (dotted border) */}
-          <svg width="20" height="12" viewBox="0 0 20 12">
-            <rect
-              x="1"
-              y="1"
-              width="18"
-              height="10"
-              rx="5"
-              ry="5"
-              fill="rgba(30, 40, 69, 0.6)"
+
+        {/* Expected Nap */}
+        <div className="flex items-center gap-2">
+          <svg width="20" height="20" viewBox="0 0 24 24">
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+              fill="rgba(30, 40, 69, 0.7)"
               stroke="#8b9dc3"
-              strokeWidth="1"
-              strokeDasharray="2,1"
-              opacity="0.7"
+              strokeWidth="1.5"
+              strokeDasharray="3,2"
+              opacity="0.75"
             />
-            <circle cx="12" cy="5" r="2.5" fill="#f0c674" opacity="0.6" />
-            <ellipse cx="8" cy="7" rx="3" ry="2" fill="white" opacity="0.6" />
-            <circle cx="6" cy="5" r="1.5" fill="white" opacity="0.6" />
+            {/* Sun */}
+            <circle cx="14" cy="10" r="3" fill="#f0c674" opacity="0.6" />
+            {/* Sun rays */}
+            <line x1="14" y1="6" x2="14" y2="4" stroke="#f0c674" strokeWidth="1" opacity="0.6" />
+            <line x1="16.5" y1="7.5" x2="17.5" y2="6.5" stroke="#f0c674" strokeWidth="1" opacity="0.6" />
+            {/* Cloud */}
+            <ellipse cx="11" cy="13" rx="4" ry="3" fill="white" opacity="0.65" />
+            <circle cx="8" cy="11" r="2.5" fill="white" opacity="0.65" />
+            <circle cx="13" cy="11" r="2" fill="white" opacity="0.65" />
           </svg>
-          <span className="text-white/60 text-xs font-display">Suggested</span>
+          <span className="text-white/65 text-xs font-display">Suggested</span>
         </div>
+
+        {/* Night */}
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#7c85c4]" />
-          <span className="text-white/60 text-xs font-display">Night</span>
+          <span className="text-white/65 text-xs font-display">Night</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 16 16">
+
+        {/* Wake */}
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
             <circle cx="8" cy="8" r="4" fill="#f0c674" />
+            {/* Sun rays (4 main directions) */}
             {[0, 90, 180, 270].map((angle) => {
               const rad = (angle * Math.PI) / 180;
               return (
                 <line
                   key={angle}
-                  x1={8 + 5 * Math.cos(rad)}
-                  y1={8 + 5 * Math.sin(rad)}
-                  x2={8 + 7 * Math.cos(rad)}
-                  y2={8 + 7 * Math.sin(rad)}
+                  x1={8 + 5.5 * Math.cos(rad)}
+                  y1={8 + 5.5 * Math.sin(rad)}
+                  x2={8 + 7.5 * Math.cos(rad)}
+                  y2={8 + 7.5 * Math.sin(rad)}
                   stroke="#f0c674"
                   strokeWidth="1.5"
                 />
               );
             })}
           </svg>
-          <span className="text-white/60 text-xs font-display">Wake</span>
+          <span className="text-white/65 text-xs font-display">Wake</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <svg width="14" height="14" viewBox="0 0 16 16">
-            <line x1="2" y1="8" x2="14" y2="8" stroke="#ff7e5f" strokeWidth="1.5" />
+
+        {/* Bed */}
+        <div className="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            {/* Horizon line */}
+            <line x1="2" y1="8" x2="14" y2="8" stroke="#ff7e5f" strokeWidth="2" />
+            {/* Setting sun */}
             <path d="M 4 8 A 4 4 0 0 1 12 8" fill="#ff7e5f" />
           </svg>
-          <span className="text-white/60 text-xs font-display">Bed</span>
+          <span className="text-white/65 text-xs font-display">Bed</span>
         </div>
       </div>
     </div>
