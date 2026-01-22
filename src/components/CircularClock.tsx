@@ -115,21 +115,43 @@ export function CircularClock({
     }>;
   }, [entries, dayStart, currentTime, wakeMinutes]);
 
-  // SVG arc path generator
-  const describeArc = (startAngle: number, endAngle: number, radius: number) => {
-    const start = polarToCartesian(100, 100, radius, startAngle);
-    const end = polarToCartesian(100, 100, radius, endAngle);
-    const largeArcFlag = (endAngle - startAngle) > 180 ? 1 : 0;
-
-    return ['M', start.x, start.y, 'A', radius, radius, 0, largeArcFlag, 1, end.x, end.y].join(' ');
-  };
-
   const polarToCartesian = (cx: number, cy: number, r: number, angleDeg: number) => {
     const rad = (angleDeg * Math.PI) / 180;
     return {
       x: cx + r * Math.cos(rad),
       y: cy + r * Math.sin(rad),
     };
+  };
+
+  // SVG arc path generator
+  // sweepFlag: 0 = counter-clockwise, 1 = clockwise
+  const describeArc = (startAngle: number, endAngle: number, radius: number, sweepFlag: 0 | 1 = 1) => {
+    const start = polarToCartesian(100, 100, radius, startAngle);
+    const end = polarToCartesian(100, 100, radius, endAngle);
+    // For the top arc (day), we want the smaller arc (largeArcFlag = 0)
+    const largeArcFlag = 0;
+
+    return ['M', start.x, start.y, 'A', radius, radius, 0, largeArcFlag, sweepFlag, end.x, end.y].join(' ');
+  };
+
+  // Create day arc path - goes from left (180°) to right (0°) OVER THE TOP
+  const createDayArcPath = (radius: number) => {
+    const startX = 100 - radius; // Left point (180°)
+    const startY = 100;
+    const endX = 100 + radius;   // Right point (0°/360°)
+    const endY = 100;
+    // sweep-flag = 0 means counter-clockwise, which goes UP and over the top
+    return `M ${startX} ${startY} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`;
+  };
+
+  // Create night arc path - goes from right (0°) to left (180°) through the BOTTOM
+  const createNightArcPath = (radius: number) => {
+    const startX = 100 + radius; // Right point (0°)
+    const startY = 100;
+    const endX = 100 - radius;   // Left point (180°)
+    const endY = 100;
+    // sweep-flag = 0 means counter-clockwise, which goes DOWN through the bottom
+    return `M ${startX} ${startY} A ${radius} ${radius} 0 0 0 ${endX} ${endY}`;
   };
 
   // Get recommended nap duration based on baby's age (in minutes)
@@ -211,11 +233,10 @@ export function CircularClock({
       });
   }, [napWindows, wakeMinutes, bedMinutes, recommendedNapDuration, latestLoggedNapTime]);
 
-  // Positions for sunrise (9 o'clock) and sunset (3 o'clock)
-  const sunriseAngle = 180; // 9 o'clock position (left)
-  const sunsetAngle = 0;    // 3 o'clock position (right)
-  const sunrisePos = polarToCartesian(100, 100, 85, sunriseAngle);
-  const sunsetPos = polarToCartesian(100, 100, 85, sunsetAngle);
+  // Positions for sunrise and sunset - at the ends of the day arc
+  // They sit at the endpoints where the arc meets the horizontal center line
+  const sunrisePos = { x: 15, y: 100 };  // Left side, on the arc endpoint
+  const sunsetPos = { x: 185, y: 100 };  // Right side, on the arc endpoint
 
   // Format time labels for sunrise/sunset
   const formatTimeLabel = (time: TimeMarker) => {
@@ -237,11 +258,10 @@ export function CircularClock({
         const arcSpan = segment.endAngle - segment.startAngle;
 
         // Calculate pill width based on arc span (proportional to duration)
-        // Arc span is now properly scaled to wake window
-        const pillWidth = Math.max(22, Math.min(50, arcSpan * 1.2));
-        const pillHeight = 20;
+        const pillWidth = Math.max(28, Math.min(55, arcSpan * 1.5));
+        const pillHeight = 30; // Larger to sit ON the arc
 
-        // Position at the clock radius
+        // Position at the clock radius (on the arc)
         const pos = polarToCartesian(100, 100, 85, centerAngle);
 
         // Rotation to align pill tangent to the circle
@@ -334,28 +354,28 @@ export function CircularClock({
 
       <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-72 md:h-72">
         <defs>
-          {/* Gradient for daytime arc: warm yellow → neutral gray → warm orange */}
-          <linearGradient id="dayGradient" x1="0%" y1="50%" x2="100%" y2="50%">
-            <stop offset="0%" stopColor="#f0c674" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="#808580" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#bd5e4a" stopOpacity="0.6" />
+          {/* Gradient for daytime arc: warm yellow → gray/lavender → warm orange */}
+          <linearGradient id="dayGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#f0c674" />
+            <stop offset="50%" stopColor="#8b9dc3" />
+            <stop offset="100%" stopColor="#ff7e5f" />
           </linearGradient>
         </defs>
 
-        {/* Minimal night arc (bottom half) - very subtle */}
+        {/* Minimal night arc (bottom half) - very subtle, optional */}
         <path
-          d={describeArc(0, 180, 85)}
+          d={createNightArcPath(85)}
           fill="none"
-          stroke="rgba(124, 133, 196, 0.15)"
-          strokeWidth="24"
+          stroke="rgba(124, 133, 196, 0.1)"
+          strokeWidth="20"
         />
 
-        {/* Daytime arc (upper half: sunrise to sunset) - the main visual element */}
+        {/* Daytime arc (upper half: sunrise to sunset) - horseshoe over the top */}
         <path
-          d={describeArc(180, 360, 85)}
+          d={createDayArcPath(85)}
           fill="none"
           stroke="url(#dayGradient)"
-          strokeWidth="24"
+          strokeWidth="38"
           strokeLinecap="round"
         />
 
@@ -376,7 +396,7 @@ export function CircularClock({
             />
           ))}
 
-        {/* Nap segments as pill shapes */}
+        {/* Nap segments as pill shapes - sitting ON the arc */}
         {napPills.map((pill) => (
           <g
             key={pill.id}
@@ -391,35 +411,35 @@ export function CircularClock({
               height={pill.height}
               rx={pill.height / 2}
               ry={pill.height / 2}
-              fill="rgba(30, 40, 69, 0.9)"
+              fill="rgba(30, 40, 69, 0.95)"
               stroke="#8b9dc3"
-              strokeWidth="1.5"
+              strokeWidth="2"
             />
-            {/* Cloud + Sun icon inside pill */}
-            <g transform={`rotate(${-pill.rotation})`}>
+            {/* Cloud + Sun icon inside pill - scaled up */}
+            <g transform={`rotate(${-pill.rotation}) scale(1.2)`}>
               {/* Small sun behind cloud */}
-              <circle cx="3" cy="-1" r="4" fill="#f0c674" opacity="0.9" />
+              <circle cx="4" cy="-2" r="5" fill="#f0c674" opacity="0.9" />
               {/* Sun rays */}
               {[0, 60, 120].map((angle) => {
                 const rad = (angle * Math.PI) / 180;
                 return (
                   <line
                     key={angle}
-                    x1={3 + 5 * Math.cos(rad)}
-                    y1={-1 + 5 * Math.sin(rad)}
-                    x2={3 + 7 * Math.cos(rad)}
-                    y2={-1 + 7 * Math.sin(rad)}
+                    x1={4 + 6 * Math.cos(rad)}
+                    y1={-2 + 6 * Math.sin(rad)}
+                    x2={4 + 8 * Math.cos(rad)}
+                    y2={-2 + 8 * Math.sin(rad)}
                     stroke="#f0c674"
-                    strokeWidth="1"
+                    strokeWidth="1.2"
                     strokeLinecap="round"
-                    opacity="0.7"
+                    opacity="0.8"
                   />
                 );
               })}
               {/* Cloud */}
-              <ellipse cx="-1" cy="2" rx="5" ry="3" fill="white" opacity="0.95" />
-              <circle cx="-4" cy="0" r="2.5" fill="white" opacity="0.95" />
-              <circle cx="2" cy="0" r="2" fill="white" opacity="0.95" />
+              <ellipse cx="-2" cy="3" rx="6" ry="4" fill="white" opacity="0.95" />
+              <circle cx="-6" cy="0" r="3" fill="white" opacity="0.95" />
+              <circle cx="2" cy="0" r="2.5" fill="white" opacity="0.95" />
             </g>
           </g>
         ))}
@@ -466,13 +486,13 @@ export function CircularClock({
             );
           })}
         </g>
-        {/* Sunrise time label (outside circle) */}
+        {/* Sunrise time label (below the icon) */}
         <text
-          x={polarToCartesian(100, 100, 112, sunriseAngle).x}
-          y={polarToCartesian(100, 100, 112, sunriseAngle).y}
+          x={sunrisePos.x}
+          y={sunrisePos.y + 22}
           fill="#f0c674"
-          fontSize="7"
-          textAnchor="end"
+          fontSize="8"
+          textAnchor="middle"
           dominantBaseline="middle"
           className="font-display"
           fontWeight="600"
@@ -514,13 +534,13 @@ export function CircularClock({
             );
           })}
         </g>
-        {/* Sunset time label (outside circle) */}
+        {/* Sunset time label (below the icon) */}
         <text
-          x={polarToCartesian(100, 100, 112, sunsetAngle).x}
-          y={polarToCartesian(100, 100, 112, sunsetAngle).y}
+          x={sunsetPos.x}
+          y={sunsetPos.y + 22}
           fill="#ff7e5f"
-          fontSize="7"
-          textAnchor="start"
+          fontSize="8"
+          textAnchor="middle"
           dominantBaseline="middle"
           className="font-display"
           fontWeight="600"
@@ -534,16 +554,16 @@ export function CircularClock({
           const centerAngle = (nap.startAngle + nap.endAngle) / 2;
           const arcSpan = nap.endAngle - nap.startAngle;
 
-          // Calculate pill dimensions based on duration
-          const pillWidth = Math.max(24, Math.min(45, arcSpan * 0.8));
-          const pillHeight = 18;
+          // Calculate pill dimensions based on duration (slightly smaller than logged)
+          const pillWidth = Math.max(26, Math.min(50, arcSpan * 1.2));
+          const pillHeight = 26;
 
           // Position at the clock radius
           const pos = polarToCartesian(100, 100, 85, centerAngle);
 
           // Positions for time labels (outside the circle)
-          const startLabelPos = polarToCartesian(100, 100, 110, nap.startAngle);
-          const endLabelPos = polarToCartesian(100, 100, 110, nap.endAngle);
+          const startLabelPos = polarToCartesian(100, 100, 115, nap.startAngle);
+          const endLabelPos = polarToCartesian(100, 100, 115, nap.endAngle);
 
           return (
             <g key={index}>
@@ -557,16 +577,16 @@ export function CircularClock({
                   height={pillHeight}
                   rx={pillHeight / 2}
                   ry={pillHeight / 2}
-                  fill="rgba(30, 40, 69, 0.6)"
+                  fill="rgba(30, 40, 69, 0.7)"
                   stroke="#8b9dc3"
                   strokeWidth="1.5"
-                  strokeDasharray="3,2"
-                  opacity="0.7"
+                  strokeDasharray="4,2"
+                  opacity="0.8"
                 />
                 {/* Cloud + Sun icon inside pill */}
                 <g transform={`rotate(${-centerAngle})`}>
                   {/* Small sun behind cloud */}
-                  <circle cx="3" cy="-1" r="4" fill="#f0c674" opacity="0.7" />
+                  <circle cx="3" cy="-1" r="4" fill="#f0c674" opacity="0.6" />
                   {/* Sun rays */}
                   {[0, 60, 120].map((angle) => {
                     const rad = (angle * Math.PI) / 180;
@@ -585,9 +605,9 @@ export function CircularClock({
                     );
                   })}
                   {/* Cloud */}
-                  <ellipse cx="-1" cy="2" rx="5" ry="3" fill="white" opacity="0.7" />
-                  <circle cx="-4" cy="0" r="2.5" fill="white" opacity="0.7" />
-                  <circle cx="2" cy="0" r="2" fill="white" opacity="0.7" />
+                  <ellipse cx="-1" cy="2" rx="5" ry="3" fill="white" opacity="0.6" />
+                  <circle cx="-4" cy="0" r="2.5" fill="white" opacity="0.6" />
+                  <circle cx="2" cy="0" r="2" fill="white" opacity="0.6" />
                 </g>
               </g>
 
@@ -596,7 +616,7 @@ export function CircularClock({
                 x={startLabelPos.x}
                 y={startLabelPos.y}
                 fill="rgba(139, 157, 195, 0.8)"
-                fontSize="5"
+                fontSize="6"
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="font-display"
@@ -609,7 +629,7 @@ export function CircularClock({
                 x={endLabelPos.x}
                 y={endLabelPos.y}
                 fill="rgba(139, 157, 195, 0.8)"
-                fontSize="5"
+                fontSize="6"
                 textAnchor="middle"
                 dominantBaseline="middle"
                 className="font-display"
