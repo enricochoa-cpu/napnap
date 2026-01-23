@@ -3,18 +3,25 @@ import type { SleepEntry } from '../types';
 import { parseISO, format, differenceInMinutes, startOfDay, isToday as checkIsToday } from 'date-fns';
 
 /**
- * CircularClock - 24-hour biological clock visualization
+ * CircularClock - 24-hour biological clock visualization (Napper-style)
+ *
+ * Visual features:
+ * - Gradient strokes on sleep arcs
+ * - Glass-morphism center with dynamic typography
+ * - Sun/Moon icons for wake/bed transition points
+ * - Dashed prediction arcs with reduced opacity
  *
  * Time label positioning:
  * - Logged naps: NO labels (already happened)
  * - Active nap: Start + end times at ±15° offset, radius 108
  * - Expected naps: Start + end times at ±15° offset, radius 108
- * - Wake/Bed: Single time label below icon at y+32
+ * - Wake/Bed: Icons at radius 98 (outside main arc)
  *
  * Radius values:
  * - Background circle: 88
  * - Icon/nap positioning: 88
  * - Night arc radius: 88
+ * - Wake/Bed icons: 98 (outside)
  * - Time labels: 108 (outside icons)
  */
 
@@ -218,9 +225,9 @@ export function CircularClock({
   const wakeAngle = timeToAngle(wakeMinutes);
   const bedAngle = timeToAngle(bedMinutes);
 
-  // Position icons at radius 88 around the circle
-  const wakeIconPos = polarToCartesian(100, 100, 88, wakeAngle);
-  const bedIconPos = polarToCartesian(100, 100, 88, bedAngle);
+  // Position icons at radius 98 (outside the main arc)
+  const wakeIconPos = polarToCartesian(100, 100, 98, wakeAngle);
+  const bedIconPos = polarToCartesian(100, 100, 98, bedAngle);
 
   // Format time labels for sunrise/sunset
   const formatTimeLabel = (time: TimeMarker) => {
@@ -232,7 +239,7 @@ export function CircularClock({
   const wakeTimeLabel = formatTimeLabel(wakeTime);
   const bedTimeLabel = formatTimeLabel(bedTime);
 
-  // Calculate center display info
+  // Calculate center display info with Catalan labels
   const getCenterInfo = () => {
     if (activeSleep) {
       const duration = differenceInMinutes(currentTime, parseISO(activeSleep.startTime));
@@ -240,7 +247,7 @@ export function CircularClock({
       const mins = duration % 60;
       return {
         type: 'sleeping' as const,
-        label: activeSleep.type === 'nap' ? 'Napping' : 'Sleeping',
+        label: activeSleep.type === 'nap' ? 'MIGDIADA' : 'DORMINT',
         mainText: hours > 0 ? `${hours}h ${mins}m` : `${mins}m`,
         subText: null,
       };
@@ -252,8 +259,8 @@ export function CircularClock({
       if (minutesUntilNap <= 0) {
         return {
           type: 'naptime' as const,
-          label: 'Nap time',
-          mainText: 'now',
+          label: 'HORA DE MIGDIADA',
+          mainText: 'ara',
           subText: null,
         };
       }
@@ -264,25 +271,25 @@ export function CircularClock({
 
       return {
         type: 'countdown' as const,
-        label: 'Next nap in',
+        label: 'PROPERA MIGDIADA',
         mainText: countdownText,
-        subText: `~${format(suggestedNapTime, 'h:mm a')}`,
+        subText: `~${format(suggestedNapTime, 'HH:mm')}`,
       };
     }
 
     if (isToday) {
       return {
         type: 'today' as const,
-        label: 'Today',
-        mainText: format(currentTime, 'h:mm a'),
+        label: 'AVUI',
+        mainText: format(currentTime, 'HH:mm'),
         subText: null,
       };
     }
 
     return {
       type: 'past' as const,
-      label: null,
-      mainText: null,
+      label: format(selectedDateObj, 'EEE').toUpperCase(),
+      mainText: format(selectedDateObj, 'd MMM'),
       subText: null,
     };
   };
@@ -305,6 +312,43 @@ export function CircularClock({
       )}
 
       <svg viewBox="0 0 200 200" className="w-64 h-64 md:w-72 md:h-72">
+        {/* SVG Gradients for arcs */}
+        <defs>
+          {/* Night sleep gradient */}
+          <linearGradient id="nightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#6670a8" />
+            <stop offset="100%" stopColor="#7c85c4" />
+          </linearGradient>
+
+          {/* Nap gradient */}
+          <linearGradient id="napGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4a9294" />
+            <stop offset="100%" stopColor="#5eadb0" />
+          </linearGradient>
+
+          {/* Prediction gradient (lighter) */}
+          <linearGradient id="predictionGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#4a9294" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#5eadb0" stopOpacity="0.6" />
+          </linearGradient>
+
+          {/* Glass effect filter */}
+          <filter id="glassBlur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
+          </filter>
+
+          {/* Glow effect for active states */}
+          <filter id="glowEffect" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+            <feFlood floodColor="#5eadb0" floodOpacity="0.5" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="glow" />
+            <feMerge>
+              <feMergeNode in="glow" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
         {/* Subtle background circle - represents 24-hour clock face */}
         <circle
           cx="100"
@@ -317,7 +361,7 @@ export function CircularClock({
         />
 
 
-        {/* Night sleep segments (arcs) */}
+        {/* Night sleep segments (arcs) with gradient */}
         {segments
           .filter((segment) => segment.type === 'night')
           .map((segment) => (
@@ -325,11 +369,11 @@ export function CircularClock({
               key={segment.id}
               d={describeArc(segment.startAngle, segment.endAngle, 88)}
               fill="none"
-              stroke="#7c85c4"
+              stroke="url(#nightGradient)"
               strokeWidth="24"
               strokeLinecap="round"
               className={segment.isActive ? 'animate-pulse' : ''}
-              opacity={segment.isActive ? 1 : 0.8}
+              opacity={segment.isActive ? 1 : 0.85}
             />
           ))}
 
@@ -413,14 +457,14 @@ export function CircularClock({
 
           return (
             <g key={activeSleep.id}>
-              {/* Dotted circle with pulsing animation */}
-              <g transform={`translate(${napPos.x}, ${napPos.y})`} className="animate-pulse">
+              {/* Dotted circle with pulsing animation and glow */}
+              <g transform={`translate(${napPos.x}, ${napPos.y})`} className="animate-pulse" filter="url(#glowEffect)">
                 <circle
                   cx="0"
                   cy="0"
                   r="22"
                   fill="rgba(30, 40, 69, 0.95)"
-                  stroke="#8b9dc3"
+                  stroke="url(#napGradient)"
                   strokeWidth="2.5"
                   strokeDasharray="4,3"
                 />
@@ -496,28 +540,28 @@ export function CircularClock({
           </g>
         )}
 
-        {/* Wake time icon - SOLID border (already happened) */}
+        {/* Wake time icon - Sun (outside arc radius +10) */}
         <g transform={`translate(${wakeIconPos.x}, ${wakeIconPos.y})`}>
           {/* Solid circle background with golden border */}
           <circle
             cx="0"
             cy="0"
-            r="22"
+            r="18"
             fill="#2a3655"
             stroke="#f0c674"
-            strokeWidth="3"
+            strokeWidth="2.5"
           />
 
           {/* Sun icon (centered) */}
-          <circle cx="0" cy="0" r="9" fill="#f0c674" />
+          <circle cx="0" cy="0" r="7" fill="#f0c674" />
 
           {/* Sun rays (8 rays at 45° intervals) */}
           {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
             const rad = (angle * Math.PI) / 180;
-            const x1 = 12 * Math.cos(rad);
-            const y1 = 12 * Math.sin(rad);
-            const x2 = 16 * Math.cos(rad);
-            const y2 = 16 * Math.sin(rad);
+            const x1 = 9 * Math.cos(rad);
+            const y1 = 9 * Math.sin(rad);
+            const x2 = 13 * Math.cos(rad);
+            const y2 = 13 * Math.sin(rad);
             return (
               <line
                 key={angle}
@@ -526,7 +570,7 @@ export function CircularClock({
                 x2={x2}
                 y2={y2}
                 stroke="#f0c674"
-                strokeWidth="2.5"
+                strokeWidth="2"
                 strokeLinecap="round"
               />
             );
@@ -535,9 +579,9 @@ export function CircularClock({
         {/* Wake time label (below icon) */}
         <text
           x={wakeIconPos.x}
-          y={wakeIconPos.y + 32}
+          y={wakeIconPos.y + 28}
           fill="#f0c674"
-          fontSize="16"
+          fontSize="14"
           fontWeight="700"
           textAnchor="middle"
           className="font-display"
@@ -545,73 +589,38 @@ export function CircularClock({
           {wakeTimeLabel}
         </text>
 
-        {/* Bedtime icon - DOTTED border (predicted) */}
+        {/* Bedtime icon - Moon (outside arc radius +10) */}
         <g transform={`translate(${bedIconPos.x}, ${bedIconPos.y})`}>
-          {/* Dotted circle border */}
+          {/* Dotted circle border for prediction */}
           <circle
             cx="0"
             cy="0"
-            r="22"
+            r="18"
             fill="#2a3655"
-            stroke="#ff7e5f"
-            strokeWidth="2.5"
-            strokeDasharray="4,3"
+            stroke="#7c85c4"
+            strokeWidth="2"
+            strokeDasharray="4,4"
             opacity="0.9"
           />
 
-          {/* Horizon line */}
-          <line
-            x1="-11"
-            y1="0"
-            x2="11"
-            y2="0"
-            stroke="#ff7e5f"
-            strokeWidth="2.5"
-          />
-
-          {/* Setting sun (half circle below horizon) */}
-          <path
-            d="M -8 0 A 8 8 0 0 1 8 0"
-            fill="#ff7e5f"
-          />
-
-          {/* Glow effect */}
-          <circle
-            cx="0"
-            cy="-3"
-            r="6"
-            fill="#ff9966"
-            opacity="0.4"
-          />
-
-          {/* Rays above horizon only (3 rays) */}
-          {[-50, 0, 50].map((angle) => {
-            const rad = ((angle - 90) * Math.PI) / 180;
-            const x1 = 12 * Math.cos(rad);
-            const y1 = Math.min(12 * Math.sin(rad), -1);
-            const x2 = 16 * Math.cos(rad);
-            const y2 = Math.min(16 * Math.sin(rad), -1);
-            return (
-              <line
-                key={angle}
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="#ff7e5f"
-                strokeWidth="2"
-                strokeLinecap="round"
-                opacity="0.75"
-              />
-            );
-          })}
+          {/* Moon icon (crescent) */}
+          <g transform="translate(0, 0)">
+            {/* Main moon circle */}
+            <circle cx="-2" cy="0" r="8" fill="#7c85c4" />
+            {/* Dark cutout to create crescent */}
+            <circle cx="3" cy="-3" r="6" fill="#2a3655" />
+            {/* Small stars around moon */}
+            <circle cx="7" cy="-6" r="1" fill="#a8b4e0" opacity="0.8" />
+            <circle cx="9" cy="2" r="0.8" fill="#a8b4e0" opacity="0.6" />
+            <circle cx="5" cy="7" r="0.6" fill="#a8b4e0" opacity="0.5" />
+          </g>
         </g>
         {/* Bed time label (below icon) */}
         <text
           x={bedIconPos.x}
-          y={bedIconPos.y + 32}
-          fill="#ff7e5f"
-          fontSize="16"
+          y={bedIconPos.y + 28}
+          fill="#7c85c4"
+          fontSize="14"
           fontWeight="700"
           textAnchor="middle"
           className="font-display"
@@ -619,7 +628,7 @@ export function CircularClock({
           {bedTimeLabel}
         </text>
 
-        {/* Expected naps (future) - dotted circles WITH time labels, more transparent */}
+        {/* Expected/Predicted naps - dashed arcs with 60% opacity */}
         {napWindowAngles.map((nap, index) => {
           const napAngle = timeToAngle(nap.startMinutes);
           const napPos = polarToCartesian(100, 100, 88, napAngle);
@@ -634,43 +643,54 @@ export function CircularClock({
 
           return (
             <g key={index}>
-              {/* Dotted circle - more transparent than logged/active */}
+              {/* Prediction arc - dashed with 60% opacity */}
+              <path
+                d={describeArc(nap.startAngle, nap.endAngle, 88)}
+                fill="none"
+                stroke="url(#predictionGradient)"
+                strokeWidth="20"
+                strokeLinecap="round"
+                strokeDasharray="4,4"
+                opacity="0.6"
+              />
+
+              {/* Dotted circle at start position */}
               <g transform={`translate(${napPos.x}, ${napPos.y})`}>
                 <circle
                   cx="0"
                   cy="0"
-                  r="22"
+                  r="18"
                   fill="rgba(30, 40, 69, 0.7)"
                   stroke="#8b9dc3"
-                  strokeWidth="2"
-                  strokeDasharray="4,3"
-                  opacity="0.75"
+                  strokeWidth="1.5"
+                  strokeDasharray="4,4"
+                  opacity="0.6"
                 />
 
                 {/* Cloud + Sun icon (more transparent) */}
-                <g opacity="0.7">
-                  <circle cx="5" cy="-2" r="5.5" fill="#f0c674" opacity="0.6" />
+                <g opacity="0.6">
+                  <circle cx="4" cy="-2" r="4" fill="#f0c674" opacity="0.6" />
 
                   {[0, 60, 120].map((angle) => {
                     const rad = (angle * Math.PI) / 180;
                     return (
                       <line
                         key={angle}
-                        x1={5 + 7 * Math.cos(rad)}
-                        y1={-2 + 7 * Math.sin(rad)}
-                        x2={5 + 10 * Math.cos(rad)}
-                        y2={-2 + 10 * Math.sin(rad)}
+                        x1={4 + 5 * Math.cos(rad)}
+                        y1={-2 + 5 * Math.sin(rad)}
+                        x2={4 + 7 * Math.cos(rad)}
+                        y2={-2 + 7 * Math.sin(rad)}
                         stroke="#f0c674"
-                        strokeWidth="1.5"
+                        strokeWidth="1"
                         strokeLinecap="round"
                         opacity="0.6"
                       />
                     );
                   })}
 
-                  <ellipse cx="-1" cy="3" rx="7" ry="5" fill="white" opacity="0.65" />
-                  <circle cx="-6" cy="0" r="4" fill="white" opacity="0.65" />
-                  <circle cx="3" cy="0" r="3.5" fill="white" opacity="0.65" />
+                  <ellipse cx="-1" cy="2" rx="5" ry="4" fill="white" opacity="0.5" />
+                  <circle cx="-4" cy="0" r="3" fill="white" opacity="0.5" />
+                  <circle cx="2" cy="0" r="2.5" fill="white" opacity="0.5" />
                 </g>
               </g>
 
@@ -678,8 +698,8 @@ export function CircularClock({
               <text
                 x={startLabelPos.x}
                 y={startLabelPos.y}
-                fill="rgba(139, 157, 195, 0.85)"
-                fontSize="11"
+                fill="rgba(139, 157, 195, 0.7)"
+                fontSize="10"
                 fontWeight="600"
                 textAnchor="middle"
                 className="font-display"
@@ -691,8 +711,8 @@ export function CircularClock({
               <text
                 x={endLabelPos.x}
                 y={endLabelPos.y}
-                fill="rgba(139, 157, 195, 0.85)"
-                fontSize="11"
+                fill="rgba(139, 157, 195, 0.7)"
+                fontSize="10"
                 fontWeight="600"
                 textAnchor="middle"
                 className="font-display"
@@ -703,69 +723,183 @@ export function CircularClock({
           );
         })}
 
-        {/* Center circle */}
-        <circle cx="100" cy="100" r="40" fill="rgba(15, 20, 40, 0.9)" />
-      </svg>
+        {/* Center circle with glass effect */}
+        <circle
+          cx="100"
+          cy="100"
+          r="42"
+          fill="rgba(15, 20, 40, 0.85)"
+          stroke="rgba(139, 157, 195, 0.2)"
+          strokeWidth="1"
+        />
 
-      {/* Center content */}
-      <div className="absolute inset-0 flex items-center justify-center" style={{ marginTop: !isToday && babyAge ? '60px' : '0' }}>
-        <div className="text-center">
-          {centerInfo.type === 'sleeping' ? (
-            <>
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 text-xs font-display font-medium">
-                  {centerInfo.label}
-                </span>
-              </div>
-              <span className="text-white text-2xl font-display font-bold">
-                {centerInfo.mainText}
-              </span>
-            </>
-          ) : centerInfo.type === 'countdown' ? (
-            <>
-              <span className="text-white/80 text-sm font-display font-semibold mb-1">
-                Today
-              </span>
-              <div className="text-[#5eadb0] text-xs font-display font-medium">
-                {centerInfo.label}
-              </div>
-              <div className="text-white text-xl font-display font-bold">
-                {centerInfo.mainText}
-              </div>
-              <span className="text-white/50 text-[10px] font-display">
-                {centerInfo.subText}
-              </span>
-            </>
-          ) : centerInfo.type === 'naptime' ? (
-            <>
-              <span className="text-white/80 text-sm font-display font-semibold mb-1">
-                Today
-              </span>
-              <div className="text-[#f0c674] text-xs font-display font-medium">
-                {centerInfo.label}
-              </div>
-              <div className="text-[#f0c674] text-2xl font-display font-bold">
-                {centerInfo.mainText}
-              </div>
-            </>
-          ) : centerInfo.type === 'today' ? (
-            <>
-              <span className="text-white text-lg font-display font-semibold">
-                Today
-              </span>
-              <div className="text-white/60 text-sm font-display mt-1">
-                {centerInfo.mainText}
-              </div>
-            </>
-          ) : (
-            // Past day - center is empty, info is in header
-            <span className="text-white/40 text-xs font-display">
-              {format(selectedDateObj, 'EEE')}
-            </span>
-          )}
-        </div>
-      </div>
+        {/* Inner glow ring */}
+        <circle
+          cx="100"
+          cy="100"
+          r="40"
+          fill="none"
+          stroke="rgba(94, 173, 176, 0.1)"
+          strokeWidth="2"
+        />
+
+        {/* Center text - Dynamic typography hierarchy */}
+        {centerInfo.type === 'sleeping' ? (
+          <>
+            {/* Status label - small, muted */}
+            <text
+              x="100"
+              y="92"
+              fill="rgba(232, 234, 237, 0.4)"
+              fontSize="8"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+              letterSpacing="0.1em"
+            >
+              {centerInfo.label}
+            </text>
+            {/* Main time - large, highlighted */}
+            <text
+              x="100"
+              y="110"
+              fill="#5eadb0"
+              fontSize="18"
+              fontWeight="700"
+              textAnchor="middle"
+              className="font-display"
+            >
+              {centerInfo.mainText}
+            </text>
+            {/* Active indicator dot */}
+            <circle cx="100" cy="118" r="2" fill="#5eadb0" className="animate-pulse" />
+          </>
+        ) : centerInfo.type === 'countdown' ? (
+          <>
+            {/* Status label - small, muted */}
+            <text
+              x="100"
+              y="88"
+              fill="rgba(232, 234, 237, 0.4)"
+              fontSize="8"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+              letterSpacing="0.1em"
+            >
+              {centerInfo.label}
+            </text>
+            {/* Countdown - large, highlighted */}
+            <text
+              x="100"
+              y="108"
+              fill="#f0c674"
+              fontSize="18"
+              fontWeight="700"
+              textAnchor="middle"
+              className="font-display"
+            >
+              {centerInfo.mainText}
+            </text>
+            {/* Sub text - scheduled time */}
+            <text
+              x="100"
+              y="120"
+              fill="rgba(232, 234, 237, 0.5)"
+              fontSize="9"
+              fontWeight="500"
+              textAnchor="middle"
+              className="font-display"
+            >
+              {centerInfo.subText}
+            </text>
+          </>
+        ) : centerInfo.type === 'naptime' ? (
+          <>
+            {/* Status label - small, muted */}
+            <text
+              x="100"
+              y="92"
+              fill="rgba(232, 234, 237, 0.4)"
+              fontSize="8"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+              letterSpacing="0.1em"
+            >
+              {centerInfo.label}
+            </text>
+            {/* NOW - large, urgent gold */}
+            <text
+              x="100"
+              y="112"
+              fill="#f0c674"
+              fontSize="22"
+              fontWeight="700"
+              textAnchor="middle"
+              className="font-display animate-pulse"
+            >
+              {centerInfo.mainText}
+            </text>
+          </>
+        ) : centerInfo.type === 'today' ? (
+          <>
+            {/* Status label - small, muted */}
+            <text
+              x="100"
+              y="92"
+              fill="rgba(232, 234, 237, 0.4)"
+              fontSize="8"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+              letterSpacing="0.1em"
+            >
+              {centerInfo.label}
+            </text>
+            {/* Current time - large */}
+            <text
+              x="100"
+              y="112"
+              fill="#e8eaed"
+              fontSize="18"
+              fontWeight="700"
+              textAnchor="middle"
+              className="font-display"
+            >
+              {centerInfo.mainText}
+            </text>
+          </>
+        ) : (
+          <>
+            {/* Day label - small, muted */}
+            <text
+              x="100"
+              y="92"
+              fill="rgba(232, 234, 237, 0.4)"
+              fontSize="8"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+              letterSpacing="0.1em"
+            >
+              {centerInfo.label}
+            </text>
+            {/* Date - large */}
+            <text
+              x="100"
+              y="110"
+              fill="rgba(232, 234, 237, 0.6)"
+              fontSize="14"
+              fontWeight="600"
+              textAnchor="middle"
+              className="font-display"
+            >
+              {centerInfo.mainText}
+            </text>
+          </>
+        )}
+      </svg>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center justify-center gap-4 mt-5">
@@ -791,7 +925,7 @@ export function CircularClock({
             <circle cx="8" cy="11" r="2.5" fill="white" opacity="0.95" />
             <circle cx="13" cy="11" r="2" fill="white" opacity="0.95" />
           </svg>
-          <span className="text-white/65 text-xs font-display">Nap</span>
+          <span className="text-white/65 text-xs font-display">Migdiada</span>
         </div>
 
         {/* Expected Nap */}
@@ -804,26 +938,23 @@ export function CircularClock({
               fill="rgba(30, 40, 69, 0.7)"
               stroke="#8b9dc3"
               strokeWidth="1.5"
-              strokeDasharray="3,2"
-              opacity="0.75"
+              strokeDasharray="4,4"
+              opacity="0.6"
             />
             {/* Sun */}
-            <circle cx="14" cy="10" r="3" fill="#f0c674" opacity="0.6" />
-            {/* Sun rays */}
-            <line x1="14" y1="6" x2="14" y2="4" stroke="#f0c674" strokeWidth="1" opacity="0.6" />
-            <line x1="16.5" y1="7.5" x2="17.5" y2="6.5" stroke="#f0c674" strokeWidth="1" opacity="0.6" />
+            <circle cx="14" cy="10" r="3" fill="#f0c674" opacity="0.5" />
             {/* Cloud */}
-            <ellipse cx="11" cy="13" rx="4" ry="3" fill="white" opacity="0.65" />
-            <circle cx="8" cy="11" r="2.5" fill="white" opacity="0.65" />
-            <circle cx="13" cy="11" r="2" fill="white" opacity="0.65" />
+            <ellipse cx="11" cy="13" rx="4" ry="3" fill="white" opacity="0.5" />
+            <circle cx="8" cy="11" r="2.5" fill="white" opacity="0.5" />
+            <circle cx="13" cy="11" r="2" fill="white" opacity="0.5" />
           </svg>
-          <span className="text-white/65 text-xs font-display">Suggested</span>
+          <span className="text-white/65 text-xs font-display">Suggerida</span>
         </div>
 
         {/* Night */}
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-[#7c85c4]" />
-          <span className="text-white/65 text-xs font-display">Night</span>
+          <span className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(135deg, #6670a8, #7c85c4)' }} />
+          <span className="text-white/65 text-xs font-display">Nit</span>
         </div>
 
         {/* Wake */}
@@ -846,18 +977,19 @@ export function CircularClock({
               );
             })}
           </svg>
-          <span className="text-white/65 text-xs font-display">Wake</span>
+          <span className="text-white/65 text-xs font-display">Despertar</span>
         </div>
 
         {/* Bed */}
         <div className="flex items-center gap-2">
           <svg width="16" height="16" viewBox="0 0 16 16">
-            {/* Horizon line */}
-            <line x1="2" y1="8" x2="14" y2="8" stroke="#ff7e5f" strokeWidth="2" />
-            {/* Setting sun */}
-            <path d="M 4 8 A 4 4 0 0 1 12 8" fill="#ff7e5f" />
+            {/* Moon crescent */}
+            <circle cx="7" cy="8" r="5" fill="#7c85c4" />
+            <circle cx="10" cy="6" r="4" fill="#0f1428" />
+            {/* Star */}
+            <circle cx="13" cy="4" r="1" fill="#a8b4e0" opacity="0.8" />
           </svg>
-          <span className="text-white/65 text-xs font-display">Bed</span>
+          <span className="text-white/65 text-xs font-display">Dormir</span>
         </div>
       </div>
     </div>
