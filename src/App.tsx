@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { CircularClock } from './components/CircularClock';
 import { BabyProfile } from './components/BabyProfile';
 import { SleepForm } from './components/SleepForm';
 import { SleepList } from './components/SleepList';
@@ -9,7 +8,7 @@ import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useAuth } from './hooks/useAuth';
-import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration, getRecommendedSchedule, calculateAllNapWindows, calculateAge } from './utils/dateUtils';
+import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
 // Encouraging messages for parents
@@ -76,18 +75,6 @@ function App() {
     );
   }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep]);
 
-  // Calculate recommended daily schedule (wake time and bedtime)
-  const recommendedSchedule = useMemo(() => {
-    if (!profile?.dateOfBirth) return null;
-    return getRecommendedSchedule(profile.dateOfBirth);
-  }, [profile?.dateOfBirth]);
-
-  // Calculate all recommended nap windows for the day
-  const napWindows = useMemo(() => {
-    if (!profile?.dateOfBirth) return [];
-    return calculateAllNapWindows(profile.dateOfBirth);
-  }, [profile?.dateOfBirth]);
-
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
   const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
@@ -96,7 +83,6 @@ function App() {
 
   const dayEntries = getEntriesForDate(selectedDate);
   const daySummary = getDailySummary(selectedDate, entries);
-  const todayEntries = getEntriesForDate(formatDate(new Date()));
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
@@ -233,17 +219,12 @@ function App() {
         </p>
       </div>
 
-      {/* Circular Clock - Center Stage */}
-      <CircularClock
-        entries={todayEntries}
-        selectedDate={formatDate(new Date())}
-        activeSleep={activeSleep}
-        suggestedNapTime={suggestedNapTime}
-        recommendedWakeTime={recommendedSchedule?.wakeTime}
-        recommendedBedtime={recommendedSchedule?.bedtime}
-        napWindows={napWindows}
-        babyAge={profile?.dateOfBirth ? calculateAge(profile.dateOfBirth) : undefined}
-      />
+      {/* TODO: New CircularClock component will be added here */}
+      <div className="w-64 h-64 md:w-72 md:h-72 flex items-center justify-center">
+        <div className="text-center text-[var(--text-muted)]">
+          <p className="text-sm">Clock placeholder</p>
+        </div>
+      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-4 w-full max-w-sm mt-8">
