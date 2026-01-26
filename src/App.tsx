@@ -1,29 +1,56 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { BabyProfile } from './components/BabyProfile';
 import { SleepForm } from './components/SleepForm';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
 import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
+import { TodayView } from './components/TodayView';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useAuth } from './hooks/useAuth';
-import { formatDate, formatDateTime, formatTime, calculateSuggestedNapTime, calculateDuration } from './utils/dateUtils';
+import { formatDate, formatDateTime } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
-// Encouraging messages for parents
-const PARENT_MESSAGES = [
-  "You're doing amazing",
-  "Rest when baby rests",
-  "Every day gets easier",
-  "Trust your instincts",
-  "You've got this",
-  "One nap at a time",
-  "You're a great parent",
-  "Take care of yourself too",
-];
-
 type View = 'home' | 'history' | 'stats' | 'profile' | 'add';
+
+// Icons for the action menu
+const SunIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="5" />
+    <path
+      d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      fill="none"
+    />
+  </svg>
+);
+
+const CloudIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <path d="M18 6L6 18M6 6l12 12" />
+  </svg>
+);
 
 function App() {
   const { signOut } = useAuth();
@@ -41,48 +68,14 @@ function App() {
     entries,
   } = useSleepEntries();
 
-  // Get encouraging message (changes daily)
-  const encouragingMessage = useMemo(() => {
-    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-    return PARENT_MESSAGES[dayOfYear % PARENT_MESSAGES.length];
-  }, []);
-
-  // Format awake time for display
-  const formatAwakeTime = (minutes: number | null) => {
-    if (minutes === null) return null;
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours === 0) return `${mins}m`;
-    return `${hours}h ${mins}m`;
-  };
-
-  // Calculate suggested next nap time
-  const suggestedNapTime = useMemo(() => {
-    // Need profile with DOB and last completed sleep
-    if (!profile?.dateOfBirth || !lastCompletedSleep?.endTime) return null;
-    // Don't show if baby is currently sleeping
-    if (activeSleep) return null;
-
-    // Calculate last nap duration (if it was a nap, not night sleep)
-    const lastNapDuration = lastCompletedSleep.type === 'nap'
-      ? calculateDuration(lastCompletedSleep.startTime, lastCompletedSleep.endTime)
-      : null;
-
-    return calculateSuggestedNapTime(
-      profile.dateOfBirth,
-      lastCompletedSleep.endTime,
-      lastNapDuration
-    );
-  }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep]);
-
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
   const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
+  const [showActionMenu, setShowActionMenu] = useState(false);
 
   const dayEntries = getEntriesForDate(selectedDate);
-  const daySummary = getDailySummary(selectedDate, entries);
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
@@ -131,6 +124,7 @@ function App() {
 
   const handleEndSleep = (id: string) => {
     endSleep(id, formatDateTime(new Date()));
+    setShowActionMenu(false);
   };
 
   const handleStartSleep = (type: 'nap' | 'night') => {
@@ -143,9 +137,11 @@ function App() {
     if (collision) {
       setCollisionEntry(collision);
       setPendingEntry(data);
+      setShowActionMenu(false);
       return;
     }
     addEntry(data);
+    setShowActionMenu(false);
   };
 
   // Handle logging wake-up time
@@ -163,6 +159,7 @@ function App() {
 
     if (activeNightSleep) {
       endSleep(activeNightSleep.id, formatDateTime(new Date()));
+      setShowActionMenu(false);
       return;
     }
 
@@ -176,79 +173,8 @@ function App() {
       type: 'night' as const,
     };
     addEntry(data);
+    setShowActionMenu(false);
   };
-
-  // Home View - Minimalist with circular clock
-  const renderHomeView = () => (
-    <div className="flex flex-col items-center pt-8 pb-32 px-4 fade-in">
-      {/* Header - Minimal */}
-      <div className="text-center mb-6">
-        <h1 className="text-display-lg text-[var(--text-primary)]">
-          {profile?.name || 'Baby'}
-        </h1>
-
-        {/* Awake Time Counter - Prominent */}
-        {activeSleep ? (
-          <p className="text-[var(--success-color)] font-display font-semibold text-lg mt-2">
-            {activeSleep.type === 'nap' ? 'Napping' : 'Sleeping'}
-          </p>
-        ) : awakeMinutes !== null ? (
-          <div className="mt-2">
-            <p className="text-[var(--wake-color)] font-display font-bold text-2xl">
-              Awake {formatAwakeTime(awakeMinutes)}
-            </p>
-            {/* Suggested Next Nap Time */}
-            {suggestedNapTime && (
-              <p className="text-[var(--nap-color)] font-display font-medium text-base mt-1">
-                {suggestedNapTime > new Date()
-                  ? `Next nap around ${formatTime(suggestedNapTime)}`
-                  : `Nap time now`
-                }
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-[var(--text-muted)] font-display mt-2">
-            Ready to track sleep
-          </p>
-        )}
-
-        {/* Encouraging Message */}
-        <p className="text-[var(--text-muted)] font-display text-sm mt-3 italic">
-          {encouragingMessage}
-        </p>
-      </div>
-
-      {/* TODO: New CircularClock component will be added here */}
-      <div className="w-64 h-64 md:w-72 md:h-72 flex items-center justify-center">
-        <div className="text-center text-[var(--text-muted)]">
-          <p className="text-sm">Clock placeholder</p>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-4 w-full max-w-sm mt-8">
-        <div className="text-center">
-          <div className="stat-value stat-value-nap">
-            {Math.floor(daySummary.totalNapMinutes / 60)}h {daySummary.totalNapMinutes % 60}m
-          </div>
-          <div className="stat-label">Naps</div>
-        </div>
-        <div className="text-center">
-          <div className="stat-value stat-value-night">
-            {Math.floor(daySummary.totalNightMinutes / 60)}h {daySummary.totalNightMinutes % 60}m
-          </div>
-          <div className="stat-label">Night</div>
-        </div>
-        <div className="text-center">
-          <div className="stat-value stat-value-total">
-            {Math.floor(daySummary.totalSleepMinutes / 60)}h {daySummary.totalSleepMinutes % 60}m
-          </div>
-          <div className="stat-label">Total</div>
-        </div>
-      </div>
-    </div>
-  );
 
   // History View
   const renderHistoryView = () => (
@@ -336,70 +262,25 @@ function App() {
     <div className="min-h-screen bg-[var(--bg-deep)]">
       {/* Main Content */}
       <main className="max-w-lg mx-auto">
-        {currentView === 'home' && renderHomeView()}
+        {currentView === 'home' && (
+          <TodayView
+            profile={profile}
+            entries={entries}
+            activeSleep={activeSleep}
+            lastCompletedSleep={lastCompletedSleep}
+            awakeMinutes={awakeMinutes}
+          />
+        )}
         {currentView === 'history' && renderHistoryView()}
         {currentView === 'stats' && renderStatsView()}
         {currentView === 'profile' && renderProfileView()}
         {currentView === 'add' && renderAddView()}
       </main>
 
-      {/* Bottom Action Bar */}
-      {currentView === 'home' && (
-        <div className="action-bar">
-          <div className="max-w-lg mx-auto">
-            {activeSleep ? (
-              <button
-                onClick={() => handleEndSleep(activeSleep.id)}
-                className="btn btn-wake w-full"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                Wake Up
-              </button>
-            ) : (
-              <div className="flex gap-2">
-                {/* Woke Up button */}
-                <button
-                  onClick={handleLogWakeUp}
-                  className="btn btn-wake flex-1"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  Woke Up
-                </button>
-                {/* Nap button */}
-                <button
-                  onClick={() => handleStartSleep('nap')}
-                  className="btn btn-nap flex-1"
-                >
-                  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="4" strokeWidth={2} />
-                    <path strokeLinecap="round" strokeWidth={2} d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07l-1.41 1.41M8.34 15.66l-1.41 1.41m0-12.02l1.41 1.41m7.32 7.32l1.41 1.41" />
-                    <ellipse cx="8" cy="14" rx="6" ry="4" fill="currentColor" opacity="0.3" />
-                  </svg>
-                  Nap
-                </button>
-                {/* Bedtime button */}
-                <button
-                  onClick={() => handleStartSleep('night')}
-                  className="btn btn-night flex-1"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                  Bedtime
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation with Central + Button */}
       <nav className="bottom-nav">
-        <div className="max-w-lg mx-auto flex">
+        <div className="max-w-lg mx-auto flex items-center relative">
+          {/* Left side nav items */}
           <button
             onClick={() => setCurrentView('home')}
             className={`flex-1 py-4 flex flex-col items-center gap-1 ${
@@ -411,6 +292,7 @@ function App() {
             </svg>
             <span className="text-xs font-display font-medium">Today</span>
           </button>
+
           <button
             onClick={() => setCurrentView('history')}
             className={`flex-1 py-4 flex flex-col items-center gap-1 ${
@@ -422,6 +304,18 @@ function App() {
             </svg>
             <span className="text-xs font-display font-medium">History</span>
           </button>
+
+          {/* Central FAB Button */}
+          <div className="flex-1 flex justify-center">
+            <button
+              onClick={() => setShowActionMenu(true)}
+              className="fab -mt-7"
+            >
+              <PlusIcon />
+            </button>
+          </div>
+
+          {/* Right side nav items */}
           <button
             onClick={() => setCurrentView('stats')}
             className={`flex-1 py-4 flex flex-col items-center gap-1 ${
@@ -433,6 +327,7 @@ function App() {
             </svg>
             <span className="text-xs font-display font-medium">Stats</span>
           </button>
+
           <button
             onClick={() => setCurrentView('profile')}
             className={`flex-1 py-4 flex flex-col items-center gap-1 ${
@@ -446,6 +341,90 @@ function App() {
           </button>
         </div>
       </nav>
+
+      {/* Action Menu Bottom Sheet */}
+      {showActionMenu && (
+        <div
+          className="fixed inset-0 z-50"
+          onClick={() => setShowActionMenu(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+          {/* Bottom Sheet */}
+          <div
+            className="absolute bottom-0 left-0 right-0 bg-[var(--bg-card)] rounded-t-3xl p-6 pb-10 slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle bar */}
+            <div className="w-12 h-1 bg-[var(--text-muted)]/30 rounded-full mx-auto mb-6" />
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowActionMenu(false)}
+              className="absolute top-6 right-6 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            >
+              <CloseIcon />
+            </button>
+
+            {/* Title */}
+            <h2 className="text-[var(--text-primary)] font-display font-semibold text-lg mb-6 text-center">
+              Log Sleep
+            </h2>
+
+            {/* Action buttons */}
+            <div className="space-y-3">
+              {/* If baby is sleeping, show Wake Up button */}
+              {activeSleep ? (
+                <button
+                  onClick={() => handleEndSleep(activeSleep.id)}
+                  className="w-full p-5 rounded-2xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                >
+                  <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                    <SunIcon />
+                  </div>
+                  <span>Wake Up</span>
+                </button>
+              ) : (
+                <>
+                  {/* Wake Up (log morning) */}
+                  <button
+                    onClick={handleLogWakeUp}
+                    className="w-full p-5 rounded-2xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                      <SunIcon />
+                    </div>
+                    <span>Log Wake Up</span>
+                  </button>
+
+                  {/* Start Nap */}
+                  <button
+                    onClick={() => handleStartSleep('nap')}
+                    className="w-full p-5 rounded-2xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                      <CloudIcon />
+                    </div>
+                    <span>Start Nap</span>
+                  </button>
+
+                  {/* Start Bedtime */}
+                  <button
+                    onClick={() => handleStartSleep('night')}
+                    className="w-full p-5 rounded-2xl bg-[var(--night-color)] text-white flex items-center gap-4 font-display font-semibold text-lg"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                      <MoonIcon />
+                    </div>
+                    <span>Start Bedtime</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Activity Collision Modal */}
       {collisionEntry && (

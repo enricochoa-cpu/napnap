@@ -4,11 +4,11 @@
 @import "tailwindcss";
 
 :root {
-  /* Calming Night Palette - Low saturation, easy on tired eyes */
-  --bg-deep: #0f1428;
-  --bg-mid: #151c32;
-  --bg-soft: #1a2340;
-  --bg-card: #1e2845;
+  /* Midnight Palette - Pure dark for 3AM use */
+  --bg-deep: #070912;
+  --bg-mid: #0c1020;
+  --bg-soft: #11162d;
+  --bg-card: #11162d;
 
   /* Muted accent colors */
   --nap-color: #5eadb0;
@@ -80,6 +80,21 @@ body {
   font-weight: 600;
 }
 
+/* Glass Morphism Utility */
+.glass {
+  background: rgba(18, 22, 45, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-light {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 /* Card Styles */
 .card {
   background: var(--bg-card);
@@ -88,8 +103,9 @@ body {
 }
 
 .card-glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
+  background: rgba(18, 22, 45, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -255,6 +271,20 @@ body {
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
+/* Glow Animation */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(94, 173, 176, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(94, 173, 176, 0.5);
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
 /* Fade In Animation */
 .fade-in {
   animation: fadeIn 0.3s ease-out;
@@ -265,22 +295,55 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Slide Up Animation */
+/* Slide Up Animation - Full bottom sheet */
 .slide-up {
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Slide Up Soft - For small elements */
+.slide-up-soft {
+  animation: slideUpSoft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpSoft {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scale In Animation */
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -296,7 +359,7 @@ body {
   max-width: 400px;
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUpSoft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Bottom Navigation */
@@ -305,7 +368,9 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--bg-card);
+  background: rgba(18, 22, 45, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 50;
@@ -314,13 +379,42 @@ body {
 /* Bottom Action Bar - sits above the nav */
 .action-bar {
   position: fixed;
-  bottom: 72px; /* Height of bottom nav */
+  bottom: 72px;
   left: 0;
   right: 0;
   padding: var(--space-md) var(--space-lg);
   padding-bottom: var(--space-md);
   background: linear-gradient(to top, var(--bg-deep) 80%, transparent);
   z-index: 40;
+}
+
+/* Floating Action Button */
+.fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--nap-color);
+  color: var(--bg-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 12px rgba(94, 173, 176, 0.4),
+    0 0 0 4px rgba(94, 173, 176, 0.1);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 6px 20px rgba(94, 173, 176, 0.5),
+    0 0 0 6px rgba(94, 173, 176, 0.15);
+}
+
+.fab:active {
+  transform: scale(0.98);
 }
 
 /* Stats */
@@ -338,6 +432,33 @@ body {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Timeline River - Vertical Connector */
+.timeline-river {
+  position: relative;
+}
+
+.timeline-river::before {
+  content: '';
+  position: absolute;
+  left: 29px; /* Center of 58px icon container (29px from left edge) */
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.1) 0px,
+    rgba(255, 255, 255, 0.1) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  z-index: 0;
+}
+
+.timeline-item {
+  position: relative;
+  z-index: 1;
 }
 
 /* Scrollbar - Subtle */
@@ -363,4 +484,26 @@ input[type="date"],
 input[type="datetime-local"],
 select {
   color-scheme: dark;
+}
+
+/* Hero Countdown - Focal Point */
+.hero-countdown {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.hero-secondary {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Touch target minimum */
+.touch-target {
+  min-height: 60px;
+  min-width: 60px;
 }
