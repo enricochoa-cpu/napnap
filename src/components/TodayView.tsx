@@ -202,9 +202,23 @@ export function TodayView({
     );
   }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, now]);
 
-  // Countdown to next nap (THE FOCAL POINT)
-  const nextNapCountdown = useMemo(() => {
+  // Determine if bedtime is the next event (no more naps predicted)
+  const isBedtimeNext = useMemo(() => {
+    return predictedNaps.length === 0 && expectedBedtime && isBefore(now, expectedBedtime);
+  }, [predictedNaps.length, expectedBedtime, now]);
+
+  // Countdown to next event (nap or bedtime) - THE FOCAL POINT
+  const nextEventCountdown = useMemo(() => {
     if (activeSleep) return null;
+
+    // If bedtime is next, calculate countdown to bedtime
+    if (isBedtimeNext && expectedBedtime) {
+      const minutesUntilBedtime = differenceInMinutes(expectedBedtime, now);
+      if (minutesUntilBedtime < 0) return { type: 'bedtime' as const, isNow: true, minutes: 0 };
+      return { type: 'bedtime' as const, isNow: false, minutes: minutesUntilBedtime };
+    }
+
+    // Otherwise calculate countdown to next nap
     if (!profile?.dateOfBirth || !lastCompletedSleep?.endTime) return null;
 
     const lastNapDuration = lastCompletedSleep.type === 'nap'
@@ -224,9 +238,9 @@ export function TodayView({
     );
 
     const minutesUntilNap = differenceInMinutes(suggestedTime, now);
-    if (minutesUntilNap < 0) return { isNow: true, minutes: 0 };
-    return { isNow: false, minutes: minutesUntilNap };
-  }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep, todayNaps.length, now]);
+    if (minutesUntilNap < 0) return { type: 'nap' as const, isNow: true, minutes: 0 };
+    return { type: 'nap' as const, isNow: false, minutes: minutesUntilNap };
+  }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep, todayNaps.length, now, isBedtimeNext, expectedBedtime]);
 
   // Expected wake up time (if sleeping)
   const expectedWakeUp = useMemo(() => {
@@ -262,27 +276,31 @@ export function TodayView({
             )}
           </div>
         ) : (
-          // AWAKE STATE - Next Nap is the focal point
+          // AWAKE STATE - Next event (nap or bedtime) is the focal point
           <div className="text-center">
-            {nextNapCountdown ? (
+            {nextEventCountdown ? (
               <>
-                {/* FOCAL POINT: Next Nap Countdown */}
-                {nextNapCountdown.isNow ? (
+                {/* FOCAL POINT: Next Event Countdown */}
+                {nextEventCountdown.isNow ? (
                   <div>
                     <p className="hero-secondary uppercase tracking-widest mb-3">
                       It's Time
                     </p>
-                    <h1 className="hero-countdown text-[var(--nap-color)] animate-pulse-soft">
-                      NAP NOW
+                    <h1 className={`hero-countdown animate-pulse-soft ${
+                      nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
+                    }`}>
+                      {nextEventCountdown.type === 'bedtime' ? 'BEDTIME' : 'NAP NOW'}
                     </h1>
                   </div>
                 ) : (
                   <div>
                     <p className="hero-secondary uppercase tracking-widest mb-3">
-                      Next Nap In
+                      {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
                     </p>
-                    <h1 className="hero-countdown text-[var(--nap-color)] mb-4">
-                      {formatDuration(nextNapCountdown.minutes)}
+                    <h1 className={`hero-countdown mb-4 ${
+                      nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
+                    }`}>
+                      {formatDuration(nextEventCountdown.minutes)}
                     </h1>
                   </div>
                 )}
@@ -317,62 +335,24 @@ export function TodayView({
           Today's Timeline
         </h2>
 
-        {/* Timeline with vertical connector */}
+        {/* Timeline with vertical connector - NEWEST FIRST (last to old) */}
         <div className="timeline-river space-y-4">
 
-          {/* Morning Wake Up - Gold (--wake-color) */}
-          {morningWakeUp && (
-            <div className="timeline-item glass rounded-2xl p-5 flex items-center gap-5">
-              <div className="w-14 h-14 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0">
-                <SunIcon className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider mb-1">
-                  Morning Wake Up
-                </p>
-                <p className="text-[var(--text-primary)] font-display font-bold text-2xl">
-                  {formatTime(morningWakeUp)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Completed Naps - Solid Pills (--nap-color background, white text) */}
-          {todayNaps.map((nap, index) => (
+          {/* Night Sleep in Progress - Solid (Lavender/--night-color) */}
+          {activeSleep && activeSleep.type === 'night' && (
             <div
-              key={nap.id}
               className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{ backgroundColor: 'var(--nap-color)' }}
-            >
-              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
-                <CloudIcon className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white/70 font-display text-xs uppercase tracking-wider mb-1">
-                  Nap {index + 1}
-                </p>
-                <p className="text-white font-display font-bold text-2xl">
-                  {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
-                </p>
-                <p className="text-white/80 font-display text-sm mt-1">
-                  {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {/* Active Nap - Solid with glow effect */}
-          {activeSleep && activeSleep.type === 'nap' && (
-            <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5 animate-glow"
-              style={{ backgroundColor: 'var(--nap-color)' }}
+              style={{
+                backgroundColor: 'var(--night-color)',
+                boxShadow: '0 0 30px rgba(124, 133, 196, 0.3)',
+              }}
             >
               <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft">
-                <CloudIcon className="w-8 h-8" />
+                <MoonIcon className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white/70 font-display text-xs uppercase tracking-wider mb-1">
-                  Napping Now
+                  Night Sleep
                 </p>
                 <p className="text-white font-display font-bold text-2xl">
                   {formatTime(activeSleep.startTime)} — ...
@@ -384,8 +364,37 @@ export function TodayView({
             </div>
           )}
 
-          {/* Predicted Naps - Ghost Pills (transparent, dashed border at 40% opacity) */}
-          {!activeSleep && predictedNaps.map((napInfo, index) => (
+          {/* Expected Bedtime - Ghost Pill (Lavender/--night-color) */}
+          {expectedBedtime && isBefore(now, expectedBedtime) && !activeSleep && (
+            <div
+              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
+              style={{
+                backgroundColor: 'transparent',
+                border: '2px dashed rgba(124, 133, 196, 0.4)',
+              }}
+            >
+              <div
+                className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  border: '2px dashed rgba(124, 133, 196, 0.4)',
+                  color: 'rgba(124, 133, 196, 0.6)',
+                }}
+              >
+                <MoonIcon className="w-8 h-8" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider mb-1">
+                  Bedtime
+                </p>
+                <p className="text-[var(--text-secondary)] font-display font-bold text-2xl">
+                  ~{formatTime(expectedBedtime)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Predicted Naps - Ghost Pills (reversed: furthest first) */}
+          {!activeSleep && [...predictedNaps].reverse().map((napInfo, index) => (
             <div
               key={`predicted-${index}`}
               className="timeline-item rounded-2xl p-5 flex items-center gap-5"
@@ -417,56 +426,65 @@ export function TodayView({
             </div>
           ))}
 
-          {/* Expected Bedtime - Ghost Pill (Lavender/--night-color) */}
-          {expectedBedtime && isBefore(now, expectedBedtime) && !activeSleep && (
+          {/* Active Nap - Solid with glow effect */}
+          {activeSleep && activeSleep.type === 'nap' && (
             <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{
-                backgroundColor: 'transparent',
-                border: '2px dashed rgba(124, 133, 196, 0.4)',
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{
-                  border: '2px dashed rgba(124, 133, 196, 0.4)',
-                  color: 'rgba(124, 133, 196, 0.6)',
-                }}
-              >
-                <MoonIcon className="w-8 h-8" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider mb-1">
-                  Bedtime
-                </p>
-                <p className="text-[var(--text-secondary)] font-display font-bold text-2xl">
-                  ~{formatTime(expectedBedtime)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Night Sleep in Progress - Solid (Lavender/--night-color) */}
-          {activeSleep && activeSleep.type === 'night' && (
-            <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{
-                backgroundColor: 'var(--night-color)',
-                boxShadow: '0 0 30px rgba(124, 133, 196, 0.3)',
-              }}
+              className="timeline-item rounded-2xl p-5 flex items-center gap-5 animate-glow"
+              style={{ backgroundColor: 'var(--nap-color)' }}
             >
               <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft">
-                <MoonIcon className="w-8 h-8" />
+                <CloudIcon className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white/70 font-display text-xs uppercase tracking-wider mb-1">
-                  Night Sleep
+                  Napping Now
                 </p>
                 <p className="text-white font-display font-bold text-2xl">
                   {formatTime(activeSleep.startTime)} — ...
                 </p>
                 <p className="text-white/80 font-display text-sm mt-1">
                   {formatDuration(currentSleepDuration)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Completed Naps - Solid Pills (reversed: most recent first) */}
+          {[...todayNaps].reverse().map((nap, index) => (
+            <div
+              key={nap.id}
+              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
+              style={{ backgroundColor: 'var(--nap-color)' }}
+            >
+              <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
+                <CloudIcon className="w-8 h-8" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white/70 font-display text-xs uppercase tracking-wider mb-1">
+                  Nap {todayNaps.length - index}
+                </p>
+                <p className="text-white font-display font-bold text-2xl">
+                  {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
+                </p>
+                <p className="text-white/80 font-display text-sm mt-1">
+                  {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {/* Morning Wake Up - Gold (--wake-color) - OLDEST, at bottom */}
+          {morningWakeUp && (
+            <div className="timeline-item glass rounded-2xl p-5 flex items-center gap-5">
+              <div className="w-14 h-14 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0">
+                <SunIcon className="w-8 h-8" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider mb-1">
+                  Morning Wake Up
+                </p>
+                <p className="text-[var(--text-primary)] font-display font-bold text-2xl">
+                  {formatTime(morningWakeUp)}
                 </p>
               </div>
             </div>
