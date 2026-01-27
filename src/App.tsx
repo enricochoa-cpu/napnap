@@ -318,23 +318,9 @@ function App() {
         {currentView === 'add' && renderAddView()}
       </main>
 
-      {/* Sculpted Floating Tab Bar */}
+      {/* Minimalist Floating Tab Bar */}
       <nav className="floating-nav">
-        <div className="floating-nav-inner max-w-lg mx-auto">
-          {/* Center FAB - in the notch */}
-          <div className="nav-fab-container">
-            <button
-              onClick={() => setShowActionMenu(true)}
-              className="nav-fab"
-              aria-label="Log sleep"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </button>
-          </div>
-
-          {/* The bar with notch */}
+        <div className="floating-nav-inner">
           <div className="floating-nav-bar">
             {/* Today */}
             <button
@@ -342,7 +328,7 @@ function App() {
               className={`nav-tab ${currentView === 'home' ? 'nav-tab-active' : ''}`}
               aria-label="Today"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <polyline points="12 6 12 12 16 14" />
               </svg>
@@ -354,7 +340,7 @@ function App() {
               className={`nav-tab ${currentView === 'history' ? 'nav-tab-active' : ''}`}
               aria-label="History"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                 <polyline points="14 2 14 8 20 8" />
                 <line x1="16" y1="13" x2="8" y2="13" />
@@ -363,8 +349,18 @@ function App() {
               </svg>
             </button>
 
-            {/* Spacer for center FAB */}
-            <div className="nav-center-spacer" />
+            {/* Center Action Button */}
+            <div className="nav-action">
+              <button
+                onClick={() => setShowActionMenu(true)}
+                className="nav-action-btn"
+                aria-label="Log sleep"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </button>
+            </div>
 
             {/* Stats */}
             <button
@@ -372,7 +368,7 @@ function App() {
               className={`nav-tab ${currentView === 'stats' ? 'nav-tab-active' : ''}`}
               aria-label="Stats"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10" />
                 <line x1="12" y1="20" x2="12" y2="4" />
                 <line x1="6" y1="20" x2="6" y2="14" />
@@ -385,7 +381,7 @@ function App() {
               className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}
               aria-label="Profile"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M20 21a8 8 0 1 0-16 0" />
               </svg>
