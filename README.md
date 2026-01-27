@@ -1,73 +1,149 @@
-# React + TypeScript + Vite
+# Baby Sleep Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript mobile-first app for tracking infant sleep patterns, inspired by Napper's AAA-level design principles. Optimized for sleep-deprived parents with a calming "Midnight" theme and one-handed operation.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **24-Hour Circular Clock**: Visual timeline showing sleep patterns at a glance
+- **Sleep Tracking**: Log naps and night sleep with one-tap actions
+- **Active Sleep Timer**: Real-time countdown with bedtime predictions
+- **Daily Summaries**: Aggregated sleep statistics (nap time, night sleep, total)
+- **Activity Collision Detection**: Prevents overlapping entries with clear resolution modals
+- **Profile Management**: Track baby info (name, DOB, gender, weight, height)
+- **User Authentication**: Supabase-powered auth with email/password
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS + Custom CSS variables
+- **Backend**: Supabase (Auth + PostgreSQL)
+- **Date Handling**: date-fns
+- **Error Tracking**: Sentry
 
-## Expanding the ESLint configuration
+## Quick Start
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Install dependencies
+npm install
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Copy environment template
+cp .env.example .env.local
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Add your Supabase credentials to .env.local
+# VITE_SUPABASE_URL=https://your-project.supabase.co
+# VITE_SUPABASE_ANON_KEY=your-anon-key
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Start development server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Commands
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server (Vite) |
+| `npm run build` | Type-check and build for production |
+| `npm run lint` | Run ESLint |
+| `npm run preview` | Preview production build |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Project Structure
+
 ```
+src/
+├── components/          # React components
+│   ├── Auth/           # Login, SignUp, ForgotPassword, AuthGuard
+│   ├── TodayView.tsx   # Main dashboard with sleep algorithm
+│   ├── SleepForm.tsx   # Add/edit sleep entries
+│   ├── SleepList.tsx   # Entry list with timeline
+│   ├── BabyProfile.tsx # Profile display/edit
+│   └── ...
+├── hooks/              # Custom React hooks
+│   ├── useAuth.ts      # Authentication state
+│   ├── useSleepEntries.ts  # Sleep CRUD + computed values
+│   └── useBabyProfile.ts   # Profile management
+├── lib/
+│   └── supabase.ts     # Supabase client + DB types
+├── types/
+│   └── index.ts        # TypeScript interfaces
+├── utils/
+│   ├── dateUtils.ts    # Date formatting, duration calc
+│   └── storage.ts      # localStorage helpers
+├── index.css           # Design system (CSS variables)
+├── App.tsx             # Root component + routing
+└── main.tsx            # Entry point
+```
+
+## Design System
+
+"Calming Night" theme optimized for 3AM use. See `src/index.css` for full implementation.
+
+### Color Palette
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| `--bg-deep` | #070912 | Main background |
+| `--nap-color` | #5eadb0 | Daytime naps (teal) |
+| `--night-color` | #7c85c4 | Night sleep (lavender) |
+| `--wake-color` | #f0c674 | Wake actions, totals (gold) |
+
+### Typography
+
+- **Display**: Quicksand (headings, buttons)
+- **Body**: Nunito (content, forms)
+
+### Key Classes
+
+- `.card` / `.card-glass` - Dark glass-morphism containers
+- `.btn-nap` / `.btn-night` / `.btn-wake` - Semantic button colors
+- `.tag-nap` / `.tag-night` / `.tag-active` - Status badges
+- `.hero-countdown` - Large focal-point numbers
+
+## Data Model
+
+```typescript
+interface BabyProfile {
+  id: string;
+  name: string;
+  dateOfBirth: string;  // ISO date
+  gender: 'male' | 'female' | 'other';
+  weight: number;       // kg
+  height: number;       // cm
+}
+
+interface SleepEntry {
+  id: string;
+  date: string;         // YYYY-MM-DD
+  startTime: string;    // ISO datetime
+  endTime: string | null;  // null = active sleep
+  type: 'nap' | 'night';
+  notes?: string;
+}
+```
+
+## Product Research
+
+Before making UX/UI decisions, consult the research in `product-research/`:
+
+- `one-pager-research.md` - Product strategy analysis
+- `users-feedback.md` - User sentiment and trust dynamics
+- `ux-ui-findings.pdf` - Detailed UX/UI recommendations
+
+### Core Design Principles
+
+1. **Decision Replacement** - Tell users what to do, don't make them analyze
+2. **Cognitive Load Minimization** - One-tap logging, minimal charts
+3. **Night-Time Optimization** - Large touch targets, calming colors, high contrast
+4. **One-Handed Operation** - Thumb-zone accessibility
+5. **Emotional Safety** - Non-judgmental tone, retrospective editing
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_SUPABASE_URL` | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
+| `VITE_SENTRY_DSN` | Sentry error tracking DSN (optional) |
+
+## License
+
+Private project - All rights reserved

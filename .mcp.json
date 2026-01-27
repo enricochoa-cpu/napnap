@@ -9,9 +9,11 @@
       "command": "npx",
       "args": [
         "-y",
-        "@anthropic-ai/context7-mcp@latest"
+        "@upstash/context7-mcp@latest"
       ],
-      "env": {}
+      "env": {
+        "CONTEXT7_API_KEY": "ctx7sk-fa679ad4-9360-4c53-a984-5182a3654994"
+      }
     },
     "supabase": {
       "type": "http",

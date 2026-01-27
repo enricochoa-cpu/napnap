@@ -32,16 +32,25 @@ export function useBabyProfile() {
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no row exists
 
-      if (error && error.code !== 'PGRST116') {
-        // PGRST116 = no rows returned, which is fine for new users
+      if (error) {
         console.error('Error fetching profile:', error);
+        // Continue anyway - user might not have a profile yet
       }
+
+      console.log('Profile query result:', { data, error, userId: user.id });
 
       let ownProfile: BabyProfile | null = null;
 
-      if (data) {
+      // Always set userProfile with at least the email
+      setUserProfile({
+        email: user.email || '',
+        userName: data?.user_name || '',
+        userRole: data?.user_role || 'other',
+      });
+
+      if (data && data.baby_name) {
         console.log('Profile data from DB:', data);
         ownProfile = {
           id: data.id,
@@ -52,19 +61,9 @@ export function useBabyProfile() {
           height: data.baby_height || 0,
         };
         setProfile(ownProfile);
-        setUserProfile({
-          email: user.email || '',
-          userName: data.user_name || '',
-          userRole: data.user_role || 'other',
-        });
         console.log('Parsed profile:', ownProfile);
       } else {
-        // No profile yet, but still set user email
-        setUserProfile({
-          email: user.email || '',
-          userName: '',
-          userRole: 'other',
-        });
+        console.log('No baby profile found for user');
       }
 
       // Fetch shared profiles (babies shared with me)

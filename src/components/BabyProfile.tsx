@@ -116,6 +116,49 @@ export function BabyProfile({
 
   return (
     <div className="space-y-6">
+      {/* Pending Invitations - Show at top for ALL users */}
+      {pendingInvitations.length > 0 && onAcceptInvitation && onDeclineInvitation && (
+        <div className="card p-6 border-2 border-[var(--nap-color)]/30">
+          <h3 className="text-lg font-display font-bold text-[var(--text-primary)] mb-4">
+            {pendingInvitations.length === 1 ? 'Pending Invitation' : 'Pending Invitations'}
+          </h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-4">
+            You've been invited to help track {pendingInvitations.length === 1 ? 'a baby' : 'these babies'}
+          </p>
+          <div className="space-y-3">
+            {pendingInvitations.map((invitation) => (
+              <div
+                key={invitation.id}
+                className="flex items-center justify-between p-4 rounded-xl bg-[var(--bg-soft)]"
+              >
+                <div>
+                  <p className="font-display font-semibold text-[var(--text-primary)] text-lg">
+                    {invitation.babyName || 'Baby'}
+                  </p>
+                  <p className="text-sm text-[var(--text-muted)]">
+                    Invitation from {invitation.ownerName || 'parent'}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onAcceptInvitation(invitation.id)}
+                    className="px-4 py-2 rounded-lg bg-[var(--nap-color)] text-[var(--bg-deep)] text-sm font-display font-semibold"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => onDeclineInvitation(invitation.id)}
+                    className="px-4 py-2 rounded-lg bg-[var(--bg-card)] text-[var(--text-muted)] text-sm font-display"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-display font-bold text-[var(--text-primary)] mb-2">

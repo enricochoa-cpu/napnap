@@ -78,6 +78,7 @@ export function useBabyShares() {
         return;
       }
 
+      console.log('Pending invitations query result:', data, error);
       if (data) {
         const invitations: BabyShare[] = data.map((share) => {
           const profiles = share.profiles as { baby_name?: string; user_name?: string } | null;
@@ -94,6 +95,7 @@ export function useBabyShares() {
             ownerName: profiles?.user_name || undefined,
           };
         });
+        console.log('Parsed pending invitations:', invitations);
         setPendingInvitations(invitations);
       }
     } catch {
