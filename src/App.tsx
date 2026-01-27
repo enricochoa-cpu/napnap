@@ -40,12 +40,6 @@ const MoonIcon = () => (
   </svg>
 );
 
-const PlusIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-    <path d="M12 5v14M5 12h14" />
-  </svg>
-);
-
 const CloseIcon = () => (
   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M18 6L6 18M6 6l12 12" />
