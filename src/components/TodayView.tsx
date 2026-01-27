@@ -18,6 +18,7 @@ interface TodayViewProps {
   activeSleep: SleepEntry | null;
   lastCompletedSleep: SleepEntry | null;
   awakeMinutes: number | null;
+  onEdit?: (entry: SleepEntry) => void;
 }
 
 // Get today's completed naps
@@ -27,12 +28,11 @@ function getTodayNaps(entries: SleepEntry[]): SleepEntry[] {
     .sort((a, b) => parseISO(a.startTime).getTime() - parseISO(b.startTime).getTime());
 }
 
-// Get today's morning wake up time (end of night sleep)
-function getMorningWakeUp(entries: SleepEntry[]): Date | null {
-  const nightEntry = entries.find(
+// Get today's morning wake up entry (night sleep that ended today)
+function getMorningWakeUpEntry(entries: SleepEntry[]): SleepEntry | null {
+  return entries.find(
     (e) => e.type === 'night' && e.endTime && isToday(parseISO(e.endTime))
-  );
-  return nightEntry?.endTime ? parseISO(nightEntry.endTime) : null;
+  ) || null;
 }
 
 // Calculate expected wake-up time from active nap
@@ -87,6 +87,7 @@ export function TodayView({
   activeSleep,
   lastCompletedSleep,
   awakeMinutes,
+  onEdit,
 }: TodayViewProps) {
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
@@ -97,8 +98,9 @@ export function TodayView({
 
   const now = new Date();
 
-  // Morning wake up time
-  const morningWakeUp = useMemo(() => getMorningWakeUp(entries), [entries]);
+  // Morning wake up entry (night sleep that ended today)
+  const morningWakeUpEntry = useMemo(() => getMorningWakeUpEntry(entries), [entries]);
+  const morningWakeUp = morningWakeUpEntry?.endTime ? parseISO(morningWakeUpEntry.endTime) : null;
 
   // Today's completed naps
   const todayNaps = useMemo(() => getTodayNaps(entries), [entries]);
@@ -338,14 +340,11 @@ export function TodayView({
         {/* Timeline with vertical connector - NEWEST FIRST (last to old) */}
         <div className="timeline-river space-y-4">
 
-          {/* Night Sleep in Progress - Solid (Lavender/--night-color) */}
+          {/* Night Sleep in Progress - Solid */}
           {activeSleep && activeSleep.type === 'night' && (
-            <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{
-                backgroundColor: 'var(--night-color)',
-                boxShadow: '0 0 30px rgba(124, 133, 196, 0.3)',
-              }}
+            <button
+              onClick={() => onEdit?.(activeSleep)}
+              className="timeline-item card-night-solid p-5 flex items-center gap-5 w-full text-left timeline-card animate-glow-night"
             >
               <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft">
                 <MoonIcon className="w-8 h-8" />
@@ -361,25 +360,13 @@ export function TodayView({
                   {formatDuration(currentSleepDuration)}
                 </p>
               </div>
-            </div>
+            </button>
           )}
 
-          {/* Expected Bedtime - Ghost Pill (Lavender/--night-color) */}
-          {expectedBedtime && isBefore(now, expectedBedtime) && !activeSleep && (
-            <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{
-                backgroundColor: 'transparent',
-                border: '2px dashed rgba(124, 133, 196, 0.4)',
-              }}
-            >
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{
-                  border: '2px dashed rgba(124, 133, 196, 0.4)',
-                  color: 'rgba(124, 133, 196, 0.6)',
-                }}
-              >
+          {/* Expected Bedtime - Ghost Pill */}
+          {expectedBedtime && isBefore(now, expectedBedtime) && (
+            <div className="timeline-item card-ghost-night p-5 flex items-center gap-5">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70">
                 <MoonIcon className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
@@ -394,22 +381,12 @@ export function TodayView({
           )}
 
           {/* Predicted Naps - Ghost Pills (reversed: furthest first) */}
-          {!activeSleep && [...predictedNaps].reverse().map((napInfo, index) => (
+          {[...predictedNaps].reverse().map((napInfo, index) => (
             <div
               key={`predicted-${index}`}
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{
-                backgroundColor: 'transparent',
-                border: '2px dashed rgba(94, 173, 176, 0.4)',
-              }}
+              className="timeline-item card-ghost-nap p-5 flex items-center gap-5"
             >
-              <div
-                className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0"
-                style={{
-                  border: '2px dashed rgba(94, 173, 176, 0.4)',
-                  color: 'rgba(94, 173, 176, 0.6)',
-                }}
-              >
+              <div className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70">
                 <CloudIcon className="w-8 h-8" />
               </div>
               <div className="flex-1 min-w-0">
@@ -428,9 +405,9 @@ export function TodayView({
 
           {/* Active Nap - Solid with glow effect */}
           {activeSleep && activeSleep.type === 'nap' && (
-            <div
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5 animate-glow"
-              style={{ backgroundColor: 'var(--nap-color)' }}
+            <button
+              onClick={() => onEdit?.(activeSleep)}
+              className="timeline-item card-nap-solid p-5 flex items-center gap-5 animate-glow w-full text-left timeline-card"
             >
               <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft">
                 <CloudIcon className="w-8 h-8" />
@@ -446,15 +423,15 @@ export function TodayView({
                   {formatDuration(currentSleepDuration)}
                 </p>
               </div>
-            </div>
+            </button>
           )}
 
           {/* Completed Naps - Solid Pills (reversed: most recent first) */}
           {[...todayNaps].reverse().map((nap, index) => (
-            <div
+            <button
               key={nap.id}
-              className="timeline-item rounded-2xl p-5 flex items-center gap-5"
-              style={{ backgroundColor: 'var(--nap-color)' }}
+              onClick={() => onEdit?.(nap)}
+              className="timeline-item card-nap-solid p-5 flex items-center gap-5 w-full text-left timeline-card"
             >
               <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
                 <CloudIcon className="w-8 h-8" />
@@ -470,12 +447,15 @@ export function TodayView({
                   {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
 
-          {/* Morning Wake Up - Gold (--wake-color) - OLDEST, at bottom */}
-          {morningWakeUp && (
-            <div className="timeline-item glass rounded-2xl p-5 flex items-center gap-5">
+          {/* Morning Wake Up - Gold - OLDEST, at bottom */}
+          {morningWakeUp && morningWakeUpEntry && (
+            <button
+              onClick={() => onEdit?.(morningWakeUpEntry)}
+              className="timeline-item card-wake p-5 flex items-center gap-5 w-full text-left timeline-card"
+            >
               <div className="w-14 h-14 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0">
                 <SunIcon className="w-8 h-8" />
               </div>
@@ -487,7 +467,7 @@ export function TodayView({
                   {formatTime(morningWakeUp)}
                 </p>
               </div>
-            </div>
+            </button>
           )}
         </div>
       </div>

@@ -235,6 +235,7 @@ function App() {
           Sign Out
         </button>
       </div>
+
     </div>
   );
 
@@ -269,6 +270,7 @@ function App() {
             activeSleep={activeSleep}
             lastCompletedSleep={lastCompletedSleep}
             awakeMinutes={awakeMinutes}
+            onEdit={handleEdit}
           />
         )}
         {currentView === 'history' && renderHistoryView()}
@@ -277,92 +279,100 @@ function App() {
         {currentView === 'add' && renderAddView()}
       </main>
 
-      {/* Bottom Navigation with Central + Button */}
-      <nav className="bottom-nav">
-        <div className="max-w-lg mx-auto flex items-center relative">
-          {/* Left side nav items */}
-          <button
-            onClick={() => setCurrentView('home')}
-            className={`flex-1 py-4 flex flex-col items-center gap-1 ${
-              currentView === 'home' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="text-xs font-display font-medium">Today</span>
-          </button>
-
-          <button
-            onClick={() => setCurrentView('history')}
-            className={`flex-1 py-4 flex flex-col items-center gap-1 ${
-              currentView === 'history' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span className="text-xs font-display font-medium">History</span>
-          </button>
-
-          {/* Central FAB Button */}
-          <div className="flex-1 flex justify-center">
+      {/* Sculpted Floating Tab Bar */}
+      <nav className="floating-nav">
+        <div className="floating-nav-inner max-w-lg mx-auto">
+          {/* Center FAB - in the notch */}
+          <div className="nav-fab-container">
             <button
               onClick={() => setShowActionMenu(true)}
-              className="fab -mt-7"
+              className="nav-fab"
+              aria-label="Log sleep"
             >
-              <PlusIcon />
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
             </button>
           </div>
 
-          {/* Right side nav items */}
-          <button
-            onClick={() => setCurrentView('stats')}
-            className={`flex-1 py-4 flex flex-col items-center gap-1 ${
-              currentView === 'stats' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            <span className="text-xs font-display font-medium">Stats</span>
-          </button>
+          {/* The bar with notch */}
+          <div className="floating-nav-bar">
+            {/* Today */}
+            <button
+              onClick={() => setCurrentView('home')}
+              className={`nav-tab ${currentView === 'home' ? 'nav-tab-active' : ''}`}
+              aria-label="Today"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+            </button>
 
-          <button
-            onClick={() => setCurrentView('profile')}
-            className={`flex-1 py-4 flex flex-col items-center gap-1 ${
-              currentView === 'profile' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'
-            }`}
-          >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            <span className="text-xs font-display font-medium">Profile</span>
-          </button>
+            {/* History */}
+            <button
+              onClick={() => setCurrentView('history')}
+              className={`nav-tab ${currentView === 'history' ? 'nav-tab-active' : ''}`}
+              aria-label="History"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <line x1="10" y1="9" x2="8" y2="9" />
+              </svg>
+            </button>
+
+            {/* Spacer for center FAB */}
+            <div className="nav-center-spacer" />
+
+            {/* Stats */}
+            <button
+              onClick={() => setCurrentView('stats')}
+              className={`nav-tab ${currentView === 'stats' ? 'nav-tab-active' : ''}`}
+              aria-label="Stats"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+              </svg>
+            </button>
+
+            {/* Profile */}
+            <button
+              onClick={() => setCurrentView('profile')}
+              className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}
+              aria-label="Profile"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M20 21a8 8 0 1 0-16 0" />
+              </svg>
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Action Menu Bottom Sheet */}
       {showActionMenu && (
-        <div
-          className="fixed inset-0 z-50"
-          onClick={() => setShowActionMenu(false)}
-        >
+        <>
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <div
+            className="sheet-backdrop fade-in"
+            onClick={() => setShowActionMenu(false)}
+          />
 
           {/* Bottom Sheet */}
-          <div
-            className="absolute bottom-0 left-0 right-0 bg-[var(--bg-card)] rounded-t-3xl p-6 pb-10 slide-up"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="sheet-content slide-up">
             {/* Handle bar */}
-            <div className="w-12 h-1 bg-[var(--text-muted)]/30 rounded-full mx-auto mb-6" />
+            <div className="sheet-handle" />
 
             {/* Close button */}
             <button
               onClick={() => setShowActionMenu(false)}
-              className="absolute top-6 right-6 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              className="absolute top-6 right-6 p-2 rounded-full text-[var(--text-muted)] active:bg-white/10 active:scale-95 transition-transform"
             >
               <CloseIcon />
             </button>
@@ -378,9 +388,9 @@ function App() {
               {activeSleep ? (
                 <button
                   onClick={() => handleEndSleep(activeSleep.id)}
-                  className="w-full p-5 rounded-2xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                  className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
                 >
-                  <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
                     <SunIcon />
                   </div>
                   <span>Wake Up</span>
@@ -390,9 +400,9 @@ function App() {
                   {/* Wake Up (log morning) */}
                   <button
                     onClick={handleLogWakeUp}
-                    className="w-full p-5 rounded-2xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                    className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
                   >
-                    <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
                       <SunIcon />
                     </div>
                     <span>Log Wake Up</span>
@@ -401,9 +411,9 @@ function App() {
                   {/* Start Nap */}
                   <button
                     onClick={() => handleStartSleep('nap')}
-                    className="w-full p-5 rounded-2xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg"
+                    className="w-full p-5 rounded-3xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
                   >
-                    <div className="w-12 h-12 rounded-full bg-[var(--bg-deep)]/20 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
                       <CloudIcon />
                     </div>
                     <span>Start Nap</span>
@@ -412,9 +422,9 @@ function App() {
                   {/* Start Bedtime */}
                   <button
                     onClick={() => handleStartSleep('night')}
-                    className="w-full p-5 rounded-2xl bg-[var(--night-color)] text-white flex items-center gap-4 font-display font-semibold text-lg"
+                    className="w-full p-5 rounded-3xl bg-[var(--night-color)] text-white flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center">
                       <MoonIcon />
                     </div>
                     <span>Start Bedtime</span>
@@ -423,7 +433,7 @@ function App() {
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
 
       {/* Activity Collision Modal */}
