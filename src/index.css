@@ -1,22 +1,22 @@
-/* Fonts: Soft, rounded for night readability */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap');
+/* Fonts: Professional softness - Medium weight base for 3AM readability */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap');
 
 @import "tailwindcss";
 
 :root {
-  /* Midnight Palette - Pure dark for 3AM use */
-  --bg-deep: #070912;
-  --bg-mid: #0c1020;
-  --bg-soft: #11162d;
-  --bg-card: #11162d;
+  /* Matte Midnight Palette - AAA Standard for 3AM use */
+  --bg-deep: #12141C;
+  --bg-mid: #181B26;
+  --bg-soft: #1E2230;
+  --bg-card: #1E2230;
 
-  /* Muted accent colors */
-  --nap-color: #5eadb0;
-  --nap-soft: #4a9294;
-  --night-color: #7c85c4;
-  --night-soft: #6670a8;
-  --wake-color: #f0c674;
-  --wake-soft: #d4ae5e;
+  /* Matte accent colors - low saturation for calm */
+  --nap-color: #9DBAB7;
+  --nap-soft: #8AABA8;
+  --night-color: #8A92B3;
+  --night-soft: #7A82A3;
+  --wake-color: #E8D3A3;
+  --wake-soft: #D4C193;
   --success-color: #7cb07e;
   --danger-color: #c47c7c;
 
@@ -54,6 +54,9 @@ body {
   min-height: 100vh;
   background: var(--bg-deep);
   color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.5;
 }
 
 /* Typography - Large for night readability */
@@ -82,7 +85,7 @@ body {
 
 /* Glass Morphism Utility */
 .glass {
-  background: rgba(18, 22, 45, 0.7);
+  background: rgba(30, 34, 48, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -103,7 +106,7 @@ body {
 }
 
 .card-glass {
-  background: rgba(18, 22, 45, 0.7);
+  background: rgba(30, 34, 48, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
@@ -177,7 +180,8 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: inherit;
+  font-weight: 500;
   color: var(--text-primary);
   transition: all 0.2s ease;
 }
@@ -185,7 +189,7 @@ body {
 .input:focus {
   outline: none;
   border-color: var(--nap-color);
-  box-shadow: 0 0 0 3px rgba(94, 173, 176, 0.15);
+  box-shadow: 0 0 0 3px rgba(157, 186, 183, 0.15);
 }
 
 .input::placeholder {
@@ -196,18 +200,18 @@ body {
 .tag {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  padding: 0.3rem 0.875rem;
   border-radius: var(--radius-full);
 }
 
 .tag-nap {
-  background: rgba(94, 173, 176, 0.2);
+  background: rgba(157, 186, 183, 0.2);
   color: var(--nap-color);
 }
 
 .tag-night {
-  background: rgba(124, 133, 196, 0.2);
+  background: rgba(138, 146, 179, 0.2);
   color: var(--night-color);
 }
 
@@ -274,10 +278,10 @@ body {
 /* Glow Animation */
 @keyframes glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(94, 173, 176, 0.3);
+    box-shadow: 0 0 20px rgba(157, 186, 183, 0.3);
   }
   50% {
-    box-shadow: 0 0 30px rgba(94, 173, 176, 0.5);
+    box-shadow: 0 0 30px rgba(157, 186, 183, 0.5);
   }
 }
 
@@ -368,7 +372,7 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(18, 22, 45, 0.85);
+  background: rgba(30, 34, 48, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -399,8 +403,8 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 4px 12px rgba(94, 173, 176, 0.4),
-    0 0 0 4px rgba(94, 173, 176, 0.1);
+    0 4px 12px rgba(157, 186, 183, 0.4),
+    0 0 0 4px rgba(157, 186, 183, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
   border: none;
@@ -409,8 +413,8 @@ body {
 .fab:hover {
   transform: scale(1.05);
   box-shadow:
-    0 6px 20px rgba(94, 173, 176, 0.5),
-    0 0 0 6px rgba(94, 173, 176, 0.15);
+    0 6px 20px rgba(157, 186, 183, 0.5),
+    0 0 0 6px rgba(157, 186, 183, 0.15);
 }
 
 .fab:active {
@@ -429,7 +433,8 @@ body {
 .stat-value-total { color: var(--wake-color); }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -497,7 +502,7 @@ select {
 
 .hero-secondary {
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   font-weight: 500;
   color: var(--text-muted);
 }

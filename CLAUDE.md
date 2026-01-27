@@ -2,6 +2,17 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Overview
+
+**Baby Sleep Tracker** is a mobile-first React app for tracking infant sleep patterns (0-18 months). Inspired by Napper's AAA-level design, it prioritizes:
+
+- **Decision replacement** over data analysis
+- **Calming, night-optimized UI** for sleep-deprived parents
+- **One-handed, thumb-zone operation**
+- **Emotional safety** with non-judgmental tone
+
+**Target users**: First-time parents seeking certainty about baby sleep schedules.
+
 ## Commands
 
 ```bash
@@ -65,8 +76,8 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 ### CSS Custom Properties
 All theme values are CSS variables in `:root`:
-- **Background**: `--bg-deep` (#0f1428), `--bg-card` (#1e2845), `--bg-soft` (#2a3655)
-- **Colors**: `--nap-color` (#5eadb0 teal), `--night-color` (#7c85c4 lavender), `--wake-color` (#f0c674 gold)
+- **Background**: `--bg-deep` (#12141C), `--bg-card` (#1E2230), `--bg-soft` (#1E2230)
+- **Colors**: `--nap-color` (#9DBAB7 matte sage), `--night-color` (#8A92B3 muted periwinkle), `--wake-color` (#E8D3A3 warm parchment)
 - **Text**: `--text-primary`, `--text-secondary`, `--text-muted`
 - **UI**: `--success-color`, `--danger-color`
 - **Typography**: `--font-display` (Quicksand), `--font-body` (Nunito)
@@ -84,19 +95,20 @@ All theme values are CSS variables in `:root`:
 - `.loader`, `.loader-dot`, `.spinner`: Loading animations
 - `.fade-in`, `.slide-up`: Animation classes
 
-### Color Semantics
-- Teal (`--nap-color`): Daytime naps
-- Lavender (`--night-color`): Night sleep
-- Gold (`--wake-color`): Wake up actions, totals, highlights
+### Color Semantics (Matte AAA Palette)
+- Sage (`--nap-color`): Daytime naps - desaturated to avoid alertness triggers
+- Periwinkle (`--night-color`): Night sleep - muted to avoid neon vibes
+- Parchment (`--wake-color`): Wake up actions, totals - warm sunrise tone
 
 ## Product Research
 
 **IMPORTANT**: Before making any UX/UI decisions, product improvements, or adding new features, always consult the research documents in `product-research/`.
 
 ### Research Documents
-- `one-pager-research.rtf`: Product research one-pager
-- `users-feedback.rtf`: User feedback and insights
-- `ux-ui-findings.pdf`: UX/UI research findings and recommendations
+- `one-pager-research.md`: Product strategy, competitive analysis, user personas, monetization
+- `users-feedback.md`: User sentiment analysis, trust dynamics, feedback patterns
+- `ux-ui-findings.md`: Detailed UX/UI patterns, interaction design, visual system
+- `ux-ui-findings.pdf`: Original PDF with citations (keep for reference)
 
 ### When to Consult Research
 - Designing new features or screens
@@ -104,10 +116,36 @@ All theme values are CSS variables in `:root`:
 - Making layout or navigation decisions
 - Choosing interaction patterns
 - Selecting visual design approaches
+- Understanding user psychology and trust dynamics
 
 ### Key Principles from Research
-- Optimize for night-time/low-light use (large touch targets, high contrast, minimal brightness)
-- Minimize cognitive load for sleep-deprived parents
-- Prioritize one-handed operation
-- Use calming, low-saturation colors
-- Prevent accidental actions with confirmation modals
+
+**Decision Replacement (Not Decision Support)**
+- Tell users what to do with definitive outputs ("Next nap at 13:42")
+- Compress cognitive steps into single actions
+- Users want certainty, not data to analyze
+
+**Night-Time Optimization**
+- Large touch targets (minimum 60px)
+- High contrast, low-saturation calming colors
+- Thumb-zone accessibility (actions at bottom)
+- 2 AM readability with large fonts
+
+**Emotional Safety**
+- Non-judgmental tone ("gentle friend" persona)
+- Allow retrospective editing without penalty
+- Never degrade perceived accuracy
+- Visual restraint signals care
+
+**Trust Building**
+- Transparent calibration periods
+- Clear collision handling with modals
+- Accuracy is felt emotionally, not measured statistically
+
+### Competitive Positioning
+| Aspect | Our Approach (Napper-inspired) | Avoid |
+|--------|-------------------------------|-------|
+| UX Posture | Decision Replacement | Decision Support |
+| Mental Model | Single-Plane Circular | Nested Dashboards |
+| Data Display | Minimal, at-a-glance | Dense charts/graphs |
+| Tone | Calming, empathetic | Clinical, informative |
