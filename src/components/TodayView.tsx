@@ -176,7 +176,8 @@ export function TodayView({
     return predictions;
   }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now]);
 
-  // Expected bedtime (dynamic based on day's sleep - anchored to LAST projected nap)
+  // Expected bedtime (dynamic based on day's sleep)
+  // Priority: active nap → predicted naps → completed naps
   const expectedBedtime = useMemo(() => {
     if (!profile?.dateOfBirth) return null;
 
@@ -188,15 +189,28 @@ export function TodayView({
       accumulatedSleepMinutes += nap.expectedDuration;
     });
 
-    // Determine the anchor: prioritize last PROJECTED nap, then fall back to completed
+    // Determine the anchor for bedtime calculation
     let anchorEndTime: Date | null = null;
 
-    if (predictedNaps.length > 0) {
-      // Use the last projected nap's end time as anchor
+    // 1. If baby is currently napping, use expected wake time as anchor
+    if (activeSleep && activeSleep.type === 'nap') {
+      const expectedWake = getExpectedWakeTime(activeSleep, profile);
+      if (expectedWake) {
+        anchorEndTime = expectedWake;
+        // Add estimated remaining sleep to accumulated total
+        const elapsedMinutes = calculateDuration(activeSleep.startTime, null);
+        const expectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
+        const remainingSleep = Math.max(0, expectedDuration - elapsedMinutes);
+        accumulatedSleepMinutes += remainingSleep;
+      }
+    }
+    // 2. If there are predicted naps, use last predicted nap's end time
+    else if (predictedNaps.length > 0) {
       const lastPredicted = predictedNaps[predictedNaps.length - 1];
       anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
-    } else if (todayNaps.length > 0) {
-      // Fall back to last completed nap if no predictions
+    }
+    // 3. Fall back to last completed nap
+    else if (todayNaps.length > 0) {
       const lastNap = todayNaps[todayNaps.length - 1];
       if (lastNap.endTime) {
         anchorEndTime = parseISO(lastNap.endTime);
@@ -219,7 +233,7 @@ export function TodayView({
       schedule.bedtimeWindow.latest.hour,
       schedule.bedtimeWindow.latest.minute
     );
-  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, predictedNaps, now]);
+  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, predictedNaps, activeSleep, now]);
 
   // Determine if bedtime is the next event (no more naps predicted)
   const isBedtimeNext = useMemo(() => {
