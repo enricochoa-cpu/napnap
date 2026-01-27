@@ -136,7 +136,11 @@ export function useBabyProfile() {
       setSharedProfiles(allProfiles);
 
       // Set active baby (prefer own profile, or first shared)
-      if (!activeBabyId) {
+      // Also update if current activeBabyId is not in the list of available babies
+      const allBabyIds = allProfiles.map(p => p.id);
+      const needsUpdate = !activeBabyId || !allBabyIds.includes(activeBabyId);
+
+      if (needsUpdate && allProfiles.length > 0) {
         if (ownProfile) {
           setActiveBabyId(ownProfile.id);
         } else if (sharedBabies.length > 0) {

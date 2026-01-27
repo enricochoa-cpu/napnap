@@ -40,8 +40,11 @@ export function BabyProfile({
   onAcceptInvitation,
   onDeclineInvitation,
 }: BabyProfileProps) {
-  const [isEditingBaby, setIsEditingBaby] = useState(!profile);
+  // Only show create form if user has no babies at all (own or shared)
+  const hasAnyBabies = sharedProfiles.length > 0;
+  const [isEditingBaby, setIsEditingBaby] = useState(false);
   const [isEditingUser, setIsEditingUser] = useState(false);
+  const [showAddBabyForm, setShowAddBabyForm] = useState(!hasAnyBabies && !profile);
 
   const [babyFormData, setBabyFormData] = useState({
     name: profile?.name || '',
@@ -56,7 +59,7 @@ export function BabyProfile({
     userRole: userProfile?.userRole || 'other' as const,
   });
 
-  // Update form data and editing state when profile changes
+  // Update form data when profile changes
   useEffect(() => {
     if (profile) {
       setBabyFormData({
@@ -66,9 +69,10 @@ export function BabyProfile({
         weight: profile.weight,
         height: profile.height,
       });
-      // If profile exists and has a name, exit editing mode to show the profile
+      // If profile exists and has a name, exit editing mode
       if (profile.name) {
         setIsEditingBaby(false);
+        setShowAddBabyForm(false);
       }
     }
   }, [profile]);
@@ -82,6 +86,13 @@ export function BabyProfile({
     }
   }, [userProfile]);
 
+  // Update showAddBabyForm when sharedProfiles changes
+  useEffect(() => {
+    if (sharedProfiles.length > 0 && !profile) {
+      setShowAddBabyForm(false);
+    }
+  }, [sharedProfiles, profile]);
+
   const handleBabySubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (profile) {
@@ -90,6 +101,7 @@ export function BabyProfile({
       onSave({ ...babyFormData, ...userFormData });
     }
     setIsEditingBaby(false);
+    setShowAddBabyForm(false);
   };
 
   const handleUserSubmit = (e: React.FormEvent) => {
@@ -113,6 +125,9 @@ export function BabyProfile({
       [name]: value,
     }));
   };
+
+  // Get own babies for display in details section
+  const ownBabies = sharedProfiles.filter(b => b.isOwner);
 
   return (
     <div className="space-y-6">
@@ -165,27 +180,110 @@ export function BabyProfile({
           Account details
         </h1>
         <p className="text-[var(--text-secondary)] text-sm">
-          Add information regarding your baby - let us help you better
+          {hasAnyBabies ? 'Manage your babies and profile' : 'Add information regarding your baby'}
         </p>
       </div>
 
-      {/* Your babies section */}
-      <div className="card p-6">
-        <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
-            Your babies
-          </h2>
-          {profile && !isEditingBaby && (
+      {/* Babies You're Tracking - Show when there are any babies */}
+      {hasAnyBabies && (
+        <div className="card p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
+              Babies you're tracking
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {sharedProfiles.map((baby) => (
+              <button
+                key={baby.id}
+                onClick={() => onActiveBabyChange?.(baby.id)}
+                className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                  activeBabyId === baby.id
+                    ? 'bg-[var(--nap-color)]/15 border-2 border-[var(--nap-color)]/40'
+                    : 'bg-[var(--bg-soft)] border-2 border-transparent hover:border-[var(--text-muted)]/20'
+                }`}
+              >
+                {/* Avatar */}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  activeBabyId === baby.id
+                    ? 'bg-[var(--nap-color)]/30'
+                    : 'bg-[var(--text-muted)]/20'
+                }`}>
+                  <span className={`font-display text-lg font-bold ${
+                    activeBabyId === baby.id
+                      ? 'text-[var(--nap-color)]'
+                      : 'text-[var(--text-muted)]'
+                  }`}>
+                    {baby.name ? baby.name.charAt(0).toUpperCase() : '?'}
+                  </span>
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 text-left min-w-0">
+                  <p className={`font-display font-semibold truncate ${
+                    activeBabyId === baby.id
+                      ? 'text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)]'
+                  }`}>
+                    {baby.name || 'Unnamed baby'}
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {baby.isOwner ? (
+                      'Your baby'
+                    ) : (
+                      <>Shared by {baby.ownerName || 'parent'}</>
+                    )}
+                    {baby.dateOfBirth && (
+                      <> · {calculateAge(baby.dateOfBirth)}</>
+                    )}
+                  </p>
+                </div>
+
+                {/* Active indicator */}
+                {activeBabyId === baby.id && (
+                  <div className="flex-shrink-0">
+                    <svg className="w-5 h-5 text-[var(--nap-color)]" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Add your own baby button (if user doesn't have one) */}
+          {!profile && !showAddBabyForm && (
             <button
-              onClick={() => setIsEditingBaby(true)}
-              className="text-[var(--nap-color)] text-sm font-medium font-display"
+              onClick={() => setShowAddBabyForm(true)}
+              className="w-full mt-4 p-4 rounded-xl border-2 border-dashed border-[var(--text-muted)]/30 text-[var(--text-muted)] hover:border-[var(--nap-color)]/50 hover:text-[var(--nap-color)] transition-colors"
             >
-              Edit
+              + Add your own baby
             </button>
           )}
         </div>
+      )}
 
-        {isEditingBaby || !profile ? (
+      {/* Your baby section - Show form when editing or creating */}
+      {(showAddBabyForm || isEditingBaby || (!hasAnyBabies && !profile)) && (
+        <div className="card p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
+              {profile ? 'Edit your baby' : 'Add your baby'}
+            </h2>
+            {(showAddBabyForm || isEditingBaby) && hasAnyBabies && (
+              <button
+                onClick={() => {
+                  setShowAddBabyForm(false);
+                  setIsEditingBaby(false);
+                }}
+                className="text-[var(--text-muted)] text-sm font-medium font-display"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
+
           <form onSubmit={handleBabySubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
@@ -267,61 +365,50 @@ export function BabyProfile({
 
             <div className="flex gap-3 pt-2">
               <button type="submit" className="btn btn-nap flex-1">
-                {profile ? 'Save Changes' : 'Create Profile'}
+                {profile ? 'Save Changes' : 'Add Baby'}
               </button>
-              {profile && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBabyFormData({
-                      name: profile.name,
-                      dateOfBirth: profile.dateOfBirth,
-                      gender: profile.gender,
-                      weight: profile.weight,
-                      height: profile.height,
-                    });
-                    setIsEditingBaby(false);
-                  }}
-                  className="btn btn-ghost"
-                >
-                  Cancel
-                </button>
-              )}
             </div>
           </form>
-        ) : (
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <div className="w-14 h-14 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center flex-shrink-0">
-              <span className="font-display text-xl font-bold text-[var(--nap-color)]">
-                {profile.name.charAt(0).toUpperCase()}
-              </span>
-            </div>
+        </div>
+      )}
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-display font-bold text-[var(--text-primary)] text-lg truncate">
-                {profile.name}
-              </h3>
-              <p className="text-[var(--nap-color)] font-display font-medium text-sm mt-0.5">
-                {calculateAge(profile.dateOfBirth)} old
-              </p>
-
-              <div className="flex flex-wrap gap-3 mt-3 text-sm text-[var(--text-muted)]">
-                <span>
-                  {profile.gender === 'male' ? 'Male' : profile.gender === 'female' ? 'Female' : 'Not specified'}
-                </span>
-                {profile.weight > 0 && (
-                  <span>{profile.weight} kg</span>
-                )}
-                {profile.height > 0 && (
-                  <span>{profile.height} cm</span>
-                )}
-              </div>
-            </div>
+      {/* Own baby display (when not editing and has profile) */}
+      {profile && !isEditingBaby && !showAddBabyForm && hasAnyBabies && ownBabies.length > 0 && (
+        <div className="card p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
+              Your baby's details
+            </h2>
+            <button
+              onClick={() => setIsEditingBaby(true)}
+              className="text-[var(--nap-color)] text-sm font-medium font-display"
+            >
+              Edit
+            </button>
           </div>
-        )}
-      </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p className="text-[var(--text-muted)] mb-1">Gender</p>
+              <p className="text-[var(--text-primary)]">
+                {profile.gender === 'male' ? 'Male' : profile.gender === 'female' ? 'Female' : 'Not specified'}
+              </p>
+            </div>
+            {profile.weight > 0 && (
+              <div>
+                <p className="text-[var(--text-muted)] mb-1">Weight</p>
+                <p className="text-[var(--text-primary)]">{profile.weight} kg</p>
+              </div>
+            )}
+            {profile.height > 0 && (
+              <div>
+                <p className="text-[var(--text-muted)] mb-1">Height</p>
+                <p className="text-[var(--text-primary)]">{profile.height} cm</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Yourself section */}
       <div className="card p-6">
@@ -430,64 +517,11 @@ export function BabyProfile({
         )}
       </div>
 
-      {/* Baby Selector (if multiple babies) */}
-      {sharedProfiles.length > 1 && onActiveBabyChange && (
-        <div className="card p-6">
-          <h2 className="text-lg font-display font-bold text-[var(--text-primary)] mb-4">
-            Switch Baby
-          </h2>
-          <div className="space-y-2">
-            {sharedProfiles.map((baby) => (
-              <button
-                key={baby.id}
-                onClick={() => onActiveBabyChange(baby.id)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                  activeBabyId === baby.id
-                    ? 'bg-[var(--nap-color)]/20 border border-[var(--nap-color)]/40'
-                    : 'bg-[var(--bg-soft)] hover:bg-[var(--bg-soft)]/80'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  activeBabyId === baby.id
-                    ? 'bg-[var(--nap-color)]/30'
-                    : 'bg-[var(--text-muted)]/20'
-                }`}>
-                  <span className={`font-display font-bold ${
-                    activeBabyId === baby.id
-                      ? 'text-[var(--nap-color)]'
-                      : 'text-[var(--text-muted)]'
-                  }`}>
-                    {baby.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div className="text-left flex-1">
-                  <p className={`font-display font-semibold ${
-                    activeBabyId === baby.id
-                      ? 'text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)]'
-                  }`}>
-                    {baby.name}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {baby.isOwner ? 'Your baby' : `Shared by ${baby.ownerName || 'someone'}`}
-                  </p>
-                </div>
-                {activeBabyId === baby.id && (
-                  <svg className="w-5 h-5 text-[var(--nap-color)]" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Share Access Section (only for profile owner) */}
       {profile && onInvite && onRevokeAccess && onAcceptInvitation && onDeclineInvitation && (
         <ShareAccess
           myShares={myShares}
-          pendingInvitations={pendingInvitations}
+          pendingInvitations={[]} // Don't show pending here, already shown at top
           onInvite={onInvite}
           onRevokeAccess={onRevokeAccess}
           onAcceptInvitation={onAcceptInvitation}
