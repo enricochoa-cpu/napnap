@@ -6,9 +6,11 @@ import { DayNavigator } from './components/DayNavigator';
 import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { TodayView } from './components/TodayView';
+import { SkyBackground } from './components/SkyBackground';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useAuth } from './hooks/useAuth';
+import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import { formatDate, formatDateTime } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
@@ -48,6 +50,7 @@ const CloseIcon = () => (
 
 function App() {
   const { signOut } = useAuth();
+  const { theme } = useApplyCircadianTheme();
   const { profile, userProfile, createProfile, updateProfile } = useBabyProfile();
   const {
     addEntry,
@@ -172,19 +175,19 @@ function App() {
 
   // History View
   const renderHistoryView = () => (
-    <div className="pb-32 px-4 fade-in">
-      <div className="pt-6 mb-6">
+    <div className="pb-32 px-6 fade-in">
+      <div className="pt-8 mb-8">
         <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-display-sm">Sleep Log</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
         <button
           onClick={() => {
             setEditingEntry(null);
             setCurrentView('add');
           }}
-          className="text-[var(--nap-color)] font-display font-medium text-sm"
+          className="text-[var(--nap-color)] font-display font-semibold text-sm"
         >
           + Add Entry
         </button>
@@ -201,8 +204,8 @@ function App() {
 
   // Stats View
   const renderStatsView = () => (
-    <div className="pb-32 px-4 fade-in">
-      <div className="pt-6 mb-6">
+    <div className="pb-32 px-6 fade-in">
+      <div className="pt-8 mb-8">
         <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
@@ -212,7 +215,7 @@ function App() {
 
   // Profile View
   const renderProfileView = () => (
-    <div className="pb-32 px-4 pt-6 fade-in">
+    <div className="pb-32 px-6 pt-8 fade-in">
       <BabyProfile
         profile={profile}
         userProfile={userProfile}
@@ -221,7 +224,7 @@ function App() {
       />
 
       {/* Sign Out Button */}
-      <div className="mt-6 text-center">
+      <div className="mt-8 text-center">
         <button
           onClick={() => signOut()}
           className="text-sm text-[var(--danger-color)] font-display font-medium"
@@ -235,7 +238,7 @@ function App() {
 
   // Add/Edit View
   const renderAddView = () => (
-    <div className="pb-32 px-4 pt-6 fade-in">
+    <div className="pb-32 px-6 pt-8 fade-in">
       <SleepForm
         entry={editingEntry}
         onSubmit={handleAddEntry}
@@ -254,9 +257,12 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)]">
+    <div className="min-h-screen bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
+      {/* Circadian Sky Background */}
+      <SkyBackground theme={theme} />
+
       {/* Main Content */}
-      <main className="max-w-lg mx-auto">
+      <main className="max-w-lg mx-auto relative z-0">
         {currentView === 'home' && (
           <TodayView
             profile={profile}
@@ -359,7 +365,7 @@ function App() {
           />
 
           {/* Bottom Sheet */}
-          <div className="sheet-content slide-up">
+          <div className="sheet-content slide-up px-6">
             {/* Handle bar */}
             <div className="sheet-handle" />
 
@@ -372,19 +378,19 @@ function App() {
             </button>
 
             {/* Title */}
-            <h2 className="text-[var(--text-primary)] font-display font-semibold text-lg mb-6 text-center">
+            <h2 className="text-[var(--text-card-title)] font-display font-semibold text-lg mb-8 text-center">
               Log Sleep
             </h2>
 
-            {/* Action buttons */}
-            <div className="space-y-3">
+            {/* Action buttons - floating cards with shadows */}
+            <div className="space-y-4">
               {/* If baby is sleeping, show Wake Up button */}
               {activeSleep ? (
                 <button
                   onClick={() => handleEndSleep(activeSleep.id)}
-                  className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
+                  className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-wake)]"
                 >
-                  <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
                     <SunIcon />
                   </div>
                   <span>Wake Up</span>
@@ -394,9 +400,9 @@ function App() {
                   {/* Wake Up (log morning) */}
                   <button
                     onClick={handleLogWakeUp}
-                    className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
+                    className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-wake)]"
                   >
-                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
                       <SunIcon />
                     </div>
                     <span>Log Wake Up</span>
@@ -405,9 +411,9 @@ function App() {
                   {/* Start Nap */}
                   <button
                     onClick={() => handleStartSleep('nap')}
-                    className="w-full p-5 rounded-3xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
+                    className="w-full p-5 rounded-3xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-nap)]"
                   >
-                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/15 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
                       <CloudIcon />
                     </div>
                     <span>Start Nap</span>
@@ -416,9 +422,9 @@ function App() {
                   {/* Start Bedtime */}
                   <button
                     onClick={() => handleStartSleep('night')}
-                    className="w-full p-5 rounded-3xl bg-[var(--night-color)] text-white flex items-center gap-4 font-display font-semibold text-lg active:scale-[0.98] transition-transform"
+                    className="w-full p-5 rounded-3xl bg-[var(--night-color)] text-white flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-night)]"
                   >
-                    <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
                       <MoonIcon />
                     </div>
                     <span>Start Bedtime</span>

@@ -121,7 +121,8 @@ export function TodayView({
       durationMinutes: calculateDuration(nap.startTime, nap.endTime),
     }));
 
-    const allWindows = calculateAllNapWindows(profile.dateOfBirth, completedNapsData);
+    // calculateAllNapWindows now returns ONLY projected/future naps
+    const projectedWindows = calculateAllNapWindows(profile.dateOfBirth, completedNapsData);
 
     const schedule = getRecommendedSchedule(profile.dateOfBirth);
     const wakeUpTime = morningWakeUp || new Date(
@@ -144,13 +145,10 @@ export function TodayView({
       }
     }
 
-    const remainingNaps = Math.max(0, allWindows.length - todayNaps.length);
-
-    for (let i = 0; i < remainingNaps; i++) {
+    // projectedWindows already contains only remaining naps from simulation
+    for (let i = 0; i < projectedWindows.length; i++) {
+      const windowInfo = projectedWindows[i];
       const napIndex = todayNaps.length + i;
-      const windowInfo = allWindows[napIndex];
-
-      if (!windowInfo) break;
 
       const napIndexType: NapIndex =
         napIndex === 0 ? 'first' :
@@ -178,23 +176,42 @@ export function TodayView({
     return predictions;
   }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now]);
 
-  // Expected bedtime (dynamic based on day's sleep)
+  // Expected bedtime (dynamic based on day's sleep - anchored to LAST projected nap)
   const expectedBedtime = useMemo(() => {
     if (!profile?.dateOfBirth) return null;
 
     const schedule = getRecommendedSchedule(profile.dateOfBirth);
 
-    if (todayNaps.length > 0) {
+    // Calculate total accumulated sleep: completed + projected naps
+    let accumulatedSleepMinutes = totalDaytimeSleepMinutes;
+    predictedNaps.forEach(nap => {
+      accumulatedSleepMinutes += nap.expectedDuration;
+    });
+
+    // Determine the anchor: prioritize last PROJECTED nap, then fall back to completed
+    let anchorEndTime: Date | null = null;
+
+    if (predictedNaps.length > 0) {
+      // Use the last projected nap's end time as anchor
+      const lastPredicted = predictedNaps[predictedNaps.length - 1];
+      anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
+    } else if (todayNaps.length > 0) {
+      // Fall back to last completed nap if no predictions
       const lastNap = todayNaps[todayNaps.length - 1];
       if (lastNap.endTime) {
-        return calculateDynamicBedtime(
-          profile.dateOfBirth,
-          lastNap.endTime,
-          totalDaytimeSleepMinutes
-        );
+        anchorEndTime = parseISO(lastNap.endTime);
       }
     }
 
+    if (anchorEndTime) {
+      return calculateDynamicBedtime(
+        profile.dateOfBirth,
+        anchorEndTime.toISOString(),
+        accumulatedSleepMinutes
+      );
+    }
+
+    // Default fallback when no sleep data
     return new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -202,7 +219,7 @@ export function TodayView({
       schedule.bedtimeWindow.latest.hour,
       schedule.bedtimeWindow.latest.minute
     );
-  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, now]);
+  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, predictedNaps, now]);
 
   // Determine if bedtime is the next event (no more naps predicted)
   const isBedtimeNext = useMemo(() => {
@@ -257,11 +274,11 @@ export function TodayView({
   }, [activeSleep]);
 
   return (
-    <div className="flex flex-col pb-40 px-4 fade-in">
+    <div className="flex flex-col pb-40 px-6 fade-in">
       {/* ================================================================== */}
       {/* HERO SECTION - Cognitive Priority: Next Nap > Awake Time          */}
       {/* ================================================================== */}
-      <div className="pt-10 pb-8">
+      <div className="pt-12 pb-10">
         {activeSleep ? (
           // SLEEPING STATE
           <div className="text-center">
@@ -332,13 +349,13 @@ export function TodayView({
       {/* ================================================================== */}
       {/* TIMELINE RIVER - Visual flow through the day                      */}
       {/* ================================================================== */}
-      <div className="mt-2">
-        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-6 px-1">
+      <div className="mt-4">
+        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-8">
           Today's Timeline
         </h2>
 
         {/* Timeline with vertical connector - NEWEST FIRST (last to old) */}
-        <div className="timeline-river space-y-4">
+        <div className="timeline-river space-y-5">
 
           {/* Night Sleep in Progress - Solid */}
           {activeSleep && activeSleep.type === 'night' && (

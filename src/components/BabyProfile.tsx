@@ -84,10 +84,10 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
     <div className="space-y-6">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-display font-bold text-white mb-2">
+        <h1 className="text-2xl font-display font-bold text-[var(--text-primary)] mb-2">
           Account details
         </h1>
-        <p className="text-white/80 text-sm">
+        <p className="text-[var(--text-secondary)] text-sm">
           Add information regarding your baby - let us help you better
         </p>
       </div>
@@ -95,7 +95,7 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
       {/* Your babies section */}
       <div className="card p-6">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-display font-bold text-white">
+          <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
             Your babies
           </h2>
           {profile && !isEditingBaby && (
@@ -223,7 +223,7 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-display font-bold text-white text-lg truncate">
+              <h3 className="font-display font-bold text-[var(--text-primary)] text-lg truncate">
                 {profile.name}
               </h3>
               <p className="text-[var(--nap-color)] font-display font-medium text-sm mt-0.5">
@@ -249,7 +249,7 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
       {/* Yourself section */}
       <div className="card p-6">
         <div className="flex justify-between items-center mb-5">
-          <h2 className="text-lg font-display font-bold text-white">
+          <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
             Yourself
           </h2>
           {!isEditingUser && (
@@ -331,19 +331,19 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
             {/* Email */}
             <div>
               <p className="text-sm text-[var(--text-muted)] font-display mb-1">Email</p>
-              <p className="text-white">{userProfile?.email || 'Not available'}</p>
+              <p className="text-[var(--text-primary)]">{userProfile?.email || 'Not available'}</p>
             </div>
 
             {/* Name */}
             <div>
               <p className="text-sm text-[var(--text-muted)] font-display mb-1">Name</p>
-              <p className="text-white">{userProfile?.userName || 'Not set'}</p>
+              <p className="text-[var(--text-primary)]">{userProfile?.userName || 'Not set'}</p>
             </div>
 
             {/* Role */}
             <div>
               <p className="text-sm text-[var(--text-muted)] font-display mb-1">Role</p>
-              <p className="text-white">
+              <p className="text-[var(--text-primary)]">
                 {userProfile?.userRole === 'dad' ? 'Dad' :
                  userProfile?.userRole === 'mum' ? 'Mum' :
                  'Something else'}

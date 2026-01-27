@@ -9,33 +9,10 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   CSS CUSTOM PROPERTIES - Circadian Palette
+   CSS CUSTOM PROPERTIES - Circadian Adaptive Palette
    ============================================================================ */
 :root {
-  /* Matte Midnight Palette - AAA Standard */
-  --bg-deep: #12141C;
-  --bg-mid: #181B26;
-  --bg-soft: #1E2230;
-  --bg-card: #1E2230;
-  --bg-elevated: #252A3A;
-
-  /* Matte accent colors - low saturation for calm */
-  --nap-color: #9DBAB7;
-  --nap-soft: #8AABA8;
-  --nap-glow: rgba(157, 186, 183, 0.15);
-  --night-color: #8A92B3;
-  --night-soft: #7A82A3;
-  --night-glow: rgba(138, 146, 179, 0.15);
-  --wake-color: #E8D3A3;
-  --wake-soft: #D4C193;
-  --wake-glow: rgba(232, 211, 163, 0.15);
-  --success-color: #7cb07e;
-  --danger-color: #c47c7c;
-
-  /* Text colors - softer than pure white */
-  --text-primary: #E8EAED;
-  --text-secondary: rgba(232, 234, 237, 0.7);
-  --text-muted: rgba(232, 234, 237, 0.4);
+  /* ========== SHARED DESIGN TOKENS ========== */
 
   /* Typography */
   --font-display: 'Quicksand', sans-serif;
@@ -58,24 +35,212 @@
   --radius-3xl: 2rem;
   --radius-full: 9999px;
 
-  /* Shadows - layered for depth */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.25);
-  --shadow-glow-nap: 0 0 40px rgba(157, 186, 183, 0.2);
-  --shadow-glow-night: 0 0 40px rgba(138, 146, 179, 0.2);
-  --shadow-glow-wake: 0 0 40px rgba(232, 211, 163, 0.2);
-
   /* Transitions - spring physics for premium feel */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Circadian transition - feels biological */
+  --circadian-transition: 1.5s ease-in-out;
 
   /* Safe areas */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
+
+  /* ========== DEFAULT: NIGHT THEME (for initial load) ========== */
+  --bg-deep: #1A1B2E;
+  --bg-mid: #1F2038;
+  --bg-soft: #25263D;
+  --bg-card: #25263D;
+  --bg-elevated: #2D2E4A;
+
+  /* Accent colors - night palette */
+  --nap-color: #9DBAB7;
+  --nap-soft: #8AABA8;
+  --nap-glow: rgba(157, 186, 183, 0.15);
+  --night-color: #A5B4FC;
+  --night-soft: #9AA8E8;
+  --night-glow: rgba(165, 180, 252, 0.15);
+  --wake-color: #FCD9A3;
+  --wake-soft: #E8C893;
+  --wake-glow: rgba(252, 217, 163, 0.15);
+  --success-color: #7cb07e;
+  --danger-color: #c47c7c;
+
+  /* Text colors - soft blue-gray for eye comfort at night */
+  --text-primary: #94A3B8;
+  --text-secondary: rgba(148, 163, 184, 0.75);
+  --text-muted: rgba(148, 163, 184, 0.45);
+  --text-on-accent: #1A1B2E;
+
+  /* Card title color - softer than primary */
+  --text-card-title: #B8C4D4;
+
+  /* Shadows - night */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-glow-nap: 0 0 40px rgba(157, 186, 183, 0.25);
+  --shadow-glow-night: 0 0 40px rgba(165, 180, 252, 0.25);
+  --shadow-glow-wake: 0 0 40px rgba(252, 217, 163, 0.25);
+
+  /* Sky gradient - night */
+  --sky-gradient: linear-gradient(180deg, #0D0E1A 0%, #1A1B2E 40%, #25263D 100%);
+
+  /* Glass effects - night */
+  --glass-bg: rgba(37, 38, 61, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-nav-bg: rgba(26, 27, 46, 0.85);
+}
+
+/* ============================================================================
+   MORNING THEME (06:00 - 11:59)
+   Warm, golden, energizing - like sunrise
+   ============================================================================ */
+:root.theme-morning {
+  --bg-deep: #FFFBF2;
+  --bg-mid: #FFF8EB;
+  --bg-soft: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+
+  /* Accent colors - warm morning palette */
+  --nap-color: #5BA89A;
+  --nap-soft: #4A978A;
+  --nap-glow: rgba(91, 168, 154, 0.12);
+  --night-color: #7B8ABF;
+  --night-soft: #6A79AE;
+  --night-glow: rgba(123, 138, 191, 0.12);
+  --wake-color: #FFB347;
+  --wake-soft: #F5A33D;
+  --wake-glow: rgba(255, 179, 71, 0.15);
+  --success-color: #5B9E5D;
+  --danger-color: #D46B6B;
+
+  /* Text colors - soft charcoal, never pure black */
+  --text-primary: #2D3436;
+  --text-secondary: rgba(45, 52, 54, 0.65);
+  --text-muted: rgba(45, 52, 54, 0.4);
+  --text-on-accent: #FFFFFF;
+  --text-card-title: #3D4852; /* Softer than primary for card titles */
+
+  /* Shadows - diffuse floating shadows (The Napper Look) */
+  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-glow-nap: 0 8px 30px -5px rgba(91, 168, 154, 0.25);
+  --shadow-glow-night: 0 8px 30px -5px rgba(123, 138, 191, 0.25);
+  --shadow-glow-wake: 0 8px 30px -5px rgba(255, 179, 71, 0.3);
+
+  /* Sky gradient - subtle warm fade */
+  --sky-gradient: linear-gradient(to bottom, #FFFBF2 0%, #FFFFFF 100%);
+
+  /* Glass effects - light mode (no visible borders) */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: transparent;
+  --glass-nav-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* ============================================================================
+   AFTERNOON THEME (12:00 - 18:59)
+   Cool, fresh, productive - clear blue sky
+   ============================================================================ */
+:root.theme-afternoon {
+  --bg-deep: #FDF7F2;
+  --bg-mid: #FAF4EF;
+  --bg-soft: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+
+  /* Accent colors - crisp afternoon palette */
+  --nap-color: #5BA89A;
+  --nap-soft: #4A978A;
+  --nap-glow: rgba(91, 168, 154, 0.12);
+  --night-color: #7B8ABF;
+  --night-soft: #6A79AE;
+  --night-glow: rgba(123, 138, 191, 0.12);
+  --wake-color: #6BABFF;
+  --wake-soft: #5A9AEE;
+  --wake-glow: rgba(107, 171, 255, 0.15);
+  --success-color: #5B9E5D;
+  --danger-color: #D46B6B;
+
+  /* Text colors - soft charcoal */
+  --text-primary: #2D3436;
+  --text-secondary: rgba(45, 52, 54, 0.65);
+  --text-muted: rgba(45, 52, 54, 0.4);
+  --text-on-accent: #FFFFFF;
+  --text-card-title: #3D4852; /* Softer than primary for card titles */
+
+  /* Shadows - diffuse floating shadows (The Napper Look) */
+  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-glow-nap: 0 8px 30px -5px rgba(91, 168, 154, 0.25);
+  --shadow-glow-night: 0 8px 30px -5px rgba(123, 138, 191, 0.25);
+  --shadow-glow-wake: 0 8px 30px -5px rgba(107, 171, 255, 0.3);
+
+  /* Sky gradient - subtle cool fade */
+  --sky-gradient: linear-gradient(to bottom, #FDF7F2 0%, #FFFFFF 100%);
+
+  /* Glass effects - light mode (no visible borders) */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: transparent;
+  --glass-nav-bg: rgba(255, 255, 255, 0.92);
+}
+
+/* ============================================================================
+   NIGHT THEME (19:00 - 05:59)
+   Deep, calming, eye-safe - refined dark mode
+   ============================================================================ */
+:root.theme-night {
+  --bg-deep: #1A1B2E;
+  --bg-mid: #1F2038;
+  --bg-soft: #25263D;
+  --bg-card: #25263D;
+  --bg-elevated: #2D2E4A;
+
+  /* Accent colors - night palette with lavender primary */
+  --nap-color: #9DBAB7;
+  --nap-soft: #8AABA8;
+  --nap-glow: rgba(157, 186, 183, 0.15);
+  --night-color: #A5B4FC;
+  --night-soft: #9AA8E8;
+  --night-glow: rgba(165, 180, 252, 0.15);
+  --wake-color: #FCD9A3;
+  --wake-soft: #E8C893;
+  --wake-glow: rgba(252, 217, 163, 0.15);
+  --success-color: #7cb07e;
+  --danger-color: #c47c7c;
+
+  /* Text colors - soft blue-gray for eye comfort at night */
+  --text-primary: #94A3B8;
+  --text-secondary: rgba(148, 163, 184, 0.75);
+  --text-muted: rgba(148, 163, 184, 0.45);
+  --text-on-accent: #1A1B2E;
+  --text-card-title: #B8C4D4;
+
+  /* Shadows - darker for night */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-glow-nap: 0 0 40px rgba(157, 186, 183, 0.25);
+  --shadow-glow-night: 0 0 40px rgba(165, 180, 252, 0.25);
+  --shadow-glow-wake: 0 0 40px rgba(252, 217, 163, 0.25);
+
+  /* Sky gradient - deep night */
+  --sky-gradient: linear-gradient(180deg, #0D0E1A 0%, #1A1B2E 40%, #25263D 100%);
+
+  /* Glass effects - night mode */
+  --glass-bg: rgba(37, 38, 61, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-nav-bg: rgba(26, 27, 46, 0.85);
 }
 
 /* ============================================================================
@@ -104,12 +269,15 @@ body {
   font-size: 17px;
   font-weight: 500;
   line-height: 1.5;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.02em; /* Modern, tighter tracking */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
+  /* Smooth circadian transition */
+  transition: background-color var(--circadian-transition),
+              color var(--circadian-transition);
 }
 
 /* Allow text selection only in inputs */
@@ -163,100 +331,117 @@ input, textarea {
 }
 
 /* ============================================================================
-   GLASS MORPHISM - Premium Blur Effects
+   GLASS MORPHISM - Premium Blur Effects (Theme-Aware)
    ============================================================================ */
 .glass {
-  background: rgba(30, 34, 48, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
+  transition: background-color var(--circadian-transition),
+              border-color var(--circadian-transition);
 }
 
 .glass-heavy {
-  background: rgba(30, 34, 48, 0.85);
+  background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  transition: background-color var(--circadian-transition),
+              border-color var(--circadian-transition);
 }
 
 .glass-nav {
-  background: rgba(18, 20, 28, 0.8);
+  background: var(--glass-nav-bg);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
+  transition: background-color var(--circadian-transition);
 }
 
 /* ============================================================================
-   SOFT CARDS - Premium Rounded Containers
+   SOFT CARDS - Premium Floating Containers (The Napper Look)
    ============================================================================ */
 .card {
   background: var(--bg-card);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  border: none; /* Borderless for floating effect */
+  box-shadow: var(--shadow-md);
+  transition: background-color var(--circadian-transition),
+              box-shadow var(--circadian-transition);
 }
 
 .card-glass {
-  background: rgba(30, 34, 48, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: none;
+  box-shadow: var(--shadow-md);
+  transition: background-color var(--circadian-transition),
+              box-shadow var(--circadian-transition);
 }
 
-/* Tinted Cards - Replace left color bars with full tints */
+/* Tinted Cards - Soft tints with floating shadows */
 .card-nap {
-  background: linear-gradient(135deg, rgba(157, 186, 183, 0.12) 0%, rgba(157, 186, 183, 0.06) 100%);
+  background: linear-gradient(145deg, rgba(157, 186, 183, 0.1) 0%, rgba(157, 186, 183, 0.04) 100%);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(157, 186, 183, 0.15);
+  border: none;
+  box-shadow: var(--shadow-md);
 }
 
 .card-night {
-  background: linear-gradient(135deg, rgba(138, 146, 179, 0.12) 0%, rgba(138, 146, 179, 0.06) 100%);
+  background: linear-gradient(145deg, rgba(138, 146, 179, 0.1) 0%, rgba(138, 146, 179, 0.04) 100%);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(138, 146, 179, 0.15);
+  border: none;
+  box-shadow: var(--shadow-md);
 }
 
 .card-wake {
-  background: linear-gradient(135deg, rgba(232, 211, 163, 0.12) 0%, rgba(232, 211, 163, 0.06) 100%);
+  background: linear-gradient(145deg, rgba(232, 211, 163, 0.1) 0%, rgba(232, 211, 163, 0.04) 100%);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(232, 211, 163, 0.15);
+  border: none;
+  box-shadow: var(--shadow-md);
 }
 
 .card-bedtime {
-  background: linear-gradient(135deg, rgba(255, 126, 95, 0.12) 0%, rgba(255, 126, 95, 0.06) 100%);
+  background: linear-gradient(145deg, rgba(255, 126, 95, 0.1) 0%, rgba(255, 126, 95, 0.04) 100%);
   border-radius: var(--radius-3xl);
-  border: 1px solid rgba(255, 126, 95, 0.15);
+  border: none;
+  box-shadow: var(--shadow-md);
 }
 
 /* Solid Accent Cards - For active/prominent items */
 .card-nap-solid {
   background: var(--nap-color);
   border-radius: var(--radius-3xl);
+  border: none;
   box-shadow: var(--shadow-glow-nap);
 }
 
 .card-night-solid {
   background: var(--night-color);
   border-radius: var(--radius-3xl);
+  border: none;
   box-shadow: var(--shadow-glow-night);
 }
 
-/* Ghost Cards - Predicted/Future items */
+/* Ghost Cards - Predicted/Future items (subtle dashed borders ok here) */
 .card-ghost {
   background: transparent;
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border: 2px dashed rgba(255, 255, 255, 0.08);
 }
 
 .card-ghost-nap {
-  background: rgba(157, 186, 183, 0.05);
+  background: rgba(157, 186, 183, 0.03);
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(157, 186, 183, 0.4);
+  border: 2px dashed rgba(157, 186, 183, 0.25);
 }
 
 .card-ghost-night {
-  background: rgba(138, 146, 179, 0.05);
+  background: rgba(138, 146, 179, 0.03);
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(138, 146, 179, 0.4);
+  border: 2px dashed rgba(138, 146, 179, 0.25);
 }
 
 /* ============================================================================
@@ -376,14 +561,15 @@ input, textarea {
   width: 100%;
   padding: var(--space-md) var(--space-lg);
   background: var(--bg-soft);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   font-family: var(--font-body);
   font-size: inherit;
   font-weight: 500;
   color: var(--text-primary);
   transition: border-color 0.2s var(--ease-smooth),
-              box-shadow 0.2s var(--ease-smooth);
+              box-shadow 0.2s var(--ease-smooth),
+              background-color var(--circadian-transition);
 }
 
 .input:focus {
@@ -396,11 +582,23 @@ input, textarea {
   color: var(--text-muted);
 }
 
+/* Theme-aware color scheme for native inputs */
 input[type="date"],
 input[type="datetime-local"],
 input[type="time"],
 select {
   color-scheme: dark;
+}
+
+.theme-morning input[type="date"],
+.theme-morning input[type="datetime-local"],
+.theme-morning input[type="time"],
+.theme-morning select,
+.theme-afternoon input[type="date"],
+.theme-afternoon input[type="datetime-local"],
+.theme-afternoon input[type="time"],
+.theme-afternoon select {
+  color-scheme: light;
 }
 
 /* ============================================================================
@@ -465,20 +663,21 @@ select {
   content: '';
   position: absolute;
   inset: 0;
-  background: rgba(28, 31, 46, 0.9);
+  background: var(--glass-nav-bg);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 24px;
   /* Rim light on top edge */
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-    0 8px 32px rgba(0, 0, 0, 0.4);
+    inset 0 1px 0 0 var(--glass-border),
+    var(--shadow-lg);
   /* Radial gradient mask to create the notch */
   -webkit-mask:
     radial-gradient(circle 36px at 50% 0, transparent 100%, black 100%);
   mask:
     radial-gradient(circle 36px at 50% 0, transparent 100%, black 100%);
   z-index: -1;
+  transition: background-color var(--circadian-transition);
 }
 
 /* Subtle glow behind notch area */
@@ -611,15 +810,17 @@ select {
   padding: var(--space-lg);
   padding-bottom: calc(var(--space-xl) + var(--safe-bottom));
   z-index: 101;
-  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.2);
+  transition: background-color var(--circadian-transition);
 }
 
 .sheet-handle {
   width: 40px;
   height: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--glass-border);
   border-radius: var(--radius-full);
   margin: 0 auto var(--space-lg);
+  transition: background-color var(--circadian-transition);
 }
 
 /* ============================================================================
@@ -644,8 +845,10 @@ select {
   padding: var(--space-xl);
   max-width: 400px;
   width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-lg);
+  transition: background-color var(--circadian-transition),
+              border-color var(--circadian-transition);
 }
 
 /* ============================================================================
@@ -837,4 +1040,203 @@ select {
 .content-padding {
   padding-left: var(--space-lg);
   padding-right: var(--space-lg);
+}
+
+/* ============================================================================
+   SKY BACKGROUND - Circadian Ambient Layer
+   ============================================================================ */
+.sky-background {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  background: var(--sky-gradient);
+  transition: background var(--circadian-transition);
+  pointer-events: none;
+}
+
+/* Animated sun for morning */
+.sky-sun {
+  position: absolute;
+  top: 8%;
+  right: 15%;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, #FFD93D 0%, #FFB347 50%, transparent 70%);
+  border-radius: 50%;
+  box-shadow: 0 0 60px 20px rgba(255, 179, 71, 0.3);
+  animation: sun-pulse 4s ease-in-out infinite;
+}
+
+@keyframes sun-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+/* Afternoon clouds decoration */
+.sky-clouds {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sky-cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  filter: blur(1px);
+}
+
+.sky-cloud-1 {
+  top: 10%;
+  left: -10%;
+  width: 200px;
+  height: 60px;
+  animation: cloud-drift 60s linear infinite;
+}
+
+.sky-cloud-2 {
+  top: 25%;
+  left: 20%;
+  width: 150px;
+  height: 40px;
+  animation: cloud-drift 80s linear infinite;
+  animation-delay: -20s;
+}
+
+.sky-cloud-3 {
+  top: 5%;
+  right: 10%;
+  width: 180px;
+  height: 50px;
+  animation: cloud-drift 70s linear infinite;
+  animation-delay: -40s;
+}
+
+@keyframes cloud-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100vw); }
+}
+
+/* Starfield styles (night only) */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: -5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: star-twinkle var(--duration, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  opacity: var(--base-opacity, 0.5);
+}
+
+.star.small {
+  width: 1px;
+  height: 1px;
+}
+
+.star.medium {
+  width: 2px;
+  height: 2px;
+}
+
+.star.large {
+  width: 3px;
+  height: 3px;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: var(--base-opacity, 0.5); transform: scale(1); }
+  50% { opacity: calc(var(--base-opacity, 0.5) * 0.4); transform: scale(0.8); }
+}
+
+/* Moon decoration for night */
+.moon {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #F5F5DC 0%, #FFFACD 50%, #F0E68C 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 30px 10px rgba(245, 245, 220, 0.2),
+    inset -8px -4px 0 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================================================
+   THEME-SPECIFIC OVERRIDES
+   ============================================================================ */
+
+/* Light mode adjustments for solid accent cards */
+.theme-morning .card-nap-solid,
+.theme-afternoon .card-nap-solid {
+  color: var(--text-on-accent);
+}
+
+.theme-morning .card-night-solid,
+.theme-afternoon .card-night-solid {
+  color: var(--text-on-accent);
+}
+
+/* Light mode scrollbar */
+.theme-morning ::-webkit-scrollbar-thumb,
+.theme-afternoon ::-webkit-scrollbar-thumb {
+  background: rgba(45, 52, 54, 0.15);
+}
+
+.theme-morning ::-webkit-scrollbar-thumb:hover,
+.theme-afternoon ::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 52, 54, 0.25);
+}
+
+/* Light mode ghost cards have visible borders */
+.theme-morning .card-ghost,
+.theme-afternoon .card-ghost {
+  border-color: rgba(45, 52, 54, 0.15);
+}
+
+.theme-morning .card-ghost-nap,
+.theme-afternoon .card-ghost-nap {
+  background: rgba(91, 168, 154, 0.08);
+  border-color: rgba(91, 168, 154, 0.3);
+}
+
+.theme-morning .card-ghost-night,
+.theme-afternoon .card-ghost-night {
+  background: rgba(123, 138, 191, 0.08);
+  border-color: rgba(123, 138, 191, 0.3);
+}
+
+/* Light mode sheet content */
+.theme-morning .sheet-content,
+.theme-afternoon .sheet-content {
+  background: var(--bg-card);
+}
+
+.theme-morning .sheet-handle,
+.theme-afternoon .sheet-handle {
+  background: rgba(45, 52, 54, 0.15);
+}
+
+/* Light mode modal */
+.theme-morning .modal-overlay,
+.theme-afternoon .modal-overlay {
+  background: rgba(45, 52, 54, 0.5);
+}
+
+.theme-morning .modal-content,
+.theme-afternoon .modal-content {
+  background: var(--bg-card);
+  border-color: var(--glass-border);
 }
