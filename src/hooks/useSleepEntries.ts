@@ -23,27 +23,37 @@ const fromSupabaseTimestamp = (utcTimestamp: string): string => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-export function useSleepEntries() {
+interface UseSleepEntriesOptions {
+  babyId: string | null;
+}
+
+export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: null }) {
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch entries on mount
+  // Fetch entries when babyId changes
   useEffect(() => {
     fetchEntries();
-  }, []);
+  }, [babyId]);
 
   const fetchEntries = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setLoading(false);
-        return;
+      // If no babyId provided, try to use current user's id
+      let targetBabyId = babyId;
+
+      if (!targetBabyId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setLoading(false);
+          return;
+        }
+        targetBabyId = user.id;
       }
 
       const { data, error } = await supabase
         .from('sleep_entries')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', targetBabyId)
         .order('start_time', { ascending: false });
 
       if (error) {
@@ -60,6 +70,8 @@ export function useSleepEntries() {
           notes: entry.notes || undefined,
         }));
         setEntries(mappedEntries);
+      } else {
+        setEntries([]);
       }
     } catch (error) {
       console.error('Error fetching entries:', error);
@@ -70,13 +82,19 @@ export function useSleepEntries() {
 
   const addEntry = useCallback(async (data: Omit<SleepEntry, 'id' | 'date'>) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      // Determine which baby to add entry for
+      let targetBabyId = babyId;
+
+      if (!targetBabyId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
+        targetBabyId = user.id;
+      }
 
       const { data: inserted, error } = await supabase
         .from('sleep_entries')
         .insert({
-          user_id: user.id,
+          user_id: targetBabyId,
           start_time: toSupabaseTimestamp(data.startTime),
           end_time: data.endTime ? toSupabaseTimestamp(data.endTime) : null,
           type: data.type,
@@ -105,7 +123,7 @@ export function useSleepEntries() {
       console.error('Error adding entry:', error);
       return null;
     }
-  }, []);
+  }, [babyId]);
 
   const updateEntry = useCallback(async (id: string, data: Partial<Omit<SleepEntry, 'id'>>) => {
     try {
@@ -285,5 +303,6 @@ export function useSleepEntries() {
     lastCompletedSleep,
     awakeMinutes,
     getDailySummary,
+    refreshEntries: fetchEntries,
   };
 }

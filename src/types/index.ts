@@ -21,3 +21,17 @@ export interface SleepEntry {
   type: 'nap' | 'night';
   notes?: string;
 }
+
+export interface BabyShare {
+  id: string;
+  babyOwnerId: string;
+  sharedWithUserId: string | null;
+  sharedWithEmail: string;
+  status: 'pending' | 'accepted' | 'revoked';
+  role: 'caregiver' | 'viewer';
+  invitedAt: string;
+  acceptedAt: string | null;
+  // Populated from join with profiles
+  babyName?: string;
+  ownerName?: string;
+}

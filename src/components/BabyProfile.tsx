@@ -1,15 +1,45 @@
 import { useState, useEffect } from 'react';
-import type { BabyProfile as BabyProfileType, UserProfile } from '../types';
+import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../types';
 import { calculateAge } from '../utils/dateUtils';
+import { ShareAccess } from './ShareAccess';
+
+interface SharedBabyProfile extends BabyProfileType {
+  isOwner: boolean;
+  ownerName?: string;
+}
 
 interface BabyProfileProps {
   profile: BabyProfileType | null;
   userProfile: UserProfile | null;
+  sharedProfiles?: SharedBabyProfile[];
+  activeBabyId?: string | null;
+  onActiveBabyChange?: (babyId: string) => void;
   onSave: (data: Omit<BabyProfileType, 'id'> & Partial<Omit<UserProfile, 'email'>>) => void;
   onUpdate: (data: Partial<Omit<BabyProfileType, 'id'>> & Partial<Omit<UserProfile, 'email'>>) => void;
+  // Sharing props
+  myShares?: BabyShare[];
+  pendingInvitations?: BabyShare[];
+  onInvite?: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onRevokeAccess?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onAcceptInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onDeclineInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
 }
 
-export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProfileProps) {
+export function BabyProfile({
+  profile,
+  userProfile,
+  sharedProfiles = [],
+  activeBabyId,
+  onActiveBabyChange,
+  onSave,
+  onUpdate,
+  myShares = [],
+  pendingInvitations = [],
+  onInvite,
+  onRevokeAccess,
+  onAcceptInvitation,
+  onDeclineInvitation,
+}: BabyProfileProps) {
   const [isEditingBaby, setIsEditingBaby] = useState(!profile);
   const [isEditingUser, setIsEditingUser] = useState(false);
 
@@ -26,7 +56,7 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
     userRole: userProfile?.userRole || 'other' as const,
   });
 
-  // Update form data when profile changes
+  // Update form data and editing state when profile changes
   useEffect(() => {
     if (profile) {
       setBabyFormData({
@@ -36,6 +66,10 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
         weight: profile.weight,
         height: profile.height,
       });
+      // If profile exists and has a name, exit editing mode to show the profile
+      if (profile.name) {
+        setIsEditingBaby(false);
+      }
     }
   }, [profile]);
 
@@ -352,6 +386,71 @@ export function BabyProfile({ profile, userProfile, onSave, onUpdate }: BabyProf
           </div>
         )}
       </div>
+
+      {/* Baby Selector (if multiple babies) */}
+      {sharedProfiles.length > 1 && onActiveBabyChange && (
+        <div className="card p-6">
+          <h2 className="text-lg font-display font-bold text-[var(--text-primary)] mb-4">
+            Switch Baby
+          </h2>
+          <div className="space-y-2">
+            {sharedProfiles.map((baby) => (
+              <button
+                key={baby.id}
+                onClick={() => onActiveBabyChange(baby.id)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
+                  activeBabyId === baby.id
+                    ? 'bg-[var(--nap-color)]/20 border border-[var(--nap-color)]/40'
+                    : 'bg-[var(--bg-soft)] hover:bg-[var(--bg-soft)]/80'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  activeBabyId === baby.id
+                    ? 'bg-[var(--nap-color)]/30'
+                    : 'bg-[var(--text-muted)]/20'
+                }`}>
+                  <span className={`font-display font-bold ${
+                    activeBabyId === baby.id
+                      ? 'text-[var(--nap-color)]'
+                      : 'text-[var(--text-muted)]'
+                  }`}>
+                    {baby.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div className="text-left flex-1">
+                  <p className={`font-display font-semibold ${
+                    activeBabyId === baby.id
+                      ? 'text-[var(--text-primary)]'
+                      : 'text-[var(--text-secondary)]'
+                  }`}>
+                    {baby.name}
+                  </p>
+                  <p className="text-xs text-[var(--text-muted)]">
+                    {baby.isOwner ? 'Your baby' : `Shared by ${baby.ownerName || 'someone'}`}
+                  </p>
+                </div>
+                {activeBabyId === baby.id && (
+                  <svg className="w-5 h-5 text-[var(--nap-color)]" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Share Access Section (only for profile owner) */}
+      {profile && onInvite && onRevokeAccess && onAcceptInvitation && onDeclineInvitation && (
+        <ShareAccess
+          myShares={myShares}
+          pendingInvitations={pendingInvitations}
+          onInvite={onInvite}
+          onRevokeAccess={onRevokeAccess}
+          onAcceptInvitation={onAcceptInvitation}
+          onDeclineInvitation={onDeclineInvitation}
+        />
+      )}
     </div>
   );
 }

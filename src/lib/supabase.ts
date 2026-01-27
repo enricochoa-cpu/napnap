@@ -29,3 +29,15 @@ export interface DbSleepEntry {
   notes: string | null;
   created_at: string;
 }
+
+export interface DbBabyShare {
+  id: string;
+  baby_owner_id: string;
+  shared_with_user_id: string | null;
+  shared_with_email: string;
+  status: 'pending' | 'accepted' | 'revoked';
+  role: 'caregiver' | 'viewer';
+  invited_at: string;
+  accepted_at: string | null;
+  created_at: string;
+}

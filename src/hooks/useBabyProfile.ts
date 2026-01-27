@@ -2,9 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { BabyProfile, UserProfile } from '../types';
 
+interface SharedBabyProfile extends BabyProfile {
+  isOwner: boolean;
+  ownerName?: string;
+}
+
 export function useBabyProfile() {
   const [profile, setProfile] = useState<BabyProfile | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [sharedProfiles, setSharedProfiles] = useState<SharedBabyProfile[]>([]);
+  const [activeBabyId, setActiveBabyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch profile on mount
@@ -20,6 +27,7 @@ export function useBabyProfile() {
         return;
       }
 
+      // Fetch own profile
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -31,20 +39,25 @@ export function useBabyProfile() {
         console.error('Error fetching profile:', error);
       }
 
+      let ownProfile: BabyProfile | null = null;
+
       if (data) {
-        setProfile({
+        console.log('Profile data from DB:', data);
+        ownProfile = {
           id: data.id,
           name: data.baby_name || '',
           dateOfBirth: data.baby_date_of_birth || '',
           gender: data.baby_gender || 'other',
           weight: data.baby_weight || 0,
           height: data.baby_height || 0,
-        });
+        };
+        setProfile(ownProfile);
         setUserProfile({
           email: user.email || '',
           userName: data.user_name || '',
           userRole: data.user_role || 'other',
         });
+        console.log('Parsed profile:', ownProfile);
       } else {
         // No profile yet, but still set user email
         setUserProfile({
@@ -52,6 +65,84 @@ export function useBabyProfile() {
           userName: '',
           userRole: 'other',
         });
+      }
+
+      // Fetch shared profiles (babies shared with me)
+      // This may fail if baby_shares table doesn't exist yet - that's OK
+      const sharedBabies: SharedBabyProfile[] = [];
+      try {
+        const { data: sharesData, error: sharesError } = await supabase
+          .from('baby_shares')
+          .select(`
+            baby_owner_id,
+            profiles:baby_owner_id (
+              id,
+              baby_name,
+              baby_date_of_birth,
+              baby_gender,
+              baby_weight,
+              baby_height,
+              user_name
+            )
+          `)
+          .or(`shared_with_user_id.eq.${user.id},shared_with_email.eq.${user.email}`)
+          .eq('status', 'accepted');
+
+        if (sharesError) {
+          // Table might not exist yet - this is OK
+          console.log('Note: baby_shares table not available yet');
+        } else if (sharesData) {
+          for (const share of sharesData) {
+            // Type assertion needed because Supabase join typing infers array incorrectly
+            const p = share.profiles as unknown as {
+              id: string;
+              baby_name: string | null;
+              baby_date_of_birth: string | null;
+              baby_gender: 'male' | 'female' | 'other' | null;
+              baby_weight: number | null;
+              baby_height: number | null;
+              user_name: string | null;
+            } | null;
+
+            if (p && p.id !== user.id) {
+              sharedBabies.push({
+                id: p.id,
+                name: p.baby_name || '',
+                dateOfBirth: p.baby_date_of_birth || '',
+                gender: p.baby_gender || 'other',
+                weight: p.baby_weight || 0,
+                height: p.baby_height || 0,
+                isOwner: false,
+                ownerName: p.user_name || undefined,
+              });
+            }
+          }
+        }
+      } catch {
+        // baby_shares table doesn't exist yet - continue without shared profiles
+        console.log('Note: baby_shares feature not available yet');
+      }
+
+      // Build list of all accessible babies
+      const allProfiles: SharedBabyProfile[] = [];
+
+      if (ownProfile) {
+        allProfiles.push({
+          ...ownProfile,
+          isOwner: true,
+        });
+      }
+
+      allProfiles.push(...sharedBabies);
+      setSharedProfiles(allProfiles);
+
+      // Set active baby (prefer own profile, or first shared)
+      if (!activeBabyId) {
+        if (ownProfile) {
+          setActiveBabyId(ownProfile.id);
+        } else if (sharedBabies.length > 0) {
+          setActiveBabyId(sharedBabies[0].id);
+        }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -97,6 +188,14 @@ export function useBabyProfile() {
         userName: data.userName || '',
         userRole: data.userRole || 'other',
       });
+      setActiveBabyId(user.id);
+
+      // Update shared profiles list
+      setSharedProfiles((prev) => {
+        const filtered = prev.filter((p) => p.id !== user.id);
+        return [{ ...newProfile, isOwner: true }, ...filtered];
+      });
+
       return newProfile;
     } catch (error) {
       console.error('Error creating profile:', error);
@@ -132,9 +231,20 @@ export function useBabyProfile() {
       if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.weight !== undefined || data.height !== undefined) {
         setProfile((prev) => {
           if (!prev) return prev;
-          const { userName, userRole, ...babyData } = data;
+          const { userName: _un, userRole: _ur, ...babyData } = data;
           return { ...prev, ...babyData };
         });
+
+        // Also update in sharedProfiles
+        setSharedProfiles((prev) =>
+          prev.map((p) => {
+            if (p.id === user.id) {
+              const { userName: _un2, userRole: _ur2, ...babyData } = data;
+              return { ...p, ...babyData };
+            }
+            return p;
+          })
+        );
       }
 
       // Update user profile state
@@ -169,18 +279,39 @@ export function useBabyProfile() {
       }
 
       setProfile(null);
+      setSharedProfiles((prev) => prev.filter((p) => p.id !== user.id));
+
+      // Set active baby to first shared profile if available
+      const remaining = sharedProfiles.filter((p) => p.id !== user.id);
+      if (remaining.length > 0) {
+        setActiveBabyId(remaining[0].id);
+      } else {
+        setActiveBabyId(null);
+      }
     } catch (error) {
       console.error('Error deleting profile:', error);
     }
-  }, []);
+  }, [sharedProfiles]);
+
+  // Get the active baby profile
+  const activeBabyProfile = sharedProfiles.find((p) => p.id === activeBabyId) || null;
+  const isOwnerOfActiveBaby = activeBabyProfile?.isOwner ?? true;
+  const hasMultipleBabies = sharedProfiles.length > 1;
 
   return {
     profile,
     userProfile,
+    sharedProfiles,
+    activeBabyId,
+    setActiveBabyId,
+    activeBabyProfile,
+    isOwnerOfActiveBaby,
+    hasMultipleBabies,
     loading,
     createProfile,
     updateProfile,
     deleteProfile,
     hasProfile: profile !== null,
+    refreshProfile: fetchProfile,
   };
 }

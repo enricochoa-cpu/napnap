@@ -9,6 +9,7 @@ import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
+import { useBabyShares } from './hooks/useBabyShares';
 import { useAuth } from './hooks/useAuth';
 import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import { formatDate, formatDateTime } from './utils/dateUtils';
@@ -51,7 +52,27 @@ const CloseIcon = () => (
 function App() {
   const { signOut } = useAuth();
   const { theme } = useApplyCircadianTheme();
-  const { profile, userProfile, createProfile, updateProfile } = useBabyProfile();
+  const {
+    profile,
+    userProfile,
+    sharedProfiles,
+    activeBabyId,
+    setActiveBabyId,
+    activeBabyProfile,
+    createProfile,
+    updateProfile,
+    refreshProfile,
+  } = useBabyProfile();
+
+  const {
+    myShares,
+    pendingInvitations,
+    inviteByEmail,
+    acceptInvitation,
+    declineInvitation,
+    revokeAccess,
+  } = useBabyShares();
+
   const {
     addEntry,
     updateEntry,
@@ -63,7 +84,16 @@ function App() {
     lastCompletedSleep,
     getDailySummary,
     entries,
-  } = useSleepEntries();
+  } = useSleepEntries({ babyId: activeBabyId });
+
+  // Refresh data when accepting an invitation
+  const handleAcceptInvitation = async (shareId: string) => {
+    const result = await acceptInvitation(shareId);
+    if (result.success) {
+      await refreshProfile();
+    }
+    return result;
+  };
 
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
@@ -219,8 +249,17 @@ function App() {
       <BabyProfile
         profile={profile}
         userProfile={userProfile}
+        sharedProfiles={sharedProfiles}
+        activeBabyId={activeBabyId}
+        onActiveBabyChange={setActiveBabyId}
         onSave={createProfile}
         onUpdate={updateProfile}
+        myShares={myShares}
+        pendingInvitations={pendingInvitations}
+        onInvite={inviteByEmail}
+        onRevokeAccess={revokeAccess}
+        onAcceptInvitation={handleAcceptInvitation}
+        onDeclineInvitation={declineInvitation}
       />
 
       {/* Sign Out Button */}
@@ -265,7 +304,7 @@ function App() {
       <main className="max-w-lg mx-auto relative z-0">
         {currentView === 'home' && (
           <TodayView
-            profile={profile}
+            profile={activeBabyProfile || profile}
             entries={entries}
             activeSleep={activeSleep}
             lastCompletedSleep={lastCompletedSleep}
