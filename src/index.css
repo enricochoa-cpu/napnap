@@ -107,41 +107,41 @@
   --bg-card: #FFFFFF;
   --bg-elevated: #FFFFFF;
 
-  /* Accent colors - warm morning palette */
-  --nap-color: #5BA89A;
-  --nap-soft: #4A978A;
-  --nap-glow: rgba(91, 168, 154, 0.12);
-  --night-color: #7B8ABF;
-  --night-soft: #6A79AE;
-  --night-glow: rgba(123, 138, 191, 0.12);
-  --wake-color: #FFB347;
-  --wake-soft: #F5A33D;
-  --wake-glow: rgba(255, 179, 71, 0.15);
-  --success-color: #5B9E5D;
-  --danger-color: #D46B6B;
+  /* Accent colors - VIBRANT morning palette (not washed out!) */
+  --nap-color: #0D9488;         /* Teal 600 - saturated */
+  --nap-soft: #0F766E;          /* Teal 700 */
+  --nap-glow: rgba(13, 148, 136, 0.15);
+  --night-color: #6366F1;       /* Indigo 500 - saturated */
+  --night-soft: #4F46E5;        /* Indigo 600 */
+  --night-glow: rgba(99, 102, 241, 0.15);
+  --wake-color: #D97706;        /* Amber 600 - INTENSE focal point */
+  --wake-soft: #B45309;         /* Amber 700 */
+  --wake-glow: rgba(217, 119, 6, 0.25);
+  --success-color: #059669;     /* Emerald 600 */
+  --danger-color: #DC2626;      /* Red 600 */
 
-  /* Text colors - soft charcoal, never pure black */
-  --text-primary: #2D3436;
-  --text-secondary: rgba(45, 52, 54, 0.65);
-  --text-muted: rgba(45, 52, 54, 0.4);
+  /* Text colors - dark charcoal for perfect legibility */
+  --text-primary: #1E293B;      /* Slate 800 - darker for contrast */
+  --text-secondary: rgba(30, 41, 59, 0.7);
+  --text-muted: rgba(30, 41, 59, 0.45);
   --text-on-accent: #FFFFFF;
-  --text-card-title: #3D4852; /* Softer than primary for card titles */
+  --text-card-title: #1E293B;   /* Same as primary for consistency */
 
-  /* Shadows - diffuse floating shadows (The Napper Look) */
-  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-glow-nap: 0 8px 30px -5px rgba(91, 168, 154, 0.25);
-  --shadow-glow-night: 0 8px 30px -5px rgba(123, 138, 191, 0.25);
-  --shadow-glow-wake: 0 8px 30px -5px rgba(255, 179, 71, 0.3);
+  /* Shadows - DEEPER for volume (10% opacity) */
+  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.10);
+  --shadow-glow-nap: 0 8px 30px -5px rgba(13, 148, 136, 0.3);
+  --shadow-glow-night: 0 8px 30px -5px rgba(99, 102, 241, 0.3);
+  --shadow-glow-wake: 0 8px 30px -5px rgba(217, 119, 6, 0.35);
 
   /* Sky gradient - subtle warm fade */
   --sky-gradient: linear-gradient(to bottom, #FFFBF2 0%, #FFFFFF 100%);
 
-  /* Glass effects - light mode (no visible borders) */
+  /* Glass effects - light mode with subtle border for definition */
   --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: transparent;
+  --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
 }
 
@@ -156,41 +156,41 @@
   --bg-card: #FFFFFF;
   --bg-elevated: #FFFFFF;
 
-  /* Accent colors - crisp afternoon palette */
-  --nap-color: #5BA89A;
-  --nap-soft: #4A978A;
-  --nap-glow: rgba(91, 168, 154, 0.12);
-  --night-color: #7B8ABF;
-  --night-soft: #6A79AE;
-  --night-glow: rgba(123, 138, 191, 0.12);
-  --wake-color: #6BABFF;
-  --wake-soft: #5A9AEE;
-  --wake-glow: rgba(107, 171, 255, 0.15);
-  --success-color: #5B9E5D;
-  --danger-color: #D46B6B;
+  /* Accent colors - VIBRANT afternoon palette (not washed out!) */
+  --nap-color: #0D9488;         /* Teal 600 - saturated */
+  --nap-soft: #0F766E;          /* Teal 700 */
+  --nap-glow: rgba(13, 148, 136, 0.15);
+  --night-color: #6366F1;       /* Indigo 500 - saturated */
+  --night-soft: #4F46E5;        /* Indigo 600 */
+  --night-glow: rgba(99, 102, 241, 0.15);
+  --wake-color: #D97706;        /* Amber 600 - INTENSE for wake */
+  --wake-soft: #B45309;         /* Amber 700 */
+  --wake-glow: rgba(217, 119, 6, 0.25);
+  --success-color: #059669;     /* Emerald 600 */
+  --danger-color: #DC2626;      /* Red 600 */
 
-  /* Text colors - soft charcoal */
-  --text-primary: #2D3436;
-  --text-secondary: rgba(45, 52, 54, 0.65);
-  --text-muted: rgba(45, 52, 54, 0.4);
+  /* Text colors - dark charcoal for perfect legibility */
+  --text-primary: #1E293B;      /* Slate 800 - darker for contrast */
+  --text-secondary: rgba(30, 41, 59, 0.7);
+  --text-muted: rgba(30, 41, 59, 0.45);
   --text-on-accent: #FFFFFF;
-  --text-card-title: #3D4852; /* Softer than primary for card titles */
+  --text-card-title: #1E293B;   /* Same as primary for consistency */
 
-  /* Shadows - diffuse floating shadows (The Napper Look) */
-  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
-  --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-glow-nap: 0 8px 30px -5px rgba(91, 168, 154, 0.25);
-  --shadow-glow-night: 0 8px 30px -5px rgba(123, 138, 191, 0.25);
-  --shadow-glow-wake: 0 8px 30px -5px rgba(107, 171, 255, 0.3);
+  /* Shadows - DEEPER for volume (10% opacity) */
+  --shadow-sm: 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 8px 24px -4px rgba(0, 0, 0, 0.10);
+  --shadow-glow-nap: 0 8px 30px -5px rgba(13, 148, 136, 0.3);
+  --shadow-glow-night: 0 8px 30px -5px rgba(99, 102, 241, 0.3);
+  --shadow-glow-wake: 0 8px 30px -5px rgba(217, 119, 6, 0.35);
 
   /* Sky gradient - subtle cool fade */
   --sky-gradient: linear-gradient(to bottom, #FDF7F2 0%, #FFFFFF 100%);
 
-  /* Glass effects - light mode (no visible borders) */
+  /* Glass effects - light mode with subtle border for definition */
   --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: transparent;
+  --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
 }
 
@@ -1187,6 +1187,35 @@ select {
 .theme-morning .card-night-solid,
 .theme-afternoon .card-night-solid {
   color: var(--text-on-accent);
+}
+
+/* Light mode cards need subtle borders for definition */
+.theme-morning .card,
+.theme-afternoon .card {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-morning .card-wake,
+.theme-afternoon .card-wake {
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(217, 119, 6, 0.1);
+}
+
+.theme-morning .card-nap,
+.theme-afternoon .card-nap {
+  border: 1px solid rgba(13, 148, 136, 0.15);
+}
+
+.theme-morning .card-night,
+.theme-afternoon .card-night {
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+/* Timeline cards in light mode - ensure text is dark charcoal */
+.theme-morning .timeline-card,
+.theme-afternoon .timeline-card {
+  box-shadow: var(--shadow-md);
 }
 
 /* Light mode scrollbar */
