@@ -42,7 +42,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
     startTime: entry?.startTime || formatDateTime(new Date()),
     endTime: entry?.endTime || '',
     wakeupTime: formatDateTime(new Date()),
-    notes: entry?.notes || '',
   });
 
   useEffect(() => {
@@ -76,7 +75,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
         startTime: formatDateTime(bedtimeDate),
         endTime: formData.wakeupTime,
         type: 'night',
-        notes: formData.notes || undefined,
       });
     } else if (mode === 'nap') {
       // For naps, combine selectedDate with time inputs
@@ -88,7 +86,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
         startTime: startDateTime,
         endTime: endDateTime,
         type: 'nap',
-        notes: formData.notes || undefined,
       });
     } else {
       // For night/bedtime, use full datetime
@@ -96,7 +93,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
         startTime: formData.startTime,
         endTime: formData.endTime || null,
         type: mode,
-        notes: formData.notes || undefined,
       });
     }
   };
@@ -282,22 +278,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
             </div>
           </>
         )}
-
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-            Notes
-            <span className="text-[var(--text-muted)] font-normal ml-2">(optional)</span>
-          </label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows={2}
-            className="input resize-none"
-            placeholder="Any notes about this sleep..."
-          />
-        </div>
 
         {/* Actions */}
         <div className="flex gap-3 pt-2">

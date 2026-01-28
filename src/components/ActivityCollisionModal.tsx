@@ -85,7 +85,6 @@ export function ActivityCollisionModal({
               <p className="text-sm text-[var(--text-muted)]">
                 {existingEntry.type === 'nap' ? 'Nap' : 'Night sleep'}
                 {!existingEntry.endTime && ' · Still ongoing'}
-                {existingEntry.notes && ` · ${existingEntry.notes}`}
               </p>
             </div>
           </div>

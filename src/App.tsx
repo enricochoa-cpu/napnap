@@ -318,7 +318,8 @@ function App() {
         {currentView === 'add' && renderAddView()}
       </main>
 
-      {/* Minimalist Floating Tab Bar */}
+      {/* Minimalist Floating Tab Bar - Hidden when editing */}
+      {currentView !== 'add' && (
       <nav className="floating-nav">
         <div className="floating-nav-inner">
           <div className="floating-nav-bar">
@@ -389,6 +390,7 @@ function App() {
           </div>
         </div>
       </nav>
+      )}
 
       {/* Action Menu Bottom Sheet */}
       {showActionMenu && (
