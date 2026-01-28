@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import type { SleepEntry } from '../types';
-import { formatDateTime } from '../utils/dateUtils';
 
 type FormMode = 'nap' | 'night' | 'wakeup';
 
@@ -24,6 +23,18 @@ const getCurrentTime = (): string => {
   return `${hours}:${minutes}`;
 };
 
+// Helper to get next day date string
+const getNextDay = (date: string): string => {
+  const d = new Date(date);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().split('T')[0];
+};
+
+// Helper to compare times (returns true if time1 > time2)
+const isTimeBefore = (time1: string, time2: string): boolean => {
+  return time1 < time2;
+};
+
 interface SleepFormProps {
   entry?: SleepEntry | null;
   onSubmit: (data: Omit<SleepEntry, 'id' | 'date'>) => void;
@@ -34,77 +45,98 @@ interface SleepFormProps {
 
 export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }: SleepFormProps) {
   const [mode, setMode] = useState<FormMode>(entry?.type || 'nap');
-  const [formData, setFormData] = useState({
-    // For naps: just store time (HH:mm)
-    napStartTime: entry ? extractTime(entry.startTime) : getCurrentTime(),
-    napEndTime: entry?.endTime ? extractTime(entry.endTime) : '',
-    // For night/wakeup: store full datetime
-    startTime: entry?.startTime || formatDateTime(new Date()),
-    endTime: entry?.endTime || '',
-    wakeupTime: formatDateTime(new Date()),
+  const [startTime, setStartTime] = useState(() => {
+    if (entry) return extractTime(entry.startTime);
+    return getCurrentTime();
   });
+  const [endTime, setEndTime] = useState(() => {
+    if (entry?.endTime) return extractTime(entry.endTime);
+    return '';
+  });
+  const [error, setError] = useState<string | null>(null);
 
+  // Reset times when mode changes (only for new entries)
   useEffect(() => {
     if (!entry) {
       const now = new Date();
       const selectedDateObj = new Date(selectedDate);
       const isToday = selectedDateObj.toDateString() === now.toDateString();
-
       const currentTime = getCurrentTime();
-      const defaultTime = isToday ? currentTime : '12:00';
 
-      setFormData((prev) => ({
-        ...prev,
-        napStartTime: defaultTime,
-        napEndTime: '',
-        startTime: isToday ? formatDateTime(now) : formatDateTime(selectedDateObj),
-        wakeupTime: isToday ? formatDateTime(now) : formatDateTime(selectedDateObj),
-      }));
+      if (mode === 'wakeup') {
+        // For wake up, default to current time or 07:00
+        setStartTime(''); // Not used for wakeup
+        setEndTime(isToday ? currentTime : '07:00');
+      } else if (mode === 'nap') {
+        setStartTime(isToday ? currentTime : '12:00');
+        setEndTime('');
+      } else {
+        // Bedtime - default to 20:00 for start
+        setStartTime('20:00');
+        setEndTime('');
+      }
     }
-  }, [selectedDate, entry]);
+  }, [mode, entry, selectedDate]);
+
+  // Update times when entry changes (editing)
+  useEffect(() => {
+    if (entry) {
+      setStartTime(extractTime(entry.startTime));
+      setEndTime(entry.endTime ? extractTime(entry.endTime) : '');
+      setMode(entry.type);
+    }
+  }, [entry]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     if (mode === 'wakeup') {
-      // For wake-up, create a night sleep entry with the wake-up time as end time
-      // Default bedtime to 10 hours before wake-up
-      const wakeupDate = new Date(formData.wakeupTime);
+      // For wake-up, create a night sleep entry
+      // Bedtime is estimated as 10 hours before wake-up
+      const wakeupDateTime = combineDateTime(selectedDate, endTime);
+      const wakeupDate = new Date(wakeupDateTime);
       const bedtimeDate = new Date(wakeupDate.getTime() - 10 * 60 * 60 * 1000);
+
       onSubmit({
-        startTime: formatDateTime(bedtimeDate),
-        endTime: formData.wakeupTime,
+        startTime: bedtimeDate.toISOString().slice(0, 16),
+        endTime: wakeupDateTime,
         type: 'night',
       });
     } else if (mode === 'nap') {
-      // For naps, combine selectedDate with time inputs
-      const startDateTime = combineDateTime(selectedDate, formData.napStartTime);
-      const endDateTime = formData.napEndTime
-        ? combineDateTime(selectedDate, formData.napEndTime)
-        : null;
+      // For naps, both times are on selectedDate
+      // Validate that end > start
+      if (endTime && isTimeBefore(endTime, startTime)) {
+        setError('End time must be after start time for naps');
+        return;
+      }
+
       onSubmit({
-        startTime: startDateTime,
-        endTime: endDateTime,
+        startTime: combineDateTime(selectedDate, startTime),
+        endTime: endTime ? combineDateTime(selectedDate, endTime) : null,
         type: 'nap',
       });
     } else {
-      // For night/bedtime, use full datetime
+      // For night/bedtime
+      // If end time < start time, end is next day (crossed midnight)
+      const startDateTime = combineDateTime(selectedDate, startTime);
+      let endDateTime: string | null = null;
+
+      if (endTime) {
+        if (isTimeBefore(endTime, startTime)) {
+          // Crossed midnight - end time is next day
+          endDateTime = combineDateTime(getNextDay(selectedDate), endTime);
+        } else {
+          endDateTime = combineDateTime(selectedDate, endTime);
+        }
+      }
+
       onSubmit({
-        startTime: formData.startTime,
-        endTime: formData.endTime || null,
-        type: mode,
+        startTime: startDateTime,
+        endTime: endDateTime,
+        type: 'night',
       });
     }
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
   };
 
   const handleDelete = () => {
@@ -149,7 +181,6 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              {/* Sun icon - same as WakeUpEntry */}
               <svg className={`w-8 h-8 ${mode === 'wakeup' ? 'text-[var(--wake-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
               </svg>
@@ -162,15 +193,14 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
               onClick={() => setMode('nap')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
                 mode === 'nap'
-                  ? 'border-[var(--night-color)] bg-[var(--night-color)]/10'
+                  ? 'border-[var(--nap-color)] bg-[var(--nap-color)]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              {/* Cloud icon - same as NapEntry */}
-              <svg className={`w-8 h-8 ${mode === 'nap' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={`w-8 h-8 ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
               </svg>
-              <span className={`font-display font-medium text-sm ${mode === 'nap' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
+              <span className={`font-display font-medium text-sm ${mode === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--text-muted)]'}`}>
                 Nap
               </span>
             </button>
@@ -179,104 +209,108 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
               onClick={() => setMode('night')}
               className={`p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2 ${
                 mode === 'night'
-                  ? 'border-[#ff7e5f] bg-[#ff7e5f]/10'
+                  ? 'border-[var(--night-color)] bg-[var(--night-color)]/10'
                   : 'border-white/10 hover:border-white/20'
               }`}
             >
-              {/* Bedtime/sunset icon - same as BedtimeEntry */}
-              <svg className={`w-8 h-8 ${mode === 'night' ? 'text-[#ff7e5f]' : 'text-[var(--text-muted)]'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
-                <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2} strokeLinecap="round" />
+              <svg className={`w-8 h-8 ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-              <span className={`font-display font-medium text-sm ${mode === 'night' ? 'text-[#ff7e5f]' : 'text-[var(--text-muted)]'}`}>
+              <span className={`font-display font-medium text-sm ${mode === 'night' ? 'text-[var(--night-color)]' : 'text-[var(--text-muted)]'}`}>
                 Bedtime
               </span>
             </button>
           </div>
         </div>
 
-        {/* Wakeup Time - only shown for wakeup mode */}
+        {/* Error message */}
+        {error && (
+          <div className="p-3 rounded-xl bg-[var(--danger-color)]/10 text-[var(--danger-color)] text-sm font-medium">
+            {error}
+          </div>
+        )}
+
+        {/* Wake Up mode - only end time (wake up time) */}
         {mode === 'wakeup' && (
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
               Wake Up Time
             </label>
             <input
-              type="datetime-local"
-              name="wakeupTime"
-              value={formData.wakeupTime}
-              onChange={handleChange}
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
               required
               className="input"
             />
           </div>
         )}
 
-        {/* Nap time inputs - time only */}
+        {/* Nap mode - start and end time side by side */}
         {mode === 'nap' && (
-          <>
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Start Time
+                Start
               </label>
               <input
                 type="time"
-                name="napStartTime"
-                value={formData.napStartTime}
-                onChange={handleChange}
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
                 required
                 className="input"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                End Time
-                <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
+                End
               </label>
               <input
                 type="time"
-                name="napEndTime"
-                value={formData.napEndTime}
-                onChange={handleChange}
-                min={formData.napStartTime}
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 className="input"
+                placeholder="Still sleeping"
               />
             </div>
-          </>
+          </div>
         )}
 
-        {/* Night/Bedtime inputs - full datetime */}
+        {/* Night/Bedtime mode - start (bedtime) and end (wake up) side by side */}
         {mode === 'night' && (
-          <>
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
                 Bedtime
               </label>
               <input
-                type="datetime-local"
-                name="startTime"
-                value={formData.startTime}
-                onChange={handleChange}
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
                 required
                 className="input"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Wake Up Time
-                <span className="text-[var(--text-muted)] font-normal ml-2">(leave empty if still sleeping)</span>
+                Wake Up
               </label>
               <input
-                type="datetime-local"
-                name="endTime"
-                value={formData.endTime}
-                onChange={handleChange}
-                min={formData.startTime}
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
                 className="input"
+                placeholder="Still sleeping"
               />
             </div>
-          </>
+          </div>
+        )}
+
+        {/* Hint for bedtime crossing midnight */}
+        {mode === 'night' && endTime && isTimeBefore(endTime, startTime) && (
+          <p className="text-xs text-[var(--text-muted)] -mt-2">
+            Wake up time is on the next day
+          </p>
         )}
 
         {/* Actions */}
@@ -284,7 +318,7 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
           <button
             type="submit"
             className={`btn flex-1 ${
-              mode === 'wakeup' ? 'btn-wake' : mode === 'nap' ? 'btn-night' : 'bg-[#ff7e5f] hover:bg-[#ff7e5f]/90 text-white'
+              mode === 'wakeup' ? 'btn-wake' : mode === 'nap' ? 'btn-nap' : 'btn-night'
             }`}
           >
             {entry ? 'Save Changes' : mode === 'wakeup' ? 'Log Wake Up' : 'Add Entry'}
