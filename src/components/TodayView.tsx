@@ -177,7 +177,7 @@ export function TodayView({
   }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now]);
 
   // Expected bedtime (dynamic based on day's sleep)
-  // Priority: active nap → predicted naps → completed naps
+  // Priority: predicted naps (if any) → active nap wake time → completed naps
   const expectedBedtime = useMemo(() => {
     if (!profile?.dateOfBirth) return null;
 
@@ -191,12 +191,13 @@ export function TodayView({
 
     // Determine the anchor for bedtime calculation
     let anchorEndTime: Date | null = null;
+    let activeNapExpectedWake: Date | null = null;
 
-    // 1. If baby is currently napping, use expected wake time as anchor
+    // 1. If baby is currently napping, calculate expected wake and add to sleep total
     if (activeSleep && activeSleep.type === 'nap') {
       const expectedWake = getExpectedWakeTime(activeSleep, profile);
       if (expectedWake) {
-        anchorEndTime = expectedWake;
+        activeNapExpectedWake = expectedWake;
         // Add estimated remaining sleep to accumulated total
         const elapsedMinutes = calculateDuration(activeSleep.startTime, null);
         const expectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
@@ -204,12 +205,18 @@ export function TodayView({
         accumulatedSleepMinutes += remainingSleep;
       }
     }
-    // 2. If there are predicted naps, use last predicted nap's end time
-    else if (predictedNaps.length > 0) {
+
+    // 2. If there are predicted naps, use last predicted nap's end time as anchor
+    //    This takes priority even if there's an active nap (bedtime depends on ALL naps)
+    if (predictedNaps.length > 0) {
       const lastPredicted = predictedNaps[predictedNaps.length - 1];
       anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
     }
-    // 3. Fall back to last completed nap
+    // 3. If no predicted naps but there's an active nap, use its expected wake time
+    else if (activeNapExpectedWake) {
+      anchorEndTime = activeNapExpectedWake;
+    }
+    // 4. Fall back to last completed nap
     else if (todayNaps.length > 0) {
       const lastNap = todayNaps[todayNaps.length - 1];
       if (lastNap.endTime) {
