@@ -853,6 +853,7 @@ select {
     transparent 100%
   );
   z-index: 0;
+  pointer-events: none;
 }
 
 .timeline-item {
@@ -1228,4 +1229,27 @@ select {
 .theme-afternoon .modal-content {
   background: var(--bg-card);
   border-color: var(--glass-border);
+}
+
+/* Light mode navigation - white glass effect with visible icons */
+.theme-morning .floating-nav-bar,
+.theme-afternoon .floating-nav-bar {
+  background: var(--glass-nav-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-morning .nav-tab,
+.theme-afternoon .nav-tab {
+  color: var(--text-secondary);
+}
+
+.theme-morning .nav-tab-active,
+.theme-afternoon .nav-tab-active {
+  color: var(--nap-color);
+}
+
+.theme-morning .nav-action-btn,
+.theme-afternoon .nav-action-btn {
+  box-shadow: var(--shadow-md);
 }

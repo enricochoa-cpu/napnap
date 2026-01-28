@@ -46,39 +46,44 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
   const isActive = entry.endTime === null;
 
   return (
-    <div className={`card-bedtime ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}>
+    <div
+      className={`card-bedtime cursor-pointer active:opacity-90 transition-opacity ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
+      onClick={() => onEdit(entry)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onEdit(entry);
+        }
+      }}
+    >
       <div className="flex items-center gap-4 p-5">
-        {/* Tappable content area */}
-        <button
-          onClick={() => onEdit(entry)}
-          className="flex items-center gap-4 flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
-        >
-          {/* Icon */}
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
-            <svg className="w-6 h-6 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
-              <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2.5} strokeLinecap="round" />
-            </svg>
-          </div>
+        {/* Icon */}
+        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
+          <svg className="w-6 h-6 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
+            <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2.5} strokeLinecap="round" />
+          </svg>
+        </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p className="font-display font-bold text-[var(--text-primary)]">
-              Bedtime
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className="font-display font-bold text-[var(--text-primary)]">
+            Bedtime
+          </p>
+          {isActive && (
+            <p className="text-sm text-[var(--success-color)] font-medium">
+              Sleeping...
             </p>
-            {isActive && (
-              <p className="text-sm text-[var(--success-color)] font-medium">
-                Sleeping...
-              </p>
-            )}
-          </div>
+          )}
+        </div>
 
-          {/* Time */}
-          <span className="font-display font-semibold text-lg text-[var(--text-primary)]">
-            {formatTime(entry.startTime)}
-          </span>
-        </button>
+        {/* Time */}
+        <span className="font-display font-semibold text-lg text-[var(--text-primary)]">
+          {formatTime(entry.startTime)}
+        </span>
 
         {/* Actions */}
         <EntryActions entry={entry} onEndSleep={onEndSleep} />
@@ -100,37 +105,42 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
   const duration = calculateDuration(entry.startTime, entry.endTime);
 
   return (
-    <div className={`card-nap ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}>
+    <div
+      className={`card-nap cursor-pointer active:opacity-90 transition-opacity ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
+      onClick={() => onEdit(entry)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onEdit(entry);
+        }
+      }}
+    >
       <div className="flex items-center gap-4 p-5">
-        {/* Tappable content area */}
-        <button
-          onClick={() => onEdit(entry)}
-          className="flex items-center gap-4 flex-1 min-w-0 text-left active:opacity-80 transition-opacity"
-        >
-          {/* Icon - cloud for naps */}
-          <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--nap-color)]/20">
-            <svg className="w-6 h-6 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-            </svg>
-          </div>
+        {/* Icon - cloud for naps */}
+        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--nap-color)]/20">
+          <svg className="w-6 h-6 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+          </svg>
+        </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <p className="font-display font-bold text-[var(--text-primary)]">
-              {getNapOrdinal(napNumber)} nap
-            </p>
-            <p className="text-sm text-[var(--text-secondary)]">
-              {formatDuration(duration)}
-              {isActive && <span className="text-[var(--success-color)] font-medium"> (ongoing)</span>}
-            </p>
-          </div>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <p className="font-display font-bold text-[var(--text-primary)]">
+            {getNapOrdinal(napNumber)} nap
+          </p>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {formatDuration(duration)}
+            {isActive && <span className="text-[var(--success-color)] font-medium"> (ongoing)</span>}
+          </p>
+        </div>
 
-          {/* Time range */}
-          <span className="font-display font-semibold text-lg text-[var(--text-primary)]">
-            {formatTime(entry.startTime)}
-            {entry.endTime && ` – ${formatTime(entry.endTime)}`}
-          </span>
-        </button>
+        {/* Time range */}
+        <span className="font-display font-semibold text-lg text-[var(--text-primary)]">
+          {formatTime(entry.startTime)}
+          {entry.endTime && ` – ${formatTime(entry.endTime)}`}
+        </span>
 
         {/* Actions */}
         <EntryActions entry={entry} onEndSleep={onEndSleep} />

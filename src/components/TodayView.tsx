@@ -374,6 +374,7 @@ export function TodayView({
           {/* Night Sleep in Progress - Solid */}
           {activeSleep && activeSleep.type === 'night' && (
             <button
+              type="button"
               onClick={() => onEdit?.(activeSleep)}
               className="timeline-item card-night-solid p-5 flex items-center gap-5 w-full text-left timeline-card animate-glow-night"
             >
@@ -437,6 +438,7 @@ export function TodayView({
           {/* Active Nap - Solid with glow effect */}
           {activeSleep && activeSleep.type === 'nap' && (
             <button
+              type="button"
               onClick={() => onEdit?.(activeSleep)}
               className="timeline-item card-nap-solid p-5 flex items-center gap-5 animate-glow w-full text-left timeline-card"
             >
@@ -460,6 +462,7 @@ export function TodayView({
           {/* Completed Naps - Solid Pills (reversed: most recent first) */}
           {[...todayNaps].reverse().map((nap, index) => (
             <button
+              type="button"
               key={nap.id}
               onClick={() => onEdit?.(nap)}
               className="timeline-item card-nap-solid p-5 flex items-center gap-5 w-full text-left timeline-card"
@@ -484,6 +487,7 @@ export function TodayView({
           {/* Morning Wake Up - Gold - OLDEST, at bottom */}
           {morningWakeUp && morningWakeUpEntry && (
             <button
+              type="button"
               onClick={() => onEdit?.(morningWakeUpEntry)}
               className="timeline-item card-wake p-5 flex items-center gap-5 w-full text-left timeline-card"
             >
