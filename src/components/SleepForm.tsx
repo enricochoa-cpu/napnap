@@ -30,9 +30,25 @@ const getNextDay = (date: string): string => {
   return d.toISOString().split('T')[0];
 };
 
+// Helper to get previous day date string
+const getPreviousDay = (date: string): string => {
+  const d = new Date(date);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+};
+
 // Helper to compare times (returns true if time1 > time2)
 const isTimeBefore = (time1: string, time2: string): boolean => {
   return time1 < time2;
+};
+
+// Helper to check if bedtime is in valid range (15:00 - 03:00)
+// Valid: 15:00-23:59 or 00:00-03:00
+// Invalid: 03:01-14:59
+const isValidBedtimeHour = (time: string): boolean => {
+  const [hours] = time.split(':').map(Number);
+  // Valid if hour is >= 15 OR hour is <= 3
+  return hours >= 15 || hours <= 3;
 };
 
 interface SleepFormProps {
@@ -104,30 +120,56 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
         type: 'night',
       });
     } else if (mode === 'nap') {
-      // For naps, both times are on selectedDate
-      // Validate that end > start
-      if (endTime && isTimeBefore(endTime, startTime)) {
-        setError('End time must be after start time for naps');
-        return;
-      }
-
-      onSubmit({
-        startTime: combineDateTime(selectedDate, startTime),
-        endTime: endTime ? combineDateTime(selectedDate, endTime) : null,
-        type: 'nap',
-      });
-    } else {
-      // For night/bedtime
-      // If end time < start time, end is next day (crossed midnight)
-      const startDateTime = combineDateTime(selectedDate, startTime);
+      // For naps, start time is on selectedDate
+      // If end time < start time, the nap crossed midnight (rare but possible)
       let endDateTime: string | null = null;
 
       if (endTime) {
         if (isTimeBefore(endTime, startTime)) {
-          // Crossed midnight - end time is next day
+          // Nap crossed midnight - end time is next day
           endDateTime = combineDateTime(getNextDay(selectedDate), endTime);
         } else {
           endDateTime = combineDateTime(selectedDate, endTime);
+        }
+      }
+
+      onSubmit({
+        startTime: combineDateTime(selectedDate, startTime),
+        endTime: endDateTime,
+        type: 'nap',
+      });
+    } else {
+      // For night/bedtime
+      // Validate bedtime is in valid range (15:00 - 03:00)
+      if (!isValidBedtimeHour(startTime)) {
+        setError('Bedtime should be between 15:00 and 03:00. This looks like a nap time.');
+        return;
+      }
+
+      const [startHour] = startTime.split(':').map(Number);
+      let startDateTime: string;
+      let endDateTime: string | null = null;
+
+      // "Grace window" logic: bedtimes between 00:00-03:00 belong to the previous day
+      // (e.g., baby went to sleep at 01:00 AM = that's "last night", not "tonight")
+      const isPostMidnightBedtime = startHour >= 0 && startHour <= 3;
+      const bedtimeDate = isPostMidnightBedtime ? getPreviousDay(selectedDate) : selectedDate;
+
+      startDateTime = combineDateTime(bedtimeDate, startTime);
+
+      if (endTime) {
+        // Determine wake up date based on bedtime and wake up times
+        if (isTimeBefore(endTime, startTime)) {
+          // Wake up time < bedtime time = crossed midnight
+          // Wake up is the day AFTER bedtime
+          endDateTime = combineDateTime(getNextDay(bedtimeDate), endTime);
+        } else if (isPostMidnightBedtime) {
+          // Post-midnight bedtime (00:00-03:00) with wake up same day
+          // Both are technically on selectedDate (bedtime assigned to previous day conceptually)
+          endDateTime = combineDateTime(selectedDate, endTime);
+        } else {
+          // Same day - unlikely for night sleep but handle it
+          endDateTime = combineDateTime(bedtimeDate, endTime);
         }
       }
 
@@ -309,7 +351,16 @@ export function SleepForm({ entry, onSubmit, onCancel, onDelete, selectedDate }:
         {/* Hint for bedtime crossing midnight */}
         {mode === 'night' && endTime && isTimeBefore(endTime, startTime) && (
           <p className="text-xs text-[var(--text-muted)] -mt-2">
-            Wake up time is on the next day
+            Wake up is on the next day
+          </p>
+        )}
+        {/* Hint for post-midnight bedtime */}
+        {mode === 'night' && !endTime && startTime && (() => {
+          const [h] = startTime.split(':').map(Number);
+          return h >= 0 && h <= 3;
+        })() && (
+          <p className="text-xs text-[var(--text-muted)] -mt-2">
+            This bedtime counts as last night
           </p>
         )}
 

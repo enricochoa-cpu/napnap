@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { BabyProfile } from './components/BabyProfile';
-import { SleepForm } from './components/SleepForm';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
 import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
+import { ProfileSection } from './components/Profile';
+import { SleepEntrySheet } from './components/SleepEntrySheet';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useBabyShares } from './hooks/useBabyShares';
@@ -15,7 +15,7 @@ import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import { formatDate, formatDateTime } from './utils/dateUtils';
 import type { SleepEntry } from './types';
 
-type View = 'home' | 'history' | 'stats' | 'profile' | 'add';
+type View = 'home' | 'history' | 'stats' | 'profile';
 
 // Icons for the action menu
 const SunIcon = () => (
@@ -101,6 +101,8 @@ function App() {
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
+  const [showEntrySheet, setShowEntrySheet] = useState(false);
+  const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
 
   const dayEntries = getEntriesForDate(selectedDate);
 
@@ -130,8 +132,8 @@ function App() {
     } else {
       addEntry(data);
     }
-    setCurrentView('home');
     setEditingEntry(null);
+    setShowEntrySheet(false);
   };
 
   const handleReplaceEntry = () => {
@@ -146,7 +148,14 @@ function App() {
 
   const handleEdit = (entry: SleepEntry) => {
     setEditingEntry(entry);
-    setCurrentView('add');
+    setShowEntrySheet(true);
+  };
+
+  const handleOpenNewEntry = (type: 'nap' | 'night') => {
+    setEditingEntry(null);
+    setNewEntryType(type);
+    setShowEntrySheet(true);
+    setShowActionMenu(false);
   };
 
   const handleEndSleep = (id: string) => {
@@ -213,10 +222,7 @@ function App() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
         <button
-          onClick={() => {
-            setEditingEntry(null);
-            setCurrentView('add');
-          }}
+          onClick={() => handleOpenNewEntry('nap')}
           className="text-[var(--nap-color)] font-display font-semibold text-sm"
         >
           + Add Entry
@@ -245,54 +251,22 @@ function App() {
 
   // Profile View
   const renderProfileView = () => (
-    <div className="pb-32 px-6 pt-8 fade-in">
-      <BabyProfile
-        profile={profile}
-        userProfile={userProfile}
-        sharedProfiles={sharedProfiles}
-        activeBabyId={activeBabyId}
-        onActiveBabyChange={setActiveBabyId}
-        onSave={createProfile}
-        onUpdate={updateProfile}
-        myShares={myShares}
-        pendingInvitations={pendingInvitations}
-        onInvite={inviteByEmail}
-        onRevokeAccess={revokeAccess}
-        onAcceptInvitation={handleAcceptInvitation}
-        onDeclineInvitation={declineInvitation}
-      />
-
-      {/* Sign Out Button */}
-      <div className="mt-8 text-center">
-        <button
-          onClick={() => signOut()}
-          className="text-sm text-[var(--danger-color)] font-display font-medium"
-        >
-          Sign Out
-        </button>
-      </div>
-
-    </div>
-  );
-
-  // Add/Edit View
-  const renderAddView = () => (
-    <div className="pb-32 px-6 pt-8 fade-in">
-      <SleepForm
-        entry={editingEntry}
-        onSubmit={handleAddEntry}
-        onCancel={() => {
-          setCurrentView('home');
-          setEditingEntry(null);
-        }}
-        onDelete={(id) => {
-          deleteEntry(id);
-          setCurrentView('home');
-          setEditingEntry(null);
-        }}
-        selectedDate={selectedDate}
-      />
-    </div>
+    <ProfileSection
+      profile={profile}
+      userProfile={userProfile}
+      sharedProfiles={sharedProfiles}
+      activeBabyId={activeBabyId}
+      onActiveBabyChange={setActiveBabyId}
+      onSave={createProfile}
+      onUpdate={updateProfile}
+      onSignOut={signOut}
+      myShares={myShares}
+      pendingInvitations={pendingInvitations}
+      onInvite={inviteByEmail}
+      onRevokeAccess={revokeAccess}
+      onAcceptInvitation={handleAcceptInvitation}
+      onDeclineInvitation={declineInvitation}
+    />
   );
 
   return (
@@ -315,11 +289,9 @@ function App() {
         {currentView === 'history' && renderHistoryView()}
         {currentView === 'stats' && renderStatsView()}
         {currentView === 'profile' && renderProfileView()}
-        {currentView === 'add' && renderAddView()}
       </main>
 
-      {/* Minimalist Floating Tab Bar - Hidden when editing */}
-      {currentView !== 'add' && (
+      {/* Minimalist Floating Tab Bar */}
       <nav className="floating-nav">
         <div className="floating-nav-inner">
           <div className="floating-nav-bar">
@@ -390,7 +362,6 @@ function App() {
           </div>
         </div>
       </nav>
-      )}
 
       {/* Action Menu Bottom Sheet */}
       {showActionMenu && (
@@ -484,6 +455,20 @@ function App() {
           }}
         />
       )}
+
+      {/* Sleep Entry Sheet */}
+      <SleepEntrySheet
+        entry={editingEntry}
+        initialType={newEntryType}
+        isOpen={showEntrySheet}
+        onClose={() => {
+          setShowEntrySheet(false);
+          setEditingEntry(null);
+        }}
+        onSave={handleAddEntry}
+        onDelete={deleteEntry}
+        selectedDate={selectedDate}
+      />
     </div>
   );
 }

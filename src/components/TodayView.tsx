@@ -294,6 +294,36 @@ export function TodayView({
     return calculateDuration(activeSleep.startTime, null);
   }, [activeSleep]);
 
+  // Check if there's any activity that "touches" today
+  // Activity touches today if:
+  // - Morning wake up from a night sleep that ended today
+  // - Any naps today
+  // - Active sleep (nap or night)
+  const hasTodayActivity = useMemo(() => {
+    return morningWakeUp !== null || todayNaps.length > 0 || activeSleep !== null;
+  }, [morningWakeUp, todayNaps.length, activeSleep]);
+
+  // Empty state - no activity today
+  if (!hasTodayActivity) {
+    return (
+      <div className="flex flex-col pb-40 px-6 fade-in">
+        <div className="pt-16 pb-10">
+          <div className="text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[var(--bg-card)] flex items-center justify-center">
+              <MoonIcon className="w-10 h-10 text-[var(--text-muted)]" />
+            </div>
+            <h1 className="text-display-md text-[var(--text-primary)] mb-3">
+              Good morning!
+            </h1>
+            <p className="text-[var(--text-secondary)] font-display text-base max-w-xs mx-auto leading-relaxed">
+              This space is still empty. Tap the <span className="text-[var(--nap-color)]">+</span> button to add your first activity for today.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col pb-40 px-6 fade-in">
       {/* ================================================================== */}
