@@ -61,7 +61,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 ### Component Responsibilities
 - `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar, add entry dropdown (nap/bedtime selector in history view)
-- `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status
+- `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. Uses compact horizontal card layout (~48px height) with timeline river (vertical connector line) for mobile optimization
 - `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
 - `MissingBedtimeModal`: Prompts user to log forgotten bedtime with date picker to select which night to log (not just yesterday)
 - `ActiveSleep`: Live duration display with wake button for ongoing sleep sessions
