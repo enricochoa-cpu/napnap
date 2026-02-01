@@ -99,6 +99,7 @@ function App() {
     lastCompletedSleep,
     getDailySummary,
     entries,
+    loading: entriesLoading,
   } = useSleepEntries({ babyId: activeBabyId });
 
   // Refresh data when accepting an invitation
@@ -127,6 +128,12 @@ function App() {
   // Show when: no activity today AND no active night sleep from yesterday
   const shouldShowMissingBedtimeModal = useMemo(() => {
     if (!showMissingBedtimeModal) return false;
+
+    // Don't show while entries are loading
+    if (entriesLoading) return false;
+
+    // Don't show for new users with no entries (nothing to "forget")
+    if (entries.length === 0) return false;
 
     // Check for morning wake up (night sleep that ended today)
     const hasMorningWakeUp = entries.some(
@@ -160,7 +167,7 @@ function App() {
 
     // No activity today - show the modal
     return true;
-  }, [showMissingBedtimeModal, entries, activeSleep]);
+  }, [showMissingBedtimeModal, entries, activeSleep, entriesLoading]);
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
