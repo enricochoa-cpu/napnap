@@ -37,7 +37,6 @@ const getYesterday = (): string => {
 
 const formatDateDisplay = (dateStr: string): string => {
   const date = new Date(dateStr + 'T12:00:00');
-  const today = new Date();
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
