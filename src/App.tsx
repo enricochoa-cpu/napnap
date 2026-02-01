@@ -8,6 +8,7 @@ import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
 import { ProfileSection } from './components/Profile';
 import { SleepEntrySheet } from './components/SleepEntrySheet';
+import { QuickActionSheet } from './components/QuickActionSheet';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useBabyShares } from './hooks/useBabyShares';
@@ -18,38 +19,6 @@ import { parseISO, isToday } from 'date-fns';
 import type { SleepEntry } from './types';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
-
-// Icons for the action menu
-const SunIcon = () => (
-  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="12" r="5" />
-    <path
-      d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      fill="none"
-    />
-  </svg>
-);
-
-const CloudIcon = () => (
-  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M18 6L6 18M6 6l12 12" />
-  </svg>
-);
 
 // Small icons for dropdown menu
 const CloudIconSmall = () => (
@@ -237,23 +206,6 @@ function App() {
 
   const handleEndSleep = (id: string) => {
     endSleep(id, formatDateTime(new Date()));
-    setShowActionMenu(false);
-  };
-
-  const handleStartSleep = (type: 'nap' | 'night') => {
-    const data = {
-      startTime: formatDateTime(new Date()),
-      endTime: null,
-      type,
-    };
-    const collision = checkCollision(data.startTime, data.endTime);
-    if (collision) {
-      setCollisionEntry(collision);
-      setPendingEntry(data);
-      setShowActionMenu(false);
-      return;
-    }
-    addEntry(data);
     setShowActionMenu(false);
   };
 
@@ -478,86 +430,30 @@ function App() {
         </div>
       </nav>
 
-      {/* Action Menu Bottom Sheet */}
-      {showActionMenu && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="sheet-backdrop fade-in"
-            onClick={() => setShowActionMenu(false)}
-          />
-
-          {/* Bottom Sheet */}
-          <div className="sheet-content slide-up px-6">
-            {/* Handle bar */}
-            <div className="sheet-handle" />
-
-            {/* Close button */}
-            <button
-              onClick={() => setShowActionMenu(false)}
-              className="absolute top-6 right-6 p-2 rounded-full text-[var(--text-muted)] active:bg-white/10 active:scale-95 transition-transform"
-            >
-              <CloseIcon />
-            </button>
-
-            {/* Title */}
-            <h2 className="text-[var(--text-card-title)] font-display font-semibold text-lg mb-8 text-center">
-              Log Sleep
-            </h2>
-
-            {/* Action buttons - floating cards with shadows */}
-            <div className="space-y-4">
-              {/* If baby is sleeping, show Wake Up button */}
-              {activeSleep ? (
-                <button
-                  onClick={() => handleEndSleep(activeSleep.id)}
-                  className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-wake)]"
-                >
-                  <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
-                    <SunIcon />
-                  </div>
-                  <span>Wake Up</span>
-                </button>
-              ) : (
-                <>
-                  {/* Wake Up (log morning) */}
-                  <button
-                    onClick={handleLogWakeUp}
-                    className="w-full p-5 rounded-3xl bg-[var(--wake-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-wake)]"
-                  >
-                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
-                      <SunIcon />
-                    </div>
-                    <span>Log Wake Up</span>
-                  </button>
-
-                  {/* Start Nap */}
-                  <button
-                    onClick={() => handleStartSleep('nap')}
-                    className="w-full p-5 rounded-3xl bg-[var(--nap-color)] text-[var(--bg-deep)] flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-nap)]"
-                  >
-                    <div className="w-14 h-14 rounded-full bg-[var(--bg-deep)]/10 flex items-center justify-center flex-shrink-0">
-                      <CloudIcon />
-                    </div>
-                    <span>Start Nap</span>
-                  </button>
-
-                  {/* Start Bedtime */}
-                  <button
-                    onClick={() => handleStartSleep('night')}
-                    className="w-full p-5 rounded-3xl bg-[var(--night-color)] text-white flex items-center gap-5 font-display font-semibold text-lg active:scale-[0.98] transition-transform shadow-[var(--shadow-glow-night)]"
-                  >
-                    <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
-                      <MoonIcon />
-                    </div>
-                    <span>Start Bedtime</span>
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      {/* Quick Action Sheet */}
+      <QuickActionSheet
+        isOpen={showActionMenu}
+        onClose={() => setShowActionMenu(false)}
+        onSelectWakeUp={() => {
+          handleLogWakeUp();
+          setShowActionMenu(false);
+        }}
+        onSelectNap={() => {
+          setSelectedDate(formatDate(new Date()));
+          handleOpenNewEntry('nap');
+          setShowActionMenu(false);
+        }}
+        onSelectBedtime={() => {
+          setSelectedDate(formatDate(new Date()));
+          handleOpenNewEntry('night');
+          setShowActionMenu(false);
+        }}
+        hasActiveSleep={!!activeSleep}
+        onEndSleep={activeSleep ? () => {
+          handleEndSleep(activeSleep.id);
+          setShowActionMenu(false);
+        } : undefined}
+      />
 
       {/* Missing Bedtime Modal */}
       {shouldShowMissingBedtimeModal && (
