@@ -57,6 +57,25 @@ const getCurrentTime = (): string => {
   return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 };
 
+const isToday = (dateStr: string): boolean => {
+  const today = new Date().toISOString().split('T')[0];
+  return dateStr === today;
+};
+
+const formatDateLabel = (dateStr: string): string => {
+  if (isToday(dateStr)) return 'Today';
+  const date = new Date(dateStr + 'T12:00:00'); // Avoid timezone issues
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+};
+
+const getDefaultTime = (selectedDate: string, sleepType: SleepType): string => {
+  if (isToday(selectedDate)) {
+    return getCurrentTime();
+  }
+  // Sensible defaults for past dates
+  return sleepType === 'nap' ? '12:00' : '20:00';
+};
+
 const combineDateTime = (date: string, time: string): string => {
   return `${date}T${time}`;
 };
@@ -113,7 +132,7 @@ export function SleepEntrySheet({
   const sleepType: SleepType = entry?.type || initialType;
 
   // Initial values for comparison
-  const initialStartTime = entry ? extractTime(entry.startTime) : getCurrentTime();
+  const initialStartTime = entry ? extractTime(entry.startTime) : getDefaultTime(selectedDate, sleepType);
   const initialEndTime = entry?.endTime ? extractTime(entry.endTime) : '';
 
   const [startTime, setStartTime] = useState(initialStartTime);
@@ -126,11 +145,11 @@ export function SleepEntrySheet({
         setStartTime(extractTime(entry.startTime));
         setEndTime(entry.endTime ? extractTime(entry.endTime) : '');
       } else {
-        setStartTime(getCurrentTime());
+        setStartTime(getDefaultTime(selectedDate, sleepType));
         setEndTime('');
       }
     }
-  }, [entry, isOpen]);
+  }, [entry, isOpen, selectedDate, sleepType]);
 
   // Check if values have changed
   const hasChanges = useMemo(() => {
@@ -266,6 +285,9 @@ export function SleepEntrySheet({
               style={{ color: themeColor }}
             >
               {typeLabel}
+            </span>
+            <span className="text-sm text-[var(--text-muted)] mt-1">
+              {formatDateLabel(selectedDate)}
             </span>
           </div>
 

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
 import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
+import { MissingBedtimeModal } from './components/MissingBedtimeModal';
 import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
 import { ProfileSection } from './components/Profile';
@@ -13,6 +14,7 @@ import { useBabyShares } from './hooks/useBabyShares';
 import { useAuth } from './hooks/useAuth';
 import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import { formatDate, formatDateTime } from './utils/dateUtils';
+import { parseISO, isToday } from 'date-fns';
 import type { SleepEntry } from './types';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
@@ -46,6 +48,19 @@ const MoonIcon = () => (
 const CloseIcon = () => (
   <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M18 6L6 18M6 6l12 12" />
+  </svg>
+);
+
+// Small icons for dropdown menu
+const CloudIconSmall = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+  </svg>
+);
+
+const MoonIconSmall = () => (
+  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </svg>
 );
 
@@ -103,8 +118,49 @@ function App() {
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showEntrySheet, setShowEntrySheet] = useState(false);
   const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
+  const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
+  const [showAddEntryMenu, setShowAddEntryMenu] = useState(false);
 
   const dayEntries = getEntriesForDate(selectedDate);
+
+  // Check if we should show the missing bedtime modal
+  // Show when: no activity today AND no active night sleep from yesterday
+  const shouldShowMissingBedtimeModal = useMemo(() => {
+    if (!showMissingBedtimeModal) return false;
+
+    // Check for morning wake up (night sleep that ended today)
+    const hasMorningWakeUp = entries.some(
+      (e) => e.type === 'night' && e.endTime && isToday(parseISO(e.endTime))
+    );
+    if (hasMorningWakeUp) return false;
+
+    // Check for any naps today (started or ended today)
+    const hasTodayNaps = entries.some(
+      (e) => e.type === 'nap' && (
+        isToday(parseISO(e.startTime)) ||
+        (e.endTime && isToday(parseISO(e.endTime)))
+      )
+    );
+    if (hasTodayNaps) return false;
+
+    // Check for active night sleep from yesterday (baby is still sleeping)
+    const hasActiveNightFromYesterday = activeSleep &&
+      activeSleep.type === 'night' &&
+      !isToday(parseISO(activeSleep.startTime));
+    if (hasActiveNightFromYesterday) return false;
+
+    // Check for active night sleep that started today
+    const hasActiveNightToday = activeSleep &&
+      activeSleep.type === 'night' &&
+      isToday(parseISO(activeSleep.startTime));
+    if (hasActiveNightToday) return false;
+
+    // Check for active nap (always counts as today's activity)
+    if (activeSleep && activeSleep.type === 'nap') return false;
+
+    // No activity today - show the modal
+    return true;
+  }, [showMissingBedtimeModal, entries, activeSleep]);
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
@@ -156,6 +212,20 @@ function App() {
     setNewEntryType(type);
     setShowEntrySheet(true);
     setShowActionMenu(false);
+  };
+
+  // Handle "Log bedtime" from missing bedtime modal
+  const handleLogMissingBedtime = (date: string) => {
+    setShowMissingBedtimeModal(false);
+    setEditingEntry(null);
+    setNewEntryType('night');
+    setSelectedDate(date);
+    setShowEntrySheet(true);
+  };
+
+  // Handle "Start a new day" from missing bedtime modal
+  const handleSkipMissingBedtime = () => {
+    setShowMissingBedtimeModal(false);
   };
 
   const handleEndSleep = (id: string) => {
@@ -221,12 +291,50 @@ function App() {
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
-        <button
-          onClick={() => handleOpenNewEntry('nap')}
-          className="text-[var(--nap-color)] font-display font-semibold text-sm"
-        >
-          + Add Entry
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowAddEntryMenu(!showAddEntryMenu)}
+            className="text-[var(--nap-color)] font-display font-semibold text-sm"
+          >
+            + Add Entry
+          </button>
+
+          {/* Add Entry Dropdown */}
+          {showAddEntryMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowAddEntryMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-white/10 overflow-hidden min-w-[140px]">
+                <button
+                  onClick={() => {
+                    handleOpenNewEntry('nap');
+                    setShowAddEntryMenu(false);
+                  }}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/5 active:bg-white/10 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[var(--nap-color)]/15 flex items-center justify-center text-[var(--nap-color)]">
+                    <CloudIconSmall />
+                  </div>
+                  <span className="text-[var(--text-primary)] font-display font-medium">Nap</span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleOpenNewEntry('night');
+                    setShowAddEntryMenu(false);
+                  }}
+                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/5 active:bg-white/10 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-[var(--night-color)]/15 flex items-center justify-center text-[var(--night-color)]">
+                    <MoonIconSmall />
+                  </div>
+                  <span className="text-[var(--text-primary)] font-display font-medium">Bedtime</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
       <SleepList
         entries={dayEntries}
@@ -442,6 +550,14 @@ function App() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Missing Bedtime Modal */}
+      {shouldShowMissingBedtimeModal && (
+        <MissingBedtimeModal
+          onLogBedtime={handleLogMissingBedtime}
+          onSkip={handleSkipMissingBedtime}
+        />
       )}
 
       {/* Activity Collision Modal */}

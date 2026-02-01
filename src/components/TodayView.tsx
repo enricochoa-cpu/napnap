@@ -102,6 +102,13 @@ export function TodayView({
   const morningWakeUpEntry = useMemo(() => getMorningWakeUpEntry(entries), [entries]);
   const morningWakeUp = morningWakeUpEntry?.endTime ? parseISO(morningWakeUpEntry.endTime) : null;
 
+  // Check if there's an active night sleep that started BEFORE today (yesterday's bedtime)
+  const hasActiveNightFromYesterday = useMemo(() => {
+    return activeSleep &&
+      activeSleep.type === 'night' &&
+      !isToday(parseISO(activeSleep.startTime));
+  }, [activeSleep]);
+
   // Today's completed naps
   const todayNaps = useMemo(() => getTodayNaps(entries), [entries]);
 
@@ -113,7 +120,9 @@ export function TodayView({
   }, [todayNaps]);
 
   // Predicted nap windows (using progressive algorithm)
+  // Only show if morning wake up is logged - predictions don't make sense without it
   const predictedNaps = useMemo(() => {
+    if (!morningWakeUp) return []; // Don't predict naps until wake up is logged
     if (!profile?.dateOfBirth) return [];
 
     const completedNapsData = todayNaps.map((nap) => ({
@@ -298,10 +307,77 @@ export function TodayView({
   // Activity touches today if:
   // - Morning wake up from a night sleep that ended today
   // - Any naps today
-  // - Active sleep (nap or night)
+  // - Active nap (always today's activity)
+  // - Active night sleep that started TODAY (rare case, e.g., logged bedtime at 11pm same day)
+  // NOTE: Active night sleep from YESTERDAY does NOT count - that's yesterday's entry
   const hasTodayActivity = useMemo(() => {
-    return morningWakeUp !== null || todayNaps.length > 0 || activeSleep !== null;
+    // Morning wake up logged
+    if (morningWakeUp !== null) return true;
+    // Naps completed today
+    if (todayNaps.length > 0) return true;
+    // Active nap (always today's activity)
+    if (activeSleep && activeSleep.type === 'nap') return true;
+    // Active night sleep that started TODAY
+    if (activeSleep && activeSleep.type === 'night' && isToday(parseISO(activeSleep.startTime))) return true;
+
+    return false;
   }, [morningWakeUp, todayNaps.length, activeSleep]);
+
+  // Special state: Active night sleep from yesterday - prompt to log wake up
+  if (hasActiveNightFromYesterday && !hasTodayActivity) {
+    return (
+      <div className="flex flex-col pb-40 px-6 fade-in">
+        <div className="pt-12 pb-10">
+          {/* Hero: Sleeping duration */}
+          <div className="text-center mb-10">
+            <p className="hero-secondary uppercase tracking-widest mb-3">
+              Night Sleep
+            </p>
+            <h1 className="hero-countdown text-[var(--night-color)] mb-4">
+              {formatDuration(currentSleepDuration)}
+            </h1>
+            <p className="text-[var(--text-secondary)] font-display text-base">
+              Since {formatTime(activeSleep!.startTime)}
+            </p>
+          </div>
+
+          {/* Prompt to log wake up */}
+          <div className="text-center mb-8">
+            <p className="text-[var(--text-muted)] font-display text-sm">
+              Tap below to log wake up time
+            </p>
+          </div>
+
+          {/* Night sleep card - tap to edit/add wake up */}
+          <button
+            type="button"
+            onClick={() => onEdit?.(activeSleep!)}
+            className="w-full card-night-solid p-5 flex items-center gap-5 text-left timeline-card animate-glow-night"
+          >
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
+              <MoonIcon className="w-8 h-8" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white/70 font-display text-xs uppercase tracking-wider mb-1">
+                Night Sleep
+              </p>
+              <p className="text-white font-display font-bold text-2xl">
+                {formatTime(activeSleep!.startTime)} → ?
+              </p>
+              <p className="text-white/60 font-display text-sm mt-1">
+                Tap to add wake up time
+              </p>
+            </div>
+            <div className="text-white/50">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Empty state - no activity today
   if (!hasTodayActivity) {

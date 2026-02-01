@@ -44,30 +44,54 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useAuth` handles user authentication (sign up, sign in, sign out, password reset)
 - `useSleepEntries` handles all sleep CRUD operations and provides computed values (active sleep, daily summaries)
 - `useBabyProfile` handles baby and user profile CRUD via Supabase
+- `useBabyShares` handles multi-user sharing (invitations, access management)
+- `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
 - `BabyProfile`: Baby info (name, DOB, gender, weight, height)
 - `UserProfile`: User info (email, userName, userRole: dad/mum/other)
 - `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
+- `BabyShare`: Multi-user sharing (babyOwnerId, sharedWithEmail, status, role: caregiver/viewer)
 
 ### Database Types (`src/lib/supabase.ts`)
 - `DbProfile`: Supabase profiles table schema
 - `DbSleepEntry`: Supabase sleep_entries table schema
+- `baby_shares` table: Multi-user sharing with invitation workflow
 
 ### Component Responsibilities
-- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar
-- `CircularClock`: SVG 24-hour clock visualization with sleep arcs and current time needle
+- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar, add entry dropdown (nap/bedtime selector in history view)
+- `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status
+- `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
+- `MissingBedtimeModal`: Prompts user to log forgotten bedtime with date picker to select which night to log (not just yesterday)
+- `ActiveSleep`: Live duration display with wake button for ongoing sleep sessions
 - `BabyProfile`: Profile display/edit form
 - `SleepForm`: Add/edit entries with icon-based type toggles
-- `SleepList`/`SleepEntryCard`: Display entries with edit/delete/wake actions
+- `SleepList`/`SleepEntry`/`SleepEntryCard`: Display entries with edit/delete/wake actions
 - `DayNavigator`: Date selection for viewing past entries
 - `DailySummary`: Aggregated sleep statistics
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
+- `ShareAccess`: Invite caregivers, manage sharing permissions
+- `SkyBackground`/`Starfield`: Animated background atmosphere
 - `LoadingScreen`/`Loader`/`Spinner`: Loading state components
 
+**Profile Section** (`src/components/Profile/`):
+- `ProfileSection`: Container with navigation between profile views
+- `ProfileMenu`: Main menu with navigation items
+- `MyBabiesView`: Baby switcher and sharing management
+- `AccountSettingsView`: User settings and sign out
+- `FAQsView`/`ContactView`: Help and support
+
+**Auth Components** (`src/components/Auth/`):
+- `AuthGuard`: Protects routes requiring authentication
+- `LoginForm`/`SignUpForm`/`ForgotPasswordForm`: Authentication flows
+
 ### Utilities (`src/utils/`)
-- `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns
+- `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns. Includes prediction algorithms:
+  - `getRecommendedSchedule(dateOfBirth)`: Age-based nap count and wake windows
+  - `calculateSuggestedNapTime()`: Next nap prediction based on wake windows
+  - `calculateAllNapWindows()`: Full day nap schedule prediction
+  - `calculateDynamicBedtime()`: Bedtime calculation based on completed naps
 - `storage.ts`: localStorage keys and get/set helpers
 
 ## Design System
