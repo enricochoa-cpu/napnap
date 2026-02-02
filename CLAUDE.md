@@ -66,16 +66,14 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
 - `SkeletonTimelineCard`: Loading placeholder cards matching exact dimensions of Compact Cards (48px height) to prevent layout shift. Includes `SkeletonTimeline` and `SkeletonHero` variants
 - `MissingBedtimeModal`: Prompts user to log forgotten bedtime with date picker to select which night to log (not just yesterday)
-- `ActiveSleep`: Live duration display with wake button for ongoing sleep sessions
 - `BabyProfile`: Profile display/edit form
-- `SleepForm`: Add/edit entries with icon-based type toggles
-- `SleepList`/`SleepEntry`/`SleepEntryCard`: Display entries with edit/delete/wake actions
+- `SleepList`/`SleepEntry`: Display entries with edit/delete/wake actions (NapEntry, BedtimeEntry, WakeUpEntry variants)
 - `DayNavigator`: Date selection for viewing past entries
 - `DailySummary`: Aggregated sleep statistics
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
 - `ShareAccess`: Invite caregivers, manage sharing permissions
-- `SkyBackground`/`Starfield`: Animated background atmosphere
-- `LoadingScreen`/`Loader`/`Spinner`: Loading state components
+- `SkyBackground`: Animated background atmosphere with inline NightSky (stars), MorningSky (sun), AfternoonSky (clouds)
+- `LoadingScreen`: Full-screen loading state with animated moon
 
 **Profile Section** (`src/components/Profile/`):
 - `ProfileSection`: Container with navigation between profile views
