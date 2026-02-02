@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
 import { DailySummary } from './components/DailySummary';
@@ -82,6 +83,22 @@ function App() {
 
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
+  const previousView = useRef<View>('home');
+
+  // View order for slide direction
+  const viewOrder: View[] = ['home', 'history', 'stats', 'profile'];
+  const getSlideDirection = (from: View, to: View): number => {
+    const fromIndex = viewOrder.indexOf(from);
+    const toIndex = viewOrder.indexOf(to);
+    return toIndex > fromIndex ? 1 : -1;
+  };
+  const slideDirection = getSlideDirection(previousView.current, currentView);
+
+  // Update previous view when current changes
+  const handleViewChange = (newView: View) => {
+    previousView.current = currentView;
+    setCurrentView(newView);
+  };
   const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
@@ -175,7 +192,7 @@ function App() {
     }
     setCollisionEntry(null);
     setPendingEntry(null);
-    setCurrentView('home');
+    handleViewChange('home');
   };
 
   const handleEdit = (entry: SleepEntry) => {
@@ -341,21 +358,36 @@ function App() {
       {/* Circadian Sky Background */}
       <SkyBackground theme={theme} />
 
-      {/* Main Content */}
-      <main className="max-w-lg mx-auto relative z-0">
-        {currentView === 'home' && (
-          <TodayView
-            profile={activeBabyProfile || profile}
-            entries={entries}
-            activeSleep={activeSleep}
-            lastCompletedSleep={lastCompletedSleep}
-            awakeMinutes={awakeMinutes}
-            onEdit={handleEdit}
-          />
-        )}
-        {currentView === 'history' && renderHistoryView()}
-        {currentView === 'stats' && renderStatsView()}
-        {currentView === 'profile' && renderProfileView()}
+      {/* Main Content with Slide Transitions */}
+      <main className="max-w-lg mx-auto relative z-0 overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentView}
+            initial={{ x: slideDirection * 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: slideDirection * -100, opacity: 0 }}
+            transition={{
+              type: 'spring',
+              stiffness: 300,
+              damping: 30,
+            }}
+          >
+            {currentView === 'home' && (
+              <TodayView
+                profile={activeBabyProfile || profile}
+                entries={entries}
+                activeSleep={activeSleep}
+                lastCompletedSleep={lastCompletedSleep}
+                awakeMinutes={awakeMinutes}
+                onEdit={handleEdit}
+                loading={entriesLoading}
+              />
+            )}
+            {currentView === 'history' && renderHistoryView()}
+            {currentView === 'stats' && renderStatsView()}
+            {currentView === 'profile' && renderProfileView()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Minimalist Floating Tab Bar */}
@@ -364,7 +396,7 @@ function App() {
           <div className="floating-nav-bar">
             {/* Today */}
             <button
-              onClick={() => setCurrentView('home')}
+              onClick={() => handleViewChange('home')}
               className={`nav-tab ${currentView === 'home' ? 'nav-tab-active' : ''}`}
               aria-label="Today"
             >
@@ -376,7 +408,7 @@ function App() {
 
             {/* History */}
             <button
-              onClick={() => setCurrentView('history')}
+              onClick={() => handleViewChange('history')}
               className={`nav-tab ${currentView === 'history' ? 'nav-tab-active' : ''}`}
               aria-label="History"
             >
@@ -404,7 +436,7 @@ function App() {
 
             {/* Stats */}
             <button
-              onClick={() => setCurrentView('stats')}
+              onClick={() => handleViewChange('stats')}
               className={`nav-tab ${currentView === 'stats' ? 'nav-tab-active' : ''}`}
               aria-label="Stats"
             >
@@ -417,7 +449,7 @@ function App() {
 
             {/* Profile */}
             <button
-              onClick={() => setCurrentView('profile')}
+              onClick={() => handleViewChange('profile')}
               className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}
               aria-label="Profile"
             >

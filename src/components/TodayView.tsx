@@ -11,6 +11,7 @@ import {
 } from '../utils/dateUtils';
 import type { SleepEntry, BabyProfile } from '../types';
 import { parseISO, differenceInMinutes, addMinutes, isToday, isBefore, isAfter } from 'date-fns';
+import { SkeletonTimeline, SkeletonHero } from './SkeletonTimelineCard';
 
 interface TodayViewProps {
   profile: BabyProfile | null;
@@ -19,6 +20,7 @@ interface TodayViewProps {
   lastCompletedSleep: SleepEntry | null;
   awakeMinutes: number | null;
   onEdit?: (entry: SleepEntry) => void;
+  loading?: boolean;
 }
 
 // Get today's completed naps
@@ -88,6 +90,7 @@ export function TodayView({
   lastCompletedSleep,
   awakeMinutes,
   onEdit,
+  loading = false,
 }: TodayViewProps) {
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
@@ -121,11 +124,9 @@ export function TodayView({
 
   // Predicted nap windows (using progressive algorithm)
   // Only show if morning wake up is logged - predictions don't make sense without it
-  // FILTER: If baby is actively napping, hide all predictions (user needs "how long" not "when")
   const predictedNaps = useMemo(() => {
     if (!morningWakeUp) return []; // Don't predict naps until wake up is logged
     if (!profile?.dateOfBirth) return [];
-    if (activeSleep && activeSleep.type === 'nap') return []; // No predictions while napping
 
     const completedNapsData = todayNaps.map((nap) => ({
       endTime: nap.endTime!,
@@ -318,6 +319,25 @@ export function TodayView({
 
     return false;
   }, [morningWakeUp, todayNaps.length, activeSleep]);
+
+  // Loading state - show skeletons
+  if (loading) {
+    return (
+      <div className="flex flex-col pb-40 px-6 fade-in">
+        <div className="pt-8 pb-6">
+          <SkeletonHero />
+        </div>
+
+        <div className="mt-2">
+          <div className="h-3 w-28 bg-white/10 rounded mb-4" />
+          <div className="relative">
+            <div className="absolute left-5 top-6 bottom-6 w-px bg-white/10" />
+            <SkeletonTimeline />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Special state: Active night sleep from yesterday - prompt to log wake up
   if (hasActiveNightFromYesterday && !hasTodayActivity) {

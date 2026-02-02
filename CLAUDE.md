@@ -60,10 +60,11 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `baby_shares` table: Multi-user sharing with invitation workflow
 
 ### Component Responsibilities
-- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar, add entry dropdown (nap/bedtime selector in history view)
-- `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. Uses compact horizontal card layout (~48px height) with timeline river (vertical connector line) for mobile optimization. **Prediction filtering**: hides predicted naps when baby is actively napping; bedtime updates in real-time based on active nap's expected wake time
+- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar, add entry dropdown. **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30)
+- `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. Uses compact horizontal card layout (~48px height) with timeline river (vertical connector line) for mobile optimization. **Shows skeleton loading states** via `SkeletonTimelineCard` during data fetch. Predictions shown alongside active naps; bedtime updates in real-time based on active nap's expected wake time
 - `QuickActionSheet`: Napper-style bottom sheet with 3-column quick action grid (Wake Up, Nap, Bedtime). Uses framer-motion spring animations. Opens SleepEntrySheet with current time pre-loaded
-- `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
+- `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
+- `SkeletonTimelineCard`: Loading placeholder cards matching exact dimensions of Compact Cards (48px height) to prevent layout shift. Includes `SkeletonTimeline` and `SkeletonHero` variants
 - `MissingBedtimeModal`: Prompts user to log forgotten bedtime with date picker to select which night to log (not just yesterday)
 - `ActiveSleep`: Live duration display with wake button for ongoing sleep sessions
 - `BabyProfile`: Profile display/edit form
@@ -234,6 +235,24 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+### 5. Bug Fixes: Prove It Pattern
+
+**When given a bug or error report, the first step is to spawn a subagent to write a test that reproduces the issue. Only proceed once reproduction is confirmed.**
+
+Test level hierarchy — Reproduce at the lowest level that can capture the bug:
+
+1. **Unit test** — Pure logic bugs, isolated functions (lives next to the code)
+2. **Integration test** — Component interactions, API boundaries (lives next to the code)
+3. **UX spec test** — Full user flows, browser-dependent behavior (lives in `apps/web/specs/`)
+
+For every bug fix:
+
+1. **Reproduce with subagent** — Spawn a subagent to write a test that demonstrates the bug. The test should fail before the fix.
+2. **Fix** — Implement the fix.
+3. **Confirm** — The test now passes, proving the fix works.
+
+If the bug is truly environment-specific or transient, document why a test isn't feasible rather than skipping silently.
 
 ---
 

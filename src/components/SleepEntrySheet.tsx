@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { SleepEntry } from '../types';
 
 type SleepType = 'nap' | 'night';
@@ -219,166 +220,204 @@ export function SleepEntrySheet({
     }
   };
 
-  if (!isOpen) return null;
-
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const themeBg = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const typeLabel = sleepType === 'nap' ? 'Nap' : 'Night Sleep';
 
+  // Motion values for drag-to-dismiss
+  const y = useMotionValue(0);
+  const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
+
+  const handleDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+    // Dismiss if dragged down far enough or with enough velocity
+    if (info.offset.y > 150 || info.velocity.y > 500) {
+      onClose();
+    }
+  };
+
   return (
-    <>
-      {/* Backdrop with blur */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 fade-in"
-        onClick={onClose}
-      />
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop with blur - fades based on drag position */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ opacity: backdropOpacity }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            onClick={onClose}
+          />
 
-      {/* Bottom Sheet - 50% height */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 slide-up">
-        <div
-          className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]"
-          style={{ minHeight: '50vh' }}
-        >
-          {/* Handle bar */}
-          <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
-          </div>
-
-          {/* Header with delete and close */}
-          <div className="flex items-center justify-between px-6 pb-2">
-            {/* Delete button (left) - subtle, only highlights on hover */}
-            {isEditing && onDelete ? (
-              <button
-                onClick={handleDelete}
-                className="p-2 -ml-2 rounded-xl text-[var(--text-muted)]/60 hover:text-[#B07D7D] hover:bg-[#B07D7D]/10 transition-colors"
-                aria-label="Delete"
-              >
-                <TrashIcon />
-              </button>
-            ) : (
-              <div className="w-9" />
-            )}
-
-            {/* Close button (right) */}
-            <button
-              onClick={onClose}
-              className="p-2 -mr-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 transition-colors"
-              aria-label="Close"
-            >
-              <CloseIcon />
-            </button>
-          </div>
-
-          {/* Center: Type icon and label */}
-          <div className="flex flex-col items-center pb-6">
+          {/* Bottom Sheet with drag-to-dismiss */}
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{
+              type: 'spring',
+              damping: 25,
+              stiffness: 300,
+            }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={handleDragEnd}
+            style={{ y }}
+            className="fixed bottom-0 left-0 right-0 z-50 touch-none"
+          >
             <div
-              className="w-20 h-20 rounded-full flex items-center justify-center mb-3"
-              style={{
-                backgroundColor: `color-mix(in srgb, ${themeBg} 15%, transparent)`,
-                color: themeColor
-              }}
+              className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]"
+              style={{ minHeight: '50dvh' }}
             >
-              {sleepType === 'nap' ? <CloudIcon /> : <MoonIcon />}
-            </div>
-            <span
-              className="font-display font-semibold text-lg"
-              style={{ color: themeColor }}
-            >
-              {typeLabel}
-            </span>
-            <span className="text-sm text-[var(--text-muted)] mt-1">
-              {formatDateLabel(selectedDate)}
-            </span>
-          </div>
-
-          {/* Time inputs - large, horizontal */}
-          <div className="px-6 pb-4">
-            <div className="flex items-center justify-center gap-4">
-              {/* Start Time */}
-              <div className="flex-1 text-center">
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full text-center text-5xl font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                  style={{
-                    fontSize: '2.75rem',
-                    lineHeight: 1.2,
-                  }}
-                />
-                <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
-                  {sleepType === 'nap' ? 'Start' : 'Bedtime'}
-                </p>
+              {/* Handle bar - visual drag indicator */}
+              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
               </div>
 
-              {/* Separator */}
-              <div className="text-3xl text-[var(--text-muted)] font-light pb-5">→</div>
+              {/* Header with delete and close */}
+              <div className="flex items-center justify-between px-6 pb-2">
+                {/* Delete button (left) - subtle, only highlights on hover */}
+                {isEditing && onDelete ? (
+                  <button
+                    onClick={handleDelete}
+                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)]/60 hover:text-[#B07D7D] hover:bg-[#B07D7D]/10 transition-colors"
+                    aria-label="Delete"
+                  >
+                    <TrashIcon />
+                  </button>
+                ) : (
+                  <div className="w-9" />
+                )}
 
-              {/* End Time */}
-              <div className="flex-1 text-center">
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  placeholder="--:--"
-                  className="w-full text-center text-5xl font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                  style={{
-                    fontSize: '2.75rem',
-                    lineHeight: 1.2,
-                    color: endTime ? 'var(--text-primary)' : 'var(--text-muted)',
-                  }}
-                />
-                <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
-                  {sleepType === 'nap' ? 'End' : 'Wake up'}
-                </p>
+                {/* Close button (right) */}
+                <button
+                  onClick={onClose}
+                  className="p-2 -mr-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 transition-colors"
+                  aria-label="Close"
+                >
+                  <CloseIcon />
+                </button>
               </div>
-            </div>
 
-            {/* Duration or Sleeping status */}
-            <div className="text-center mt-6">
-              {endTime ? (
-                <>
-                  <p className="text-2xl font-display font-semibold" style={{ color: themeColor }}>
-                    {duration}
+              {/* Center: Type icon and label */}
+              <div className="flex flex-col items-center pb-6">
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1, type: 'spring', stiffness: 400, damping: 20 }}
+                  className="w-20 h-20 rounded-full flex items-center justify-center mb-3"
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${themeBg} 15%, transparent)`,
+                    color: themeColor
+                  }}
+                >
+                  {sleepType === 'nap' ? <CloudIcon /> : <MoonIcon />}
+                </motion.div>
+                <span
+                  className="font-display font-semibold text-lg"
+                  style={{ color: themeColor }}
+                >
+                  {typeLabel}
+                </span>
+                <span className="text-sm text-[var(--text-muted)] mt-1">
+                  {formatDateLabel(selectedDate)}
+                </span>
+              </div>
+
+              {/* Time inputs - large, horizontal */}
+              <div className="px-6 pb-4">
+                <div className="flex items-center justify-center gap-4">
+                  {/* Start Time */}
+                  <div className="flex-1 text-center">
+                    <input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full text-center text-5xl font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                      style={{
+                        fontSize: '2.75rem',
+                        lineHeight: 1.2,
+                      }}
+                    />
+                    <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
+                      {sleepType === 'nap' ? 'Start' : 'Bedtime'}
+                    </p>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="text-3xl text-[var(--text-muted)] font-light pb-5">→</div>
+
+                  {/* End Time */}
+                  <div className="flex-1 text-center">
+                    <input
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      placeholder="--:--"
+                      className="w-full text-center text-5xl font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                      style={{
+                        fontSize: '2.75rem',
+                        lineHeight: 1.2,
+                        color: endTime ? 'var(--text-primary)' : 'var(--text-muted)',
+                      }}
+                    />
+                    <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
+                      {sleepType === 'nap' ? 'End' : 'Wake up'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Duration or Sleeping status */}
+                <div className="text-center mt-6">
+                  {endTime ? (
+                    <>
+                      <p className="text-2xl font-display font-semibold" style={{ color: themeColor }}>
+                        {duration}
+                      </p>
+                      <p className="text-xs text-[var(--text-muted)] mt-1">Duration</p>
+                    </>
+                  ) : (
+                    <p className="text-lg font-display text-[var(--text-muted)] italic">
+                      Sleeping...
+                    </p>
+                  )}
+                </div>
+
+                {/* Hint for crossing midnight */}
+                {endTime && isTimeBefore(endTime, startTime) && (
+                  <p className="text-xs text-[var(--text-muted)] text-center mt-3">
+                    {sleepType === 'nap' ? 'Ends next day' : 'Wake up is next day'}
                   </p>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">Duration</p>
-                </>
-              ) : (
-                <p className="text-lg font-display text-[var(--text-muted)] italic">
-                  Sleeping...
-                </p>
-              )}
+                )}
+              </div>
+
+              {/* Save button - circular tick with spring animation */}
+              <div className="flex justify-center pb-8 pt-4">
+                <motion.button
+                  onClick={handleSave}
+                  disabled={isEditing && !hasChanges}
+                  whileTap={(!isEditing || hasChanges) ? { scale: 0.9 } : undefined}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                  className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
+                    (!isEditing || hasChanges)
+                      ? ''
+                      : 'opacity-40 cursor-not-allowed'
+                  }`}
+                  style={{
+                    backgroundColor: (!isEditing || hasChanges) ? themeBg : 'var(--text-muted)',
+                    color: sleepType === 'night' ? 'white' : 'var(--bg-deep)',
+                  }}
+                  aria-label="Save"
+                >
+                  <CheckIcon />
+                </motion.button>
+              </div>
             </div>
-
-            {/* Hint for crossing midnight */}
-            {endTime && isTimeBefore(endTime, startTime) && (
-              <p className="text-xs text-[var(--text-muted)] text-center mt-3">
-                {sleepType === 'nap' ? 'Ends next day' : 'Wake up is next day'}
-              </p>
-            )}
-          </div>
-
-          {/* Save button - circular tick */}
-          <div className="flex justify-center pb-8 pt-4">
-            <button
-              onClick={handleSave}
-              disabled={isEditing && !hasChanges}
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
-                (!isEditing || hasChanges)
-                  ? 'shadow-lg active:scale-95'
-                  : 'opacity-40 cursor-not-allowed'
-              }`}
-              style={{
-                backgroundColor: (!isEditing || hasChanges) ? themeBg : 'var(--text-muted)',
-                color: sleepType === 'night' ? 'white' : 'var(--bg-deep)',
-              }}
-              aria-label="Save"
-            >
-              <CheckIcon />
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { BabyProfile, UserProfile, BabyShare } from '../../types';
 import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
@@ -46,6 +46,11 @@ export function ProfileSection({
   onDeclineInvitation,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
+
+  // Scroll to top when view changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentView]);
 
   const handleBack = () => {
     setCurrentView('menu');
