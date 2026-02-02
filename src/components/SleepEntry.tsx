@@ -231,20 +231,3 @@ export function NightSleepSummary({ durationMinutes }: NightSleepSummaryProps) {
   );
 }
 
-// Legacy exports for backward compatibility during transition
-export { WakeUpEntry as MilestoneCard };
-
-interface SleepEntryProps {
-  entry: SleepEntryType;
-  onEdit: (entry: SleepEntryType) => void;
-  onEndSleep: (id: string) => void;
-}
-
-export function SleepEntryCard({ entry, onEdit, onEndSleep }: SleepEntryProps) {
-  // This is now a wrapper that delegates to the appropriate component
-  if (entry.type === 'night') {
-    return <BedtimeEntry entry={entry} onEdit={onEdit} onEndSleep={onEndSleep} />;
-  }
-  // For naps, default to nap number 1 (SleepList will use NapEntry directly with proper numbering)
-  return <NapEntry entry={entry} napNumber={1} onEdit={onEdit} onEndSleep={onEndSleep} />;
-}
