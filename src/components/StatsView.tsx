@@ -45,9 +45,12 @@ const formatHours = (minutes: number): string => {
   return `${hours}h ${mins}m`;
 };
 
-// Format date for display (DD-MM, YYYY)
-const formatDisplayDate = (date: Date): string => {
-  return format(date, 'dd-MM, yyyy');
+// Format date parts for styled display
+const formatDateParts = (date: Date): { dayMonth: string; year: string } => {
+  return {
+    dayMonth: format(date, 'dd MMM'),
+    year: format(date, 'yyyy'),
+  };
 };
 
 // Format date for input value (YYYY-MM-DD)
@@ -226,71 +229,64 @@ export function StatsView({ entries }: StatsViewProps) {
         </p>
       </div>
 
-      {/* Date Range Filter */}
-      <div className="card p-4 mb-6">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-[var(--text-muted)]">
+      {/* Date Range Filter - Unified Container */}
+      <div className="card p-3 mb-6">
+        <div className="flex items-center gap-3">
+          {/* Calendar Icon */}
+          <span className="text-[var(--text-muted)] flex-shrink-0">
             <CalendarIcon />
           </span>
-          <span className="text-sm font-display font-medium text-[var(--text-secondary)]">
-            Date range
-          </span>
-          <span className="text-xs text-[var(--text-muted)] ml-auto">
-            Max {MAX_DAYS} days
-          </span>
-        </div>
 
-        <div className="flex items-center gap-3">
           {/* Start Date */}
-          <div className="flex-1">
-            <label className="block text-xs text-[var(--text-muted)] mb-1">From</label>
-            <button
-              onClick={() => (document.getElementById('start-date-input') as HTMLInputElement)?.showPicker?.()}
-              className="w-full input text-sm py-2.5 text-left flex items-center justify-between"
-            >
-              <span className="text-[var(--text-primary)] font-medium">
-                {formatDisplayDate(startDate)}
-              </span>
-              <CalendarIcon />
-            </button>
-            <input
-              id="start-date-input"
-              type="date"
-              value={formatInputDate(startDate)}
-              onChange={handleStartDateChange}
-              max={formatInputDate(today)}
-              className="sr-only"
-            />
-          </div>
+          <button
+            onClick={() => (document.getElementById('start-date-input') as HTMLInputElement)?.showPicker?.()}
+            className="flex items-baseline gap-1 hover:opacity-80 transition-opacity"
+          >
+            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+              {formatDateParts(startDate).dayMonth}
+            </span>
+            <span className="text-xs text-[var(--text-muted)]">
+              {formatDateParts(startDate).year}
+            </span>
+          </button>
+          <input
+            id="start-date-input"
+            type="date"
+            value={formatInputDate(startDate)}
+            onChange={handleStartDateChange}
+            max={formatInputDate(today)}
+            className="sr-only"
+          />
 
-          <span className="text-[var(--text-muted)] mt-5">→</span>
+          {/* Separator */}
+          <span className="text-[var(--text-muted)] text-sm">—</span>
 
           {/* End Date */}
-          <div className="flex-1">
-            <label className="block text-xs text-[var(--text-muted)] mb-1">To</label>
-            <button
-              onClick={() => (document.getElementById('end-date-input') as HTMLInputElement)?.showPicker?.()}
-              className="w-full input text-sm py-2.5 text-left flex items-center justify-between"
-            >
-              <span className="text-[var(--text-primary)] font-medium">
-                {formatDisplayDate(endDate)}
-              </span>
-              <CalendarIcon />
-            </button>
-            <input
-              id="end-date-input"
-              type="date"
-              value={formatInputDate(endDate)}
-              onChange={handleEndDateChange}
-              max={formatInputDate(today)}
-              className="sr-only"
-            />
-          </div>
-        </div>
+          <button
+            onClick={() => (document.getElementById('end-date-input') as HTMLInputElement)?.showPicker?.()}
+            className="flex items-baseline gap-1 hover:opacity-80 transition-opacity"
+          >
+            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+              {formatDateParts(endDate).dayMonth}
+            </span>
+            <span className="text-xs text-[var(--text-muted)]">
+              {formatDateParts(endDate).year}
+            </span>
+          </button>
+          <input
+            id="end-date-input"
+            type="date"
+            value={formatInputDate(endDate)}
+            onChange={handleEndDateChange}
+            max={formatInputDate(today)}
+            className="sr-only"
+          />
 
-        <p className="text-xs text-[var(--text-muted)] mt-2 text-center">
-          Showing {daysInRange} {daysInRange === 1 ? 'day' : 'days'}
-        </p>
+          {/* Days count badge */}
+          <span className="ml-auto text-xs text-[var(--text-muted)] bg-[var(--bg-soft)] px-2 py-1 rounded-full">
+            {daysInRange}d
+          </span>
+        </div>
       </div>
 
       {!hasData ? (
