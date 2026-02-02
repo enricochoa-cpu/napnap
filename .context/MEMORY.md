@@ -136,7 +136,27 @@ Cambio automático basado en hora del día:
 
 ---
 
-## 7. Project History & Milestones
+## 7. Memory System (`.context/`)
+
+El proyecto usa un sistema de memoria persistente para mantener contexto entre sesiones de Claude.
+
+### Estructura
+```
+.context/
+├── MEMORY.md      # Este archivo: ADN del proyecto, decisiones fundamentales
+├── rules.md       # Reglas de comportamiento para Claude
+└── logs/
+    └── YYYY-MM-DD.md  # Daily logs con cambios técnicos
+```
+
+### Protocolos
+- **Auto-Log**: Al finalizar una sesión, generar `.context/logs/YYYY-MM-DD.md` con cambios, decisiones y pendientes
+- **Auto-Update**: Si una decisión cambia el ADN del proyecto, actualizar inmediatamente este archivo
+- **Golden Rule**: Si algo no está documentado en `.context/`, no existe
+
+---
+
+## 8. Project History & Milestones
 
 | Date | Milestone |
 |------|-----------|
@@ -146,7 +166,7 @@ Cambio automático basado en hora del día:
 | 2026-02-02 | Skeleton loading states (SkeletonTimelineCard) |
 | 2026-02-02 | Fix: predicciones durante nap activa |
 | 2026-02-02 | Dead code cleanup (547 líneas eliminadas) |
-| 2026-02-02 | Sistema de memoria persistente |
+| 2026-02-02 | Sistema de memoria unificado en `.context/` |
 
 ---
 
