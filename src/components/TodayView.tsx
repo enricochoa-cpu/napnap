@@ -128,15 +128,36 @@ export function TodayView({
     if (!morningWakeUp) return []; // Don't predict naps until wake up is logged
     if (!profile?.dateOfBirth) return [];
 
+    const schedule = getRecommendedSchedule(profile.dateOfBirth);
+
+    // Build completed naps data, INCLUDING active nap if present
     const completedNapsData = todayNaps.map((nap) => ({
       endTime: nap.endTime!,
       durationMinutes: calculateDuration(nap.startTime, nap.endTime),
     }));
 
+    // If there's an active nap, treat it as "in progress" for counting purposes
+    // and use its expected end time as the anchor for future predictions
+    let activeNapExpectedEnd: Date | null = null;
+    let activeNapExpectedDuration = 0;
+    const hasActiveNap = activeSleep && activeSleep.type === 'nap';
+
+    if (hasActiveNap) {
+      activeNapExpectedEnd = getExpectedWakeTime(activeSleep, profile);
+      activeNapExpectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
+
+      // Add active nap to completed naps data for simulation
+      if (activeNapExpectedEnd) {
+        completedNapsData.push({
+          endTime: activeNapExpectedEnd.toISOString(),
+          durationMinutes: activeNapExpectedDuration,
+        });
+      }
+    }
+
     // calculateAllNapWindows now returns ONLY projected/future naps
     const projectedWindows = calculateAllNapWindows(profile.dateOfBirth, completedNapsData);
 
-    const schedule = getRecommendedSchedule(profile.dateOfBirth);
     const wakeUpTime = morningWakeUp || new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -146,10 +167,16 @@ export function TodayView({
     );
 
     const predictions: { time: Date; isCatnap: boolean; expectedDuration: number }[] = [];
+
+    // Determine anchor point: active nap's expected end, or last completed nap, or wake up
     let lastEndTime = wakeUpTime;
     let lastNapDuration: number | null = null;
 
-    if (todayNaps.length > 0) {
+    if (hasActiveNap && activeNapExpectedEnd) {
+      // Use active nap's expected end as anchor
+      lastEndTime = activeNapExpectedEnd;
+      lastNapDuration = activeNapExpectedDuration;
+    } else if (todayNaps.length > 0) {
       const lastNap = todayNaps[todayNaps.length - 1];
       if (lastNap.endTime) {
         lastEndTime = parseISO(lastNap.endTime);
@@ -157,10 +184,13 @@ export function TodayView({
       }
     }
 
+    // Calculate effective nap count (completed + active)
+    const effectiveNapCount = todayNaps.length + (hasActiveNap ? 1 : 0);
+
     // projectedWindows already contains only remaining naps from simulation
     for (let i = 0; i < projectedWindows.length; i++) {
       const windowInfo = projectedWindows[i];
-      const napIndex = todayNaps.length + i;
+      const napIndex = effectiveNapCount + i;
 
       const napIndexType: NapIndex =
         napIndex === 0 ? 'first' :
@@ -173,7 +203,13 @@ export function TodayView({
         napIndexType
       );
 
-      if (isAfter(nextNapTime, now)) {
+      // Only show predictions that are in the future
+      // AND after the active nap would end (if there is one)
+      const minPredictionTime = hasActiveNap && activeNapExpectedEnd
+        ? activeNapExpectedEnd
+        : now;
+
+      if (isAfter(nextNapTime, minPredictionTime)) {
         predictions.push({
           time: nextNapTime,
           isCatnap: windowInfo.isCatnap,
@@ -186,7 +222,7 @@ export function TodayView({
     }
 
     return predictions;
-  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep]);
+  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep, profile]);
 
   // Expected bedtime (dynamic based on day's sleep)
   // Priority: active nap wake time (real-time) → predicted naps → completed naps
