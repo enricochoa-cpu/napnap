@@ -62,7 +62,7 @@ function MenuCard({ icon, title, subtitle, onClick, iconBgClass = 'bg-[var(--nap
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-subtle)] hover:border-[var(--nap-color)]/30 transition-all active:scale-[0.98]"
+      className="w-full flex items-center gap-4 p-4 rounded-2xl bg-[var(--bg-card)] shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
     >
       <div className={`w-12 h-12 rounded-xl ${iconBgClass} flex items-center justify-center flex-shrink-0 text-[var(--nap-color)]`}>
         {icon}

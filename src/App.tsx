@@ -2,7 +2,6 @@ import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
-import { DailySummary } from './components/DailySummary';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { MissingBedtimeModal } from './components/MissingBedtimeModal';
 import { TodayView } from './components/TodayView';
@@ -10,6 +9,7 @@ import { SkyBackground } from './components/SkyBackground';
 import { ProfileSection } from './components/Profile';
 import { SleepEntrySheet } from './components/SleepEntrySheet';
 import { QuickActionSheet } from './components/QuickActionSheet';
+import { StatsView } from './components/StatsView';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useBabyShares } from './hooks/useBabyShares';
@@ -67,7 +67,6 @@ function App() {
     activeSleep,
     awakeMinutes,
     lastCompletedSleep,
-    getDailySummary,
     entries,
     loading: entriesLoading,
   } = useSleepEntries({ babyId: activeBabyId });
@@ -324,13 +323,7 @@ function App() {
 
   // Stats View
   const renderStatsView = () => (
-    <div className="pb-32 px-6 fade-in">
-      <div className="pt-8 mb-8">
-        <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-      </div>
-
-      <DailySummary summary={getDailySummary(selectedDate, entries)} />
-    </div>
+    <StatsView entries={entries} />
   );
 
   // Profile View

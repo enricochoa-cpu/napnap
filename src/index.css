@@ -561,21 +561,20 @@ input, textarea {
   width: 100%;
   padding: var(--space-md) var(--space-lg);
   background: var(--bg-soft);
-  border: 1px solid var(--glass-border);
+  border: none;
   border-radius: var(--radius-xl);
   font-family: var(--font-body);
   font-size: inherit;
   font-weight: 500;
   color: var(--text-primary);
-  transition: border-color 0.2s var(--ease-smooth),
-              box-shadow 0.2s var(--ease-smooth),
-              background-color var(--circadian-transition);
+  transition: background-color 0.2s var(--ease-smooth),
+              box-shadow 0.2s var(--ease-smooth);
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--nap-color);
-  box-shadow: 0 0 0 4px rgba(157, 186, 183, 0.15);
+  background: var(--bg-elevated);
+  box-shadow: inset 0 0 0 2px var(--nap-color);
 }
 
 .input::placeholder {

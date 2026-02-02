@@ -117,6 +117,7 @@ Cambio automático basado en hora del día:
 |-----------|----------------|
 | `App.tsx` | Router, AnimatePresence transitions, collision detection |
 | `TodayView.tsx` | Smart dashboard, predictions, skeleton loading |
+| `StatsView.tsx` | Sleep statistics with Recharts (bar/area charts, date range picker) |
 | `SleepEntrySheet.tsx` | Add/edit entries, Framer Motion drag-to-dismiss |
 | `QuickActionSheet.tsx` | 3-column quick actions grid |
 | `SleepList.tsx` | History view, uses SleepEntry variants |
