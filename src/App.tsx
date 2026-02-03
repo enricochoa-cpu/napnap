@@ -196,6 +196,7 @@ function App() {
 
   const handleEdit = (entry: SleepEntry) => {
     setEditingEntry(entry);
+    setSelectedDate(entry.date);
     setShowEntrySheet(true);
   };
 

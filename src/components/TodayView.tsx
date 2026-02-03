@@ -240,9 +240,14 @@ export function TodayView({
     // Determine the anchor for bedtime calculation
     let anchorEndTime: Date | null = null;
 
-    // 1. PRIORITY: If baby is currently napping, use expected wake time as anchor
-    //    This makes bedtime update in real-time while baby sleeps
-    if (activeSleep && activeSleep.type === 'nap') {
+    // 1. PRIORITY: If there are predicted naps, use last predicted nap's end
+    //    Bedtime should always come after all predicted naps
+    if (predictedNaps.length > 0) {
+      const lastPredicted = predictedNaps[predictedNaps.length - 1];
+      anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
+    }
+    // 2. If no predicted naps but baby is currently napping, use expected wake time
+    else if (activeSleep && activeSleep.type === 'nap') {
       const expectedWake = getExpectedWakeTime(activeSleep, profile);
       if (expectedWake) {
         anchorEndTime = expectedWake;
@@ -252,11 +257,6 @@ export function TodayView({
         const remainingSleep = Math.max(0, expectedDuration - elapsedMinutes);
         accumulatedSleepMinutes += remainingSleep;
       }
-    }
-    // 2. If no active nap but there are predicted naps, use last predicted nap's end
-    else if (predictedNaps.length > 0) {
-      const lastPredicted = predictedNaps[predictedNaps.length - 1];
-      anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
     }
     // 3. Fall back to last completed nap
     else if (todayNaps.length > 0) {
@@ -573,36 +573,34 @@ export function TodayView({
                     Bedtime
                   </p>
                   <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                    ~{formatTime(expectedBedtime)}
+                    {formatTime(expectedBedtime)}
                   </p>
                 </div>
               </div>
             )}
 
             {/* Predicted Naps - Compact Horizontal Ghost (reversed: furthest first) */}
-            {[...predictedNaps].reverse().map((napInfo, index) => (
-              <div
-                key={`predicted-${index}`}
-                className="relative card-ghost-nap py-2.5 px-4 flex items-center gap-3 rounded-xl"
-              >
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
-                  <CloudIcon className="w-5 h-5" />
+            {[...predictedNaps].reverse().map((napInfo, index) => {
+              const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
+              return (
+                <div
+                  key={`predicted-${index}`}
+                  className="relative card-ghost-nap py-2.5 px-4 flex items-center gap-3 rounded-xl"
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
+                    <CloudIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
+                      {napInfo.isCatnap ? 'Catnap' : 'Predicted Nap'}
+                    </p>
+                    <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
+                      {formatTime(napInfo.time)} — {formatTime(expectedEnd)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                    {napInfo.isCatnap ? 'Catnap' : 'Predicted Nap'}
-                  </p>
-                  <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                    ~{formatTime(napInfo.time)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[var(--text-muted)] font-display text-sm">
-                    ~{formatDuration(napInfo.expectedDuration)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Active Nap - Compact Horizontal Solid */}
             {activeSleep && activeSleep.type === 'nap' && (
