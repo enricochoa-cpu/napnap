@@ -242,9 +242,9 @@ function calculateDynamicBedtime(dateOfBirth, lastNapEndTime, _) {
 
 ---
 
-## Current State Analysis (After Today's Fix)
+## Current State Analysis (After Recent Fixes)
 
-### What We Fixed Today
+### Fix #1: Bedtime Priority Order (2026-02-03)
 
 **Bug**: Bedtime was showing at 15:30 when there were predicted naps at 14:38 and 18:08.
 
@@ -258,6 +258,29 @@ function calculateDynamicBedtime(dateOfBirth, lastNapEndTime, _) {
 1. Predicted naps → use last predicted nap's end  ← Now first!
 2. Active nap → use expected wake time
 ```
+
+### Fix #2: Bedtime Card Showing During Active Night Sleep (2026-02-03)
+
+**Bug**: When baby is already in bed (active night sleep), a ghost "Bedtime" card still appears showing a predicted bedtime in the future.
+
+**Scenario**:
+- Time: 21:05
+- Active bedtime: 20:45 (baby is sleeping)
+- Last nap ended: 18:18
+- Ghost bedtime card shows: 21:18 (should NOT appear!)
+
+**Root Cause**: The render condition for the bedtime card didn't check for active night sleep:
+```typescript
+// BEFORE (buggy - line 566):
+{expectedBedtime && isBefore(now, expectedBedtime) && (
+// Problem: expectedBedtime = 18:18 + ~3hr wake window = 21:18
+// 21:05 < 21:18 = true → card renders even though baby is IN BED!
+
+// AFTER (fixed):
+{expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
+```
+
+**Fix**: Added check to hide bedtime card when there's an active night sleep.
 
 ### Verification Test Cases
 
@@ -315,6 +338,23 @@ Expected behavior:
 ✓ Empty state or prompt to log wake-up
 
 Current code: CORRECT
+```
+
+#### Test Case 5: Baby Already in Bed (Active Night Sleep)
+```
+Scenario:
+- Time: 21:05
+- Baby is 6 months old
+- Bedtime logged at 20:45 (active night sleep)
+- 3 naps completed, last ended at 18:18
+
+Expected behavior:
+✓ Hero shows "Night Sleep" with duration (~20m)
+✓ Night Sleep card shows at top of timeline (glowing)
+✓ NO bedtime ghost card (baby is already in bed!)
+✓ Completed naps shown below
+
+Current code: CORRECT (after Fix #2)
 ```
 
 ---

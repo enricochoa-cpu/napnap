@@ -562,8 +562,8 @@ export function TodayView({
               </button>
             )}
 
-            {/* Expected Bedtime - Compact Horizontal Ghost */}
-            {expectedBedtime && isBefore(now, expectedBedtime) && (
+            {/* Expected Bedtime - Compact Horizontal Ghost (hide if already in night sleep) */}
+            {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
               <div className="relative card-ghost-night py-2.5 px-4 flex items-center gap-3 rounded-xl">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
                   <MoonIcon className="w-5 h-5" />
