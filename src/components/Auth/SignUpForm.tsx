@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { GoogleSignInButton } from './GoogleSignInButton';
+import { AuthDivider } from './AuthDivider';
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
+  onGoogleSignIn: () => Promise<{ message: string } | null>;
   onSwitchToLogin: () => void;
 }
 
-export function SignUpForm({ onSubmit, onSwitchToLogin }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUpFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,6 +84,11 @@ export function SignUpForm({ onSubmit, onSwitchToLogin }: SignUpFormProps) {
 
       {/* Form Card */}
       <div className="card p-6 w-full max-w-sm">
+        {/* Google Sign In - Primary option for quick access */}
+        <GoogleSignInButton onSignIn={onGoogleSignIn} />
+
+        <AuthDivider />
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="p-3 rounded-lg bg-[var(--danger-color)]/10 border border-[var(--danger-color)]/20">

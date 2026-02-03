@@ -12,7 +12,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, loading, signIn, signUp, resetPassword } = useAuth();
+  const { isAuthenticated, loading, signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
   const [authView, setAuthView] = useState<AuthView>('login');
 
   // Show loading screen while checking auth status
@@ -31,6 +31,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return (
         <SignUpForm
           onSubmit={signUp}
+          onGoogleSignIn={signInWithGoogle}
           onSwitchToLogin={() => setAuthView('login')}
         />
       );
@@ -48,6 +49,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
       return (
         <LoginForm
           onSubmit={signIn}
+          onGoogleSignIn={signInWithGoogle}
           onSwitchToSignUp={() => setAuthView('signup')}
           onForgotPassword={() => setAuthView('forgot-password')}
         />

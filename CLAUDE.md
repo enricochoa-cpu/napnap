@@ -86,6 +86,15 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 **Auth Components** (`src/components/Auth/`):
 - `AuthGuard`: Protects routes requiring authentication
 - `LoginForm`/`SignUpForm`/`ForgotPasswordForm`: Authentication flows
+- `GoogleSignInButton`: Dark-themed OAuth button with Google's colored "G" logo (56px touch target)
+- `AuthDivider`: "or" separator between social and email login options
+
+**Authentication Methods:**
+- Email/password (traditional)
+- Google OAuth (via Supabase `signInWithOAuth`)
+- Password reset via email
+
+**Google OAuth Setup:** Requires configuration in Google Cloud Console (OAuth client ID) and Supabase Dashboard (enable Google provider, add redirect URLs). See `.context/logs/2026-02-03.md` for detailed setup steps.
 
 ### Utilities (`src/utils/`)
 - `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns. Includes prediction algorithms:

@@ -168,6 +168,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-02 | Fix: predicciones durante nap activa |
 | 2026-02-02 | Dead code cleanup (547 líneas eliminadas) |
 | 2026-02-02 | Sistema de memoria unificado en `.context/` |
+| 2026-02-03 | Google OAuth login (social auth) |
 
 ---
 

@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { GoogleSignInButton } from './GoogleSignInButton';
+import { AuthDivider } from './AuthDivider';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
+  onGoogleSignIn: () => Promise<{ message: string } | null>;
   onSwitchToSignUp: () => void;
   onForgotPassword: () => void;
 }
 
-export function LoginForm({ onSubmit, onSwitchToSignUp, onForgotPassword }: LoginFormProps) {
+export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgotPassword }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +44,11 @@ export function LoginForm({ onSubmit, onSwitchToSignUp, onForgotPassword }: Logi
 
       {/* Form Card */}
       <div className="card p-6 w-full max-w-sm">
+        {/* Google Sign In - Primary option for quick access */}
+        <GoogleSignInButton onSignIn={onGoogleSignIn} />
+
+        <AuthDivider />
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="p-3 rounded-lg bg-[var(--danger-color)]/10 border border-[var(--danger-color)]/20">
