@@ -4,10 +4,14 @@ import {
   formatDuration,
   calculateDuration,
   calculateSuggestedNapTime,
+  calculateSuggestedNapTimeWithMetadata,
   calculateAllNapWindows,
   getRecommendedSchedule,
   calculateDynamicBedtime,
+  extractWakeWindowsFromEntries,
+  MIN_CALIBRATION_ENTRIES,
   type NapIndex,
+  type NapPrediction,
 } from '../utils/dateUtils';
 import type { SleepEntry, BabyProfile } from '../types';
 import { parseISO, differenceInMinutes, addMinutes, isToday, isBefore, isAfter } from 'date-fns';
@@ -122,11 +126,23 @@ export function TodayView({
     }, 0);
   }, [todayNaps]);
 
-  // Predicted nap windows (using progressive algorithm)
+  // Extract historical wake windows for adaptive prediction
+  const wakeWindowHistory = useMemo(() => {
+    return extractWakeWindowsFromEntries(
+      entries.map((e) => ({
+        startTime: e.startTime,
+        endTime: e.endTime,
+        type: e.type,
+      })),
+      7 // Last 7 days
+    );
+  }, [entries]);
+
+  // Predicted nap windows (using AAA Dynamic Prediction System)
   // Only show if morning wake up is logged - predictions don't make sense without it
-  const predictedNaps = useMemo(() => {
-    if (!morningWakeUp) return []; // Don't predict naps until wake up is logged
-    if (!profile?.dateOfBirth) return [];
+  const predictedNapsWithMetadata = useMemo(() => {
+    if (!morningWakeUp) return { predictions: [], calibrationInfo: null }; // Don't predict naps until wake up is logged
+    if (!profile?.dateOfBirth) return { predictions: [], calibrationInfo: null };
 
     const schedule = getRecommendedSchedule(profile.dateOfBirth);
 
@@ -166,7 +182,8 @@ export function TodayView({
       schedule.wakeTime.minute
     );
 
-    const predictions: { time: Date; isCatnap: boolean; expectedDuration: number }[] = [];
+    const predictions: { time: Date; isCatnap: boolean; expectedDuration: number; prediction: NapPrediction }[] = [];
+    let firstPredictionCalibrationInfo: NapPrediction | null = null;
 
     // Determine anchor point: active nap's expected end, or last completed nap, or wake up
     let lastEndTime = wakeUpTime;
@@ -196,12 +213,21 @@ export function TodayView({
         napIndex === 0 ? 'first' :
         napIndex === 1 ? 'second' : 'third_plus';
 
-      const nextNapTime = calculateSuggestedNapTime(
+      // Use new AAA Dynamic Prediction with metadata
+      const napPrediction = calculateSuggestedNapTimeWithMetadata(
         profile.dateOfBirth,
         lastEndTime.toISOString(),
         lastNapDuration,
-        napIndexType
+        napIndexType,
+        wakeWindowHistory.wakeWindows,
+        wakeWindowHistory.todaysCount,
+        entries.length
       );
+
+      // Store first prediction's calibration info for UI
+      if (i === 0 && napPrediction.predictedTime) {
+        firstPredictionCalibrationInfo = napPrediction;
+      }
 
       // Only show predictions that are in the future
       // AND after the active nap would end (if there is one)
@@ -209,20 +235,27 @@ export function TodayView({
         ? activeNapExpectedEnd
         : now;
 
-      if (isAfter(nextNapTime, minPredictionTime)) {
+      if (napPrediction.predictedTime && isAfter(napPrediction.predictedTime, minPredictionTime)) {
         predictions.push({
-          time: nextNapTime,
+          time: napPrediction.predictedTime,
           isCatnap: windowInfo.isCatnap,
           expectedDuration: windowInfo.expectedDurationMinutes,
+          prediction: napPrediction,
         });
       }
 
-      lastEndTime = addMinutes(nextNapTime, windowInfo.expectedDurationMinutes);
+      if (napPrediction.predictedTime) {
+        lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+      }
       lastNapDuration = windowInfo.expectedDurationMinutes;
     }
 
-    return predictions;
-  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep, profile]);
+    return { predictions, calibrationInfo: firstPredictionCalibrationInfo };
+  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep, profile, entries.length, wakeWindowHistory]);
+
+  // Convenience accessor for predictions (backward compatible)
+  const predictedNaps = predictedNapsWithMetadata.predictions;
+  const calibrationInfo = predictedNapsWithMetadata.calibrationInfo;
 
   // Expected bedtime (dynamic based on day's sleep)
   // Priority: active nap wake time (real-time) → predicted naps → completed naps
@@ -521,6 +554,79 @@ export function TodayView({
           </div>
         )}
       </div>
+
+      {/* ================================================================== */}
+      {/* CALIBRATION BANNER - Show when system is learning                 */}
+      {/* ================================================================== */}
+      {calibrationInfo?.isCalibrating && predictedNaps.length > 0 && (
+        <div className="mb-4 card p-4 border border-[var(--nap-color)]/20 bg-[var(--nap-color)]/5">
+          <div className="flex items-start gap-3">
+            {/* Tuning fork / calibration icon */}
+            <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center flex-shrink-0">
+              <svg
+                className="w-4 h-4 text-[var(--nap-color)]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v4" />
+                <path d="M12 18v4" />
+                <path d="m4.93 4.93 2.83 2.83" />
+                <path d="m16.24 16.24 2.83 2.83" />
+                <path d="M2 12h4" />
+                <path d="M18 12h4" />
+                <path d="m4.93 19.07 2.83-2.83" />
+                <path d="m16.24 7.76 2.83-2.83" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[var(--text-primary)] font-display font-semibold text-sm mb-1">
+                Sintonitzant el ritme de {profile?.name || 'baby'}
+              </p>
+              <p className="text-[var(--text-muted)] text-xs leading-relaxed">
+                {calibrationInfo.calibrationReason === 'insufficient_data' ? (
+                  <>
+                    Estem analitzant les últimes migdiades per ser més precisos.
+                    {entries.length > 0 && (
+                      <span className="text-[var(--nap-color)]">
+                        {' '}({entries.length}/{MIN_CALIBRATION_ENTRIES} registres)
+                      </span>
+                    )}
+                  </>
+                ) : calibrationInfo.calibrationReason === 'high_variability' ? (
+                  <>
+                    El patró de son avui és diferent del habitual. Estem ajustant les prediccions.
+                  </>
+                ) : calibrationInfo.calibrationReason === 'first_nap_of_day' ? (
+                  <>
+                    Primera migdiada del dia - utilitzant la finestra de vigília més curta.
+                  </>
+                ) : (
+                  <>
+                    En breu tindràs la teva predicció personalitzada.
+                  </>
+                )}
+              </p>
+              {/* Confidence indicator */}
+              <div className="mt-2 flex items-center gap-2">
+                <div className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--nap-color)] rounded-full transition-all duration-500"
+                    style={{ width: `${Math.round(calibrationInfo.confidenceScore * 100)}%` }}
+                  />
+                </div>
+                <span className="text-[var(--text-muted)] text-xs">
+                  {Math.round(calibrationInfo.confidenceScore * 100)}%
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ================================================================== */}
       {/* TIMELINE RIVER - Visual flow through the day                      */}

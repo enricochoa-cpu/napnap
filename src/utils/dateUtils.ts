@@ -431,19 +431,218 @@ export function getProgressiveWakeWindow(dateOfBirth: string, napIndex: NapIndex
   }
 }
 
+// ============================================================================
+// AAA DYNAMIC PREDICTION SYSTEM - Biologically-Calibrated Algorithms
+// ============================================================================
+
+/**
+ * Minimum nap duration (in minutes) considered restorative.
+ * Naps shorter than this don't fully reset adenosine (sleep pressure).
+ */
+export const MIN_RESTORATIVE_NAP_DURATION = 30;
+
+/**
+ * Short nap penalty factor - reduces next wake window by 20%
+ * when previous nap was non-restorative.
+ */
+export const SHORT_NAP_PENALTY = 0.80;
+
+/**
+ * Minimum entries required before predictions are considered "calibrated"
+ */
+export const MIN_CALIBRATION_ENTRIES = 5;
+
+/**
+ * Maximum acceptable standard deviation ratio (30%) before marking as "calibrating"
+ */
+export const MAX_ACCEPTABLE_STD_DEV_RATIO = 0.30;
+
+/**
+ * Prediction result with confidence metadata
+ */
+export interface NapPrediction {
+  /** Predicted nap time, null if cannot predict */
+  predictedTime: Date | null;
+  /** Confidence score from 0 (no confidence) to 1 (high confidence) */
+  confidenceScore: number;
+  /** True if system is still learning baby's patterns */
+  isCalibrating: boolean;
+  /** Reason for calibration state (for debugging/display) */
+  calibrationReason?: 'insufficient_data' | 'high_variability' | 'first_nap_of_day';
+}
+
+/**
+ * Historical wake window data for adaptive predictions
+ */
+export interface WakeWindowHistory {
+  /** Wake window duration in minutes */
+  durationMinutes: number;
+  /** When this wake window occurred */
+  date: Date;
+  /** Whether this was the first wake window of the day */
+  isFirstOfDay: boolean;
+  /** Duration of the nap that followed (if any) */
+  followingNapDuration?: number;
+}
+
+/**
+ * Calculate exponential decay weight for recency-based averaging.
+ * More recent entries get exponentially higher weights.
+ *
+ * @param index - Index of the entry (0 = most recent)
+ * @param totalEntries - Total number of entries
+ * @param todayWeight - Weight proportion for today's entries (default 0.6 = 60%)
+ */
+export function calculateExponentialWeight(
+  index: number,
+  totalEntries: number,
+  todayWeight: number = 0.6
+): number {
+  if (totalEntries <= 1) return 1;
+
+  // Decay factor - determines how quickly weights decrease
+  const decayFactor = 0.5;
+
+  // Calculate raw weight using exponential decay
+  const rawWeight = Math.pow(decayFactor, index);
+
+  // Normalize so sum = 1
+  let totalRawWeight = 0;
+  for (let i = 0; i < totalEntries; i++) {
+    totalRawWeight += Math.pow(decayFactor, i);
+  }
+
+  return rawWeight / totalRawWeight;
+}
+
+/**
+ * Calculate weighted average of wake windows with exponential decay.
+ * Today's entries contribute ~60% of the total weight.
+ *
+ * @param wakeWindows - Array of wake window durations (most recent first)
+ * @param todaysCount - Number of entries from today (will get 60% weight)
+ */
+export function calculateWeightedWakeWindowAverage(
+  wakeWindows: number[],
+  todaysCount: number = 0
+): number {
+  if (wakeWindows.length === 0) return 0;
+  if (wakeWindows.length === 1) return wakeWindows[0];
+
+  const TODAY_WEIGHT = 0.6;
+  const HISTORICAL_WEIGHT = 0.4;
+
+  // Split into today and historical
+  const todayWindows = wakeWindows.slice(0, todaysCount);
+  const historicalWindows = wakeWindows.slice(todaysCount);
+
+  let weightedSum = 0;
+  let totalWeight = 0;
+
+  // Today's entries (60% total weight, distributed with decay)
+  if (todayWindows.length > 0) {
+    const todayDecaySum = todayWindows.reduce((sum, val, idx) => {
+      const weight = calculateExponentialWeight(idx, todayWindows.length);
+      return sum + val * weight;
+    }, 0);
+    weightedSum += todayDecaySum * TODAY_WEIGHT;
+    totalWeight += TODAY_WEIGHT;
+  }
+
+  // Historical entries (40% total weight, distributed with decay)
+  if (historicalWindows.length > 0) {
+    const histDecaySum = historicalWindows.reduce((sum, val, idx) => {
+      const weight = calculateExponentialWeight(idx, historicalWindows.length);
+      return sum + val * weight;
+    }, 0);
+    weightedSum += histDecaySum * HISTORICAL_WEIGHT;
+    totalWeight += HISTORICAL_WEIGHT;
+  }
+
+  // Handle edge case where only one group exists
+  if (totalWeight === 0) return wakeWindows[0];
+
+  return Math.round(weightedSum / totalWeight);
+}
+
+/**
+ * Calculate standard deviation of an array of numbers.
+ */
+export function calculateStandardDeviation(values: number[]): number {
+  if (values.length < 2) return 0;
+
+  const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+  const squaredDiffs = values.map((v) => Math.pow(v - mean, 2));
+  const avgSquaredDiff = squaredDiffs.reduce((sum, v) => sum + v, 0) / values.length;
+
+  return Math.sqrt(avgSquaredDiff);
+}
+
+/**
+ * Calculate confidence score based on data quality.
+ *
+ * @param entriesCount - Total number of historical entries
+ * @param stdDevRatio - Standard deviation as ratio of mean
+ */
+export function calculateConfidenceScore(
+  entriesCount: number,
+  stdDevRatio: number
+): number {
+  // Base confidence from entry count (0-0.5)
+  const entryConfidence = Math.min(entriesCount / 10, 0.5);
+
+  // Variability penalty (0-0.5)
+  // Lower std dev ratio = higher confidence
+  const variabilityConfidence = Math.max(0, 0.5 - stdDevRatio);
+
+  return Math.min(1, entryConfidence + variabilityConfidence);
+}
+
+/**
+ * Determine calibration state based on data quality.
+ */
+export function determineCalibrationState(
+  totalEntries: number,
+  todayWakeWindows: number[],
+  historicalMean: number
+): { isCalibrating: boolean; reason?: 'insufficient_data' | 'high_variability' } {
+  // Check minimum entries
+  if (totalEntries < MIN_CALIBRATION_ENTRIES) {
+    return { isCalibrating: true, reason: 'insufficient_data' };
+  }
+
+  // Check variability of today's wake windows against historical mean
+  if (todayWakeWindows.length >= 2 && historicalMean > 0) {
+    const todayStdDev = calculateStandardDeviation(todayWakeWindows);
+    const stdDevRatio = todayStdDev / historicalMean;
+
+    if (stdDevRatio > MAX_ACCEPTABLE_STD_DEV_RATIO) {
+      return { isCalibrating: true, reason: 'high_variability' };
+    }
+  }
+
+  return { isCalibrating: false };
+}
+
 export function getShortNapCompensation(napDurationMinutes: number): number {
-  if (napDurationMinutes < 30) {
-    return 0.65; // Very short: reduce next WW by 35%
+  // AAA Dynamic Prediction: Short nap penalty
+  // If previous nap was non-restorative (<30 min), apply 20% penalty
+  if (napDurationMinutes < MIN_RESTORATIVE_NAP_DURATION) {
+    return SHORT_NAP_PENALTY; // 0.80 = reduce next WW by 20%
   }
   if (napDurationMinutes < 45) {
-    return 0.75; // Short: reduce next WW by 25%
+    return 0.85; // Slightly short: reduce next WW by 15%
   }
   if (napDurationMinutes < 60) {
-    return 0.85; // One cycle: reduce next WW by 15%
+    return 0.90; // One cycle: reduce next WW by 10%
   }
   return 1.0;
 }
 
+/**
+ * Calculate suggested nap time (legacy function - returns Date only).
+ * For new code, use calculateSuggestedNapTimeWithMetadata.
+ */
 export function calculateSuggestedNapTime(
   dateOfBirth: string,
   lastWakeTime: string,
@@ -461,6 +660,100 @@ export function calculateSuggestedNapTime(
   return new Date(wakeTime.getTime() + suggestedWindowMinutes * 60 * 1000);
 }
 
+/**
+ * Calculate suggested nap time with full prediction metadata.
+ * AAA Dynamic Prediction System with:
+ * - Exponential decay weighting (60% today, 40% historical)
+ * - Short nap penalty (20% reduction for non-restorative naps)
+ * - Calibration state detection
+ * - First nap of day adjustment
+ *
+ * @param dateOfBirth - Baby's date of birth
+ * @param lastWakeTime - Time when baby last woke up
+ * @param lastNapDurationMinutes - Duration of last nap (null if first nap of day)
+ * @param napIndex - Which nap of the day this is
+ * @param historicalWakeWindows - Array of historical wake windows (most recent first)
+ * @param todaysWakeWindowCount - Number of wake windows from today
+ * @param totalEntriesCount - Total sleep entries in history
+ */
+export function calculateSuggestedNapTimeWithMetadata(
+  dateOfBirth: string,
+  lastWakeTime: string,
+  lastNapDurationMinutes: number | null,
+  napIndex: NapIndex = 'second',
+  historicalWakeWindows: number[] = [],
+  todaysWakeWindowCount: number = 0,
+  totalEntriesCount: number = 0
+): NapPrediction {
+  const config = getSleepConfigForAge(dateOfBirth);
+
+  // Determine if this is the first nap of the day
+  const isFirstNapOfDay = napIndex === 'first';
+
+  // Get base wake window for this nap position
+  let baseWindowMinutes = getProgressiveWakeWindow(dateOfBirth, napIndex);
+
+  // A. Exponential Decay Weighting - apply if we have historical data
+  if (historicalWakeWindows.length > 0) {
+    const weightedAverage = calculateWeightedWakeWindowAverage(
+      historicalWakeWindows,
+      todaysWakeWindowCount
+    );
+
+    // Blend base window with weighted historical average (70% config, 30% learned)
+    // This prevents wild swings while still adapting
+    if (weightedAverage > 0) {
+      baseWindowMinutes = Math.round(baseWindowMinutes * 0.7 + weightedAverage * 0.3);
+    }
+  }
+
+  // B. Short Nap Penalty - if previous nap was non-restorative
+  if (lastNapDurationMinutes !== null) {
+    const compensation = getShortNapCompensation(lastNapDurationMinutes);
+    baseWindowMinutes = Math.round(baseWindowMinutes * compensation);
+  }
+
+  // D. First Nap of Day Adjustment - use shorter window
+  // First wake window is naturally shorter as baby is less fatigued
+  if (isFirstNapOfDay && napIndex === 'first') {
+    // Already handled by getProgressiveWakeWindow returning config.wakeWindows.first
+    // But ensure we're using the first window, not mid
+    baseWindowMinutes = Math.min(baseWindowMinutes, config.wakeWindows.first);
+  }
+
+  // Calculate predicted time
+  const wakeTime = parseISO(lastWakeTime);
+  const predictedTime = new Date(wakeTime.getTime() + baseWindowMinutes * 60 * 1000);
+
+  // C. Calculate calibration state
+  const calibrationState = determineCalibrationState(
+    totalEntriesCount,
+    historicalWakeWindows.slice(0, todaysWakeWindowCount),
+    config.wakeWindows.mid
+  );
+
+  // Calculate confidence score
+  const todayVariability =
+    todaysWakeWindowCount > 1
+      ? calculateStandardDeviation(historicalWakeWindows.slice(0, todaysWakeWindowCount)) /
+        config.wakeWindows.mid
+      : 0;
+
+  const confidenceScore = calculateConfidenceScore(totalEntriesCount, todayVariability);
+
+  // Mark as calibrating for first nap of day if no morning activity yet
+  const isFirstNapCalibrating = isFirstNapOfDay && todaysWakeWindowCount === 0;
+
+  return {
+    predictedTime,
+    confidenceScore: isFirstNapCalibrating ? confidenceScore * 0.8 : confidenceScore,
+    isCalibrating: calibrationState.isCalibrating || isFirstNapCalibrating,
+    calibrationReason: isFirstNapCalibrating
+      ? 'first_nap_of_day'
+      : calibrationState.reason,
+  };
+}
+
 export interface DailySchedule {
   wakeTime: { hour: number; minute: number };
   bedtimeWindow: {
@@ -470,6 +763,58 @@ export interface DailySchedule {
   numberOfNaps: number;
   isRegressionPeriod: boolean;
   regressionType?: '4-month' | '8-month';
+}
+
+/**
+ * Extract wake windows from sleep entries for adaptive prediction.
+ * Returns wake windows sorted by recency (most recent first).
+ *
+ * @param entries - Sleep entries to analyze
+ * @param maxDays - Maximum days of history to consider (default 7)
+ */
+export function extractWakeWindowsFromEntries(
+  entries: { startTime: string; endTime: string | null; type: 'nap' | 'night' }[],
+  maxDays: number = 7
+): { wakeWindows: number[]; todaysCount: number } {
+  const now = new Date();
+  const cutoffDate = subDays(startOfDay(now), maxDays);
+
+  // Filter and sort entries by start time (most recent first)
+  const relevantEntries = entries
+    .filter((e) => {
+      const start = parseISO(e.startTime);
+      return start >= cutoffDate && e.endTime !== null;
+    })
+    .sort((a, b) => parseISO(b.startTime).getTime() - parseISO(a.startTime).getTime());
+
+  const wakeWindows: number[] = [];
+  let todaysCount = 0;
+
+  // Calculate wake windows between consecutive sleep periods
+  for (let i = 0; i < relevantEntries.length - 1; i++) {
+    const currentEntry = relevantEntries[i];
+    const nextEntry = relevantEntries[i + 1]; // This is actually the previous entry in time
+
+    if (nextEntry.endTime) {
+      const currentStart = parseISO(currentEntry.startTime);
+      const previousEnd = parseISO(nextEntry.endTime);
+
+      // Only count if same day or reasonable gap (< 12 hours for night sleep)
+      const gapMinutes = differenceInMinutes(currentStart, previousEnd);
+
+      if (gapMinutes > 0 && gapMinutes < 720) {
+        // Max 12 hours
+        wakeWindows.push(gapMinutes);
+
+        // Count today's wake windows
+        if (isToday(currentStart)) {
+          todaysCount++;
+        }
+      }
+    }
+  }
+
+  return { wakeWindows, todaysCount };
 }
 
 export function getRecommendedSchedule(dateOfBirth: string): DailySchedule {
