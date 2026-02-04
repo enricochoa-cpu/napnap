@@ -15,7 +15,13 @@ import { useSleepEntries } from './hooks/useSleepEntries';
 import { useBabyShares } from './hooks/useBabyShares';
 import { useAuth } from './hooks/useAuth';
 import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
-import { formatDate, formatDateTime } from './utils/dateUtils';
+import {
+  formatDate,
+  formatDateTime,
+  extractWakeWindowsFromEntries,
+  getSleepConfigForAge,
+  determineCalibrationState,
+} from './utils/dateUtils';
 import { parseISO, isToday } from 'date-fns';
 import type { SleepEntry } from './types';
 
@@ -153,6 +159,28 @@ function App() {
     // No activity today - show the modal
     return true;
   }, [showMissingBedtimeModal, entries, activeSleep, entriesLoading]);
+
+  // Compute algorithm status for ProfileSection
+  const algorithmStatus = useMemo(() => {
+    const { wakeWindows, todaysCount } = extractWakeWindowsFromEntries(entries, 7);
+    const activeProfile = activeBabyProfile || profile;
+    const config = activeProfile?.dateOfBirth
+      ? getSleepConfigForAge(activeProfile.dateOfBirth)
+      : null;
+    const calibrationState = config
+      ? determineCalibrationState(
+          entries.length,
+          wakeWindows.slice(0, todaysCount),
+          config.wakeWindows.mid
+        )
+      : { isCalibrating: false, reason: undefined };
+
+    return {
+      totalEntries: entries.length,
+      isHighVariability: calibrationState.reason === 'high_variability',
+      babyName: activeProfile?.name,
+    };
+  }, [entries, activeBabyProfile, profile]);
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
@@ -344,6 +372,7 @@ function App() {
       onRevokeAccess={revokeAccess}
       onAcceptInvitation={handleAcceptInvitation}
       onDeclineInvitation={declineInvitation}
+      algorithmStatus={algorithmStatus}
     />
   );
 

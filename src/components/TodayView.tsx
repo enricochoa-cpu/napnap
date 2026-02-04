@@ -229,23 +229,38 @@ export function TodayView({
         firstPredictionCalibrationInfo = napPrediction;
       }
 
-      // Only show predictions that are in the future
-      // AND after the active nap would end (if there is one)
+      // Determine minimum time for showing predictions
       const minPredictionTime = hasActiveNap && activeNapExpectedEnd
         ? activeNapExpectedEnd
         : now;
 
-      if (napPrediction.predictedTime && isAfter(napPrediction.predictedTime, minPredictionTime)) {
-        predictions.push({
-          time: napPrediction.predictedTime,
-          isCatnap: windowInfo.isCatnap,
-          expectedDuration: windowInfo.expectedDurationMinutes,
-          prediction: napPrediction,
-        });
-      }
-
       if (napPrediction.predictedTime) {
-        lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+        // If prediction is in the future, show it normally
+        if (isAfter(napPrediction.predictedTime, minPredictionTime)) {
+          predictions.push({
+            time: napPrediction.predictedTime,
+            isCatnap: windowInfo.isCatnap,
+            expectedDuration: windowInfo.expectedDurationMinutes,
+            prediction: napPrediction,
+          });
+          lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+        }
+        // If prediction is in the past (overdue) and no active nap, show as "now"
+        // This ensures parents see the nap is needed and bedtime calculates correctly
+        else if (!hasActiveNap && predictions.length === 0) {
+          predictions.push({
+            time: now, // Show as "now" since it's overdue
+            isCatnap: windowInfo.isCatnap,
+            expectedDuration: windowInfo.expectedDurationMinutes,
+            prediction: napPrediction,
+          });
+          // For subsequent calculations, use now + expected duration as anchor
+          lastEndTime = addMinutes(now, windowInfo.expectedDurationMinutes);
+        }
+        // If prediction is overdue but we already have future predictions, skip it
+        else {
+          lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+        }
       }
       lastNapDuration = windowInfo.expectedDurationMinutes;
     }

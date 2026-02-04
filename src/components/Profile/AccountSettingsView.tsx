@@ -95,6 +95,7 @@ function SettingsItem({ icon, title, subtitle, onClick, variant = 'default', rig
 
 export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUser }: AccountSettingsViewProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -282,7 +283,7 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
             icon={<LogoutIcon />}
             title="Sign out"
             subtitle="You can always sign back in"
-            onClick={onSignOut}
+            onClick={() => setShowLogoutConfirm(true)}
           />
         </div>
       </div>
@@ -302,6 +303,46 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
           />
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <>
+          <div
+            className="fixed inset-0 bg-black/60 z-50"
+            onClick={() => setShowLogoutConfirm(false)}
+          />
+          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto">
+            <div className="card p-6">
+              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center text-[var(--text-muted)]">
+                <LogoutIcon />
+              </div>
+              <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
+                Sign out?
+              </h3>
+              <p className="text-[var(--text-muted)] text-sm text-center mb-6">
+                You can always sign back in with your email and password.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowLogoutConfirm(false);
+                    onSignOut();
+                  }}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--night-color)] text-white font-display font-semibold"
+                >
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

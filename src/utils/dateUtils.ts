@@ -441,6 +441,30 @@ export function getProgressiveWakeWindow(dateOfBirth: string, napIndex: NapIndex
  */
 export const MIN_RESTORATIVE_NAP_DURATION = 30;
 
+// ============================================================================
+// ALGORITHM STATUS TIERS - User-facing transparency about prediction maturity
+// ============================================================================
+
+/**
+ * Algorithm status thresholds (extends existing MIN_CALIBRATION_ENTRIES = 5)
+ */
+export const ALGORITHM_STATUS_THRESHOLDS = {
+  LEARNING_MAX: 5,      // 0-5 entries = Learning
+  CALIBRATING_MAX: 15,  // 6-15 entries = Calibrating
+  // 15+ = Optimized
+};
+
+export type AlgorithmStatusTier = 'learning' | 'calibrating' | 'optimized';
+
+/**
+ * Determine the algorithm's maturity tier based on total sleep entries.
+ */
+export function getAlgorithmStatusTier(totalEntries: number): AlgorithmStatusTier {
+  if (totalEntries <= ALGORITHM_STATUS_THRESHOLDS.LEARNING_MAX) return 'learning';
+  if (totalEntries <= ALGORITHM_STATUS_THRESHOLDS.CALIBRATING_MAX) return 'calibrating';
+  return 'optimized';
+}
+
 /**
  * Short nap penalty factor - reduces next wake window by 20%
  * when previous nap was non-restorative.
@@ -496,7 +520,7 @@ export interface WakeWindowHistory {
 export function calculateExponentialWeight(
   index: number,
   totalEntries: number,
-  todayWeight: number = 0.6
+  _todayWeight: number = 0.6
 ): number {
   if (totalEntries <= 1) return 1;
 

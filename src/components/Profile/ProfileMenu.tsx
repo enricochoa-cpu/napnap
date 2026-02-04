@@ -1,4 +1,5 @@
 import type { BabyProfile, BabyShare } from '../../types';
+import { AlgorithmStatusCard, type AlgorithmStatusProps } from './AlgorithmStatusCard';
 
 interface SharedBabyProfile extends BabyProfile {
   isOwner: boolean;
@@ -13,6 +14,7 @@ interface ProfileMenuProps {
   onNavigate: (view: ProfileView) => void;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  algorithmStatus?: AlgorithmStatusProps;
 }
 
 // Icons
@@ -88,11 +90,21 @@ export function ProfileMenu({
   onNavigate,
   onAcceptInvitation,
   onDeclineInvitation,
+  algorithmStatus,
 }: ProfileMenuProps) {
   const babyCount = sharedProfiles.length;
 
   return (
     <div className="space-y-8">
+      {/* Algorithm Status - Top for transparency */}
+      {algorithmStatus && (
+        <AlgorithmStatusCard
+          totalEntries={algorithmStatus.totalEntries}
+          isHighVariability={algorithmStatus.isHighVariability}
+          babyName={algorithmStatus.babyName}
+        />
+      )}
+
       {/* Pending Invitations */}
       {pendingInvitations.length > 0 && (
         <div className="card p-6 border-2 border-[var(--nap-color)]/30">

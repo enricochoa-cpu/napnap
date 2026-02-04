@@ -65,6 +65,13 @@ Cuando hay una nap en curso:
 2. Se usa `expectedWakeTime` como anchor para predicciones futuras
 3. Se filtran predicciones que caerían antes del expected wake
 
+### Overdue Nap Handling (Critical)
+Cuando una predicción de nap está en el pasado ("overdue"):
+1. **NO filtrar silenciosamente** - esto causa que bedtime se ancle en datos viejos
+2. Si no hay nap activa y es la primera predicción: mostrar como "now"
+3. Esto asegura que bedtime calcule desde el tiempo actual, no desde hace horas
+4. **Key learning:** El padre puede "saltarse" la ventana óptima; el sistema debe adaptarse
+
 ---
 
 ## 4. Key UI/UX Patterns
@@ -169,6 +176,8 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-02 | Dead code cleanup (547 líneas eliminadas) |
 | 2026-02-02 | Sistema de memoria unificado en `.context/` |
 | 2026-02-03 | Google OAuth login (social auth) |
+| 2026-02-04 | AlgorithmStatusCard (transparency about prediction maturity) |
+| 2026-02-04 | Fix: overdue nap predictions now show as "now" instead of being filtered |
 
 ---
 
