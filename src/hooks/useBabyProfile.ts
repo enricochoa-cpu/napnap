@@ -225,10 +225,10 @@ export function useBabyProfile() {
       if (data.userName !== undefined) updateData.user_name = data.userName || null;
       if (data.userRole !== undefined) updateData.user_role = data.userRole || null;
 
+      // Use upsert to create profile row if it doesn't exist (e.g., invited users without own baby)
       const { error } = await supabase
         .from('profiles')
-        .update(updateData)
-        .eq('id', user.id);
+        .upsert({ id: user.id, ...updateData }, { onConflict: 'id' });
 
       if (error) {
         console.error('Error updating profile:', error);
