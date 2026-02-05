@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyShare } from '../types';
 
 type ShareRole = 'caregiver' | 'viewer';
@@ -28,6 +29,11 @@ export function ShareAccess({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Bottom sheet state
+  const [selectedShare, setSelectedShare] = useState<BabyShare | null>(null);
+  const [editingRole, setEditingRole] = useState<ShareRole>('caregiver');
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
@@ -51,18 +57,28 @@ export function ShareAccess({
   };
 
   const handleRevoke = async (shareId: string) => {
+    setIsUpdating(true);
     const result = await onRevokeAccess(shareId);
     if (!result.success) {
       setError(result.error || 'Failed to revoke access');
     }
+    setSelectedShare(null);
+    setIsUpdating(false);
   };
 
-  const handleRoleChange = async (shareId: string, currentRole: ShareRole) => {
-    const newRole: ShareRole = currentRole === 'caregiver' ? 'viewer' : 'caregiver';
-    const result = await onUpdateRole(shareId, newRole);
+  const handleSaveRole = async () => {
+    if (!selectedShare || editingRole === selectedShare.role) {
+      setSelectedShare(null);
+      return;
+    }
+
+    setIsUpdating(true);
+    const result = await onUpdateRole(selectedShare.id, editingRole);
     if (!result.success) {
       setError(result.error || 'Failed to update role');
     }
+    setSelectedShare(null);
+    setIsUpdating(false);
   };
 
   const handleAccept = async (shareId: string) => {
@@ -77,6 +93,11 @@ export function ShareAccess({
     if (!result.success) {
       setError(result.error || 'Failed to decline invitation');
     }
+  };
+
+  const openEditSheet = (share: BabyShare) => {
+    setSelectedShare(share);
+    setEditingRole(share.role);
   };
 
   const acceptedShares = myShares.filter((s) => s.status === 'accepted');
@@ -200,38 +221,28 @@ export function ShareAccess({
             </h4>
             <div className="space-y-2">
               {acceptedShares.map((share) => (
-                <div
+                <button
                   key={share.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-soft)]"
+                  onClick={() => openEditSheet(share)}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-soft)] hover:bg-[var(--bg-soft)]/80 active:scale-[0.98] transition-all text-left"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-                      <span className="text-sm font-display font-bold text-[var(--nap-color)]">
-                        {share.sharedWithEmail.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-display text-[var(--text-primary)]">
-                        {share.sharedWithEmail}
-                      </p>
-                      <button
-                        onClick={() => handleRoleChange(share.id, share.role)}
-                        className="text-xs text-[var(--nap-color)] font-display capitalize flex items-center gap-1 hover:underline"
-                      >
-                        {share.role}
-                        <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
-                      </button>
-                    </div>
+                  <div className="w-10 h-10 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-sm font-display font-bold text-[var(--nap-color)]">
+                      {share.sharedWithEmail.charAt(0).toUpperCase()}
+                    </span>
                   </div>
-                  <button
-                    onClick={() => handleRevoke(share.id)}
-                    className="text-xs text-[var(--danger-color)] font-display"
-                  >
-                    Remove
-                  </button>
-                </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-display text-[var(--text-primary)] truncate">
+                      {share.sharedWithEmail}
+                    </p>
+                    <p className="text-xs text-[var(--text-muted)] capitalize">
+                      {share.role}
+                    </p>
+                  </div>
+                  <svg className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
               ))}
             </div>
           </div>
@@ -250,7 +261,7 @@ export function ShareAccess({
                   className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-soft)]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center">
                       <span className="text-sm font-display font-bold text-[var(--text-muted)]">
                         {share.sharedWithEmail.charAt(0).toUpperCase()}
                       </span>
@@ -266,7 +277,7 @@ export function ShareAccess({
                   </div>
                   <button
                     onClick={() => handleRevoke(share.id)}
-                    className="text-xs text-[var(--danger-color)] font-display"
+                    className="text-xs text-[var(--danger-color)] font-display px-3 py-1.5"
                   >
                     Cancel
                   </button>
@@ -282,6 +293,120 @@ export function ShareAccess({
           </p>
         )}
       </div>
+
+      {/* Edit Access Bottom Sheet */}
+      <AnimatePresence>
+        {selectedShare && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => !isUpdating && setSelectedShare(null)}
+              className="fixed inset-0 bg-black/60 z-50"
+            />
+
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-[var(--bg-card)] rounded-t-3xl max-h-[85vh] overflow-hidden"
+            >
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-10 h-1 rounded-full bg-[var(--text-muted)]/30" />
+              </div>
+
+              <div className="px-6 pb-8">
+                {/* Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
+                    <span className="text-xl font-display font-bold text-[var(--nap-color)]">
+                      {selectedShare.sharedWithEmail.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-display font-bold text-[var(--text-primary)]">
+                      Edit Access
+                    </h3>
+                    <p className="text-sm text-[var(--text-muted)] truncate">
+                      {selectedShare.sharedWithEmail}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Role Selector */}
+                <div className="mb-6">
+                  <label className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-3 block">
+                    Permission level
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEditingRole('caregiver')}
+                      disabled={isUpdating}
+                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-display font-medium transition-all ${
+                        editingRole === 'caregiver'
+                          ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
+                          : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
+                      }`}
+                    >
+                      <div className="font-semibold">Caregiver</div>
+                      <div className="text-xs opacity-70 mt-0.5">Can add and edit entries</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingRole('viewer')}
+                      disabled={isUpdating}
+                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-display font-medium transition-all ${
+                        editingRole === 'viewer'
+                          ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
+                          : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
+                      }`}
+                    >
+                      <div className="font-semibold">Viewer</div>
+                      <div className="text-xs opacity-70 mt-0.5">Can only view entries</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-3">
+                  <button
+                    onClick={handleSaveRole}
+                    disabled={isUpdating}
+                    className="w-full btn btn-nap py-3.5 disabled:opacity-50"
+                  >
+                    {isUpdating ? 'Saving...' : 'Save Changes'}
+                  </button>
+
+                  <button
+                    onClick={() => handleRevoke(selectedShare.id)}
+                    disabled={isUpdating}
+                    className="w-full py-3.5 rounded-xl text-[var(--danger-color)] font-display font-semibold bg-[var(--danger-color)]/10 hover:bg-[var(--danger-color)]/20 transition-colors disabled:opacity-50"
+                  >
+                    Remove Access
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedShare(null)}
+                    disabled={isUpdating}
+                    className="w-full py-3 text-[var(--text-muted)] font-display text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+
+              {/* Safe area padding for iOS */}
+              <div className="h-[env(safe-area-inset-bottom)]" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
