@@ -62,6 +62,7 @@ function App() {
     inviteByEmail,
     acceptInvitation,
     declineInvitation,
+    updateShareRole,
     revokeAccess,
   } = useBabyShares();
 
@@ -371,6 +372,7 @@ function App() {
       myShares={myShares}
       pendingInvitations={pendingInvitations}
       onInvite={inviteByEmail}
+      onUpdateRole={updateShareRole}
       onRevokeAccess={revokeAccess}
       onAcceptInvitation={handleAcceptInvitation}
       onDeclineInvitation={declineInvitation}

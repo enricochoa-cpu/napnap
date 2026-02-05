@@ -7,6 +7,7 @@ interface ShareAccessProps {
   myShares: BabyShare[];
   pendingInvitations: BabyShare[];
   onInvite: (email: string, role: ShareRole) => Promise<{ success: boolean; error?: string }>;
+  onUpdateRole: (shareId: string, role: ShareRole) => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
@@ -16,6 +17,7 @@ export function ShareAccess({
   myShares,
   pendingInvitations,
   onInvite,
+  onUpdateRole,
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
@@ -52,6 +54,14 @@ export function ShareAccess({
     const result = await onRevokeAccess(shareId);
     if (!result.success) {
       setError(result.error || 'Failed to revoke access');
+    }
+  };
+
+  const handleRoleChange = async (shareId: string, currentRole: ShareRole) => {
+    const newRole: ShareRole = currentRole === 'caregiver' ? 'viewer' : 'caregiver';
+    const result = await onUpdateRole(shareId, newRole);
+    if (!result.success) {
+      setError(result.error || 'Failed to update role');
     }
   };
 
@@ -204,9 +214,15 @@ export function ShareAccess({
                       <p className="text-sm font-display text-[var(--text-primary)]">
                         {share.sharedWithEmail}
                       </p>
-                      <p className="text-xs text-[var(--text-muted)] capitalize">
+                      <button
+                        onClick={() => handleRoleChange(share.id, share.role)}
+                        className="text-xs text-[var(--nap-color)] font-display capitalize flex items-center gap-1 hover:underline"
+                      >
                         {share.role}
-                      </p>
+                        <svg className="w-3 h-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
                   <button

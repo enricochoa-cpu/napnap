@@ -19,7 +19,16 @@
       "Bash(git fetch:*)",
       "Bash(gh run list:*)",
       "Bash(pkill:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx depcheck:*)",
+      "Bash(# Find all exported components/functions grep -rh \"\"^export \"\" src/components/*.tsx src/components/**/*.tsx)",
+      "Bash(tr:*)",
+      "Bash(# List all component files ls -la src/components/*.tsx src/components/**/*.tsx)",
+      "Bash(# Check Loader and Spinner usage grep -rn \"\"Loader\\\\|Spinner\"\" src/ --include=\"\"*.tsx\"\" --include=\"\"*.ts\"\")",
+      "mcp__context7__query-docs",
+      "Bash(npx tsx:*)",
+      "Bash(npx eslint:*)"
     ]
   },
   "enabledMcpjsonServers": [

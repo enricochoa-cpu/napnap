@@ -19,7 +19,8 @@ interface BabyProfileProps {
   // Sharing props
   myShares?: BabyShare[];
   pendingInvitations?: BabyShare[];
-  onInvite?: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onInvite?: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
+  onUpdateRole?: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
@@ -36,6 +37,7 @@ export function BabyProfile({
   myShares = [],
   pendingInvitations = [],
   onInvite,
+  onUpdateRole,
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
@@ -518,11 +520,12 @@ export function BabyProfile({
       </div>
 
       {/* Share Access Section (only for profile owner) */}
-      {profile && onInvite && onRevokeAccess && onAcceptInvitation && onDeclineInvitation && (
+      {profile && onInvite && onUpdateRole && onRevokeAccess && onAcceptInvitation && onDeclineInvitation && (
         <ShareAccess
           myShares={myShares}
           pendingInvitations={[]} // Don't show pending here, already shown at top
           onInvite={onInvite}
+          onUpdateRole={onUpdateRole}
           onRevokeAccess={onRevokeAccess}
           onAcceptInvitation={onAcceptInvitation}
           onDeclineInvitation={onDeclineInvitation}

@@ -21,6 +21,7 @@ interface MyBabiesViewProps {
   // Sharing props
   myShares: BabyShare[];
   onInvite: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
+  onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -41,6 +42,7 @@ export function MyBabiesView({
   onBack,
   myShares,
   onInvite,
+  onUpdateRole,
   onRevokeAccess,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
@@ -370,6 +372,7 @@ export function MyBabiesView({
           myShares={myShares}
           pendingInvitations={[]}
           onInvite={onInvite}
+          onUpdateRole={onUpdateRole}
           onRevokeAccess={onRevokeAccess}
           onAcceptInvitation={async () => ({ success: true })}
           onDeclineInvitation={async () => ({ success: true })}

@@ -26,6 +26,7 @@ interface ProfileSectionProps {
   myShares: BabyShare[];
   pendingInvitations: BabyShare[];
   onInvite: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
+  onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
@@ -46,6 +47,7 @@ export function ProfileSection({
   myShares,
   pendingInvitations,
   onInvite,
+  onUpdateRole,
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
@@ -87,6 +89,7 @@ export function ProfileSection({
           onBack={handleBack}
           myShares={myShares}
           onInvite={onInvite}
+          onUpdateRole={onUpdateRole}
           onRevokeAccess={onRevokeAccess}
         />
       )}

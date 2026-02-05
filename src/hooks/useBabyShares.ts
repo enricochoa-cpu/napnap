@@ -207,6 +207,27 @@ export function useBabyShares() {
     }
   }, [fetchPendingInvitations]);
 
+  // Update share role (owner action)
+  const updateShareRole = useCallback(async (shareId: string, role: 'caregiver' | 'viewer') => {
+    try {
+      const { error } = await supabase
+        .from('baby_shares')
+        .update({ role })
+        .eq('id', shareId);
+
+      if (error) {
+        console.error('Error updating share role:', error);
+        return { success: false, error: error.message };
+      }
+
+      await fetchMyShares();
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating share role:', error);
+      return { success: false, error: 'Failed to update role' };
+    }
+  }, [fetchMyShares]);
+
   // Revoke access (owner action)
   const revokeAccess = useCallback(async (shareId: string) => {
     try {
@@ -235,6 +256,7 @@ export function useBabyShares() {
     inviteByEmail,
     acceptInvitation,
     declineInvitation,
+    updateShareRole,
     revokeAccess,
     refreshShares: fetchMyShares,
     refreshInvitations: fetchPendingInvitations,
