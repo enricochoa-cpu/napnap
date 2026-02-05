@@ -12,18 +12,6 @@ interface BabyEditSheetProps {
   isNewBaby?: boolean;
 }
 
-const CloseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M18 6L6 18M6 6l12 12" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
 export function BabyEditSheet({
   baby,
   isOpen,
@@ -111,18 +99,18 @@ export function BabyEditSheet({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur */}
+          {/* Dark overlay with blur */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{ opacity: backdropOpacity }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
-          {/* Bottom Sheet */}
+          {/* Glass Bottom Sheet */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -139,42 +127,14 @@ export function BabyEditSheet({
             style={{ y }}
             className="fixed bottom-0 left-0 right-0 z-50 touch-none max-h-[90dvh] overflow-hidden"
           >
-            <div className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] max-h-[90dvh] overflow-y-auto">
-              {/* Handle bar */}
-              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing sticky top-0 bg-[var(--bg-card)]">
-                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
+            <div className="bg-[#1a1c24]/95 backdrop-blur-2xl rounded-t-[40px] shadow-[0_-8px_40px_rgba(0,0,0,0.4)] max-h-[90dvh] overflow-y-auto border-t border-white/10">
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing sticky top-0 bg-[#1a1c24]/95 backdrop-blur-2xl rounded-t-[40px]">
+                <div className="w-10 h-1 bg-white/20 rounded-full" />
               </div>
 
-              {/* Header */}
-              <div className="flex items-center justify-between px-6 pb-4 sticky top-6 bg-[var(--bg-card)] z-10">
-                <button
-                  onClick={onClose}
-                  className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:bg-white/10 transition-colors"
-                  aria-label="Cancel"
-                >
-                  <CloseIcon />
-                </button>
-
-                <h2 className="font-display font-bold text-lg text-[var(--text-primary)]">
-                  {isNewBaby ? 'Add Baby' : 'Edit Baby'}
-                </h2>
-
-                <button
-                  onClick={handleSave}
-                  disabled={!isValid}
-                  className={`p-2 -mr-2 rounded-xl transition-colors ${
-                    isValid
-                      ? 'text-[var(--nap-color)] hover:bg-[var(--nap-color)]/10'
-                      : 'text-[var(--text-muted)]/30 cursor-not-allowed'
-                  }`}
-                  aria-label="Save"
-                >
-                  <CheckIcon />
-                </button>
-              </div>
-
-              {/* Avatar - Large & Centered */}
-              <div className="flex flex-col items-center pb-6 px-6">
+              {/* Avatar - Star of the Show */}
+              <div className="flex flex-col items-center pt-4 pb-6 px-6">
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -190,70 +150,70 @@ export function BabyEditSheet({
                   />
                 </motion.div>
                 {onUploadAvatar && (
-                  <p className="text-sm text-[var(--text-muted)] mt-3">
-                    Tap to change photo
+                  <p className="text-xs text-[var(--text-muted)] mt-3">
+                    Tap photo to change
                   </p>
                 )}
               </div>
 
-              {/* Form Fields - Grouped in Glass Cards */}
-              <div className="px-6 pb-6 space-y-4">
-                {/* Name & Birthday Card */}
-                <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 p-4 space-y-4">
+              {/* Form Fields - Grouped in Soft Cards */}
+              <div className="px-6 pb-4 space-y-3">
+                {/* Name & Birthday */}
+                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4 space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-[var(--text-muted)] mb-2 font-display uppercase tracking-wider">
-                      Baby's Name
+                    <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
+                      Name
                     </label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Enter name..."
-                      className="input"
+                      placeholder="Baby's name"
+                      className="w-full bg-transparent border-none text-[var(--text-primary)] text-lg font-display font-medium placeholder:text-[var(--text-muted)]/40 focus:outline-none focus:ring-0"
                       autoFocus
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-[var(--text-muted)] mb-2 font-display uppercase tracking-wider">
-                      Date of Birth
+                  <div className="border-t border-white/[0.06] pt-4">
+                    <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
+                      Birthday
                     </label>
                     <input
                       type="date"
                       name="dateOfBirth"
                       value={formData.dateOfBirth}
                       onChange={handleChange}
-                      className="input"
+                      className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
                     />
                   </div>
                 </div>
 
-                {/* Gender Card */}
-                <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 p-4">
-                  <label className="block text-xs font-medium text-[var(--text-muted)] mb-2 font-display uppercase tracking-wider">
+                {/* Gender */}
+                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                  <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
                     Gender
                   </label>
                   <select
                     name="gender"
                     value={formData.gender}
                     onChange={handleChange}
-                    className="input"
+                    className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
                   >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Not relevant</option>
+                    <option value="male">Boy</option>
+                    <option value="female">Girl</option>
+                    <option value="other">Not specified</option>
                   </select>
                 </div>
 
-                {/* Measurements Card */}
-                <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 p-4">
-                  <label className="block text-xs font-medium text-[var(--text-muted)] mb-3 font-display uppercase tracking-wider">
-                    Measurements (optional)
+                {/* Measurements */}
+                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                  <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-3 font-display uppercase tracking-wider">
+                    Measurements
                   </label>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs text-[var(--text-muted)] mb-1">
+                      <label className="block text-[10px] text-[var(--text-muted)] mb-1">
                         Weight (kg)
                       </label>
                       <input
@@ -263,12 +223,12 @@ export function BabyEditSheet({
                         onChange={handleChange}
                         step="0.1"
                         min="0"
-                        placeholder="0.0"
-                        className="input"
+                        placeholder="—"
+                        className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-[var(--text-muted)] mb-1">
+                      <label className="block text-[10px] text-[var(--text-muted)] mb-1">
                         Height (cm)
                       </label>
                       <input
@@ -278,28 +238,54 @@ export function BabyEditSheet({
                         onChange={handleChange}
                         step="0.1"
                         min="0"
-                        placeholder="0.0"
-                        className="input"
+                        placeholder="—"
+                        className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30"
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Save Button - Fixed at bottom */}
-              <div className="px-6 pb-8">
+              {/* Action Buttons */}
+              <div className="px-6 pt-2 pb-6 space-y-3">
+                {/* Save Button */}
                 <button
                   onClick={handleSave}
                   disabled={!isValid}
-                  className={`w-full py-4 rounded-2xl font-display font-semibold text-lg transition-all active:scale-[0.98] ${
+                  className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] ${
                     isValid
-                      ? 'bg-[var(--nap-color)] text-white shadow-lg shadow-[var(--nap-color)]/25'
-                      : 'bg-white/10 text-[var(--text-muted)]/50 cursor-not-allowed'
+                      ? 'bg-[var(--nap-color)] text-white shadow-lg shadow-[var(--nap-color)]/20'
+                      : 'bg-white/[0.08] text-[var(--text-muted)]/40 cursor-not-allowed'
                   }`}
                 >
                   {isNewBaby ? 'Add Baby' : 'Save Changes'}
                 </button>
+
+                {/* Cancel Link */}
+                <button
+                  onClick={onClose}
+                  className="w-full py-2 text-[var(--text-muted)] font-display font-medium text-sm hover:text-[var(--text-primary)] transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
+
+              {/* Delete Baby - Subtle at bottom (only for existing babies) */}
+              {!isNewBaby && baby && (
+                <div className="px-6 pb-8 pt-4 border-t border-white/[0.05]">
+                  <button
+                    onClick={() => {
+                      // TODO: Implement delete functionality
+                      if (confirm('Are you sure you want to remove this baby profile?')) {
+                        onClose();
+                      }
+                    }}
+                    className="w-full text-center text-xs text-red-400/60 hover:text-red-400 transition-colors font-display"
+                  >
+                    Delete baby profile
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         </>

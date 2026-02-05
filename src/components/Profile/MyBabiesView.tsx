@@ -46,23 +46,25 @@ const PlusIcon = () => (
   </svg>
 );
 
-const EditIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-
-// Premium Baby Profile Card
+// Premium Baby Profile Card - Single edit trigger (the whole card for owned babies)
 interface BabyProfileCardProps {
   baby: SharedBabyProfile;
   isActive: boolean;
-  onClick: () => void;
+  onSelect: () => void;
   onEdit?: () => void;
-  showEdit?: boolean;
 }
 
-function BabyProfileCard({ baby, isActive, onClick, onEdit, showEdit }: BabyProfileCardProps) {
+function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardProps) {
+  const handleClick = () => {
+    if (baby.isOwner && onEdit) {
+      // For owned babies, clicking opens edit sheet
+      onEdit();
+    } else {
+      // For shared babies, clicking selects them
+      onSelect();
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -70,17 +72,16 @@ function BabyProfileCard({ baby, isActive, onClick, onEdit, showEdit }: BabyProf
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="relative"
     >
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className={`w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl border shadow-[0_8px_30px_rgb(0,0,0,0.06)] active:scale-[0.97] transition-all duration-200 ${
           isActive
             ? 'bg-white/20 border-[var(--nap-color)]/40'
             : 'bg-white/[0.08] border-white/15 hover:bg-white/[0.12]'
         }`}
       >
-        {/* Left: Large Avatar */}
+        {/* Left: Avatar */}
         <div className="flex-shrink-0">
           <BabyAvatarPicker
             avatarUrl={baby.avatarUrl}
@@ -103,39 +104,27 @@ function BabyProfileCard({ baby, isActive, onClick, onEdit, showEdit }: BabyProf
           </p>
         </div>
 
-        {/* Right: Active Indicator */}
-        {isActive && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <span className="text-[var(--nap-color)]">
-              <CheckIcon />
+        {/* Right: Active indicator or Edit hint */}
+        <div className="flex-shrink-0">
+          {isActive ? (
+            <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
+              <span className="text-[var(--nap-color)]">
+                <CheckIcon />
+              </span>
+            </div>
+          ) : baby.isOwner ? (
+            <span className="text-xs text-[var(--text-muted)]/50 font-display">
+              Tap to edit
             </span>
-          </div>
-        )}
+          ) : null}
+        </div>
       </button>
-
-      {/* Edit button overlay - only for owned babies */}
-      {showEdit && onEdit && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onEdit();
-          }}
-          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/30 transition-all active:scale-90"
-          aria-label="Edit baby"
-        >
-          <EditIcon />
-        </button>
-      )}
     </motion.div>
   );
 }
 
 // Ghost Card for Add Baby
-interface AddBabyGhostCardProps {
-  onClick: () => void;
-}
-
-function AddBabyGhostCard({ onClick }: AddBabyGhostCardProps) {
+function AddBabyGhostCard({ onClick }: { onClick: () => void }) {
   return (
     <motion.button
       layout
@@ -150,7 +139,7 @@ function AddBabyGhostCard({ onClick }: AddBabyGhostCardProps) {
         <PlusIcon />
       </div>
       <p className="font-display font-medium text-[var(--text-muted)]">
-        Add another baby
+        Add your baby
       </p>
     </motion.button>
   );
@@ -201,19 +190,15 @@ export function MyBabiesView({
 
   const handleSheetSave = (data: Partial<Omit<BabyProfileType, 'id'>>) => {
     if (isAddingNewBaby) {
-      // Creating new baby
       onSave(data as Omit<BabyProfileType, 'id'>);
     } else {
-      // Updating existing baby
       onUpdate(data);
     }
   };
 
-  const ownBabies = sharedProfiles.filter(b => b.isOwner);
-
   return (
     <div className="space-y-6">
-      {/* Header with back button */}
+      {/* Header */}
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
@@ -232,7 +217,7 @@ export function MyBabiesView({
         </div>
       </div>
 
-      {/* Baby Gallery - Premium Floating Cards */}
+      {/* Baby Gallery - Clean floating cards */}
       <AnimatePresence mode="popLayout">
         <motion.div layout className="space-y-4">
           {sharedProfiles.map((baby) => (
@@ -240,9 +225,8 @@ export function MyBabiesView({
               key={baby.id}
               baby={baby}
               isActive={activeBabyId === baby.id}
-              onClick={() => onActiveBabyChange(baby.id)}
+              onSelect={() => onActiveBabyChange(baby.id)}
               onEdit={baby.isOwner ? handleEditBaby : undefined}
-              showEdit={baby.isOwner}
             />
           ))}
 
@@ -253,7 +237,7 @@ export function MyBabiesView({
         </motion.div>
       </AnimatePresence>
 
-      {/* Empty state - show ghost card to add first baby */}
+      {/* Empty state */}
       {!hasAnyBabies && !profile && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -264,50 +248,6 @@ export function MyBabiesView({
             Add your first baby to get started
           </p>
           <AddBabyGhostCard onClick={handleAddBaby} />
-        </motion.div>
-      )}
-
-      {/* Your Baby's Details Card - Compact summary (when profile exists) */}
-      {profile && ownBabies.length > 0 && (
-        <motion.div
-          layout
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-[32px] bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-5"
-        >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-              Quick Info
-            </h2>
-            <button
-              onClick={handleEditBaby}
-              className="text-[var(--nap-color)] text-sm font-medium font-display flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-            >
-              <EditIcon />
-              Edit
-            </button>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 text-sm">
-            <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
-              <p className="text-[var(--text-muted)] text-xs mb-1">Gender</p>
-              <p className="text-[var(--text-primary)] font-medium">
-                {profile.gender === 'male' ? 'Boy' : profile.gender === 'female' ? 'Girl' : '—'}
-              </p>
-            </div>
-            {profile.weight > 0 && (
-              <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
-                <p className="text-[var(--text-muted)] text-xs mb-1">Weight</p>
-                <p className="text-[var(--text-primary)] font-medium">{profile.weight} kg</p>
-              </div>
-            )}
-            {profile.height > 0 && (
-              <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
-                <p className="text-[var(--text-muted)] text-xs mb-1">Height</p>
-                <p className="text-[var(--text-primary)] font-medium">{profile.height} cm</p>
-              </div>
-            )}
-          </div>
         </motion.div>
       )}
 
@@ -324,7 +264,7 @@ export function MyBabiesView({
         />
       )}
 
-      {/* Edit Sheet - Slides up from bottom */}
+      {/* Edit Sheet */}
       <BabyEditSheet
         baby={profile}
         isOpen={isEditSheetOpen}
