@@ -31,68 +31,6 @@ const TrashIcon = () => (
   </svg>
 );
 
-const BellIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
-const ChevronRightIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
-
-interface SettingsItemProps {
-  icon: React.ReactNode;
-  title: string;
-  subtitle?: string;
-  onClick?: () => void;
-  variant?: 'default' | 'danger';
-  rightElement?: React.ReactNode;
-}
-
-function SettingsItem({ icon, title, subtitle, onClick, variant = 'default', rightElement }: SettingsItemProps) {
-  const isDanger = variant === 'danger';
-
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all active:scale-[0.98] ${
-        isDanger
-          ? 'bg-[var(--danger-color)]/10 hover:bg-[var(--danger-color)]/15'
-          : 'bg-[var(--bg-soft)] hover:bg-[var(--bg-card)]'
-      }`}
-    >
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isDanger
-          ? 'bg-[var(--danger-color)]/20 text-[var(--danger-color)]'
-          : 'bg-[var(--text-muted)]/10 text-[var(--text-muted)]'
-      }`}>
-        {icon}
-      </div>
-      <div className="flex-1 text-left min-w-0">
-        <p className={`font-display font-medium ${
-          isDanger ? 'text-[var(--danger-color)]' : 'text-[var(--text-primary)]'
-        }`}>
-          {title}
-        </p>
-        {subtitle && (
-          <p className="text-sm text-[var(--text-muted)] truncate">
-            {subtitle}
-          </p>
-        )}
-      </div>
-      {rightElement || (
-        <div className="flex-shrink-0 text-[var(--text-muted)]">
-          <ChevronRightIcon />
-        </div>
-      )}
-    </button>
-  );
-}
-
 export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUser }: AccountSettingsViewProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -258,50 +196,34 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
         )}
       </div>
 
-      {/* Preferences */}
-      <div className="card p-5">
-        <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-          Preferences
-        </h3>
-        <div className="space-y-2">
-          <SettingsItem
-            icon={<BellIcon />}
-            title="Notifications"
-            subtitle="Coming soon"
-            onClick={() => {}}
-          />
+      {/* Sign Out - Prominent standalone card */}
+      <button
+        onClick={() => setShowLogoutConfirm(true)}
+        className="w-full flex items-center gap-4 p-5 rounded-3xl bg-white/[0.08] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
+      >
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-red-500/15">
+          <span className="text-red-400">
+            <LogoutIcon />
+          </span>
         </div>
-      </div>
+        <div className="flex-1 text-left">
+          <p className="font-display font-semibold text-red-400 text-[17px]">
+            Sign out
+          </p>
+          <p className="text-sm text-[var(--text-muted)] mt-0.5">
+            You can always sign back in
+          </p>
+        </div>
+      </button>
 
-      {/* Session */}
-      <div className="card p-5">
-        <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-          Session
-        </h3>
-        <div className="space-y-2">
-          <SettingsItem
-            icon={<LogoutIcon />}
-            title="Sign out"
-            subtitle="You can always sign back in"
-            onClick={() => setShowLogoutConfirm(true)}
-          />
-        </div>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="card p-5 border border-[var(--danger-color)]/20">
-        <h3 className="text-sm font-display font-semibold text-[var(--danger-color)] uppercase tracking-wider mb-4">
-          Danger zone
-        </h3>
-        <div className="space-y-2">
-          <SettingsItem
-            icon={<TrashIcon />}
-            title="Delete account"
-            subtitle="Permanently delete your account and all data"
-            onClick={() => setShowDeleteConfirm(true)}
-            variant="danger"
-          />
-        </div>
+      {/* Delete Account - Subtle text link at bottom */}
+      <div className="mt-8 text-center">
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="text-xs text-[var(--text-muted)] opacity-50 hover:opacity-75 transition-opacity"
+        >
+          Delete account
+        </button>
       </div>
 
       {/* Logout Confirmation Modal */}

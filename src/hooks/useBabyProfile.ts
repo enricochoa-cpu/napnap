@@ -82,6 +82,7 @@ export function useBabyProfile() {
               baby_gender,
               baby_weight,
               baby_height,
+              baby_avatar_url,
               user_name
             )
           `)

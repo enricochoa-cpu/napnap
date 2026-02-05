@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
 import { calculateAge } from '../../utils/dateUtils';
 import { ShareAccess } from '../ShareAccess';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
+import { BabyEditSheet } from './BabyEditSheet';
 
 interface SharedBabyProfile extends BabyProfileType {
   isOwner: boolean;
@@ -31,6 +33,129 @@ const BackIcon = () => (
   </svg>
 );
 
+const CheckIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+const PlusIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+// Premium Baby Profile Card
+interface BabyProfileCardProps {
+  baby: SharedBabyProfile;
+  isActive: boolean;
+  onClick: () => void;
+  onEdit?: () => void;
+  showEdit?: boolean;
+}
+
+function BabyProfileCard({ baby, isActive, onClick, onEdit, showEdit }: BabyProfileCardProps) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      className="relative"
+    >
+      <button
+        onClick={onClick}
+        className={`w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl border shadow-[0_8px_30px_rgb(0,0,0,0.06)] active:scale-[0.97] transition-all duration-200 ${
+          isActive
+            ? 'bg-white/20 border-[var(--nap-color)]/40'
+            : 'bg-white/[0.08] border-white/15 hover:bg-white/[0.12]'
+        }`}
+      >
+        {/* Left: Large Avatar */}
+        <div className="flex-shrink-0">
+          <BabyAvatarPicker
+            avatarUrl={baby.avatarUrl}
+            babyName={baby.name || '?'}
+            size="md"
+            editable={false}
+          />
+        </div>
+
+        {/* Center: Name & Age */}
+        <div className="flex-1 text-left min-w-0">
+          <p className="font-display font-semibold text-[var(--text-primary)] text-lg truncate">
+            {baby.name || 'Unnamed baby'}
+          </p>
+          <p className="text-sm font-light text-[var(--text-muted)] mt-0.5">
+            {baby.dateOfBirth ? calculateAge(baby.dateOfBirth) : 'Age unknown'}
+            {!baby.isOwner && (
+              <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
+            )}
+          </p>
+        </div>
+
+        {/* Right: Active Indicator */}
+        {isActive && (
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
+            <span className="text-[var(--nap-color)]">
+              <CheckIcon />
+            </span>
+          </div>
+        )}
+      </button>
+
+      {/* Edit button overlay - only for owned babies */}
+      {showEdit && onEdit && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/30 transition-all active:scale-90"
+          aria-label="Edit baby"
+        >
+          <EditIcon />
+        </button>
+      )}
+    </motion.div>
+  );
+}
+
+// Ghost Card for Add Baby
+interface AddBabyGhostCardProps {
+  onClick: () => void;
+}
+
+function AddBabyGhostCard({ onClick }: AddBabyGhostCardProps) {
+  return (
+    <motion.button
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      onClick={onClick}
+      className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-[40px] bg-transparent border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/[0.04] active:scale-[0.97] transition-all duration-200"
+    >
+      <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-[var(--text-muted)]">
+        <PlusIcon />
+      </div>
+      <p className="font-display font-medium text-[var(--text-muted)]">
+        Add another baby
+      </p>
+    </motion.button>
+  );
+}
+
 export function MyBabiesView({
   profile,
   sharedProfiles,
@@ -46,72 +171,41 @@ export function MyBabiesView({
   onRevokeAccess,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
-  const [isEditingBaby, setIsEditingBaby] = useState(false);
-  const [showAddBabyForm, setShowAddBabyForm] = useState(!hasAnyBabies && !profile);
-  const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const [babyFormData, setBabyFormData] = useState({
-    name: profile?.name || '',
-    dateOfBirth: profile?.dateOfBirth || '',
-    gender: profile?.gender || 'other' as const,
-    weight: profile?.weight || 0,
-    height: profile?.height || 0,
-  });
+  // Sheet state
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [isAddingNewBaby, setIsAddingNewBaby] = useState(false);
 
+  // Auto-open add sheet if no babies exist
   useEffect(() => {
-    if (profile) {
-      setBabyFormData({
-        name: profile.name,
-        dateOfBirth: profile.dateOfBirth,
-        gender: profile.gender,
-        weight: profile.weight,
-        height: profile.height,
-      });
-      if (profile.name) {
-        setIsEditingBaby(false);
-        setShowAddBabyForm(false);
-      }
+    if (!hasAnyBabies && !profile) {
+      setIsAddingNewBaby(true);
+      setIsEditSheetOpen(true);
     }
-  }, [profile]);
+  }, [hasAnyBabies, profile]);
 
-  useEffect(() => {
-    if (sharedProfiles.length > 0 && !profile) {
-      setShowAddBabyForm(false);
-    }
-  }, [sharedProfiles, profile]);
+  const handleEditBaby = () => {
+    setIsAddingNewBaby(false);
+    setIsEditSheetOpen(true);
+  };
 
-  const handleBabySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (profile) {
-      onUpdate(babyFormData);
+  const handleAddBaby = () => {
+    setIsAddingNewBaby(true);
+    setIsEditSheetOpen(true);
+  };
+
+  const handleSheetClose = () => {
+    setIsEditSheetOpen(false);
+    setIsAddingNewBaby(false);
+  };
+
+  const handleSheetSave = (data: Partial<Omit<BabyProfileType, 'id'>>) => {
+    if (isAddingNewBaby) {
+      // Creating new baby
+      onSave(data as Omit<BabyProfileType, 'id'>);
     } else {
-      onSave(babyFormData);
-    }
-    setIsEditingBaby(false);
-    setShowAddBabyForm(false);
-  };
-
-  const handleBabyChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setBabyFormData((prev) => ({
-      ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
-    }));
-  };
-
-  const handleAvatarUpload = async (file: File) => {
-    if (!onUploadAvatar) return;
-
-    setAvatarUploading(true);
-    try {
-      const avatarUrl = await onUploadAvatar(file);
-      if (avatarUrl) {
-        onUpdate({ avatarUrl });
-      }
-    } catch (error) {
-      console.error('Avatar upload failed:', error);
-    } finally {
-      setAvatarUploading(false);
+      // Updating existing baby
+      onUpdate(data);
     }
   };
 
@@ -123,7 +217,7 @@ export function MyBabiesView({
       <div className="flex items-center gap-4">
         <button
           onClick={onBack}
-          className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors"
+          className="w-10 h-10 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/10 transition-colors"
           aria-label="Go back"
         >
           <BackIcon />
@@ -133,237 +227,88 @@ export function MyBabiesView({
             My babies
           </h1>
           <p className="text-sm text-[var(--text-muted)]">
-            Edit your baby details
+            Manage your little ones
           </p>
         </div>
       </div>
 
-      {/* Babies You're Tracking */}
-      {hasAnyBabies && (
-        <div className="card p-6">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
-              Babies you're tracking
-            </h2>
-          </div>
+      {/* Baby Gallery - Premium Floating Cards */}
+      <AnimatePresence mode="popLayout">
+        <motion.div layout className="space-y-4">
+          {sharedProfiles.map((baby) => (
+            <BabyProfileCard
+              key={baby.id}
+              baby={baby}
+              isActive={activeBabyId === baby.id}
+              onClick={() => onActiveBabyChange(baby.id)}
+              onEdit={baby.isOwner ? handleEditBaby : undefined}
+              showEdit={baby.isOwner}
+            />
+          ))}
 
-          <div className="space-y-3">
-            {sharedProfiles.map((baby) => (
-              <button
-                key={baby.id}
-                onClick={() => onActiveBabyChange(baby.id)}
-                className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
-                  activeBabyId === baby.id
-                    ? 'bg-[var(--nap-color)]/15 border-2 border-[var(--nap-color)]/40'
-                    : 'bg-[var(--bg-soft)] border-2 border-transparent hover:border-[var(--text-muted)]/20'
-                }`}
-              >
-                <div className="flex-shrink-0">
-                  <BabyAvatarPicker
-                    avatarUrl={baby.avatarUrl}
-                    babyName={baby.name || '?'}
-                    size="sm"
-                    editable={false}
-                  />
-                </div>
-
-                <div className="flex-1 text-left min-w-0">
-                  <p className={`font-display font-semibold truncate ${
-                    activeBabyId === baby.id
-                      ? 'text-[var(--text-primary)]'
-                      : 'text-[var(--text-secondary)]'
-                  }`}>
-                    {baby.name || 'Unnamed baby'}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">
-                    {baby.isOwner ? 'Your baby' : <>Shared by {baby.ownerName || 'parent'}</>}
-                    {baby.dateOfBirth && <> · {calculateAge(baby.dateOfBirth)}</>}
-                  </p>
-                </div>
-
-                {activeBabyId === baby.id && (
-                  <div className="flex-shrink-0">
-                    <svg className="w-5 h-5 text-[var(--nap-color)]" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
-
-          {!profile && !showAddBabyForm && (
-            <button
-              onClick={() => setShowAddBabyForm(true)}
-              className="w-full mt-4 p-4 rounded-xl border-2 border-dashed border-[var(--text-muted)]/30 text-[var(--text-muted)] hover:border-[var(--nap-color)]/50 hover:text-[var(--nap-color)] transition-colors"
-            >
-              + Add your own baby
-            </button>
+          {/* Ghost Card - Add Baby (only if user doesn't have their own baby) */}
+          {!profile && hasAnyBabies && (
+            <AddBabyGhostCard onClick={handleAddBaby} />
           )}
-        </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Empty state - show ghost card to add first baby */}
+      {!hasAnyBabies && !profile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-8"
+        >
+          <p className="text-[var(--text-muted)] mb-4">
+            Add your first baby to get started
+          </p>
+          <AddBabyGhostCard onClick={handleAddBaby} />
+        </motion.div>
       )}
 
-      {/* Baby Form */}
-      {(showAddBabyForm || isEditingBaby || (!hasAnyBabies && !profile)) && (
-        <div className="card p-6">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
-              {profile ? 'Edit your baby' : 'Add your baby'}
-            </h2>
-            {(showAddBabyForm || isEditingBaby) && hasAnyBabies && (
-              <button
-                onClick={() => {
-                  setShowAddBabyForm(false);
-                  setIsEditingBaby(false);
-                }}
-                className="text-[var(--text-muted)] text-sm font-medium font-display"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-
-          <form onSubmit={handleBabySubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Baby's Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={babyFormData.name}
-                onChange={handleBabyChange}
-                required
-                placeholder="Enter name..."
-                className="input"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={babyFormData.dateOfBirth}
-                onChange={handleBabyChange}
-                required
-                className="input"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Gender
-              </label>
-              <select
-                name="gender"
-                value={babyFormData.gender}
-                onChange={handleBabyChange}
-                className="input"
-              >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Not relevant</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                  Weight (kg)
-                </label>
-                <input
-                  type="number"
-                  name="weight"
-                  value={babyFormData.weight || ''}
-                  onChange={handleBabyChange}
-                  step="0.1"
-                  min="0"
-                  placeholder="0.0"
-                  className="input"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                  Height (cm)
-                </label>
-                <input
-                  type="number"
-                  name="height"
-                  value={babyFormData.height || ''}
-                  onChange={handleBabyChange}
-                  step="0.1"
-                  min="0"
-                  placeholder="0.0"
-                  className="input"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button type="submit" className="btn btn-nap flex-1">
-                {profile ? 'Save Changes' : 'Add Baby'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Own baby display (when not editing and has profile) */}
-      {profile && !isEditingBaby && !showAddBabyForm && hasAnyBabies && ownBabies.length > 0 && (
-        <div className="card p-6">
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-lg font-display font-bold text-[var(--text-primary)]">
-              Your baby's details
+      {/* Your Baby's Details Card - Compact summary (when profile exists) */}
+      {profile && ownBabies.length > 0 && (
+        <motion.div
+          layout
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-[32px] bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-5"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+              Quick Info
             </h2>
             <button
-              onClick={() => setIsEditingBaby(true)}
-              className="text-[var(--nap-color)] text-sm font-medium font-display"
+              onClick={handleEditBaby}
+              className="text-[var(--nap-color)] text-sm font-medium font-display flex items-center gap-1.5 hover:opacity-80 transition-opacity"
             >
+              <EditIcon />
               Edit
             </button>
           </div>
 
-          {/* Editable avatar */}
-          <div className="flex flex-col items-center mb-6">
-            <BabyAvatarPicker
-              avatarUrl={profile.avatarUrl}
-              babyName={profile.name}
-              size="lg"
-              editable={!!onUploadAvatar}
-              onUpload={handleAvatarUpload}
-              uploading={avatarUploading}
-            />
-            {onUploadAvatar && (
-              <p className="text-sm text-[var(--text-muted)] mt-2">
-                Tap to change photo
-              </p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-[var(--text-muted)] mb-1">Gender</p>
-              <p className="text-[var(--text-primary)]">
-                {profile.gender === 'male' ? 'Male' : profile.gender === 'female' ? 'Female' : 'Not specified'}
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
+              <p className="text-[var(--text-muted)] text-xs mb-1">Gender</p>
+              <p className="text-[var(--text-primary)] font-medium">
+                {profile.gender === 'male' ? 'Boy' : profile.gender === 'female' ? 'Girl' : '—'}
               </p>
             </div>
             {profile.weight > 0 && (
-              <div>
-                <p className="text-[var(--text-muted)] mb-1">Weight</p>
-                <p className="text-[var(--text-primary)]">{profile.weight} kg</p>
+              <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
+                <p className="text-[var(--text-muted)] text-xs mb-1">Weight</p>
+                <p className="text-[var(--text-primary)] font-medium">{profile.weight} kg</p>
               </div>
             )}
             {profile.height > 0 && (
-              <div>
-                <p className="text-[var(--text-muted)] mb-1">Height</p>
-                <p className="text-[var(--text-primary)]">{profile.height} cm</p>
+              <div className="p-3 rounded-2xl bg-white/[0.06] text-center">
+                <p className="text-[var(--text-muted)] text-xs mb-1">Height</p>
+                <p className="text-[var(--text-primary)] font-medium">{profile.height} cm</p>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Share Access Section (only for profile owner) */}
@@ -378,6 +323,16 @@ export function MyBabiesView({
           onDeclineInvitation={async () => ({ success: true })}
         />
       )}
+
+      {/* Edit Sheet - Slides up from bottom */}
+      <BabyEditSheet
+        baby={profile}
+        isOpen={isEditSheetOpen}
+        onClose={handleSheetClose}
+        onSave={handleSheetSave}
+        onUploadAvatar={onUploadAvatar}
+        isNewBaby={isAddingNewBaby}
+      />
     </div>
   );
 }
