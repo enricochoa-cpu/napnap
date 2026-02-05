@@ -217,20 +217,52 @@ export function StatsView({ entries }: StatsViewProps) {
   const hasData = entries.length > 0;
   const daysInRange = differenceInDays(endDate, startDate) + 1;
 
+  // Generate insight based on data
+  const insight = useMemo(() => {
+    if (!hasData || averages.avgTotal === 0) return null;
+
+    const avgTotalHours = averages.avgTotal / 60;
+
+    if (avgTotalHours >= 14) {
+      return { text: 'Great sleep this period', color: 'var(--success-color)' };
+    } else if (avgTotalHours >= 12) {
+      return { text: 'Solid sleep patterns', color: 'var(--nap-color)' };
+    } else if (averages.avgNapCount >= 2) {
+      return { text: 'Good nap consistency', color: 'var(--nap-color)' };
+    } else {
+      return { text: 'Building patterns', color: 'var(--wake-color)' };
+    }
+  }, [hasData, averages]);
+
   return (
     <div className="pb-32 px-6 fade-in">
       {/* Header */}
       <div className="pt-8 mb-4">
         <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
-          Sleep trends & Stats
+          Sleep Trends
         </h1>
         <p className="text-sm text-[var(--text-muted)]">
-          Take a look at your baby's sleeping patterns
+          Track your baby's sleeping patterns
         </p>
       </div>
 
-      {/* Date Range Filter - Unified Container */}
-      <div className="card p-3 mb-6">
+      {/* Insight Tag */}
+      {insight && (
+        <div className="mb-4">
+          <span
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-display font-semibold"
+            style={{ color: insight.color }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+            </svg>
+            {insight.text}
+          </span>
+        </div>
+      )}
+
+      {/* Date Range Filter - Glassmorphism */}
+      <div className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-3 mb-6">
         <div className="flex items-center gap-3">
           {/* Calendar Icon */}
           <span className="text-[var(--text-muted)] flex-shrink-0">
@@ -290,7 +322,7 @@ export function StatsView({ entries }: StatsViewProps) {
       </div>
 
       {!hasData ? (
-        <div className="card p-8 text-center">
+        <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-8 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
             <svg
               width="32"
@@ -316,27 +348,27 @@ export function StatsView({ entries }: StatsViewProps) {
         </div>
       ) : (
         <>
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <div className="card p-4">
+          {/* Summary Cards - Glassmorphism */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Total Sleep</p>
               <p className="text-2xl font-display font-bold text-[var(--text-primary)]">
                 {formatHours(averages.avgTotal)}
               </p>
             </div>
-            <div className="card p-4">
+            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Naps/Day</p>
               <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
                 {averages.avgNapCount.toFixed(1)}
               </p>
             </div>
-            <div className="card p-4">
+            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Nap Time</p>
               <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
                 {formatHours(averages.avgNap)}
               </p>
             </div>
-            <div className="card p-4">
+            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Night Sleep</p>
               <p className="text-2xl font-display font-bold text-[var(--night-color)]">
                 {formatHours(averages.avgNight)}
@@ -344,8 +376,8 @@ export function StatsView({ entries }: StatsViewProps) {
             </div>
           </div>
 
-          {/* Daily Bar Chart */}
-          <div className="card p-4 mb-6">
+          {/* Daily Bar Chart - Glassmorphism */}
+          <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4 mb-6">
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Daily Sleep
             </h3>
@@ -389,8 +421,8 @@ export function StatsView({ entries }: StatsViewProps) {
             </div>
           </div>
 
-          {/* Sleep Trend Area Chart */}
-          <div className="card p-4">
+          {/* Sleep Trend Area Chart - Glassmorphism */}
+          <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Sleep Trend
             </h3>

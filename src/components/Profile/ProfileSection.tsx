@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { BabyProfile, UserProfile, BabyShare } from '../../types';
 import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
 import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
+import { SupportView } from './SupportView';
 import type { AlgorithmStatusProps } from './AlgorithmStatusCard';
 
 interface SharedBabyProfile extends BabyProfile {
@@ -54,6 +55,13 @@ export function ProfileSection({
   algorithmStatus,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
+  const previousView = useRef<ProfileView>('menu');
+
+  // Track previous view for nested navigation
+  const handleNavigate = (view: ProfileView) => {
+    previousView.current = currentView;
+    setCurrentView(view);
+  };
 
   // Scroll to top when view changes
   useEffect(() => {
@@ -64,16 +72,31 @@ export function ProfileSection({
     setCurrentView('menu');
   };
 
+  const handleBackFromSupport = () => {
+    setCurrentView('menu');
+  };
+
+  const handleBackFromFaqsOrContact = () => {
+    // Go back to support if we came from there, otherwise go to menu
+    if (previousView.current === 'support') {
+      setCurrentView('support');
+    } else {
+      setCurrentView('menu');
+    }
+  };
+
   return (
     <div className="pb-32 px-6 pt-8 fade-in">
       {currentView === 'menu' && (
         <ProfileMenu
           sharedProfiles={sharedProfiles}
           pendingInvitations={pendingInvitations}
-          onNavigate={setCurrentView}
+          onNavigate={handleNavigate}
           onAcceptInvitation={onAcceptInvitation}
           onDeclineInvitation={onDeclineInvitation}
           algorithmStatus={algorithmStatus}
+          userProfile={userProfile}
+          activeBaby={profile}
         />
       )}
 
@@ -94,12 +117,16 @@ export function ProfileSection({
         />
       )}
 
+      {currentView === 'support' && (
+        <SupportView onBack={handleBackFromSupport} onNavigate={handleNavigate} />
+      )}
+
       {currentView === 'faqs' && (
-        <FAQsView onBack={handleBack} />
+        <FAQsView onBack={handleBackFromFaqsOrContact} />
       )}
 
       {currentView === 'contact' && (
-        <ContactView onBack={handleBack} />
+        <ContactView onBack={handleBackFromFaqsOrContact} />
       )}
 
       {currentView === 'account-settings' && (

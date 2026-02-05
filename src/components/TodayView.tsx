@@ -9,6 +9,7 @@ import {
   getRecommendedSchedule,
   calculateDynamicBedtime,
   extractWakeWindowsFromEntries,
+  getAlgorithmStatusTier,
   MIN_CALIBRATION_ENTRIES,
   type NapIndex,
   type NapPrediction,
@@ -25,6 +26,37 @@ interface TodayViewProps {
   awakeMinutes: number | null;
   onEdit?: (entry: SleepEntry) => void;
   loading?: boolean;
+  totalEntries?: number;
+}
+
+// Sparkles icon for status pill
+const SparklesIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+  </svg>
+);
+
+// Live Status Pill
+function LiveStatusPill({ totalEntries }: { totalEntries: number }) {
+  const tier = getAlgorithmStatusTier(totalEntries);
+  const label = tier === 'learning' ? 'Learning' : tier === 'calibrating' ? 'Calibrating' : 'Optimised';
+  const color =
+    tier === 'optimized'
+      ? 'var(--success-color)'
+      : tier === 'calibrating'
+        ? 'var(--nap-color)'
+        : 'var(--wake-color)';
+
+  return (
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20">
+      <span style={{ color }} className="animate-pulse">
+        <SparklesIcon />
+      </span>
+      <span className="text-[10px] font-display font-semibold" style={{ color }}>
+        {label}
+      </span>
+    </div>
+  );
 }
 
 // Get today's completed naps
@@ -95,6 +127,7 @@ export function TodayView({
   awakeMinutes,
   onEdit,
   loading = false,
+  totalEntries = 0,
 }: TodayViewProps) {
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
@@ -500,74 +533,83 @@ export function TodayView({
   return (
     <div className="flex flex-col pb-40 px-6 fade-in">
       {/* ================================================================== */}
-      {/* HERO SECTION - Cognitive Priority: Next Nap > Awake Time          */}
+      {/* HERO SECTION - Glassmorphism Card with Status Pill               */}
       {/* ================================================================== */}
-      <div className="pt-8 pb-6">
-        {activeSleep ? (
-          // SLEEPING STATE
-          <div className="text-center">
-            <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2">
-              {activeSleep.type === 'nap' ? 'Napping' : 'Night Sleep'}
-            </p>
-            <h1 className="text-4xl font-display font-bold text-[var(--nap-color)] mb-2">
-              {formatDuration(currentSleepDuration)}
-            </h1>
-            {expectedWakeUp && activeSleep.type === 'nap' && (
-              <p className="text-[var(--text-secondary)] font-display text-sm">
-                Expected wake at <span className="text-[var(--text-primary)] font-semibold">{formatTime(expectedWakeUp)}</span>
+      <div className="pt-6 pb-4">
+        <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6">
+          {/* Status pill - top right */}
+          {totalEntries > 0 && (
+            <div className="flex justify-end mb-3">
+              <LiveStatusPill totalEntries={totalEntries} />
+            </div>
+          )}
+
+          {activeSleep ? (
+            // SLEEPING STATE
+            <div className="text-center">
+              <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                {activeSleep.type === 'nap' ? 'Napping' : 'Night Sleep'}
               </p>
-            )}
-          </div>
-        ) : (
-          // AWAKE STATE - Next event (nap or bedtime) is the focal point
-          <div className="text-center">
-            {nextEventCountdown ? (
-              <>
-                {/* FOCAL POINT: Next Event Countdown */}
-                {nextEventCountdown.isNow ? (
-                  <div>
-                    <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2">
-                      It's Time
-                    </p>
-                    <h1 className={`text-4xl font-display font-bold animate-pulse-soft ${
-                      nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
-                    }`}>
-                      {nextEventCountdown.type === 'bedtime' ? 'BEDTIME' : 'NAP NOW'}
-                    </h1>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2">
-                      {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
-                    </p>
-                    <h1 className={`text-4xl font-display font-bold mb-2 ${
-                      nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
-                    }`}>
-                      {formatDuration(nextEventCountdown.minutes)}
-                    </h1>
-                  </div>
-                )}
-                {/* SECONDARY: Awake time (smaller, muted) */}
-                <p className="text-[var(--text-muted)] font-display text-sm mt-2">
-                  Awake for{' '}
-                  <span className="text-[var(--wake-color)]">
+              <h1 className="text-5xl font-display font-bold text-[var(--nap-color)] mb-3">
+                {formatDuration(currentSleepDuration)}
+              </h1>
+              {expectedWakeUp && activeSleep.type === 'nap' && (
+                <p className="text-[var(--text-secondary)] font-display text-sm">
+                  Expected wake at <span className="text-[var(--text-primary)] font-semibold">{formatTime(expectedWakeUp)}</span>
+                </p>
+              )}
+            </div>
+          ) : (
+            // AWAKE STATE - Next event (nap or bedtime) is the focal point
+            <div className="text-center">
+              {nextEventCountdown ? (
+                <>
+                  {/* FOCAL POINT: Next Event Countdown */}
+                  {nextEventCountdown.isNow ? (
+                    <div>
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                        It's Time
+                      </p>
+                      <h1 className={`text-5xl font-display font-bold animate-pulse-soft ${
+                        nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
+                      }`}>
+                        {nextEventCountdown.type === 'bedtime' ? 'BEDTIME' : 'NAP NOW'}
+                      </h1>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                        {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
+                      </p>
+                      <h1 className={`text-5xl font-display font-bold mb-3 ${
+                        nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
+                      }`}>
+                        {formatDuration(nextEventCountdown.minutes)}
+                      </h1>
+                    </div>
+                  )}
+                  {/* SECONDARY: Awake time (smaller, muted) */}
+                  <p className="text-[var(--text-muted)] font-display text-sm mt-1">
+                    Awake for{' '}
+                    <span className="text-[var(--wake-color)] font-medium">
+                      {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                // Fallback when no countdown available
+                <div>
+                  <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                    Awake
+                  </p>
+                  <h1 className="text-5xl font-display font-bold text-[var(--wake-color)]">
                     {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
-                  </span>
-                </p>
-              </>
-            ) : (
-              // Fallback when no countdown available
-              <div>
-                <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2">
-                  Awake
-                </p>
-                <h1 className="text-4xl font-display font-bold text-[var(--wake-color)]">
-                  {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
-                </h1>
-              </div>
-            )}
-          </div>
-        )}
+                  </h1>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ================================================================== */}
@@ -646,8 +688,8 @@ export function TodayView({
       {/* ================================================================== */}
       {/* TIMELINE RIVER - Visual flow through the day                      */}
       {/* ================================================================== */}
-      <div className="mt-2">
-        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-4">
+      <div className="mt-4">
+        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-4 px-1">
           Today's Timeline
         </h2>
 
@@ -656,13 +698,13 @@ export function TodayView({
           {/* Vertical timeline river line */}
           <div className="absolute left-5 top-6 bottom-6 w-px bg-white/10" />
 
-          <div className="space-y-2">
-            {/* Night Sleep in Progress - Compact Horizontal */}
+          <div className="space-y-3">
+            {/* Night Sleep in Progress - Glassmorphism */}
             {activeSleep && activeSleep.type === 'night' && (
               <button
                 type="button"
                 onClick={() => onEdit?.(activeSleep)}
-                className="relative card-night-solid py-2.5 px-4 flex items-center gap-3 w-full text-left rounded-xl animate-glow-night"
+                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--night-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] animate-glow-night"
               >
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
                   <MoonIcon className="w-5 h-5" />
@@ -683,9 +725,9 @@ export function TodayView({
               </button>
             )}
 
-            {/* Expected Bedtime - Compact Horizontal Ghost (hide if already in night sleep) */}
+            {/* Expected Bedtime - Glassmorphism Ghost */}
             {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
-              <div className="relative card-ghost-night py-2.5 px-4 flex items-center gap-3 rounded-xl">
+              <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-[var(--night-color)]/30 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
                 <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
                   <MoonIcon className="w-5 h-5" />
                 </div>
@@ -700,13 +742,13 @@ export function TodayView({
               </div>
             )}
 
-            {/* Predicted Naps - Compact Horizontal Ghost (reversed: furthest first) */}
+            {/* Predicted Naps - Glassmorphism Ghost */}
             {[...predictedNaps].reverse().map((napInfo, index) => {
               const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
               return (
                 <div
                   key={`predicted-${index}`}
-                  className="relative card-ghost-nap py-2.5 px-4 flex items-center gap-3 rounded-xl"
+                  className="relative py-3 px-4 flex items-center gap-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-[var(--nap-color)]/30 shadow-[0_4px_20px_rgb(0,0,0,0.03)]"
                 >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
                     <CloudIcon className="w-5 h-5" />
@@ -723,12 +765,12 @@ export function TodayView({
               );
             })}
 
-            {/* Active Nap - Compact Horizontal Solid */}
+            {/* Active Nap - Glassmorphism Solid */}
             {activeSleep && activeSleep.type === 'nap' && (
               <button
                 type="button"
                 onClick={() => onEdit?.(activeSleep)}
-                className="relative card-nap-solid py-2.5 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-xl"
+                className="relative py-3 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-2xl bg-[var(--nap-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
               >
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
                   <CloudIcon className="w-5 h-5" />
@@ -749,13 +791,13 @@ export function TodayView({
               </button>
             )}
 
-            {/* Completed Naps - Compact Horizontal Solid (reversed: most recent first) */}
+            {/* Completed Naps - Glassmorphism Solid */}
             {[...todayNaps].reverse().map((nap, index) => (
               <button
                 type="button"
                 key={nap.id}
                 onClick={() => onEdit?.(nap)}
-                className="relative card-nap-solid py-2.5 px-4 flex items-center gap-3 w-full text-left rounded-xl"
+                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--nap-color)]/80 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
               >
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 z-10">
                   <CloudIcon className="w-5 h-5" />
@@ -776,12 +818,12 @@ export function TodayView({
               </button>
             ))}
 
-            {/* Morning Wake Up - Compact Horizontal Gold - OLDEST, at bottom */}
+            {/* Morning Wake Up - Glassmorphism Gold - OLDEST, at bottom */}
             {morningWakeUp && morningWakeUpEntry && (
               <button
                 type="button"
                 onClick={() => onEdit?.(morningWakeUpEntry)}
-                className="relative card-wake py-2.5 px-4 flex items-center gap-3 w-full text-left rounded-xl"
+                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-[var(--wake-color)]/30 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
               >
                 <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0 z-10">
                   <SunIcon className="w-5 h-5" />

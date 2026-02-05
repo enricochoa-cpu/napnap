@@ -408,6 +408,7 @@ function App() {
                 awakeMinutes={awakeMinutes}
                 onEdit={handleEdit}
                 loading={entriesLoading}
+                totalEntries={entries.length}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
