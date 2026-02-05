@@ -178,6 +178,9 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-03 | Google OAuth login (social auth) |
 | 2026-02-04 | AlgorithmStatusCard (transparency about prediction maturity) |
 | 2026-02-04 | Fix: overdue nap predictions now show as "now" instead of being filtered |
+| 2026-02-05 | Baby profile pictures with client-side compression (BabyAvatarPicker) |
+| 2026-02-05 | Share access roles (caregiver/viewer) with bottom sheet editing UI |
+| 2026-02-05 | RLS policies for shared user permissions on sleep_entries |
 
 ---
 

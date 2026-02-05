@@ -49,7 +49,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
-- `BabyProfile`: Baby info (name, DOB, gender, weight, height)
+- `BabyProfile`: Baby info (name, DOB, gender, weight, height, avatarUrl)
 - `UserProfile`: User info (email, userName, userRole: dad/mum/other)
 - `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
 - `BabyShare`: Multi-user sharing (babyOwnerId, sharedWithEmail, status, role: caregiver/viewer)
@@ -71,7 +71,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `DayNavigator`: Date selection for viewing past entries
 - `DailySummary`: Aggregated sleep statistics
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
-- `ShareAccess`: Invite caregivers, manage sharing permissions
+- `ShareAccess`: Invite caregivers with role selector (caregiver/viewer), manage sharing via bottom sheet (edit role, remove access)
 - `SkyBackground`: Animated background atmosphere with inline NightSky (stars), MorningSky (sun), AfternoonSky (clouds)
 - `LoadingScreen`: Full-screen loading state with animated moon
 - `StatsView`: Sleep statistics dashboard with Recharts. Features date range picker (max 15 days), summary cards (avg total sleep, avg naps/day, avg nap time, avg night sleep), stacked bar chart (daily sleep), and area chart (sleep trends). Uses CSS variables for theming
@@ -80,6 +80,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `ProfileSection`: Container with navigation between profile views
 - `ProfileMenu`: Main menu with navigation items
 - `MyBabiesView`: Baby switcher and sharing management
+- `BabyAvatarPicker`: Reusable avatar component with client-side image compression (resizes to 400x400, JPEG 80%)
 - `AccountSettingsView`: User settings and sign out
 - `FAQsView`/`ContactView`: Help and support
 
