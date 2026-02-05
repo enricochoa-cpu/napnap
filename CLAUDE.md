@@ -78,11 +78,12 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 **Profile Section** (`src/components/Profile/`):
 - `ProfileSection`: Container with navigation between profile views
-- `ProfileMenu`: Main menu with navigation items
-- `MyBabiesView`: Baby switcher and sharing management
+- `ProfileMenu`: Main menu with navigation items (Premium Nested List pattern)
+- `MyBabiesView`: Premium AAA gallery with floating BabyProfileCard components (`rounded-[40px]`)
+- `BabyEditSheet`: Bottom sheet for editing baby profiles (framer-motion, drag-to-dismiss)
 - `BabyAvatarPicker`: Reusable avatar component with client-side image compression (resizes to 400x400, JPEG 80%)
-- `AccountSettingsView`: User settings and sign out
-- `FAQsView`/`ContactView`: Help and support
+- `AccountSettingsView`: User settings, sign out card, and delete account link
+- `SupportView`/`FAQsView`/`ContactView`: Help and support
 
 **Auth Components** (`src/components/Auth/`):
 - `AuthGuard`: Protects routes requiring authentication
