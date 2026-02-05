@@ -5,6 +5,7 @@ export interface BabyProfile {
   gender: 'male' | 'female' | 'other';
   weight: number; // in kg
   height: number; // in cm
+  avatarUrl?: string; // Supabase Storage URL
 }
 
 export interface UserProfile {

@@ -17,6 +17,7 @@ export interface DbProfile {
   baby_gender: 'male' | 'female' | 'other' | null;
   baby_weight: number | null;
   baby_height: number | null;
+  baby_avatar_url: string | null;
   created_at: string;
 }
 

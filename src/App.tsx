@@ -52,6 +52,7 @@ function App() {
     activeBabyProfile,
     createProfile,
     updateProfile,
+    uploadBabyAvatar,
     refreshProfile,
   } = useBabyProfile();
 
@@ -365,6 +366,7 @@ function App() {
       onActiveBabyChange={setActiveBabyId}
       onSave={createProfile}
       onUpdate={updateProfile}
+      onUploadAvatar={uploadBabyAvatar}
       onSignOut={signOut}
       myShares={myShares}
       pendingInvitations={pendingInvitations}

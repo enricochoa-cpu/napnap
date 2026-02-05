@@ -20,6 +20,7 @@ interface ProfileSectionProps {
   onActiveBabyChange: (babyId: string) => void;
   onSave: (data: Omit<BabyProfile, 'id'> & Partial<Omit<UserProfile, 'email'>>) => void;
   onUpdate: (data: Partial<Omit<BabyProfile, 'id'>> & Partial<Omit<UserProfile, 'email'>>) => void;
+  onUploadAvatar?: (file: File) => Promise<string | null>;
   onSignOut: () => void;
   // Sharing props
   myShares: BabyShare[];
@@ -40,6 +41,7 @@ export function ProfileSection({
   onActiveBabyChange,
   onSave,
   onUpdate,
+  onUploadAvatar,
   onSignOut,
   myShares,
   pendingInvitations,
@@ -81,6 +83,7 @@ export function ProfileSection({
           onActiveBabyChange={onActiveBabyChange}
           onSave={onSave}
           onUpdate={onUpdate}
+          onUploadAvatar={onUploadAvatar}
           onBack={handleBack}
           myShares={myShares}
           onInvite={onInvite}

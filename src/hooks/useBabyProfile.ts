@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { BabyProfile, UserProfile } from '../types';
 
-interface SharedBabyProfile extends BabyProfile {
+export interface SharedBabyProfile extends BabyProfile {
   isOwner: boolean;
   ownerName?: string;
 }
@@ -59,6 +59,7 @@ export function useBabyProfile() {
           gender: data.baby_gender || 'other',
           weight: data.baby_weight || 0,
           height: data.baby_height || 0,
+          avatarUrl: data.baby_avatar_url || undefined,
         };
         setProfile(ownProfile);
         console.log('Parsed profile:', ownProfile);
@@ -100,6 +101,7 @@ export function useBabyProfile() {
               baby_gender: 'male' | 'female' | 'other' | null;
               baby_weight: number | null;
               baby_height: number | null;
+              baby_avatar_url: string | null;
               user_name: string | null;
             } | null;
 
@@ -111,6 +113,7 @@ export function useBabyProfile() {
                 gender: p.baby_gender || 'other',
                 weight: p.baby_weight || 0,
                 height: p.baby_height || 0,
+                avatarUrl: p.baby_avatar_url || undefined,
                 isOwner: false,
                 ownerName: p.user_name || undefined,
               });
@@ -217,6 +220,7 @@ export function useBabyProfile() {
       if (data.gender !== undefined) updateData.baby_gender = data.gender;
       if (data.weight !== undefined) updateData.baby_weight = data.weight || null;
       if (data.height !== undefined) updateData.baby_height = data.height || null;
+      if (data.avatarUrl !== undefined) updateData.baby_avatar_url = data.avatarUrl || null;
       if (data.userName !== undefined) updateData.user_name = data.userName || null;
       if (data.userRole !== undefined) updateData.user_role = data.userRole || null;
 
@@ -231,7 +235,7 @@ export function useBabyProfile() {
       }
 
       // Update baby profile state
-      if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.weight !== undefined || data.height !== undefined) {
+      if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.weight !== undefined || data.height !== undefined || data.avatarUrl !== undefined) {
         setProfile((prev) => {
           if (!prev) return prev;
           const { userName: _un, userRole: _ur, ...babyData } = data;
@@ -265,6 +269,37 @@ export function useBabyProfile() {
       console.error('Error updating profile:', error);
     }
   }, []);
+
+  const uploadBabyAvatar = useCallback(async (file: File): Promise<string | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      // Generate unique filename: userId/babyId-timestamp.ext
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${user.id}/${profile?.id || 'new'}-${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('baby-avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('baby-avatars')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      throw error;
+    }
+  }, [profile?.id]);
 
   const deleteProfile = useCallback(async () => {
     try {
@@ -313,6 +348,7 @@ export function useBabyProfile() {
     loading,
     createProfile,
     updateProfile,
+    uploadBabyAvatar,
     deleteProfile,
     hasProfile: profile !== null,
     refreshProfile: fetchProfile,

@@ -5,3 +5,4 @@ export { FAQsView } from './FAQsView';
 export { ContactView } from './ContactView';
 export { AccountSettingsView } from './AccountSettingsView';
 export { AlgorithmStatusCard, type AlgorithmStatusProps } from './AlgorithmStatusCard';
+export { BabyAvatarPicker } from './BabyAvatarPicker';

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
 import { calculateAge } from '../../utils/dateUtils';
 import { ShareAccess } from '../ShareAccess';
+import { BabyAvatarPicker } from './BabyAvatarPicker';
 
 interface SharedBabyProfile extends BabyProfileType {
   isOwner: boolean;
@@ -15,6 +16,7 @@ interface MyBabiesViewProps {
   onActiveBabyChange: (babyId: string) => void;
   onSave: (data: Omit<BabyProfileType, 'id'> & Partial<Omit<UserProfile, 'email'>>) => void;
   onUpdate: (data: Partial<Omit<BabyProfileType, 'id'>>) => void;
+  onUploadAvatar?: (file: File) => Promise<string | null>;
   onBack: () => void;
   // Sharing props
   myShares: BabyShare[];
@@ -35,6 +37,7 @@ export function MyBabiesView({
   onActiveBabyChange,
   onSave,
   onUpdate,
+  onUploadAvatar,
   onBack,
   myShares,
   onInvite,
@@ -43,6 +46,7 @@ export function MyBabiesView({
   const hasAnyBabies = sharedProfiles.length > 0;
   const [isEditingBaby, setIsEditingBaby] = useState(false);
   const [showAddBabyForm, setShowAddBabyForm] = useState(!hasAnyBabies && !profile);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   const [babyFormData, setBabyFormData] = useState({
     name: profile?.name || '',
@@ -93,6 +97,22 @@ export function MyBabiesView({
     }));
   };
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!onUploadAvatar) return;
+
+    setAvatarUploading(true);
+    try {
+      const avatarUrl = await onUploadAvatar(file);
+      if (avatarUrl) {
+        onUpdate({ avatarUrl });
+      }
+    } catch (error) {
+      console.error('Avatar upload failed:', error);
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
   const ownBabies = sharedProfiles.filter(b => b.isOwner);
 
   return (
@@ -136,18 +156,13 @@ export function MyBabiesView({
                     : 'bg-[var(--bg-soft)] border-2 border-transparent hover:border-[var(--text-muted)]/20'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  activeBabyId === baby.id
-                    ? 'bg-[var(--nap-color)]/30'
-                    : 'bg-[var(--text-muted)]/20'
-                }`}>
-                  <span className={`font-display text-lg font-bold ${
-                    activeBabyId === baby.id
-                      ? 'text-[var(--nap-color)]'
-                      : 'text-[var(--text-muted)]'
-                  }`}>
-                    {baby.name ? baby.name.charAt(0).toUpperCase() : '?'}
-                  </span>
+                <div className="flex-shrink-0">
+                  <BabyAvatarPicker
+                    avatarUrl={baby.avatarUrl}
+                    babyName={baby.name || '?'}
+                    size="sm"
+                    editable={false}
+                  />
                 </div>
 
                 <div className="flex-1 text-left min-w-0">
@@ -307,6 +322,23 @@ export function MyBabiesView({
             >
               Edit
             </button>
+          </div>
+
+          {/* Editable avatar */}
+          <div className="flex flex-col items-center mb-6">
+            <BabyAvatarPicker
+              avatarUrl={profile.avatarUrl}
+              babyName={profile.name}
+              size="lg"
+              editable={!!onUploadAvatar}
+              onUpload={handleAvatarUpload}
+              uploading={avatarUploading}
+            />
+            {onUploadAvatar && (
+              <p className="text-sm text-[var(--text-muted)] mt-2">
+                Tap to change photo
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
