@@ -20,7 +20,7 @@ interface MyBabiesViewProps {
   onBack: () => void;
   // Sharing props
   myShares: BabyShare[];
-  onInvite: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onInvite: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
 }
 

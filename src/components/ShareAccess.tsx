@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import type { BabyShare } from '../types';
 
+type ShareRole = 'caregiver' | 'viewer';
+
 interface ShareAccessProps {
   myShares: BabyShare[];
   pendingInvitations: BabyShare[];
-  onInvite: (email: string) => Promise<{ success: boolean; error?: string }>;
+  onInvite: (email: string, role: ShareRole) => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
@@ -19,6 +21,7 @@ export function ShareAccess({
   onDeclineInvitation,
 }: ShareAccessProps) {
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState<ShareRole>('caregiver');
   const [isInviting, setIsInviting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -31,10 +34,11 @@ export function ShareAccess({
     setError(null);
     setSuccess(null);
 
-    const result = await onInvite(email.trim());
+    const result = await onInvite(email.trim(), role);
 
     if (result.success) {
       setEmail('');
+      setRole('caregiver');
       setSuccess('Invitation sent successfully');
       setTimeout(() => setSuccess(null), 3000);
     } else {
@@ -139,6 +143,34 @@ export function ShareAccess({
               className="btn btn-nap px-5 disabled:opacity-50"
             >
               {isInviting ? 'Sending...' : 'Invite'}
+            </button>
+          </div>
+
+          {/* Role Selector */}
+          <div className="flex gap-2 mt-3">
+            <button
+              type="button"
+              onClick={() => setRole('caregiver')}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-medium transition-all ${
+                role === 'caregiver'
+                  ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
+                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
+              }`}
+            >
+              <div className="font-semibold">Caregiver</div>
+              <div className="text-xs opacity-70 mt-0.5">Can add and edit entries</div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('viewer')}
+              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-medium transition-all ${
+                role === 'viewer'
+                  ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
+                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
+              }`}
+            >
+              <div className="font-semibold">Viewer</div>
+              <div className="text-xs opacity-70 mt-0.5">Can only view entries</div>
             </button>
           </div>
 
