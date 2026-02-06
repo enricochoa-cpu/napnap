@@ -148,8 +148,8 @@ export function useBabyShares() {
         });
 
       if (error) {
-        // Unique constraint → row exists (likely revoked). Re-activate it.
-        if (error.code === '23505') {
+        // Unique constraint / conflict → row exists (likely revoked). Re-activate it.
+        if (error.code === '23505' || error.code === '409' || error.message?.includes('duplicate') || error.message?.includes('conflict')) {
           const { error: updateError } = await supabase
             .from('baby_shares')
             .update({ status: 'pending', role, invited_at: new Date().toISOString() })
