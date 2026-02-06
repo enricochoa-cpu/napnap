@@ -148,11 +148,22 @@ export function useBabyShares() {
         });
 
       if (error) {
-        console.error('Error inviting user:', error);
+        // Unique constraint → row exists (likely revoked). Re-activate it.
         if (error.code === '23505') {
-          return { success: false, error: 'This person has already been invited' };
+          const { error: updateError } = await supabase
+            .from('baby_shares')
+            .update({ status: 'pending', role })
+            .eq('baby_owner_id', user.id)
+            .eq('shared_with_email', email.toLowerCase());
+
+          if (updateError) {
+            console.error('Error re-inviting user:', updateError);
+            return { success: false, error: updateError.message };
+          }
+        } else {
+          console.error('Error inviting user:', error);
+          return { success: false, error: error.message };
         }
-        return { success: false, error: error.message };
       }
 
       // Send invitation email (best-effort, don't block on result)
