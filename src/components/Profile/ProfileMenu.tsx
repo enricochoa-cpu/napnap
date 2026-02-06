@@ -52,12 +52,8 @@ const ChevronRightIcon = () => (
 );
 
 const SparklesIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-    <path d="M5 3v4" />
-    <path d="M3 5h4" />
-    <path d="M19 17v4" />
-    <path d="M17 19h4" />
   </svg>
 );
 
@@ -84,12 +80,12 @@ function StatusPill({ totalEntries, onClick }: StatusPillProps) {
         e.stopPropagation();
         onClick();
       }}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-md border border-white/20 hover:bg-white/30 active:scale-95 transition-all"
+      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/15 active:scale-95 transition-all"
     >
-      <span style={{ color }}>
+      <span style={{ color }} className="opacity-70">
         <SparklesIcon />
       </span>
-      <span className="text-xs font-display font-semibold" style={{ color }}>
+      <span className="text-[10px] font-display font-medium" style={{ color }}>
         {label}
       </span>
     </button>
@@ -219,8 +215,16 @@ export function ProfileMenu({
       {primaryBaby && (
         <button
           onClick={() => onNavigate('my-babies')}
-          className="w-full rounded-2xl bg-white/[0.08] backdrop-blur-xl p-5 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
+          className="w-full relative rounded-2xl bg-white/[0.08] backdrop-blur-xl px-5 py-5 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
         >
+          {algorithmStatus && (
+            <div className="absolute top-3.5 right-4">
+              <StatusPill
+                totalEntries={algorithmStatus.totalEntries}
+                onClick={() => setShowAlgorithmCard(!showAlgorithmCard)}
+              />
+            </div>
+          )}
           <div className="flex items-center gap-4">
             <BabyAvatarPicker
               avatarUrl={primaryBaby.avatarUrl}
@@ -228,8 +232,8 @@ export function ProfileMenu({
               size="lg"
               editable={false}
             />
-            <div className="flex-1 text-left min-w-0">
-              <h2 className="text-xl font-display font-bold text-[var(--text-primary)] truncate">
+            <div className="flex-1 text-left min-w-0 pr-14">
+              <h2 className="text-xl sm:text-2xl font-display font-bold text-[var(--text-primary)] truncate">
                 {primaryBaby.name}
               </h2>
               <p className="text-sm text-[var(--text-muted)] mt-0.5">
@@ -241,14 +245,6 @@ export function ProfileMenu({
                 </p>
               )}
             </div>
-            {algorithmStatus && (
-              <div className="flex-shrink-0">
-                <StatusPill
-                  totalEntries={algorithmStatus.totalEntries}
-                  onClick={() => setShowAlgorithmCard(!showAlgorithmCard)}
-                />
-              </div>
-            )}
           </div>
         </button>
       )}

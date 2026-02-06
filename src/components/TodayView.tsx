@@ -9,8 +9,6 @@ import {
   getRecommendedSchedule,
   calculateDynamicBedtime,
   extractWakeWindowsFromEntries,
-  getAlgorithmStatusTier,
-  MIN_CALIBRATION_ENTRIES,
   type NapIndex,
   type NapPrediction,
 } from '../utils/dateUtils';
@@ -27,36 +25,6 @@ interface TodayViewProps {
   onEdit?: (entry: SleepEntry) => void;
   loading?: boolean;
   totalEntries?: number;
-}
-
-// Sparkles icon for status pill
-const SparklesIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-  </svg>
-);
-
-// Live Status Pill
-function LiveStatusPill({ totalEntries }: { totalEntries: number }) {
-  const tier = getAlgorithmStatusTier(totalEntries);
-  const label = tier === 'learning' ? 'Learning' : tier === 'calibrating' ? 'Calibrating' : 'Optimised';
-  const color =
-    tier === 'optimized'
-      ? 'var(--success-color)'
-      : tier === 'calibrating'
-        ? 'var(--nap-color)'
-        : 'var(--wake-color)';
-
-  return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20">
-      <span style={{ color }} className="animate-pulse">
-        <SparklesIcon />
-      </span>
-      <span className="text-[10px] font-display font-semibold" style={{ color }}>
-        {label}
-      </span>
-    </div>
-  );
 }
 
 // Get today's completed naps
@@ -127,7 +95,6 @@ export function TodayView({
   awakeMinutes,
   onEdit,
   loading = false,
-  totalEntries = 0,
 }: TodayViewProps) {
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
@@ -303,7 +270,6 @@ export function TodayView({
 
   // Convenience accessor for predictions (backward compatible)
   const predictedNaps = predictedNapsWithMetadata.predictions;
-  const calibrationInfo = predictedNapsWithMetadata.calibrationInfo;
 
   // Expected bedtime (dynamic based on day's sleep)
   // Priority: active nap wake time (real-time) → predicted naps → completed naps
@@ -537,13 +503,6 @@ export function TodayView({
       {/* ================================================================== */}
       <div className="pt-6 pb-4">
         <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6">
-          {/* Status pill - top right */}
-          {totalEntries > 0 && (
-            <div className="flex justify-end mb-3">
-              <LiveStatusPill totalEntries={totalEntries} />
-            </div>
-          )}
-
           {activeSleep ? (
             // SLEEPING STATE
             <div className="text-center">
@@ -611,79 +570,6 @@ export function TodayView({
           )}
         </div>
       </div>
-
-      {/* ================================================================== */}
-      {/* CALIBRATION BANNER - Show when system is learning                 */}
-      {/* ================================================================== */}
-      {calibrationInfo?.isCalibrating && predictedNaps.length > 0 && (
-        <div className="mb-4 card p-4 border border-[var(--nap-color)]/20 bg-[var(--nap-color)]/5">
-          <div className="flex items-start gap-3">
-            {/* Tuning fork / calibration icon */}
-            <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center flex-shrink-0">
-              <svg
-                className="w-4 h-4 text-[var(--nap-color)]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path d="M12 2v4" />
-                <path d="M12 18v4" />
-                <path d="m4.93 4.93 2.83 2.83" />
-                <path d="m16.24 16.24 2.83 2.83" />
-                <path d="M2 12h4" />
-                <path d="M18 12h4" />
-                <path d="m4.93 19.07 2.83-2.83" />
-                <path d="m16.24 7.76 2.83-2.83" />
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[var(--text-primary)] font-display font-semibold text-sm mb-1">
-                Sintonitzant el ritme de {profile?.name || 'baby'}
-              </p>
-              <p className="text-[var(--text-muted)] text-xs leading-relaxed">
-                {calibrationInfo.calibrationReason === 'insufficient_data' ? (
-                  <>
-                    Estem analitzant les últimes migdiades per ser més precisos.
-                    {entries.length > 0 && (
-                      <span className="text-[var(--nap-color)]">
-                        {' '}({entries.length}/{MIN_CALIBRATION_ENTRIES} registres)
-                      </span>
-                    )}
-                  </>
-                ) : calibrationInfo.calibrationReason === 'high_variability' ? (
-                  <>
-                    El patró de son avui és diferent del habitual. Estem ajustant les prediccions.
-                  </>
-                ) : calibrationInfo.calibrationReason === 'first_nap_of_day' ? (
-                  <>
-                    Primera migdiada del dia - utilitzant la finestra de vigília més curta.
-                  </>
-                ) : (
-                  <>
-                    En breu tindràs la teva predicció personalitzada.
-                  </>
-                )}
-              </p>
-              {/* Confidence indicator */}
-              <div className="mt-2 flex items-center gap-2">
-                <div className="h-1 flex-1 bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[var(--nap-color)] rounded-full transition-all duration-500"
-                    style={{ width: `${Math.round(calibrationInfo.confidenceScore * 100)}%` }}
-                  />
-                </div>
-                <span className="text-[var(--text-muted)] text-xs">
-                  {Math.round(calibrationInfo.confidenceScore * 100)}%
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ================================================================== */}
       {/* TIMELINE RIVER - Visual flow through the day                      */}
