@@ -152,7 +152,7 @@ export function useBabyShares() {
         if (error.code === '23505') {
           const { error: updateError } = await supabase
             .from('baby_shares')
-            .update({ status: 'pending', role })
+            .update({ status: 'pending', role, invited_at: new Date().toISOString() })
             .eq('baby_owner_id', user.id)
             .eq('shared_with_email', email.toLowerCase());
 
