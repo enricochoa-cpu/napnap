@@ -1,10 +1,24 @@
 const RESEND_API_URL = "https://api.resend.com/emails";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
+
 interface InvitationPayload {
   inviteeEmail: string;
   inviterName: string;
   babyName: string;
   role: "caregiver" | "viewer";
+}
+
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 }
 
 function buildEmailHtml(
@@ -101,45 +115,25 @@ function buildEmailHtml(
 }
 
 Deno.serve(async (req) => {
-  // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers":
-          "authorization, x-client-info, apikey, content-type",
-      },
-    });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse({ error: "Method not allowed" }, 405);
   }
 
   try {
-    // JWT is already verified by Supabase infrastructure.
-    // Parse payload directly.
     const payload: InvitationPayload = await req.json();
     const { inviteeEmail, inviterName, babyName, role } = payload;
 
     if (!inviteeEmail || !inviterName || !babyName || !role) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Missing required fields" }, 400);
     }
 
-    // Build email
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     if (!resendApiKey) {
-      return new Response(
-        JSON.stringify({ error: "RESEND_API_KEY not configured" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "RESEND_API_KEY not configured" }, 500);
     }
 
     const appUrl = Deno.env.get("APP_URL") || "http://localhost:5173";
@@ -162,22 +156,13 @@ Deno.serve(async (req) => {
     if (!resendRes.ok) {
       const errorBody = await resendRes.text();
       console.error("Resend API error:", resendRes.status, errorBody);
-      return new Response(
-        JSON.stringify({ error: "Failed to send email", details: errorBody }),
-        { status: 502, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonResponse({ error: "Failed to send email", details: errorBody }, 502);
     }
 
     const resendData = await resendRes.json();
-    return new Response(
-      JSON.stringify({ success: true, emailId: resendData.id }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ success: true, emailId: resendData.id });
   } catch (err) {
     console.error("Edge function error:", err);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });
