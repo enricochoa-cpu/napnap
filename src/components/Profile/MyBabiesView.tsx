@@ -22,9 +22,10 @@ interface MyBabiesViewProps {
   onBack: () => void;
   // Sharing props
   myShares: BabyShare[];
-  onInvite: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
+  onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  inviterName?: string;
 }
 
 const BackIcon = () => (
@@ -158,6 +159,7 @@ export function MyBabiesView({
   onInvite,
   onUpdateRole,
   onRevokeAccess,
+  inviterName,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
 
@@ -261,6 +263,8 @@ export function MyBabiesView({
           onRevokeAccess={onRevokeAccess}
           onAcceptInvitation={async () => ({ success: true })}
           onDeclineInvitation={async () => ({ success: true })}
+          inviterName={inviterName}
+          babyName={profile.name}
         />
       )}
 

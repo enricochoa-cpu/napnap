@@ -7,11 +7,13 @@ type ShareRole = 'caregiver' | 'viewer';
 interface ShareAccessProps {
   myShares: BabyShare[];
   pendingInvitations: BabyShare[];
-  onInvite: (email: string, role: ShareRole) => Promise<{ success: boolean; error?: string }>;
+  onInvite: (email: string, role: ShareRole, inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateRole: (shareId: string, role: ShareRole) => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  inviterName?: string;
+  babyName?: string;
 }
 
 export function ShareAccess({
@@ -22,6 +24,8 @@ export function ShareAccess({
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
+  inviterName,
+  babyName,
 }: ShareAccessProps) {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<ShareRole>('caregiver');
@@ -42,7 +46,7 @@ export function ShareAccess({
     setError(null);
     setSuccess(null);
 
-    const result = await onInvite(email.trim(), role);
+    const result = await onInvite(email.trim(), role, inviterName, babyName);
 
     if (result.success) {
       setEmail('');

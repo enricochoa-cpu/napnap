@@ -26,7 +26,7 @@ interface ProfileSectionProps {
   // Sharing props
   myShares: BabyShare[];
   pendingInvitations: BabyShare[];
-  onInvite: (email: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
+  onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
@@ -114,6 +114,7 @@ export function ProfileSection({
           onInvite={onInvite}
           onUpdateRole={onUpdateRole}
           onRevokeAccess={onRevokeAccess}
+          inviterName={userProfile?.userName || userProfile?.email}
         />
       )}
 

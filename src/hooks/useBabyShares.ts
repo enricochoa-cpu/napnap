@@ -115,7 +115,12 @@ export function useBabyShares() {
   }, [fetchMyShares, fetchPendingInvitations]);
 
   // Invite a user by email
-  const inviteByEmail = useCallback(async (email: string, role: 'caregiver' | 'viewer' = 'caregiver') => {
+  const inviteByEmail = useCallback(async (
+    email: string,
+    role: 'caregiver' | 'viewer' = 'caregiver',
+    inviterName?: string,
+    babyName?: string,
+  ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return { success: false, error: 'Not authenticated' };
@@ -148,6 +153,22 @@ export function useBabyShares() {
           return { success: false, error: 'This person has already been invited' };
         }
         return { success: false, error: error.message };
+      }
+
+      // Send invitation email (best-effort, don't block on result)
+      if (inviterName && babyName) {
+        supabase.functions.invoke('send-invitation-email', {
+          body: {
+            inviteeEmail: email.toLowerCase(),
+            inviterName,
+            babyName,
+            role,
+          },
+        }).then(({ error: emailError }) => {
+          if (emailError) {
+            console.warn('Invitation email failed (non-blocking):', emailError);
+          }
+        });
       }
 
       await fetchMyShares();
