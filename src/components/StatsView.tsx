@@ -20,6 +20,7 @@ import {
   differenceInDays,
   isAfter,
   isBefore,
+  isToday,
 } from 'date-fns';
 import type { SleepEntry } from '../types';
 
@@ -183,28 +184,29 @@ export function StatsView({ entries }: StatsViewProps) {
         night: nightMinutes,
         total: napMinutes + nightMinutes,
         napCount: dayEntries.filter((e) => e.type === 'nap').length,
+        isToday: isToday(date),
       };
     });
   }, [entries, startDate, endDate]);
 
-  // Calculate averages
+  // Calculate averages (exclude today since the day is incomplete)
   const averages = useMemo(() => {
-    const daysWithData = rangeData.filter((d) => d.total > 0);
-    if (daysWithData.length === 0) {
+    const completedDaysWithData = rangeData.filter((d) => d.total > 0 && !d.isToday);
+    if (completedDaysWithData.length === 0) {
       return { avgTotal: 0, avgNap: 0, avgNight: 0, avgNapCount: 0 };
     }
 
     const avgTotal = Math.round(
-      daysWithData.reduce((sum, d) => sum + d.total, 0) / daysWithData.length
+      completedDaysWithData.reduce((sum, d) => sum + d.total, 0) / completedDaysWithData.length
     );
     const avgNap = Math.round(
-      daysWithData.reduce((sum, d) => sum + d.nap, 0) / daysWithData.length
+      completedDaysWithData.reduce((sum, d) => sum + d.nap, 0) / completedDaysWithData.length
     );
     const avgNight = Math.round(
-      daysWithData.reduce((sum, d) => sum + d.night, 0) / daysWithData.length
+      completedDaysWithData.reduce((sum, d) => sum + d.night, 0) / completedDaysWithData.length
     );
     const avgNapCount =
-      daysWithData.reduce((sum, d) => sum + d.napCount, 0) / daysWithData.length;
+      completedDaysWithData.reduce((sum, d) => sum + d.napCount, 0) / completedDaysWithData.length;
 
     return { avgTotal, avgNap, avgNight, avgNapCount };
   }, [rangeData]);
