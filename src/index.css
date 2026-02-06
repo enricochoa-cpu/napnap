@@ -1032,22 +1032,11 @@ select {
   50% { transform: scale(1.05); opacity: 1; }
 }
 
-/* Afternoon clouds decoration */
-.sky-clouds {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 40%;
-  overflow: hidden;
-  pointer-events: none;
-}
-
 .sky-cloud {
   position: absolute;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 100px;
-  filter: blur(1px);
+  filter: blur(8px);
 }
 
 .sky-cloud-1 {

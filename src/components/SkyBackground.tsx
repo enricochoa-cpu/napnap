@@ -36,7 +36,7 @@ function MorningSky() {
 
 function AfternoonSky() {
   return (
-    <div className="sky-clouds">
+    <div className="fixed inset-0 z-[-5] pointer-events-none overflow-hidden">
       <div className="sky-cloud sky-cloud-1" />
       <div className="sky-cloud sky-cloud-2" />
       <div className="sky-cloud sky-cloud-3" />
