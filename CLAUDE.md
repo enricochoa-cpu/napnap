@@ -190,10 +190,30 @@ All theme values are CSS variables in `:root`:
 
 ## Context System
 
-El proyecto usa un sistema de memoria persistente en `.context/`:
+The project uses a persistent memory system in `.context/`. **Always consult these before making changes.**
 
-- **`.context/MEMORY.md`**: ADN del proyecto (filosofía, stack, lógica de negocio, decisiones)
-- **`.context/rules.md`**: Reglas de codificación y protocolos de trabajo
-- **`.context/logs/YYYY-MM-DD.md`**: Daily logs con cambios técnicos y decisiones
+### Reference Documents
+- **`.context/prd.md`**: Product requirements — north star, user persona, principles, constraints
+- **`.context/design_system.md`**: Full token reference — colours, typography, spacing, radii per circadian theme
+- **`.context/frontend_guidelines.md`**: Component patterns, styling approach, state management
+- **`.context/app_flow.md`**: Every screen mapped with primary goal, golden path, branching options, escape routes
+- **`.context/tech_stack.md`**: Languages, frameworks, deployment details
+- **`.context/lessons.md`**: Past bugs and technical decisions (Problem → Root Cause → Permanent Fix)
 
-**Golden Rule**: Si algo no está documentado en `.context/`, no existe.
+### Operational Files
+- **`.context/MEMORY.md`**: Project DNA (philosophy, stack, business logic, decisions)
+- **`.context/rules.md`**: Coding rules and work protocols
+- **`.context/logs/YYYY-MM-DD.md`**: Daily changelogs with technical changes and decisions
+- **`.context/progress.txt`**: Project progress tracking
+
+### When to Consult What
+| Task | Read first |
+|------|-----------|
+| UI/UX changes | `prd.md` → `design_system.md` → `frontend_guidelines.md` |
+| New feature | `prd.md` → `app_flow.md` → `frontend_guidelines.md` |
+| Bug fix | `lessons.md` (check if it's a known pattern) |
+| Prediction system changes | `lessons.md` §1 (5 recurring prediction bugs documented) |
+| Supabase changes | `lessons.md` §3-4 (query gotchas + Edge Function gotchas) |
+| Styling | `design_system.md` (never hardcode hex — use `var(--token)`) |
+
+**Golden Rule**: If it's not documented in `.context/`, it doesn't exist.

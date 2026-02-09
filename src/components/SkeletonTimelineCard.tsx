@@ -29,12 +29,12 @@ export function SkeletonTimelineCard({ variant = 'nap' }: SkeletonTimelineCardPr
 
       {/* Text placeholders */}
       <div className="flex-1 min-w-0">
-        <div className="h-2.5 w-16 bg-white/10 rounded mb-2" />
-        <div className="h-4 w-28 bg-white/10 rounded" />
+        <div className="h-2.5 w-16 bg-[var(--text-muted)]/15 rounded mb-2" />
+        <div className="h-4 w-28 bg-[var(--text-muted)]/15 rounded" />
       </div>
 
       {/* Duration placeholder */}
-      <div className="h-3.5 w-12 bg-white/10 rounded" />
+      <div className="h-3.5 w-12 bg-[var(--text-muted)]/15 rounded" />
     </div>
   );
 }
@@ -65,13 +65,13 @@ export function SkeletonHero() {
   return (
     <div className="text-center animate-pulse">
       {/* Label */}
-      <div className="h-3 w-20 bg-white/10 rounded mx-auto mb-3" />
+      <div className="h-3 w-20 bg-[var(--text-muted)]/15 rounded mx-auto mb-3" />
 
       {/* Big countdown number */}
-      <div className="h-12 w-32 bg-white/10 rounded-lg mx-auto mb-3" />
+      <div className="h-12 w-32 bg-[var(--text-muted)]/15 rounded-lg mx-auto mb-3" />
 
       {/* Secondary text */}
-      <div className="h-3.5 w-28 bg-white/10 rounded mx-auto" />
+      <div className="h-3.5 w-28 bg-[var(--text-muted)]/15 rounded mx-auto" />
     </div>
   );
 }

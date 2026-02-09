@@ -74,7 +74,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-white/10">
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       {payload.map((entry, index) => (
         <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
@@ -91,7 +91,7 @@ function BarTooltip({ active, payload, label }: TooltipProps) {
   const total = payload.reduce((sum, p) => sum + (p.value || 0), 0);
 
   return (
-    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-white/10">
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-semibold text-[var(--text-primary)]">
         Total: {formatHours(total)}
@@ -252,8 +252,8 @@ export function StatsView({ entries }: StatsViewProps) {
       {insight && (
         <div className="mb-4">
           <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-display font-semibold"
-            style={{ color: insight.color }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md text-xs font-display font-semibold"
+            style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: insight.color }}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
@@ -264,7 +264,7 @@ export function StatsView({ entries }: StatsViewProps) {
       )}
 
       {/* Date Range Filter - Glassmorphism */}
-      <div className="rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-3 mb-6">
+      <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex items-center gap-3">
           {/* Calendar Icon */}
           <span className="text-[var(--text-muted)] flex-shrink-0">
@@ -324,7 +324,7 @@ export function StatsView({ entries }: StatsViewProps) {
       </div>
 
       {!hasData ? (
-        <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-8 text-center">
+        <div className="rounded-3xl backdrop-blur-xl p-8 text-center" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
             <svg
               width="32"
@@ -352,25 +352,25 @@ export function StatsView({ entries }: StatsViewProps) {
         <>
           {/* Summary Cards - Glassmorphism */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Total Sleep</p>
               <p className="text-2xl font-display font-bold text-[var(--text-primary)]">
                 {formatHours(averages.avgTotal)}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Naps/Day</p>
               <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
                 {averages.avgNapCount.toFixed(1)}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Nap Time</p>
               <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
                 {formatHours(averages.avgNap)}
               </p>
             </div>
-            <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Night Sleep</p>
               <p className="text-2xl font-display font-bold text-[var(--night-color)]">
                 {formatHours(averages.avgNight)}
@@ -379,7 +379,7 @@ export function StatsView({ entries }: StatsViewProps) {
           </div>
 
           {/* Daily Bar Chart - Glassmorphism */}
-          <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4 mb-6">
+          <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Daily Sleep
             </h3>
@@ -424,7 +424,7 @@ export function StatsView({ entries }: StatsViewProps) {
           </div>
 
           {/* Sleep Trend Area Chart - Glassmorphism */}
-          <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-4">
+          <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Sleep Trend
             </h3>

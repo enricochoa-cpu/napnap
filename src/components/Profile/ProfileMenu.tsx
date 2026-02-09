@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import type { BabyProfile, BabyShare, UserProfile } from '../../types';
 import { AlgorithmStatusCard, type AlgorithmStatusProps } from './AlgorithmStatusCard';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
@@ -80,7 +80,8 @@ function StatusPill({ totalEntries, onClick }: StatusPillProps) {
         e.stopPropagation();
         onClick();
       }}
-      className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 hover:bg-white/15 active:scale-95 transition-all"
+      className="flex items-center gap-1 px-2.5 py-1 rounded-full backdrop-blur-sm active:scale-95 transition-all"
+      style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
     >
       <span style={{ color }} className="opacity-70">
         <SparklesIcon />
@@ -92,8 +93,8 @@ function StatusPill({ totalEntries, onClick }: StatusPillProps) {
   );
 }
 
-// Premium List Row with glassmorphism
-interface ListRowProps {
+// Premium List Row — exported for reuse across Profile sub-views
+export interface ListRowProps {
   icon: React.ReactNode;
   title: string;
   subtitle?: string;
@@ -102,11 +103,12 @@ interface ListRowProps {
   rightElement?: React.ReactNode;
 }
 
-function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightElement }: ListRowProps) {
+export function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightElement }: ListRowProps) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl bg-white/[0.08] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
+      className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl active:scale-[0.98] transition-all"
+      style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconColorClass}`}>
         {icon}
@@ -131,18 +133,13 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
-// Encouraging messages
-const ENCOURAGING_MESSAGES = [
-  "You're doing amazing",
-  'Keep it up, superstar',
-  'Every moment counts',
-  'One step at a time',
-  "You've got this",
-];
-
+// Time-contextual encouragement (not random — feels intentional)
 function getEncouragingMessage(): string {
-  const index = Math.floor(Math.random() * ENCOURAGING_MESSAGES.length);
-  return ENCOURAGING_MESSAGES[index];
+  const hour = new Date().getHours();
+  if (hour < 6) return 'You\'re doing great';
+  if (hour < 12) return 'Fresh start today';
+  if (hour < 18) return 'Keep going, you\'ve got this';
+  return 'Almost there';
 }
 
 export function ProfileMenu({
@@ -159,7 +156,7 @@ export function ProfileMenu({
 
   const babyCount = sharedProfiles.length;
   const greeting = getGreeting();
-  const encouragement = useMemo(() => getEncouragingMessage(), []);
+  const encouragement = getEncouragingMessage();
   const parentName = userProfile?.userName || 'there';
   const primaryBaby = activeBaby || sharedProfiles[0];
 
@@ -215,7 +212,8 @@ export function ProfileMenu({
       {primaryBaby && (
         <button
           onClick={() => onNavigate('my-babies')}
-          className="w-full relative rounded-2xl bg-white/[0.08] backdrop-blur-xl px-5 py-5 border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
+          className="w-full relative rounded-2xl backdrop-blur-xl px-5 py-5 active:scale-[0.98] transition-all"
+          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}
         >
           {algorithmStatus && (
             <div className="absolute top-3.5 right-4">
@@ -264,7 +262,8 @@ export function ProfileMenu({
       {!primaryBaby && (
         <button
           onClick={() => onNavigate('my-babies')}
-          className="w-full rounded-2xl bg-gradient-to-br from-[var(--nap-color)]/10 to-[var(--night-color)]/10 p-8 border-2 border-dashed border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)] active:scale-[0.98] transition-transform"
+          className="w-full rounded-2xl bg-gradient-to-br from-[var(--nap-color)]/10 to-[var(--night-color)]/10 p-8 border-2 border-dashed border-[var(--text-muted)]/20 active:scale-[0.98] transition-transform"
+          style={{ boxShadow: 'var(--shadow-sm)' }}
         >
           <div className="flex flex-col items-center gap-4">
             <div className="w-20 h-20 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center text-[var(--nap-color)]">
@@ -278,18 +277,7 @@ export function ProfileMenu({
         </button>
       )}
 
-      {/* Navigation List - No section headers, spacing creates groups */}
-      <div className="space-y-3">
-        <ListRow
-          icon={<BabyIcon />}
-          title="My Babies"
-          subtitle={babyCount > 0 ? `${babyCount} ${babyCount === 1 ? 'baby' : 'babies'}` : 'Add your first baby'}
-          onClick={() => onNavigate('my-babies')}
-          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
-        />
-      </div>
-
-      {/* Support - Dedicated route */}
+      {/* Navigation List */}
       <div className="space-y-3">
         <ListRow
           icon={<SupportIcon />}
@@ -298,14 +286,10 @@ export function ProfileMenu({
           onClick={() => onNavigate('support')}
           iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
         />
-      </div>
-
-      {/* Settings - Separate implied section */}
-      <div className="space-y-3">
         <ListRow
           icon={<SettingsIcon />}
           title="Settings"
-          subtitle="Notifications, sign out"
+          subtitle="Account and sign out"
           onClick={() => onNavigate('account-settings')}
           iconColorClass="bg-[var(--text-muted)]/15 text-[var(--text-muted)]"
         />

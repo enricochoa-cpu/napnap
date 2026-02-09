@@ -1,0 +1,49 @@
+# Progress
+
+## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
+
+- [x] #1 Hero card: replaced hardcoded `bg-white/[0.06]` with `var(--glass-bg)` / `var(--glass-border)` / `var(--shadow-md)`
+- [x] #2 Hero countdown: upgraded from `text-5xl` (48px) to `.hero-countdown` (56px) across all 4 hero states
+- [x] #3 Timeline river line: replaced `bg-white/10` with `bg-[var(--text-muted)]/20` (including loading skeleton)
+- [x] #4 Ghost cards: replaced `bg-white/[0.04]` with `color-mix(in srgb, var(--accent) 5%, transparent)` for both predicted naps and bedtime
+- [x] #5 Prediction labels: "Predicted Nap" → "Nap {n}", "Catnap" → "Short Nap"
+- [x] #6 Removed redundant "My Babies" ListRow from ProfileMenu (baby card is the sole entry point)
+- [x] #7 AccountSettingsView: replaced `text-red-400` / `bg-red-500/15` with `var(--danger-color)` tokens; replaced sign-out card glassmorphism with theme-aware tokens
+- [x] #8 Settings subtitle: "Notifications, sign out" → "Account and sign out"
+
+## Design Audit — Phase 2: Refinement (2026-02-09) [COMPLETED]
+
+- [x] #9 Extracted shared `SubViewHeader` component; wired into all 5 sub-views (MyBabiesView, AccountSettingsView, FAQsView, ContactView, SupportView) — removed 5 duplicate BackIcon definitions
+- [x] #10 Standardised `ListRow` in ProfileMenu with theme-aware glassmorphism; exported for reuse
+- [x] #11 SupportView now imports `ListRow` from ProfileMenu — removed duplicate ListRow, ChevronRightIcon, BackIcon
+- [x] #12 Replaced all remaining hardcoded `white/` glassmorphism: ProfileMenu baby card + empty state, SupportView tip card, MyBabiesView BabyProfileCard + AddBabyGhostCard + PlusIcon circle, StatusPill
+- [x] #13 Replaced random encouraging messages with time-contextual function (morning/afternoon/evening/night)
+- [x] #14 Removed emoji from ContactView subtitle; rewrote copy to match tone
+- [x] #15 Wrapper div cleanup was already resolved in Phase 1 (single `space-y-3` wrapping both remaining rows)
+
+## Design Audit — Phase 3: Polish (2026-02-09) [COMPLETED]
+
+- [x] ProfileSection: Added AnimatePresence `mode="wait"` with directional spring slide transitions (stiffness: 300, damping: 30, ±60px). Forward drill-in slides right→left, back slides left→right. Replaced static `fade-in` class.
+- [x] TodayView timeline: Added staggered `motion.div` entrance animations (staggerChildren: 0.06s, per-card spring: stiffness 400, damping 30, y: 12→0). All 6 card types wrapped.
+- [x] TodayView section label: "Today's Timeline" → "Your Day"
+- [x] Bonus: Morning Wake Up card — replaced last `bg-white/[0.06]` with `color-mix(in srgb, var(--wake-color) 6%, var(--glass-bg))`
+
+## Full Codebase Light-Mode Sweep (2026-02-09) [COMPLETED]
+
+Triggered by BabyEditSheet appearing as a black modal in morning/afternoon themes.
+Audited all components and fixed every remaining `white/` and hardcoded hex colour.
+
+- [x] BabyEditSheet: `bg-[#1a1c24]/95` → `var(--bg-card)`, all `white/` → theme tokens, `text-red-400` → `var(--danger-color)`
+- [x] StatsView: 6 glassmorphism cards → `var(--glass-bg)` + `var(--glass-border)` + `var(--shadow-sm)`, tooltips, insight tag, date range filter, empty state
+- [x] SkeletonTimelineCard: 6× `bg-white/10` → `bg-[var(--text-muted)]/15`
+- [x] QuickActionSheet: drag handle `bg-white/20` → `bg-[var(--text-muted)]/25`
+- [x] DayNavigator: 2× `hover:bg-white/5` → `hover:bg-[var(--text-muted)]/10`
+- [x] MissingBedtimeModal: `hover:bg-white/10` → `hover:bg-[var(--text-muted)]/10`, `border-white/5` → `border-[var(--glass-border)]`
+- [x] SleepEntrySheet: `hover:text-[#B07D7D]` → `hover:text-[var(--danger-color)]`
+- [x] SleepEntry: `bg-[#ff7e5f]/20` + `text-[#ff7e5f]` → `var(--night-color)` tokens
+- [x] TodayView: loading skeleton `bg-white/10` → `bg-[var(--text-muted)]/15`
+
+## Other Pending Items
+
+- [ ] Delete Account button is a TODO (does nothing) — AccountSettingsView
+- [ ] Resend domain verification for production invitation emails

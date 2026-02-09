@@ -60,8 +60,8 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
     >
       <div className="flex items-center gap-4 p-5">
         {/* Icon */}
-        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[#ff7e5f]/20">
-          <svg className="w-6 h-6 text-[#ff7e5f]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-[var(--night-color)]/20">
+          <svg className="w-6 h-6 text-[var(--night-color)]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 12a5 5 0 01-5 5m5-5a5 5 0 00-5-5m5 5H7" />
             <line x1="4" y1="19" x2="20" y2="19" strokeWidth={2.5} strokeLinecap="round" />

@@ -127,10 +127,10 @@ export function BabyEditSheet({
             style={{ y }}
             className="fixed bottom-0 left-0 right-0 z-50 touch-none max-h-[90dvh] overflow-hidden"
           >
-            <div className="bg-[#1a1c24]/95 backdrop-blur-2xl rounded-t-[40px] shadow-[0_-8px_40px_rgba(0,0,0,0.4)] max-h-[90dvh] overflow-y-auto border-t border-white/10">
+            <div className="backdrop-blur-2xl rounded-t-[40px] max-h-[90dvh] overflow-y-auto" style={{ background: 'var(--bg-card)', borderTop: '1px solid var(--glass-border)', boxShadow: '0 -8px 40px rgba(0,0,0,0.2)' }}>
               {/* Drag Handle */}
-              <div className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing sticky top-0 bg-[#1a1c24]/95 backdrop-blur-2xl rounded-t-[40px]">
-                <div className="w-10 h-1 bg-white/20 rounded-full" />
+              <div className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing sticky top-0 backdrop-blur-2xl rounded-t-[40px]" style={{ background: 'var(--bg-card)' }}>
+                <div className="w-10 h-1 bg-[var(--text-muted)]/25 rounded-full" />
               </div>
 
               {/* Avatar - Star of the Show */}
@@ -159,7 +159,7 @@ export function BabyEditSheet({
               {/* Form Fields - Grouped in Soft Cards */}
               <div className="px-6 pb-4 space-y-3">
                 {/* Name & Birthday */}
-                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4 space-y-4">
+                <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4 space-y-4">
                   <div>
                     <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
                       Name
@@ -175,7 +175,7 @@ export function BabyEditSheet({
                     />
                   </div>
 
-                  <div className="border-t border-white/[0.06] pt-4">
+                  <div className="border-t border-[var(--text-muted)]/15 pt-4">
                     <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
                       Birthday
                     </label>
@@ -190,7 +190,7 @@ export function BabyEditSheet({
                 </div>
 
                 {/* Gender */}
-                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
                   <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
                     Gender
                   </label>
@@ -207,7 +207,7 @@ export function BabyEditSheet({
                 </div>
 
                 {/* Measurements */}
-                <div className="rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
                   <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-3 font-display uppercase tracking-wider">
                     Measurements
                   </label>
@@ -255,7 +255,7 @@ export function BabyEditSheet({
                   className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] ${
                     isValid
                       ? 'bg-[var(--nap-color)] text-white shadow-lg shadow-[var(--nap-color)]/20'
-                      : 'bg-white/[0.08] text-[var(--text-muted)]/40 cursor-not-allowed'
+                      : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
                   }`}
                 >
                   {isNewBaby ? 'Add Baby' : 'Save Changes'}
@@ -272,7 +272,7 @@ export function BabyEditSheet({
 
               {/* Delete Baby - Subtle at bottom (only for existing babies) */}
               {!isNewBaby && baby && (
-                <div className="px-6 pb-8 pt-4 border-t border-white/[0.05]">
+                <div className="px-6 pb-8 pt-4 border-t border-[var(--text-muted)]/10">
                   <button
                     onClick={() => {
                       // TODO: Implement delete functionality
@@ -280,7 +280,7 @@ export function BabyEditSheet({
                         onClose();
                       }
                     }}
-                    className="w-full text-center text-xs text-red-400/60 hover:text-red-400 transition-colors font-display"
+                    className="w-full text-center text-xs text-[var(--danger-color)]/60 hover:text-[var(--danger-color)] transition-colors font-display"
                   >
                     Delete baby profile
                   </button>

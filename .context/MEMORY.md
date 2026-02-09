@@ -181,6 +181,9 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-05 | Baby profile pictures with client-side compression (BabyAvatarPicker) |
 | 2026-02-05 | Share access roles (caregiver/viewer) with bottom sheet editing UI |
 | 2026-02-05 | RLS policies for shared user permissions on sleep_entries |
+| 2026-02-06 | Invitation emails via Supabase Edge Function + Resend (pending domain verification) |
+| 2026-02-06 | Re-invite flow: cancel → re-invite reactivates existing DB row |
+| 2026-02-06 | Algorithm StatusPill moved from TodayView to ProfileMenu baby card |
 
 ---
 

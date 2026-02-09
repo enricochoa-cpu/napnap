@@ -282,7 +282,7 @@ export function SleepEntrySheet({
                 {isEditing && onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)]/60 hover:text-[#B07D7D] hover:bg-[#B07D7D]/10 transition-colors"
+                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)]/60 hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
                     aria-label="Delete"
                   >
                     <TrashIcon />

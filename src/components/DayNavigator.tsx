@@ -29,7 +29,7 @@ export function DayNavigator({ selectedDate, onDateChange }: DayNavigatorProps) 
       <div className="flex items-center justify-between">
         <button
           onClick={handlePrevious}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--text-muted)]/10 transition-all"
           aria-label="Previous day"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@ export function DayNavigator({ selectedDate, onDateChange }: DayNavigatorProps) 
 
         <button
           onClick={handleNext}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/5 transition-all"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--text-muted)]/10 transition-all"
           aria-label="Next day"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

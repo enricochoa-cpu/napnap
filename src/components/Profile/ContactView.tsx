@@ -1,12 +1,8 @@
+import { SubViewHeader } from './SubViewHeader';
+
 interface ContactViewProps {
   onBack: () => void;
 }
-
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
 
 const EmailIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -18,24 +14,7 @@ const EmailIcon = () => (
 export function ContactView({ onBack }: ContactViewProps) {
   return (
     <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors"
-          aria-label="Go back"
-        >
-          <BackIcon />
-        </button>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
-            Contact us
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Any questions? A suggestion? We are here to help! 😊
-          </p>
-        </div>
-      </div>
+      <SubViewHeader title="Contact us" subtitle="Any questions? We're here to help" onBack={onBack} />
 
       {/* Contact Content - Placeholder */}
       <div className="card p-8 text-center">

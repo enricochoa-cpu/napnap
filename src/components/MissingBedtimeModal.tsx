@@ -67,7 +67,7 @@ export function MissingBedtimeModal({
         {/* Close button */}
         <button
           onClick={onSkip}
-          className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-muted)] hover:bg-white/10 active:scale-95 transition-transform"
+          className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 active:scale-95 transition-transform"
           aria-label="Close"
         >
           <CloseIcon />
@@ -90,7 +90,7 @@ export function MissingBedtimeModal({
 
         {/* Date picker */}
         <div className="mb-6">
-          <label className="relative flex items-center justify-center gap-3 p-4 rounded-2xl bg-[var(--bg-soft)] border border-white/5 cursor-pointer">
+          <label className="relative flex items-center justify-center gap-3 p-4 rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer">
             <CalendarIcon />
             <span className="text-[var(--text-primary)] font-display font-semibold">
               {formatDateDisplay(selectedDate)}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { UserProfile } from '../../types';
+import { SubViewHeader } from './SubViewHeader';
 
 interface AccountSettingsViewProps {
   userProfile: UserProfile | null;
@@ -7,12 +8,6 @@ interface AccountSettingsViewProps {
   onSignOut: () => void;
   onUpdateUser: (data: Partial<Omit<UserProfile, 'email'>>) => void;
 }
-
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
 
 const LogoutIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -74,24 +69,7 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
 
   return (
     <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors"
-          aria-label="Go back"
-        >
-          <BackIcon />
-        </button>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
-            Account settings
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Manage your account preferences
-          </p>
-        </div>
-      </div>
+      <SubViewHeader title="Account settings" subtitle="Manage your account preferences" onBack={onBack} />
 
       {/* Profile Info */}
       <div className="card p-5">
@@ -199,15 +177,16 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
       {/* Sign Out - Prominent standalone card */}
       <button
         onClick={() => setShowLogoutConfirm(true)}
-        className="w-full flex items-center gap-4 p-5 rounded-3xl bg-white/[0.08] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:bg-white/[0.12] active:scale-[0.98] transition-all"
+        className="w-full flex items-center gap-4 p-5 rounded-3xl active:scale-[0.98] transition-all"
+        style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}
       >
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-red-500/15">
-          <span className="text-red-400">
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-[var(--danger-color)]/15">
+          <span className="text-[var(--danger-color)]">
             <LogoutIcon />
           </span>
         </div>
         <div className="flex-1 text-left">
-          <p className="font-display font-semibold text-red-400 text-[17px]">
+          <p className="font-display font-semibold text-[var(--danger-color)] text-[17px]">
             Sign out
           </p>
           <p className="text-sm text-[var(--text-muted)] mt-0.5">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { SubViewHeader } from './SubViewHeader';
 
 interface FAQsViewProps {
   onBack: () => void;
@@ -128,12 +129,6 @@ Don't worry if naps are 30-45 minutes while nights are much longer – this is b
   },
 ];
 
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
-
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
   <svg
     width="20"
@@ -222,24 +217,7 @@ export function FAQsView({ onBack }: FAQsViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header with back button */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-colors"
-          aria-label="Go back"
-        >
-          <BackIcon />
-        </button>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
-            FAQs
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Let's solve your doubts
-          </p>
-        </div>
-      </div>
+      <SubViewHeader title="FAQs" subtitle="Let's solve your doubts" onBack={onBack} />
 
       {/* FAQ Accordion List */}
       <div className="card p-5">

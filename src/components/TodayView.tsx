@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   formatTime,
   formatDuration,
@@ -412,9 +413,9 @@ export function TodayView({
         </div>
 
         <div className="mt-2">
-          <div className="h-3 w-28 bg-white/10 rounded mb-4" />
+          <div className="h-3 w-28 bg-[var(--text-muted)]/15 rounded mb-4" />
           <div className="relative">
-            <div className="absolute left-5 top-6 bottom-6 w-px bg-white/10" />
+            <div className="absolute left-5 top-6 bottom-6 w-px bg-[var(--text-muted)]/20" />
             <SkeletonTimeline />
           </div>
         </div>
@@ -502,14 +503,14 @@ export function TodayView({
       {/* HERO SECTION - Glassmorphism Card with Status Pill               */}
       {/* ================================================================== */}
       <div className="pt-6 pb-4">
-        <div className="rounded-3xl bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] p-6">
+        <div className="rounded-3xl p-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
           {activeSleep ? (
             // SLEEPING STATE
             <div className="text-center">
               <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
                 {activeSleep.type === 'nap' ? 'Napping' : 'Night Sleep'}
               </p>
-              <h1 className="text-5xl font-display font-bold text-[var(--nap-color)] mb-3">
+              <h1 className="hero-countdown text-[var(--nap-color)] mb-3">
                 {formatDuration(currentSleepDuration)}
               </h1>
               {expectedWakeUp && activeSleep.type === 'nap' && (
@@ -529,7 +530,7 @@ export function TodayView({
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
                         It's Time
                       </p>
-                      <h1 className={`text-5xl font-display font-bold animate-pulse-soft ${
+                      <h1 className={`hero-countdown animate-pulse-soft ${
                         nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
                       }`}>
                         {nextEventCountdown.type === 'bedtime' ? 'BEDTIME' : 'NAP NOW'}
@@ -540,7 +541,7 @@ export function TodayView({
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
                         {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
                       </p>
-                      <h1 className={`text-5xl font-display font-bold mb-3 ${
+                      <h1 className={`hero-countdown mb-3 ${
                         nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
                       }`}>
                         {formatDuration(nextEventCountdown.minutes)}
@@ -561,7 +562,7 @@ export function TodayView({
                   <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
                     Awake
                   </p>
-                  <h1 className="text-5xl font-display font-bold text-[var(--wake-color)]">
+                  <h1 className="hero-countdown text-[var(--wake-color)]">
                     {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
                   </h1>
                 </div>
@@ -576,155 +577,183 @@ export function TodayView({
       {/* ================================================================== */}
       <div className="mt-4">
         <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-4 px-1">
-          Today's Timeline
+          Your Day
         </h2>
 
         {/* Timeline with vertical connector - NEWEST FIRST (last to old) */}
         <div className="relative">
           {/* Vertical timeline river line */}
-          <div className="absolute left-5 top-6 bottom-6 w-px bg-white/10" />
+          <div className="absolute left-5 top-6 bottom-6 w-px bg-[var(--text-muted)]/20" />
 
-          <div className="space-y-3">
+          <motion.div
+            className="space-y-3"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.06 } },
+            }}
+          >
             {/* Night Sleep in Progress - Glassmorphism */}
             {activeSleep && activeSleep.type === 'night' && (
-              <button
-                type="button"
-                onClick={() => onEdit?.(activeSleep)}
-                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--night-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] animate-glow-night"
-              >
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
-                  <MoonIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                    Night Sleep
-                  </p>
-                  <p className="text-white font-display font-semibold text-base">
-                    {formatTime(activeSleep.startTime)} — ...
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white/80 font-display text-sm font-medium">
-                    {formatDuration(currentSleepDuration)}
-                  </p>
-                </div>
-              </button>
-            )}
-
-            {/* Expected Bedtime - Glassmorphism Ghost */}
-            {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
-              <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-[var(--night-color)]/30 shadow-[0_4px_20px_rgb(0,0,0,0.03)]">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
-                  <MoonIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                    Bedtime
-                  </p>
-                  <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                    {formatTime(expectedBedtime)}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Predicted Naps - Glassmorphism Ghost */}
-            {[...predictedNaps].reverse().map((napInfo, index) => {
-              const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
-              return (
-                <div
-                  key={`predicted-${index}`}
-                  className="relative py-3 px-4 flex items-center gap-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-[var(--nap-color)]/30 shadow-[0_4px_20px_rgb(0,0,0,0.03)]"
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(activeSleep)}
+                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--night-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] animate-glow-night"
                 >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
-                    <CloudIcon className="w-5 h-5" />
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
+                    <MoonIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                      Night Sleep
+                    </p>
+                    <p className="text-white font-display font-semibold text-base">
+                      {formatTime(activeSleep.startTime)} — ...
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white/80 font-display text-sm font-medium">
+                      {formatDuration(currentSleepDuration)}
+                    </p>
+                  </div>
+                </button>
+              </motion.div>
+            )}
+
+            {/* Expected Bedtime - Ghost Card */}
+            {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
+                <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--night-color)]/30" style={{ background: 'color-mix(in srgb, var(--night-color) 5%, transparent)', boxShadow: 'var(--shadow-sm)' }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
+                    <MoonIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                      {napInfo.isCatnap ? 'Catnap' : 'Predicted Nap'}
+                      Bedtime
                     </p>
                     <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                      {formatTime(napInfo.time)} — {formatTime(expectedEnd)}
+                      {formatTime(expectedBedtime)}
                     </p>
                   </div>
                 </div>
+              </motion.div>
+            )}
+
+            {/* Predicted Naps - Ghost Cards */}
+            {[...predictedNaps].reverse().map((napInfo, index) => {
+              const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
+              const reversedIndex = predictedNaps.length - index;
+              const napNumber = todayNaps.length + (activeSleep?.type === 'nap' ? 1 : 0) + reversedIndex;
+              return (
+                <motion.div
+                  key={`predicted-${index}`}
+                  variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}
+                >
+                  <div
+                    className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--nap-color)]/30"
+                    style={{ background: 'color-mix(in srgb, var(--nap-color) 5%, transparent)', boxShadow: 'var(--shadow-sm)' }}
+                  >
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
+                      <CloudIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
+                        {napInfo.isCatnap ? 'Short Nap' : `Nap ${napNumber}`}
+                      </p>
+                      <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
+                        {formatTime(napInfo.time)} — {formatTime(expectedEnd)}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
               );
             })}
 
             {/* Active Nap - Glassmorphism Solid */}
             {activeSleep && activeSleep.type === 'nap' && (
-              <button
-                type="button"
-                onClick={() => onEdit?.(activeSleep)}
-                className="relative py-3 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-2xl bg-[var(--nap-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-              >
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
-                  <CloudIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                    Napping Now
-                  </p>
-                  <p className="text-white font-display font-semibold text-base">
-                    {formatTime(activeSleep.startTime)} — ...
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white/80 font-display text-sm font-medium">
-                    {formatDuration(currentSleepDuration)}
-                  </p>
-                </div>
-              </button>
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(activeSleep)}
+                  className="relative py-3 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-2xl bg-[var(--nap-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
+                    <CloudIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                      Napping Now
+                    </p>
+                    <p className="text-white font-display font-semibold text-base">
+                      {formatTime(activeSleep.startTime)} — ...
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white/80 font-display text-sm font-medium">
+                      {formatDuration(currentSleepDuration)}
+                    </p>
+                  </div>
+                </button>
+              </motion.div>
             )}
 
             {/* Completed Naps - Glassmorphism Solid */}
             {[...todayNaps].reverse().map((nap, index) => (
-              <button
-                type="button"
+              <motion.div
                 key={nap.id}
-                onClick={() => onEdit?.(nap)}
-                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--nap-color)]/80 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}
               >
-                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 z-10">
-                  <CloudIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                    Nap {todayNaps.length - index}
-                  </p>
-                  <p className="text-white font-display font-semibold text-base">
-                    {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-white/80 font-display text-sm font-medium">
-                    {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
-                  </p>
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(nap)}
+                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--nap-color)]/80 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 z-10">
+                    <CloudIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                      Nap {todayNaps.length - index}
+                    </p>
+                    <p className="text-white font-display font-semibold text-base">
+                      {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white/80 font-display text-sm font-medium">
+                      {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
+                    </p>
+                  </div>
+                </button>
+              </motion.div>
             ))}
 
             {/* Morning Wake Up - Glassmorphism Gold - OLDEST, at bottom */}
             {morningWakeUp && morningWakeUpEntry && (
-              <button
-                type="button"
-                onClick={() => onEdit?.(morningWakeUpEntry)}
-                className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-white/[0.06] backdrop-blur-xl border border-[var(--wake-color)]/30 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-              >
-                <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0 z-10">
-                  <SunIcon className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider">
-                    Morning Wake Up
-                  </p>
-                  <p className="text-[var(--text-primary)] font-display font-semibold text-base">
-                    {formatTime(morningWakeUp)}
-                  </p>
-                </div>
-              </button>
+              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
+                <button
+                  type="button"
+                  onClick={() => onEdit?.(morningWakeUpEntry)}
+                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl backdrop-blur-xl border border-[var(--wake-color)]/30"
+                  style={{ background: 'color-mix(in srgb, var(--wake-color) 6%, var(--glass-bg))', boxShadow: 'var(--shadow-sm)' }}
+                >
+                  <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0 z-10">
+                    <SunIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider">
+                      Morning Wake Up
+                    </p>
+                    <p className="text-[var(--text-primary)] font-display font-semibold text-base">
+                      {formatTime(morningWakeUp)}
+                    </p>
+                  </div>
+                </button>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

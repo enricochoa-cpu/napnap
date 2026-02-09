@@ -5,6 +5,7 @@ import { calculateAge } from '../../utils/dateUtils';
 import { ShareAccess } from '../ShareAccess';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { BabyEditSheet } from './BabyEditSheet';
+import { SubViewHeader } from './SubViewHeader';
 
 interface SharedBabyProfile extends BabyProfileType {
   isOwner: boolean;
@@ -27,12 +28,6 @@ interface MyBabiesViewProps {
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   inviterName?: string;
 }
-
-const BackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
 
 const CheckIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -76,11 +71,12 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
     >
       <button
         onClick={handleClick}
-        className={`w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl border shadow-[0_8px_30px_rgb(0,0,0,0.06)] active:scale-[0.97] transition-all duration-200 ${
-          isActive
-            ? 'bg-white/20 border-[var(--nap-color)]/40'
-            : 'bg-white/[0.08] border-white/15 hover:bg-white/[0.12]'
-        }`}
+        className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl active:scale-[0.97] transition-all duration-200"
+        style={{
+          background: isActive ? 'color-mix(in srgb, var(--nap-color) 12%, var(--glass-bg))' : 'var(--glass-bg)',
+          border: isActive ? '1px solid color-mix(in srgb, var(--nap-color) 40%, transparent)' : '1px solid var(--glass-border)',
+          boxShadow: 'var(--shadow-md)',
+        }}
       >
         {/* Left: Avatar */}
         <div className="flex-shrink-0">
@@ -134,9 +130,10 @@ function AddBabyGhostCard({ onClick }: { onClick: () => void }) {
       exit={{ opacity: 0, y: -20 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       onClick={onClick}
-      className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-[40px] bg-transparent border-2 border-dashed border-white/30 hover:border-white/50 hover:bg-white/[0.04] active:scale-[0.97] transition-all duration-200"
+      className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-[40px] bg-transparent border-2 border-dashed border-[var(--text-muted)]/25 hover:border-[var(--text-muted)]/40 active:scale-[0.97] transition-all duration-200"
+      style={{ background: 'transparent' }}
     >
-      <div className="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-[var(--text-muted)]">
+      <div className="w-14 h-14 rounded-full bg-[var(--text-muted)]/10 flex items-center justify-center text-[var(--text-muted)]">
         <PlusIcon />
       </div>
       <p className="font-display font-medium text-[var(--text-muted)]">
@@ -200,24 +197,7 @@ export function MyBabiesView({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onBack}
-          className="w-10 h-10 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-white/10 transition-colors"
-          aria-label="Go back"
-        >
-          <BackIcon />
-        </button>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
-            My babies
-          </h1>
-          <p className="text-sm text-[var(--text-muted)]">
-            Manage your little ones
-          </p>
-        </div>
-      </div>
+      <SubViewHeader title="My babies" subtitle="Manage your little ones" onBack={onBack} />
 
       {/* Baby Gallery - Clean floating cards */}
       <AnimatePresence mode="popLayout">

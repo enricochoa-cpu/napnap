@@ -76,7 +76,7 @@ export function QuickActionSheet({
               style={{ boxShadow: '0 -8px 32px rgba(0,0,0,0.3)' }}
             >
               {/* Handle bar */}
-              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-6" />
+              <div className="w-10 h-1 bg-[var(--text-muted)]/25 rounded-full mx-auto mb-6" />
 
               {/* If baby is sleeping, show only Wake Up option */}
               {hasActiveSleep ? (
