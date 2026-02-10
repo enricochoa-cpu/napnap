@@ -21,6 +21,7 @@ import {
   extractWakeWindowsFromEntries,
   getSleepConfigForAge,
   determineCalibrationState,
+  calculateAge,
 } from './utils/dateUtils';
 import { parseISO, isToday } from 'date-fns';
 import type { SleepEntry } from './types';
@@ -184,6 +185,15 @@ function App() {
     };
   }, [entries, activeBabyProfile, profile]);
 
+  // Dates that have at least one sleep entry (for calendar dots)
+  const datesWithEntries = useMemo(() => new Set(entries.map(e => e.date)), [entries]);
+
+  // Baby age string for display in DayNavigator
+  const babyAge = useMemo(() => {
+    const p = activeBabyProfile || profile;
+    return p?.dateOfBirth ? calculateAge(p.dateOfBirth) : '';
+  }, [activeBabyProfile, profile]);
+
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {
     const newStart = new Date(startTime).getTime();
@@ -292,7 +302,7 @@ function App() {
   const renderHistoryView = () => (
     <div className="pb-32 px-6">
       <div className="pt-8 mb-8">
-        <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
+        <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} babyAge={babyAge} datesWithEntries={datesWithEntries} />
       </div>
 
       <div className="flex justify-between items-center mb-6">
