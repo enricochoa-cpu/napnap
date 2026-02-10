@@ -225,8 +225,6 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSlee
         return (
           <div
             key={key}
-            className="fade-in"
-            style={{ animationDelay: `${index * 0.05}s` }}
           >
             {item.type === 'bedtime' && (
               <BedtimeEntry

@@ -290,7 +290,7 @@ function App() {
 
   // History View
   const renderHistoryView = () => (
-    <div className="pb-32 px-6 fade-in">
+    <div className="pb-32 px-6">
       <div className="pt-8 mb-8">
         <DayNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>

@@ -334,8 +334,17 @@ export function TodayView({
 
   // Determine if bedtime is the next event (no more naps predicted)
   const isBedtimeNext = useMemo(() => {
-    return predictedNaps.length === 0 && expectedBedtime && isBefore(now, expectedBedtime);
-  }, [predictedNaps.length, expectedBedtime, now]);
+    if (predictedNaps.length > 0 || !expectedBedtime) return false;
+    // Bedtime is next if it's still upcoming
+    if (isBefore(now, expectedBedtime)) return true;
+    // Also bedtime if it's already past but baby completed all expected naps
+    // (prevents fallback to "NAP NOW" when bedtime has passed)
+    if (profile?.dateOfBirth) {
+      const schedule = getRecommendedSchedule(profile.dateOfBirth);
+      if (todayNaps.length >= schedule.targetNaps) return true;
+    }
+    return false;
+  }, [predictedNaps.length, expectedBedtime, now, profile?.dateOfBirth, todayNaps.length]);
 
   // Countdown to next event (nap or bedtime) - THE FOCAL POINT
   const nextEventCountdown = useMemo(() => {
