@@ -390,23 +390,23 @@ export function SleepEntrySheet({
 
               {/* Header with delete and close */}
               <div className="flex items-center justify-between px-6 pb-2">
-                {/* Delete button (left) - subtle, only highlights on hover */}
+                {/* Delete button (left) - circle bg */}
                 {isEditing && onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
                     aria-label="Delete"
                   >
                     <TrashIcon />
                   </button>
                 ) : (
-                  <div className="w-9" />
+                  <div className="w-10" />
                 )}
 
-                {/* Close button (right) */}
+                {/* Close button (right) - circle bg */}
                 <button
                   onClick={onClose}
-                  className="p-2 -mr-2 rounded-xl text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--glass-bg)] text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 transition-colors"
                   aria-label="Close"
                 >
                   <CloseIcon />
@@ -441,43 +441,27 @@ export function SleepEntrySheet({
               {/* Time inputs - large, horizontal */}
               <div className="px-6 pb-4">
                 <div className="flex items-center justify-center gap-4">
-                  {/* Start Time */}
-                  <div className="flex-1 text-center">
-                    <input
-                      type="time"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full text-center text-5xl font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                      style={{
-                        fontSize: '2.75rem',
-                        lineHeight: 1.2,
-                      }}
-                    />
-                  </div>
-
-                  {/* Separator */}
-                  <div className="text-3xl text-[var(--text-muted)] font-light">→</div>
-
-                  {/* End Time */}
-                  <div className="flex-1 text-center">
-                    <input
-                      type="time"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      placeholder="--:--"
-                      className="w-full text-center text-5xl font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
-                      style={{
-                        fontSize: '2.75rem',
-                        lineHeight: 1.2,
-                        color: endTime ? 'var(--text-primary)' : 'var(--text-muted)',
-                      }}
-                    />
-                  </div>
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="text-center font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                    style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch' }}
+                  />
+                  <span className="text-2xl text-[var(--text-muted)] font-light">–</span>
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    placeholder="--:--"
+                    className="text-center font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                    style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch', color: endTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
+                  />
                 </div>
 
                 {/* Combined label: duration · ago */}
                 {combinedLabel && (
-                  <p className={`text-xs text-center mt-3 tracking-wider text-[var(--text-muted)] ${isActiveEntry && !endTime ? 'italic' : ''}`}>
+                  <p className={`text-sm text-center mt-5 tracking-wide text-[var(--text-muted)] ${isActiveEntry && !endTime ? 'italic' : ''}`}>
                     {combinedLabel}
                   </p>
                 )}
