@@ -90,9 +90,11 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 ### Smart Editor (SleepEntrySheet)
 - Bottom sheet desde abajo (50dvh)
 - **Drag-to-dismiss**: Swipe down para cerrar
-- Duración en tiempo real mientras editas
-- Botón save (tick) solo activo si hay cambios
-- Trash icon gris sutil, no rojo agresivo
+- Duración en tiempo real bajo el label "Start"/"Bedtime"
+- Botón save con iconos contextuales: Play (nueva sin fin), Stop (entry activa), Check (completada)
+- Labels dinámicos: start muestra duración, end muestra "Xm ago" / "Sleeping..."
+- **Temporal Validation**: bloquea duración 0, nap > 5h, night > 14h. Warn: nap > 4h, night > 13h, cross-midnight nap
+- Trash icon gris sutil, opacidad completa (era /60, ahora full)
 
 ### Circadian Themes
 Cambio automático basado en hora del día:
@@ -125,8 +127,9 @@ Cambio automático basado en hora del día:
 | `App.tsx` | Router, AnimatePresence transitions, collision detection |
 | `TodayView.tsx` | Smart dashboard, predictions, skeleton loading |
 | `StatsView.tsx` | Sleep statistics with Recharts (bar/area charts, date range picker) |
-| `SleepEntrySheet.tsx` | Add/edit entries, Framer Motion drag-to-dismiss |
+| `SleepEntrySheet.tsx` | Add/edit entries, temporal validation, dynamic labels, Framer Motion drag-to-dismiss |
 | `QuickActionSheet.tsx` | 3-column quick actions grid |
+| `DayNavigator.tsx` | Napper-style week strip + calendar modal (date selection for History view) |
 | `SleepList.tsx` | History view, uses SleepEntry variants |
 | `SleepEntry.tsx` | NapEntry, BedtimeEntry, WakeUpEntry components |
 
@@ -151,8 +154,15 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 ### Estructura
 ```
 .context/
-├── MEMORY.md      # Este archivo: ADN del proyecto, decisiones fundamentales
-├── rules.md       # Reglas de comportamiento para Claude
+├── MEMORY.md          # Este archivo: ADN del proyecto, decisiones fundamentales
+├── rules.md           # Reglas de comportamiento para Claude
+├── design_system.md   # Full token reference (colours, typography, spacing, radii per theme)
+├── frontend_guidelines.md # Component patterns, styling approach, state management
+├── app_flow.md        # Every screen mapped with primary goal, golden path, escape routes
+├── prd.md             # Product requirements (north star, user persona, constraints)
+├── tech_stack.md      # Languages, frameworks, deployment details
+├── lessons.md         # Past bugs and decisions (Problem → Root Cause → Fix)
+├── progress.txt       # Project progress tracking
 └── logs/
     └── YYYY-MM-DD.md  # Daily logs con cambios técnicos
 ```
@@ -184,6 +194,12 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-06 | Invitation emails via Supabase Edge Function + Resend (pending domain verification) |
 | 2026-02-06 | Re-invite flow: cancel → re-invite reactivates existing DB row |
 | 2026-02-06 | Algorithm StatusPill moved from TodayView to ProfileMenu baby card |
+| 2026-02-08 | Design-led `.context/` documentation system (7 files: design_system, frontend_guidelines, app_flow, prd, tech_stack, progress, lessons) |
+| 2026-02-09 | Full codebase light-mode sweep — fixed white-on-white bugs in 9 components |
+| 2026-02-09 | Design audit Phase 1-3: hero card tokens, prediction labels, redundant nav removal, SubViewHeader, ListRow, AnimatePresence transitions |
+| 2026-02-09 | BabyDetailView: full-screen baby editing replaces BabyEditSheet for owned babies |
+| 2026-02-09 | SleepEntrySheet: temporal validation, dynamic relative labels, Play/Stop/Check icons, alignment polish |
+| 2026-02-10 | DayNavigator redesign: Napper-style swipeable week strip + calendar bottom sheet modal |
 
 ---
 

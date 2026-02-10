@@ -43,7 +43,25 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] SleepEntry: `bg-[#ff7e5f]/20` + `text-[#ff7e5f]` → `var(--night-color)` tokens
 - [x] TodayView: loading skeleton `bg-white/10` → `bg-[var(--text-muted)]/15`
 
+## Baby Profile Redesign + SleepEntrySheet Polish (2026-02-09) [COMPLETED]
+
+- [x] Task 1: Unified Interactive Baby Card — `active:brightness-[1.12]` feedback, "Tap to edit" inline for all owned babies
+- [x] Task 2: Baby Management Flow Redesign — new `BabyDetailView.tsx` full-screen, routing in `ProfileSection.tsx`, `MyBabiesView` simplified (ShareAccess moved to detail view, BabyEditSheet only for add)
+- [x] Task 3: Temporal Validation — `computeDurationMinutes()`, validation useMemo (block 0-duration/excessive, warn cross-midnight/long), error/warning messages, save button disabled on invalid
+- [x] Task 4: SleepEntrySheet Polish — `items-start` alignment, arrow `pt-2`, delete icon full opacity, dynamic labels (duration under start, relative "ago" under end), Play/Stop/Check icons, removed standalone duration section
+
+## DayNavigator Redesign (2026-02-10) [COMPLETED]
+
+- [x] New props in App.tsx: `datesWithEntries` (Set) and `babyAge` (string) computed via `useMemo`, passed to DayNavigator
+- [x] Date header: tappable "Today" / "February 10" + chevron, opens calendar modal. Baby age subtitle below
+- [x] Week strip: 7-day Mon–Sun grid, selected day accent circle, today ring, entry dots, swipeable ±1 week (Framer Motion `drag="x"`)
+- [x] Calendar modal: bottom sheet (spring, drag-to-dismiss), month navigation, full calendar grid with entry dots, "Back to today" + "Close" buttons
+- [x] Bug fix: day letter colour — `text-[var(--text-on-accent)]` → `text-[var(--nap-color)]` (visible on dark bg)
+- [x] Bug fix: calendar z-index — Tailwind `z-[60]` didn't override CSS `z-index: 50` on nav. Used inline `style={{ zIndex: 100 }}`
+- [x] Extra `pb-28` on calendar footer to clear floating nav bar
+
 ## Other Pending Items
 
 - [ ] Delete Account button is a TODO (does nothing) — AccountSettingsView
 - [ ] Resend domain verification for production invitation emails
+- [ ] Delete Baby functionality — confirmation shows but doesn't actually delete the baby profile

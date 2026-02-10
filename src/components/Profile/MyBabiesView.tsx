@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
 import { calculateAge } from '../../utils/dateUtils';
-import { ShareAccess } from '../ShareAccess';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { BabyEditSheet } from './BabyEditSheet';
 import { SubViewHeader } from './SubViewHeader';
@@ -21,7 +20,8 @@ interface MyBabiesViewProps {
   onUpdate: (data: Partial<Omit<BabyProfileType, 'id'>>) => void;
   onUploadAvatar?: (file: File) => Promise<string | null>;
   onBack: () => void;
-  // Sharing props
+  onNavigateToBabyDetail: (babyId: string) => void;
+  // Sharing props passed through for compatibility
   myShares: BabyShare[];
   onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
@@ -71,7 +71,7 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
     >
       <button
         onClick={handleClick}
-        className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl active:scale-[0.97] transition-all duration-200"
+        className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl active:scale-[0.97] active:brightness-[1.12] transition-all duration-200"
         style={{
           background: isActive ? 'color-mix(in srgb, var(--nap-color) 12%, var(--glass-bg))' : 'var(--glass-bg)',
           border: isActive ? '1px solid color-mix(in srgb, var(--nap-color) 40%, transparent)' : '1px solid var(--glass-border)',
@@ -99,21 +99,20 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
               <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
             )}
           </p>
+          {baby.isOwner && (
+            <p className="text-[11px] text-[var(--text-muted)]/50 mt-1 font-display">Tap to edit</p>
+          )}
         </div>
 
-        {/* Right: Active indicator or Edit hint */}
+        {/* Right: Active indicator */}
         <div className="flex-shrink-0">
-          {isActive ? (
+          {isActive && (
             <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
               <span className="text-[var(--nap-color)]">
                 <CheckIcon />
               </span>
             </div>
-          ) : baby.isOwner ? (
-            <span className="text-xs text-[var(--text-muted)]/50 font-display">
-              Tap to edit
-            </span>
-          ) : null}
+          )}
         </div>
       </button>
     </motion.div>
@@ -130,7 +129,7 @@ function AddBabyGhostCard({ onClick }: { onClick: () => void }) {
       exit={{ opacity: 0, y: -20 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       onClick={onClick}
-      className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-[40px] bg-transparent border-2 border-dashed border-[var(--text-muted)]/25 hover:border-[var(--text-muted)]/40 active:scale-[0.97] transition-all duration-200"
+      className="w-full flex flex-col items-center justify-center gap-3 p-8 rounded-[40px] bg-transparent border-2 border-dashed border-[var(--text-muted)]/25 hover:border-[var(--text-muted)]/40 active:scale-[0.97] active:brightness-[1.12] transition-all duration-200"
       style={{ background: 'transparent' }}
     >
       <div className="w-14 h-14 rounded-full bg-[var(--text-muted)]/10 flex items-center justify-center text-[var(--text-muted)]">
@@ -149,50 +148,32 @@ export function MyBabiesView({
   activeBabyId,
   onActiveBabyChange,
   onSave,
-  onUpdate,
   onUploadAvatar,
   onBack,
-  myShares,
-  onInvite,
-  onUpdateRole,
-  onRevokeAccess,
-  inviterName,
+  onNavigateToBabyDetail,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
 
-  // Sheet state
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [isAddingNewBaby, setIsAddingNewBaby] = useState(false);
+  // Sheet state — only used for adding new babies
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
   // Auto-open add sheet if no babies exist
   useEffect(() => {
     if (!hasAnyBabies && !profile) {
-      setIsAddingNewBaby(true);
-      setIsEditSheetOpen(true);
+      setIsAddSheetOpen(true);
     }
   }, [hasAnyBabies, profile]);
 
-  const handleEditBaby = () => {
-    setIsAddingNewBaby(false);
-    setIsEditSheetOpen(true);
-  };
-
   const handleAddBaby = () => {
-    setIsAddingNewBaby(true);
-    setIsEditSheetOpen(true);
+    setIsAddSheetOpen(true);
   };
 
   const handleSheetClose = () => {
-    setIsEditSheetOpen(false);
-    setIsAddingNewBaby(false);
+    setIsAddSheetOpen(false);
   };
 
   const handleSheetSave = (data: Partial<Omit<BabyProfileType, 'id'>>) => {
-    if (isAddingNewBaby) {
-      onSave(data as Omit<BabyProfileType, 'id'>);
-    } else {
-      onUpdate(data);
-    }
+    onSave(data as Omit<BabyProfileType, 'id'>);
   };
 
   return (
@@ -208,7 +189,7 @@ export function MyBabiesView({
               baby={baby}
               isActive={activeBabyId === baby.id}
               onSelect={() => onActiveBabyChange(baby.id)}
-              onEdit={baby.isOwner ? handleEditBaby : undefined}
+              onEdit={baby.isOwner ? () => onNavigateToBabyDetail(baby.id) : undefined}
             />
           ))}
 
@@ -233,29 +214,14 @@ export function MyBabiesView({
         </motion.div>
       )}
 
-      {/* Share Access Section (only for profile owner) */}
-      {profile && onInvite && onRevokeAccess && (
-        <ShareAccess
-          myShares={myShares}
-          pendingInvitations={[]}
-          onInvite={onInvite}
-          onUpdateRole={onUpdateRole}
-          onRevokeAccess={onRevokeAccess}
-          onAcceptInvitation={async () => ({ success: true })}
-          onDeclineInvitation={async () => ({ success: true })}
-          inviterName={inviterName}
-          babyName={profile.name}
-        />
-      )}
-
-      {/* Edit Sheet */}
+      {/* Add Baby Sheet */}
       <BabyEditSheet
-        baby={profile}
-        isOpen={isEditSheetOpen}
+        baby={null}
+        isOpen={isAddSheetOpen}
         onClose={handleSheetClose}
         onSave={handleSheetSave}
         onUploadAvatar={onUploadAvatar}
-        isNewBaby={isAddingNewBaby}
+        isNewBaby={true}
       />
     </div>
   );

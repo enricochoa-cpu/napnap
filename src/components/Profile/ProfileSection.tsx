@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile, UserProfile, BabyShare } from '../../types';
 import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
+import { BabyDetailView } from './BabyDetailView';
 import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
@@ -56,6 +57,7 @@ export function ProfileSection({
   algorithmStatus,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
+  const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
   const previousView = useRef<ProfileView>('menu');
   const direction = useRef(1); // 1 = forward (drill in), -1 = backward (go back)
 
@@ -64,6 +66,19 @@ export function ProfileSection({
     previousView.current = currentView;
     direction.current = 1;
     setCurrentView(view);
+  };
+
+  const handleNavigateToBabyDetail = (babyId: string) => {
+    setSelectedBabyId(babyId);
+    previousView.current = currentView;
+    direction.current = 1;
+    setCurrentView('baby-detail');
+  };
+
+  const handleBackFromBabyDetail = () => {
+    direction.current = -1;
+    setCurrentView('my-babies');
+    setSelectedBabyId(null);
   };
 
   // Scroll to top when view changes
@@ -144,6 +159,7 @@ export function ProfileSection({
               onUpdate={onUpdate}
               onUploadAvatar={onUploadAvatar}
               onBack={handleBack}
+              onNavigateToBabyDetail={handleNavigateToBabyDetail}
               myShares={myShares}
               onInvite={onInvite}
               onUpdateRole={onUpdateRole}
@@ -152,6 +168,35 @@ export function ProfileSection({
             />
           </motion.div>
         )}
+
+        {currentView === 'baby-detail' && selectedBabyId && (() => {
+          const selectedBaby = sharedProfiles.find(b => b.id === selectedBabyId);
+          if (!selectedBaby) return null;
+          return (
+            <motion.div
+              key="baby-detail"
+              custom={direction.current}
+              variants={slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={slideTransition}
+            >
+              <BabyDetailView
+                baby={selectedBaby}
+                isOwner={selectedBaby.isOwner}
+                onBack={handleBackFromBabyDetail}
+                onUpdate={onUpdate}
+                onUploadAvatar={onUploadAvatar}
+                myShares={myShares}
+                onInvite={onInvite}
+                onUpdateRole={onUpdateRole}
+                onRevokeAccess={onRevokeAccess}
+                inviterName={userProfile?.userName || userProfile?.email}
+              />
+            </motion.div>
+          );
+        })()}
 
         {currentView === 'support' && (
           <motion.div

@@ -9,7 +9,7 @@ interface SharedBabyProfile extends BabyProfile {
   ownerName?: string;
 }
 
-export type ProfileView = 'menu' | 'my-babies' | 'faqs' | 'contact' | 'account-settings' | 'support';
+export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support';
 
 interface ProfileMenuProps {
   sharedProfiles: SharedBabyProfile[];
