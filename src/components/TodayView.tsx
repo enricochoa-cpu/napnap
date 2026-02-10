@@ -341,7 +341,7 @@ export function TodayView({
     // (prevents fallback to "NAP NOW" when bedtime has passed)
     if (profile?.dateOfBirth) {
       const schedule = getRecommendedSchedule(profile.dateOfBirth);
-      if (todayNaps.length >= schedule.targetNaps) return true;
+      if (todayNaps.length >= schedule.numberOfNaps) return true;
     }
     return false;
   }, [predictedNaps.length, expectedBedtime, now, profile?.dateOfBirth, todayNaps.length]);

@@ -207,7 +207,7 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSlee
 
   return (
     <div className="space-y-2">
-      {timelineItems.map((item, index) => {
+      {timelineItems.map((item) => {
         const key = (() => {
           switch (item.type) {
             case 'bedtime':
