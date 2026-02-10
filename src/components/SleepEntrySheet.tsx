@@ -40,6 +40,18 @@ const CheckIcon = () => (
   </svg>
 );
 
+const PlayIcon = () => (
+  <svg className="w-7 h-7 ml-1" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M8 5v14l11-7z" />
+  </svg>
+);
+
+const StopIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </svg>
+);
+
 const CloseIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
     <path d="M18 6L6 18M6 6l12 12" />
@@ -99,7 +111,7 @@ const isTimeBefore = (time1: string, time2: string): boolean => {
 
 // Calculate duration between two times
 const calculateDuration = (startTime: string, endTime: string | null): string => {
-  if (!startTime || !endTime) return '--:--';
+  if (!startTime || !endTime) return '';
 
   // Parse times
   const [startH, startM] = startTime.split(':').map(Number);
@@ -117,7 +129,41 @@ const calculateDuration = (startTime: string, endTime: string | null): string =>
   const hours = Math.floor(diffMinutes / 60);
   const minutes = diffMinutes % 60;
 
-  return `${hours}h ${minutes.toString().padStart(2, '0')}m`;
+  if (hours === 0) return `${minutes} min`;
+  if (minutes === 0) return `${hours}h`;
+  return `${hours}h ${minutes} min`;
+};
+
+// Compute duration in minutes (for validation)
+const computeDurationMinutes = (start: string, end: string): number => {
+  if (!start || !end) return 0;
+  const [sH, sM] = start.split(':').map(Number);
+  const [eH, eM] = end.split(':').map(Number);
+  let startMins = sH * 60 + sM;
+  let endMins = eH * 60 + eM;
+  if (endMins <= startMins) endMins += 24 * 60; // cross-midnight
+  return endMins - startMins;
+};
+
+// Compute relative "ago" label for end time
+const getRelativeAgo = (timeStr: string, dateStr: string, now: Date): string => {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const target = new Date(dateStr + 'T00:00:00');
+  target.setHours(h, m, 0, 0);
+  // If end time is before start (cross-midnight), it's next day
+  const diffMs = now.getTime() - target.getTime();
+  if (diffMs < 0) return '';
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  const remainingMins = diffMins % 60;
+  if (diffHours < 24) {
+    if (remainingMins === 0) return `${diffHours}h ago`;
+    return `${diffHours}h ${remainingMins} min ago`;
+  }
+  return `${Math.floor(diffHours / 24)}d ago`;
 };
 
 export function SleepEntrySheet({
@@ -138,6 +184,15 @@ export function SleepEntrySheet({
 
   const [startTime, setStartTime] = useState(initialStartTime);
   const [endTime, setEndTime] = useState(initialEndTime);
+  const [now, setNow] = useState(() => new Date());
+
+  // Refresh "now" every 30 seconds while sheet is open
+  useEffect(() => {
+    if (!isOpen) return;
+    setNow(new Date());
+    const interval = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   // Reset when entry changes or sheet opens
   useEffect(() => {
@@ -170,16 +225,73 @@ export function SleepEntrySheet({
     return calculateDuration(startTime, endTime);
   }, [startTime, endTime]);
 
+  // Is this an active (ongoing) entry? Has start but no end
+  const isActiveEntry = isEditing && !entry?.endTime;
+
+  // Combined label: "29 min duration · 5h 48 min ago"
+  const combinedLabel = useMemo(() => {
+    if (endTime) {
+      const parts: string[] = [];
+      if (duration) parts.push(`${duration} duration`);
+      const ago = getRelativeAgo(endTime, selectedDate, now);
+      if (ago) parts.push(ago);
+      return parts.join(' · ');
+    }
+    if (isActiveEntry) return 'Sleeping...';
+    return '';
+  }, [endTime, duration, selectedDate, now, isActiveEntry]);
+
+  // Icon state: Play (new, no end), Stop (editing active), Check (has end or editing completed)
+  const saveIcon = useMemo(() => {
+    if (!isEditing && !endTime) return 'play';
+    if (isActiveEntry) return 'stop';
+    return 'check';
+  }, [isEditing, endTime, isActiveEntry]);
+
+  // Temporal validation
+  const validation = useMemo((): { isValid: boolean; warning: string | null; error: string | null } => {
+    // No end time = no validation needed (ongoing entry)
+    if (!endTime) return { isValid: true, warning: null, error: null };
+
+    const mins = computeDurationMinutes(startTime, endTime);
+    const crossesMidnight = isTimeBefore(endTime, startTime);
+
+    // Zero duration
+    if (mins === 0 || mins === 24 * 60) {
+      return { isValid: false, warning: null, error: 'Start and end times are the same' };
+    }
+
+    if (sleepType === 'nap') {
+      // Nap > 5h → block
+      if (mins > 5 * 60) return { isValid: false, warning: null, error: 'Nap duration exceeds 5 hours' };
+      // Nap > 4h → warn
+      if (mins > 4 * 60) return { isValid: true, warning: 'Unusually long nap', error: null };
+      // Cross-midnight nap → warn but allow
+      if (crossesMidnight) return { isValid: true, warning: 'This nap crosses midnight', error: null };
+    } else {
+      // Night > 14h → block
+      if (mins > 14 * 60) return { isValid: false, warning: null, error: 'Night sleep exceeds 14 hours' };
+      // Night > 13h → warn
+      if (mins > 13 * 60) return { isValid: true, warning: 'Unusually long night sleep', error: null };
+    }
+
+    return { isValid: true, warning: null, error: null };
+  }, [startTime, endTime, sleepType]);
+
   const handleSave = () => {
-    if (!hasChanges && isEditing) return;
+    if (!validation.isValid) return;
+    if (!hasChanges && isEditing && !isActiveEntry) return;
+
+    // For stop action on active entry: use current time as end
+    const resolvedEndTime = (isActiveEntry && !endTime) ? getCurrentTime() : endTime;
 
     if (sleepType === 'nap') {
       let endDateTime: string | null = null;
-      if (endTime) {
-        if (isTimeBefore(endTime, startTime)) {
-          endDateTime = combineDateTime(getNextDay(selectedDate), endTime);
+      if (resolvedEndTime) {
+        if (isTimeBefore(resolvedEndTime, startTime)) {
+          endDateTime = combineDateTime(getNextDay(selectedDate), resolvedEndTime);
         } else {
-          endDateTime = combineDateTime(selectedDate, endTime);
+          endDateTime = combineDateTime(selectedDate, resolvedEndTime);
         }
       }
       onSave({
@@ -194,13 +306,13 @@ export function SleepEntrySheet({
       const bedtimeDate = isPostMidnightBedtime ? getPreviousDay(selectedDate) : selectedDate;
 
       let endDateTime: string | null = null;
-      if (endTime) {
-        if (isTimeBefore(endTime, startTime)) {
-          endDateTime = combineDateTime(getNextDay(bedtimeDate), endTime);
+      if (resolvedEndTime) {
+        if (isTimeBefore(resolvedEndTime, startTime)) {
+          endDateTime = combineDateTime(getNextDay(bedtimeDate), resolvedEndTime);
         } else if (isPostMidnightBedtime) {
-          endDateTime = combineDateTime(selectedDate, endTime);
+          endDateTime = combineDateTime(selectedDate, resolvedEndTime);
         } else {
-          endDateTime = combineDateTime(bedtimeDate, endTime);
+          endDateTime = combineDateTime(bedtimeDate, resolvedEndTime);
         }
       }
 
@@ -282,7 +394,7 @@ export function SleepEntrySheet({
                 {isEditing && onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)]/60 hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
+                    className="p-2 -ml-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
                     aria-label="Delete"
                   >
                     <TrashIcon />
@@ -341,13 +453,10 @@ export function SleepEntrySheet({
                         lineHeight: 1.2,
                       }}
                     />
-                    <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
-                      {sleepType === 'nap' ? 'Start' : 'Bedtime'}
-                    </p>
                   </div>
 
                   {/* Separator */}
-                  <div className="text-3xl text-[var(--text-muted)] font-light pb-5">→</div>
+                  <div className="text-3xl text-[var(--text-muted)] font-light">→</div>
 
                   {/* End Time */}
                   <div className="flex-1 text-center">
@@ -363,30 +472,30 @@ export function SleepEntrySheet({
                         color: endTime ? 'var(--text-primary)' : 'var(--text-muted)',
                       }}
                     />
-                    <p className="text-xs text-[var(--text-muted)] mt-1 uppercase tracking-wider">
-                      {sleepType === 'nap' ? 'End' : 'Wake up'}
-                    </p>
                   </div>
                 </div>
 
-                {/* Duration or Sleeping status */}
-                <div className="text-center mt-6">
-                  {endTime ? (
-                    <>
-                      <p className="text-2xl font-display font-semibold" style={{ color: themeColor }}>
-                        {duration}
-                      </p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1">Duration</p>
-                    </>
-                  ) : (
-                    <p className="text-lg font-display text-[var(--text-muted)] italic">
-                      Sleeping...
-                    </p>
-                  )}
-                </div>
+                {/* Combined label: duration · ago */}
+                {combinedLabel && (
+                  <p className={`text-xs text-center mt-3 tracking-wider text-[var(--text-muted)] ${isActiveEntry && !endTime ? 'italic' : ''}`}>
+                    {combinedLabel}
+                  </p>
+                )}
 
-                {/* Hint for crossing midnight */}
-                {endTime && isTimeBefore(endTime, startTime) && (
+                {/* Validation messages */}
+                {validation.error && (
+                  <p className="text-xs text-center mt-3" style={{ color: 'var(--danger-color)' }}>
+                    {validation.error}
+                  </p>
+                )}
+                {validation.warning && !validation.error && (
+                  <p className="text-xs text-center mt-3" style={{ color: 'var(--wake-color)' }}>
+                    {validation.warning}
+                  </p>
+                )}
+
+                {/* Hint for crossing midnight (suppress when validation error shown) */}
+                {!validation.error && !validation.warning && endTime && isTimeBefore(endTime, startTime) && (
                   <p className="text-xs text-[var(--text-muted)] text-center mt-3">
                     {sleepType === 'nap' ? 'Ends next day' : 'Wake up is next day'}
                   </p>
@@ -397,21 +506,21 @@ export function SleepEntrySheet({
               <div className="flex justify-center pb-8 pt-4">
                 <motion.button
                   onClick={handleSave}
-                  disabled={isEditing && !hasChanges}
-                  whileTap={(!isEditing || hasChanges) ? { scale: 0.9 } : undefined}
+                  disabled={!validation.isValid || (isEditing && !hasChanges && !isActiveEntry)}
+                  whileTap={(validation.isValid && (!isEditing || hasChanges || isActiveEntry)) ? { scale: 0.9 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
-                    (!isEditing || hasChanges)
+                    (validation.isValid && (!isEditing || hasChanges || isActiveEntry))
                       ? ''
                       : 'opacity-40 cursor-not-allowed'
                   }`}
                   style={{
-                    backgroundColor: (!isEditing || hasChanges) ? themeBg : 'var(--text-muted)',
+                    backgroundColor: (validation.isValid && (!isEditing || hasChanges || isActiveEntry)) ? themeBg : 'var(--text-muted)',
                     color: sleepType === 'night' ? 'white' : 'var(--bg-deep)',
                   }}
                   aria-label="Save"
                 >
-                  <CheckIcon />
+                  {saveIcon === 'play' ? <PlayIcon /> : saveIcon === 'stop' ? <StopIcon /> : <CheckIcon />}
                 </motion.button>
               </div>
             </div>
