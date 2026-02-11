@@ -239,14 +239,11 @@ export function StatsView({ entries }: StatsViewProps) {
   const averages = useMemo(() => {
     const completedDaysWithData = rangeData.filter((d) => d.total > 0 && !d.isToday);
     if (completedDaysWithData.length === 0) {
-      return { avgTotal: 0, avgNap: 0, avgNight: 0, avgNapCount: 0 };
+      return { avgTotal: 0, avgNapDuration: 0, avgNight: 0, avgNapCount: 0 };
     }
 
     const avgTotal = Math.round(
       completedDaysWithData.reduce((sum, d) => sum + d.total, 0) / completedDaysWithData.length
-    );
-    const avgNap = Math.round(
-      completedDaysWithData.reduce((sum, d) => sum + d.nap, 0) / completedDaysWithData.length
     );
     const avgNight = Math.round(
       completedDaysWithData.reduce((sum, d) => sum + d.night, 0) / completedDaysWithData.length
@@ -254,7 +251,12 @@ export function StatsView({ entries }: StatsViewProps) {
     const avgNapCount =
       completedDaysWithData.reduce((sum, d) => sum + d.napCount, 0) / completedDaysWithData.length;
 
-    return { avgTotal, avgNap, avgNight, avgNapCount };
+    // Average individual nap duration (total nap minutes / total nap count across all days)
+    const totalNapMinutes = completedDaysWithData.reduce((sum, d) => sum + d.nap, 0);
+    const totalNapCount = completedDaysWithData.reduce((sum, d) => sum + d.napCount, 0);
+    const avgNapDuration = totalNapCount > 0 ? Math.round(totalNapMinutes / totalNapCount) : 0;
+
+    return { avgTotal, avgNapDuration, avgNight, avgNapCount };
   }, [rangeData]);
 
   // Sleep distribution (night vs day totals across range)
@@ -515,49 +517,45 @@ export function StatsView({ entries }: StatsViewProps) {
           </span>
 
           {/* Start Date */}
-          <button
-            onClick={() => (document.getElementById('start-date-input') as HTMLInputElement)?.showPicker?.()}
-            className="flex items-baseline gap-1 hover:opacity-80 transition-opacity"
-          >
-            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-              {formatDateParts(startDate).dayMonth}
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              {formatDateParts(startDate).year}
-            </span>
-          </button>
-          <input
-            id="start-date-input"
-            type="date"
-            value={formatInputDate(startDate)}
-            onChange={handleStartDateChange}
-            max={formatInputDate(today)}
-            className="sr-only"
-          />
+          <div className="relative">
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+                {formatDateParts(startDate).dayMonth}
+              </span>
+              <span className="text-xs text-[var(--text-muted)]">
+                {formatDateParts(startDate).year}
+              </span>
+            </div>
+            <input
+              type="date"
+              value={formatInputDate(startDate)}
+              onChange={handleStartDateChange}
+              max={formatInputDate(today)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </div>
 
           {/* Separator */}
           <span className="text-[var(--text-muted)] text-sm">—</span>
 
           {/* End Date */}
-          <button
-            onClick={() => (document.getElementById('end-date-input') as HTMLInputElement)?.showPicker?.()}
-            className="flex items-baseline gap-1 hover:opacity-80 transition-opacity"
-          >
-            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-              {formatDateParts(endDate).dayMonth}
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              {formatDateParts(endDate).year}
-            </span>
-          </button>
-          <input
-            id="end-date-input"
-            type="date"
-            value={formatInputDate(endDate)}
-            onChange={handleEndDateChange}
-            max={formatInputDate(today)}
-            className="sr-only"
-          />
+          <div className="relative">
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+                {formatDateParts(endDate).dayMonth}
+              </span>
+              <span className="text-xs text-[var(--text-muted)]">
+                {formatDateParts(endDate).year}
+              </span>
+            </div>
+            <input
+              type="date"
+              value={formatInputDate(endDate)}
+              onChange={handleEndDateChange}
+              max={formatInputDate(today)}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </div>
 
           {/* Days count badge */}
           <span className="ml-auto text-xs text-[var(--text-muted)] bg-[var(--bg-soft)] px-2 py-1 rounded-full">
@@ -602,21 +600,21 @@ export function StatsView({ entries }: StatsViewProps) {
               </p>
             </div>
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Naps/Day</p>
-              <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
-                {averages.avgNapCount.toFixed(1)}
+              <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Night Sleep</p>
+              <p className="text-2xl font-display font-bold text-[var(--night-color)]">
+                {formatHours(averages.avgNight)}
               </p>
             </div>
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Nap Time</p>
               <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
-                {formatHours(averages.avgNap)}
+                {formatHours(averages.avgNapDuration)}
               </p>
             </div>
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Night Sleep</p>
-              <p className="text-2xl font-display font-bold text-[var(--night-color)]">
-                {formatHours(averages.avgNight)}
+              <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Naps/Day</p>
+              <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
+                {averages.avgNapCount.toFixed(1)}
               </p>
             </div>
           </div>
