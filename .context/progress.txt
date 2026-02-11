@@ -60,6 +60,17 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Bug fix: calendar z-index — Tailwind `z-[60]` didn't override CSS `z-index: 50` on nav. Used inline `style={{ zIndex: 100 }}`
 - [x] Extra `pb-28` on calendar footer to clear floating nav bar
 
+## StatsView Enhancements (2026-02-11) [COMPLETED]
+
+- [x] Bedtime trend area chart (mirrors Woke Up chart, `--night-color` theming, average reference line)
+- [x] Daily Schedule Gantt chart (custom div-based, wake-up dots + nap bars + bedtime dots per day)
+- [x] Dynamic legend based on max nap count in data
+
+## UX Fixes (2026-02-11) [COMPLETED]
+
+- [x] Scroll to top on tab switch (`window.scrollTo(0, 0)` in `handleViewChange`)
+- [x] Freeze predicted nap/bedtime ghost cards during active nap (ref-based snapshot)
+
 ## Other Pending Items
 
 - [ ] Delete Account button is a TODO (does nothing) — AccountSettingsView

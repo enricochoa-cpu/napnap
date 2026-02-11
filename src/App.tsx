@@ -19,9 +19,6 @@ import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import {
   formatDate,
   formatDateTime,
-  extractWakeWindowsFromEntries,
-  getSleepConfigForAge,
-  determineCalibrationState,
   calculateAge,
 } from './utils/dateUtils';
 import { parseISO, isToday } from 'date-fns';
@@ -166,28 +163,6 @@ function App() {
     // No activity today - show the modal
     return true;
   }, [showMissingBedtimeModal, entries, activeSleep, entriesLoading]);
-
-  // Compute algorithm status for ProfileSection
-  const algorithmStatus = useMemo(() => {
-    const { wakeWindows, todaysCount } = extractWakeWindowsFromEntries(entries, 7);
-    const activeProfile = activeBabyProfile || profile;
-    const config = activeProfile?.dateOfBirth
-      ? getSleepConfigForAge(activeProfile.dateOfBirth)
-      : null;
-    const calibrationState = config
-      ? determineCalibrationState(
-          entries.length,
-          wakeWindows.slice(0, todaysCount),
-          config.wakeWindows.mid
-        )
-      : { isCalibrating: false, reason: undefined };
-
-    return {
-      totalEntries: entries.length,
-      isHighVariability: calibrationState.reason === 'high_variability',
-      babyName: activeProfile?.name,
-    };
-  }, [entries, activeBabyProfile, profile]);
 
   // Dates that have at least one sleep entry (for calendar dots)
   const datesWithEntries = useMemo(() => new Set(entries.map(e => e.date)), [entries]);
@@ -409,7 +384,6 @@ function App() {
       onRevokeAccess={revokeAccess}
       onAcceptInvitation={handleAcceptInvitation}
       onDeclineInvitation={declineInvitation}
-      algorithmStatus={algorithmStatus}
     />
   );
 

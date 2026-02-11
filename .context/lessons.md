@@ -186,49 +186,73 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 8. Technical Decisions
+## 8. Navigation / View Bugs
 
-### 8.1 Predictions Visible During Active Nap
+### 10.1 Scroll Position Persists Across Main Tabs
+**Date:** 2026-02-11
+
+- **Problem:** Switching from Stats (scrolled down) to Home showed the Home view scrolled partway down instead of at the top.
+- **Root Cause:** `handleViewChange()` in App.tsx changed the view state but never reset the scroll position. The browser preserved the scroll offset across tab switches.
+- **Permanent Fix:** Add `window.scrollTo(0, 0)` in `handleViewChange()`. Note: ProfileSection already had its own scroll reset for internal sub-views (lesson 2.2). This fix covers the top-level tab bar navigation.
+
+---
+
+## 9. Prediction Display Bugs
+
+### 9.1 Predicted Nap Cards Shift During Active Nap
+**Date:** 2026-02-11
+
+- **Problem:** While a nap was in progress, predicted ghost cards for future naps and bedtime kept re-rendering every minute, giving the impression that times were shifting.
+- **Root Cause:** `predictedNapsWithMetadata` useMemo included `now` in its dependency array (needed for overdue detection when awake). During an active nap, `now` was never used in the calculation, but the memo still recomputed every minute, creating new Date object references that triggered React re-renders.
+- **Permanent Fix:** Use `useRef` to snapshot predictions when a nap starts (`frozenNapIdRef`, `frozenPredictionsRef`, `frozenBedtimeRef`). JSX renders `displayPredictions` / `displayBedtime` which are the frozen refs during nap and live values when awake. When the nap ends, refs clear and predictions recalculate from the actual end time — so subsequent naps correctly reflect the real schedule.
+
+> **Pattern:** When a useMemo has a time-dependent dep (`now`) but only uses it in some branches, use a ref-based snapshot to prevent unnecessary re-renders in the branches that don't need it.
+
+---
+
+## 10. Technical Decisions
+
+### 10.1 Predictions Visible During Active Nap
 **Decision (2026-02-02):** Show future predicted naps even when a nap is in progress. Previously they were all hidden. Rationale: parents want to see "what comes next" while the baby sleeps.
 
-### 8.2 Bottom Sheet Over Full View Swap
+### 10.2 Bottom Sheet Over Full View Swap
 **Decision (2026-02-05):** Always use bottom sheets for editing (SleepEntrySheet, BabyEditSheet, ShareAccess). Never swap the full view — it feels jarring and loses spatial context. The user can still see the list behind the blur.
 
-### 8.3 Client-Side Image Compression
+### 10.3 Client-Side Image Compression
 **Decision (2026-02-05):** Compress images on the client (Canvas API: 400x400, JPEG 80%) before uploading to Supabase Storage. Avoids upload friction regardless of source image size.
 
-### 8.4 Fire-and-Forget Invitation Emails
+### 10.4 Fire-and-Forget Invitation Emails
 **Decision (2026-02-06):** Email sending is non-blocking. If the email fails, the invitation in the database still exists. No rollback. The parent can still share the link manually.
 
-### 8.5 Google OAuth Button Placement
+### 10.5 Google OAuth Button Placement
 **Decision (2026-02-03):** Google sign-in button placed at TOP of auth forms, above email/password. Follows "Decision Replacement" principle — fastest path first for sleep-deprived parents.
 
-### 8.6 Resend Free Tier Limitation
+### 10.6 Resend Free Tier Limitation
 **Decision (2026-02-06):** `onboarding@resend.dev` can only send to the Resend account owner's email. Need a verified custom domain (e.g., `napnap.app`) to send to arbitrary recipients. Blocked until domain verification is completed.
 
-### 8.7 Drag-to-Dismiss Thresholds
+### 10.7 Drag-to-Dismiss Thresholds
 **Decision (2026-02-02):** 150px offset OR 500px/s velocity to dismiss a bottom sheet. Calibrated for mobile — high enough to prevent accidental dismisses, low enough to feel responsive.
 
-### 8.8 Decision Replacement in UI Copy
+### 10.8 Decision Replacement in UI Copy
 **Decision (2026-02-03):** Show time ranges ("14:38 — 15:23") instead of durations ("~45m"). Parents shouldn't do mental arithmetic. The dashed border already signals predictions — no need for the `~` symbol.
 
-### 8.9 "Tell, Don't Ask" in Prediction Labels
+### 10.9 "Tell, Don't Ask" in Prediction Labels
 **Decision (2026-02-09):** Renamed "Predicted Nap" to "Nap {n}" (e.g. "Nap 2") and "Catnap" to "Short Nap". The dashed border already communicates "future/not-yet" visually. Using the word "Predicted" surfaces algorithm uncertainty to the parent, violating the "decision replacement" North Star. "Catnap" is jargon that first-time parents may not understand.
 
-### 8.10 Redundant Navigation Removal
+### 10.10 Redundant Navigation Removal
 **Decision (2026-02-09):** Removed the "My Babies" ListRow from ProfileMenu. The primary baby card already navigates to `my-babies` and is the dominant visual element. Having a secondary list row for the same destination diluted the Golden Path and added visual noise (6 interactive elements → 5).
 
-### 8.11 Full-Screen Detail View Over Bottom Sheet for Complex Editing
+### 10.11 Full-Screen Detail View Over Bottom Sheet for Complex Editing
 **Decision (2026-02-09):** Owned baby profiles now open a full-screen `BabyDetailView` instead of the `BabyEditSheet` bottom sheet. The bottom sheet is retained only for the "Add Baby" quick flow (ghost card). **Rationale:** The baby edit form + ShareAccess sharing management is too much content for a bottom sheet. A full-screen view provides space for all sections, better scrolling, and clearer navigation hierarchy. This is an exception to decision 8.2 (bottom sheets over full view swap) — complex multi-section forms warrant a dedicated screen.
 
-### 8.12 Temporal Validation as Client-Side Guard
+### 10.12 Temporal Validation as Client-Side Guard
 **Decision (2026-02-09):** Sleep entry validation (max 5h nap, max 14h night, 0-duration block, cross-midnight warnings) is purely client-side. No server enforcement. **Rationale:** These are UX guardrails, not data integrity constraints. Cross-midnight naps are warned but allowed because late-evening naps for older infants are legitimate.
 
-### 8.13 Contextual Save Icons (Play/Stop/Check)
+### 10.13 Contextual Save Icons (Play/Stop/Check)
 **Decision (2026-02-09):** The SleepEntrySheet save button now shows different icons based on entry state: Play (filled triangle) for new entries without an end time, Stop (filled square) for editing active entries, Check (tick) for completed entries. **Rationale:** The icon communicates the action about to happen — "start tracking" vs "stop this sleep" vs "confirm changes". Reduces cognitive load at 3AM.
 
-### 8.14 Napper-style DayNavigator
+### 10.14 Napper-style DayNavigator
 **Decision (2026-02-10):** Replaced the basic prev/next arrow DayNavigator (with native `<input type="date">`) with a premium week strip + calendar modal. The week strip shows 7 days (Mon–Sun) with swipe navigation. Tapping the date header opens a full calendar bottom sheet. **Rationale:** The native date picker felt out of place in a premium mobile app. The week strip gives immediate context (what day of the week), and the calendar modal allows jumping to any date without repeated arrow tapping. Entry dots on days with data help parents find logged days quickly.
 
-### 8.15 Dynamic Time Labels Over Static Section
+### 10.15 Dynamic Time Labels Over Static Section
 **Decision (2026-02-09):** Removed the standalone duration section from SleepEntrySheet. Duration now appears as the start time label (e.g. "2h 30m" instead of "Start"), and the end time label shows relative time (e.g. "15m ago" instead of "End"). Active entries show "Sleeping..." under the end time. **Rationale:** Puts contextual information exactly where the eye is already looking. The previous central duration section was wasted vertical space.

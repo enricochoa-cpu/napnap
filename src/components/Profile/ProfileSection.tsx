@@ -8,7 +8,6 @@ import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
 import { SupportView } from './SupportView';
-import type { AlgorithmStatusProps } from './AlgorithmStatusCard';
 
 interface SharedBabyProfile extends BabyProfile {
   isOwner: boolean;
@@ -33,8 +32,6 @@ interface ProfileSectionProps {
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
-  // Algorithm status
-  algorithmStatus?: AlgorithmStatusProps;
 }
 
 export function ProfileSection({
@@ -54,7 +51,6 @@ export function ProfileSection({
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
-  algorithmStatus,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
@@ -128,14 +124,11 @@ export function ProfileSection({
             transition={slideTransition}
           >
             <ProfileMenu
-              sharedProfiles={sharedProfiles}
               pendingInvitations={pendingInvitations}
               onNavigate={handleNavigate}
               onAcceptInvitation={onAcceptInvitation}
               onDeclineInvitation={onDeclineInvitation}
-              algorithmStatus={algorithmStatus}
               userProfile={userProfile}
-              activeBaby={profile}
             />
           </motion.div>
         )}

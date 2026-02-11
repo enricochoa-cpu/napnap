@@ -1,25 +1,13 @@
-import { useState } from 'react';
-import type { BabyProfile, BabyShare, UserProfile } from '../../types';
-import { AlgorithmStatusCard, type AlgorithmStatusProps } from './AlgorithmStatusCard';
-import { BabyAvatarPicker } from './BabyAvatarPicker';
-import { calculateAge, getAlgorithmStatusTier } from '../../utils/dateUtils';
-
-interface SharedBabyProfile extends BabyProfile {
-  isOwner: boolean;
-  ownerName?: string;
-}
+import type { BabyShare, UserProfile } from '../../types';
 
 export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support';
 
 interface ProfileMenuProps {
-  sharedProfiles: SharedBabyProfile[];
   pendingInvitations: BabyShare[];
   onNavigate: (view: ProfileView) => void;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
-  algorithmStatus?: AlgorithmStatusProps;
   userProfile?: UserProfile | null;
-  activeBaby?: BabyProfile | null;
 }
 
 // Icons
@@ -50,48 +38,6 @@ const ChevronRightIcon = () => (
     <polyline points="9 18 15 12 9 6" />
   </svg>
 );
-
-const SparklesIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-  </svg>
-);
-
-
-// Status Pill Button
-interface StatusPillProps {
-  totalEntries: number;
-  onClick: () => void;
-}
-
-function StatusPill({ totalEntries, onClick }: StatusPillProps) {
-  const tier = getAlgorithmStatusTier(totalEntries);
-  const label = tier === 'learning' ? 'Learning' : tier === 'calibrating' ? 'Calibrating' : 'Optimised';
-  const color =
-    tier === 'optimized'
-      ? 'var(--success-color)'
-      : tier === 'calibrating'
-        ? 'var(--nap-color)'
-        : 'var(--wake-color)';
-
-  return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick();
-      }}
-      className="flex items-center gap-1 px-2.5 py-1 rounded-full backdrop-blur-sm active:scale-95 transition-all"
-      style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)' }}
-    >
-      <span style={{ color }} className="opacity-70">
-        <SparklesIcon />
-      </span>
-      <span className="text-[10px] font-display font-medium" style={{ color }}>
-        {label}
-      </span>
-    </button>
-  );
-}
 
 // Premium List Row — exported for reuse across Profile sub-views
 export interface ListRowProps {
@@ -143,22 +89,15 @@ function getEncouragingMessage(): string {
 }
 
 export function ProfileMenu({
-  sharedProfiles,
   pendingInvitations,
   onNavigate,
   onAcceptInvitation,
   onDeclineInvitation,
-  algorithmStatus,
   userProfile,
-  activeBaby,
 }: ProfileMenuProps) {
-  const [showAlgorithmCard, setShowAlgorithmCard] = useState(false);
-
-  const babyCount = sharedProfiles.length;
   const greeting = getGreeting();
   const encouragement = getEncouragingMessage();
   const parentName = userProfile?.userName || 'there';
-  const primaryBaby = activeBaby || sharedProfiles[0];
 
   return (
     <div className="space-y-6">
@@ -208,90 +147,25 @@ export function ProfileMenu({
         </div>
       )}
 
-      {/* Primary Baby Card */}
-      {primaryBaby && (
-        <button
-          onClick={() => onNavigate('my-babies')}
-          className="w-full relative rounded-2xl backdrop-blur-xl px-5 py-5 active:scale-[0.98] transition-all"
-          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}
-        >
-          {algorithmStatus && (
-            <div className="absolute top-3.5 right-4">
-              <StatusPill
-                totalEntries={algorithmStatus.totalEntries}
-                onClick={() => setShowAlgorithmCard(!showAlgorithmCard)}
-              />
-            </div>
-          )}
-          <div className="flex items-center gap-4">
-            <BabyAvatarPicker
-              avatarUrl={primaryBaby.avatarUrl}
-              babyName={primaryBaby.name}
-              size="lg"
-              editable={false}
-            />
-            <div className="flex-1 text-left min-w-0 pr-14">
-              <h2 className="text-xl sm:text-2xl font-display font-bold text-[var(--text-primary)] truncate">
-                {primaryBaby.name}
-              </h2>
-              <p className="text-sm text-[var(--text-muted)] mt-0.5">
-                {calculateAge(primaryBaby.dateOfBirth)} old
-              </p>
-              {babyCount > 1 && (
-                <p className="text-xs text-[var(--nap-color)] mt-1.5 font-display font-medium">
-                  +{babyCount - 1} more {babyCount - 1 === 1 ? 'baby' : 'babies'}
-                </p>
-              )}
-            </div>
-          </div>
-        </button>
-      )}
-
-      {/* Algorithm Status Card - Expandable */}
-      {showAlgorithmCard && algorithmStatus && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-200">
-          <AlgorithmStatusCard
-            totalEntries={algorithmStatus.totalEntries}
-            isHighVariability={algorithmStatus.isHighVariability}
-            babyName={algorithmStatus.babyName}
-          />
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!primaryBaby && (
-        <button
-          onClick={() => onNavigate('my-babies')}
-          className="w-full rounded-2xl bg-gradient-to-br from-[var(--nap-color)]/10 to-[var(--night-color)]/10 p-8 border-2 border-dashed border-[var(--text-muted)]/20 active:scale-[0.98] transition-transform"
-          style={{ boxShadow: 'var(--shadow-sm)' }}
-        >
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center text-[var(--nap-color)]">
-              <BabyIcon />
-            </div>
-            <div className="text-center">
-              <h3 className="text-lg font-display font-bold text-[var(--text-primary)]">Add your baby</h3>
-              <p className="text-sm text-[var(--text-muted)] mt-1">Start tracking sleep patterns</p>
-            </div>
-          </div>
-        </button>
-      )}
-
       {/* Navigation List */}
       <div className="space-y-3">
         <ListRow
-          icon={<SupportIcon />}
-          title="Support"
-          subtitle="FAQs and contact us"
-          onClick={() => onNavigate('support')}
-          iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
+          icon={<BabyIcon />}
+          title="My Babies"
+          onClick={() => onNavigate('my-babies')}
+          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
         />
         <ListRow
           icon={<SettingsIcon />}
           title="Settings"
-          subtitle="Account and sign out"
           onClick={() => onNavigate('account-settings')}
           iconColorClass="bg-[var(--text-muted)]/15 text-[var(--text-muted)]"
+        />
+        <ListRow
+          icon={<SupportIcon />}
+          title="Support"
+          onClick={() => onNavigate('support')}
+          iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
         />
       </div>
     </div>
