@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   formatTime,
@@ -365,6 +365,27 @@ export function TodayView({
     return false;
   }, [predictedNaps.length, expectedBedtime, now, profile?.dateOfBirth, todayNaps.length]);
 
+  // Freeze predictions during active nap so ghost cards don't re-render every minute.
+  // When the nap ends, predictions recalculate from the actual end time.
+  const isCurrentlyNapping = activeSleep?.type === 'nap';
+  const frozenNapIdRef = useRef<string | null>(null);
+  const frozenPredictionsRef = useRef<typeof predictedNaps>([]);
+  const frozenBedtimeRef = useRef<Date | null>(null);
+
+  if (isCurrentlyNapping) {
+    if (frozenNapIdRef.current !== activeSleep.id) {
+      // Nap just started — snapshot predictions anchored to actual start time
+      frozenNapIdRef.current = activeSleep.id;
+      frozenPredictionsRef.current = predictedNaps;
+      frozenBedtimeRef.current = expectedBedtime;
+    }
+  } else {
+    frozenNapIdRef.current = null;
+  }
+
+  const displayPredictions = isCurrentlyNapping ? frozenPredictionsRef.current : predictedNaps;
+  const displayBedtime = isCurrentlyNapping ? (frozenBedtimeRef.current ?? expectedBedtime) : expectedBedtime;
+
   // Countdown to next event (nap or bedtime) - THE FOCAL POINT
   const nextEventCountdown = useMemo(() => {
     if (activeSleep) return null;
@@ -648,7 +669,7 @@ export function TodayView({
             )}
 
             {/* Expected Bedtime - Ghost Card */}
-            {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
+            {displayBedtime && isBefore(now, displayBedtime) && !(activeSleep && activeSleep.type === 'night') && (
               <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
                 <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--night-color)]/30" style={{ background: 'color-mix(in srgb, var(--night-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
@@ -659,7 +680,7 @@ export function TodayView({
                       Bedtime
                     </p>
                     <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                      {formatTime(expectedBedtime)}
+                      {formatTime(displayBedtime)}
                     </p>
                   </div>
                 </div>
@@ -667,9 +688,9 @@ export function TodayView({
             )}
 
             {/* Predicted Naps - Ghost Cards */}
-            {[...predictedNaps].reverse().map((napInfo, index) => {
+            {[...displayPredictions].reverse().map((napInfo, index) => {
               const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
-              const reversedIndex = predictedNaps.length - index;
+              const reversedIndex = displayPredictions.length - index;
               const napNumber = todayNaps.length + (activeSleep?.type === 'nap' ? 1 : 0) + reversedIndex;
               return (
                 <motion.div
