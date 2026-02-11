@@ -4,11 +4,15 @@ import {
   Area,
   BarChart,
   Bar,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  ReferenceLine,
 } from 'recharts';
 import {
   format,
@@ -44,6 +48,13 @@ const formatHours = (minutes: number): string => {
   if (hours === 0) return `${mins}m`;
   if (mins === 0) return `${hours}h`;
   return `${hours}h ${mins}m`;
+};
+
+// Format minutes-since-midnight to HH:MM
+const formatWakeTime = (minutes: number): string => {
+  const h = Math.floor(minutes / 60);
+  const m = Math.round(minutes % 60);
+  return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
 };
 
 // Format date parts for styled display
@@ -95,6 +106,20 @@ function BarTooltip({ active, payload, label }: TooltipProps) {
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-semibold text-[var(--text-primary)]">
         Total: {formatHours(total)}
+      </p>
+    </div>
+  );
+}
+
+// Wake up tooltip
+function WakeTooltip({ active, payload, label }: TooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
+      <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="text-sm font-medium" style={{ color: 'var(--wake-color)' }}>
+        Woke up: {formatWakeTime(payload[0].value)}
       </p>
     </div>
   );
@@ -178,7 +203,7 @@ export function StatsView({ entries }: StatsViewProps) {
         .reduce((sum, e) => sum + calculateDuration(e.startTime, e.endTime), 0);
 
       return {
-        day: format(date, 'dd'),
+        day: format(date, 'd/M'),
         fullDate: format(date, 'MMM d'),
         nap: napMinutes,
         night: nightMinutes,
@@ -211,9 +236,68 @@ export function StatsView({ entries }: StatsViewProps) {
     return { avgTotal, avgNap, avgNight, avgNapCount };
   }, [rangeData]);
 
+  // Sleep distribution (night vs day totals across range)
+  const distributionData = useMemo(() => {
+    const completedDays = rangeData.filter((d) => d.total > 0 && !d.isToday);
+    const totalNap = completedDays.reduce((sum, d) => sum + d.nap, 0);
+    const totalNight = completedDays.reduce((sum, d) => sum + d.night, 0);
+    const total = totalNap + totalNight;
+
+    if (total === 0) return null;
+
+    const nightPct = Math.round((totalNight / total) * 100);
+    const napPct = 100 - nightPct;
+
+    return {
+      slices: [
+        { name: 'Night', value: totalNight },
+        { name: 'Day', value: totalNap },
+      ],
+      nightPct,
+      napPct,
+    };
+  }, [rangeData]);
+
+  // Wake-up times from night entries
+  const wakeUpData = useMemo(() => {
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    const points: { day: string; wakeMinutes: number }[] = [];
+
+    for (const date of days) {
+      if (isToday(date)) continue;
+      const dayStr = format(date, 'yyyy-MM-dd');
+
+      // Find night entries whose endTime falls on this day
+      const wakeEntry = entries.find((e) => {
+        if (e.type !== 'night' || !e.endTime) return false;
+        const endDay = format(parseISO(e.endTime), 'yyyy-MM-dd');
+        return endDay === dayStr;
+      });
+
+      if (wakeEntry && wakeEntry.endTime) {
+        const end = parseISO(wakeEntry.endTime);
+        const minutesSinceMidnight = end.getHours() * 60 + end.getMinutes();
+        points.push({ day: format(date, 'd/M'), wakeMinutes: minutesSinceMidnight });
+      }
+    }
+
+    if (points.length === 0) return null;
+
+    const avg = Math.round(points.reduce((s, p) => s + p.wakeMinutes, 0) / points.length);
+
+    // Y-axis domain: pad to nearest 30min
+    const allMins = points.map((p) => p.wakeMinutes);
+    const minVal = Math.floor(Math.min(...allMins) / 30) * 30;
+    const maxVal = Math.ceil(Math.max(...allMins) / 30) * 30;
+
+    return { points, avg, domain: [minVal, maxVal] as [number, number] };
+  }, [entries, startDate, endDate]);
+
   // Get CSS variable values for charts
   const napColor = 'var(--nap-color)';
   const nightColor = 'var(--night-color)';
+  const wakeColor = 'var(--wake-color)';
   const gridColor = 'var(--text-muted)';
 
   const hasData = entries.length > 0;
@@ -378,6 +462,52 @@ export function StatsView({ entries }: StatsViewProps) {
             </div>
           </div>
 
+          {/* Sleep Distribution Donut */}
+          {distributionData && (
+            <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Total Sleep Distribution
+              </h3>
+              <div className="flex justify-center">
+                <div className="relative" style={{ width: 180, height: 180 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={distributionData.slices}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        dataKey="value"
+                        startAngle={90}
+                        endAngle={-270}
+                        stroke="none"
+                      >
+                        <Cell fill={nightColor} />
+                        <Cell fill={napColor} />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-2xl font-display font-bold text-[var(--text-primary)]">100%</span>
+                    <span className="text-xs text-[var(--text-muted)]">Total</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center gap-6 mt-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ background: nightColor }} />
+                  <span className="text-xs text-[var(--text-muted)]">Night: {distributionData.nightPct}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ background: napColor }} />
+                  <span className="text-xs text-[var(--text-muted)]">Day: {distributionData.napPct}%</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Daily Bar Chart - Glassmorphism */}
           <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
@@ -394,10 +524,10 @@ export function StatsView({ entries }: StatsViewProps) {
                   />
                   <XAxis
                     dataKey="day"
-                    tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                    tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
-                    interval={daysInRange > 10 ? 1 : 0}
+                    interval={daysInRange > 8 ? 1 : 0}
                   />
                   <YAxis
                     tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
@@ -424,7 +554,7 @@ export function StatsView({ entries }: StatsViewProps) {
           </div>
 
           {/* Sleep Trend Area Chart - Glassmorphism */}
-          <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Sleep Trend
             </h3>
@@ -449,10 +579,10 @@ export function StatsView({ entries }: StatsViewProps) {
                   />
                   <XAxis
                     dataKey="day"
-                    tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                    tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
-                    interval={daysInRange > 10 ? 1 : 0}
+                    interval={daysInRange > 8 ? 1 : 0}
                   />
                   <YAxis
                     tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
@@ -479,6 +609,64 @@ export function StatsView({ entries }: StatsViewProps) {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* Woke Up Chart */}
+          {wakeUpData && (
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Woke Up
+              </h3>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={wakeUpData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="wakeGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={wakeColor} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={wakeColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={gridColor}
+                      strokeOpacity={0.1}
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      interval={wakeUpData.points.length > 8 ? 1 : 0}
+                    />
+                    <YAxis
+                      domain={wakeUpData.domain}
+                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={formatWakeTime}
+                    />
+                    <Tooltip content={<WakeTooltip />} />
+                    <ReferenceLine
+                      y={wakeUpData.avg}
+                      stroke={wakeColor}
+                      strokeDasharray="6 4"
+                      strokeOpacity={0.6}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="wakeMinutes"
+                      stroke={wakeColor}
+                      strokeWidth={2}
+                      fill="url(#wakeGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-center text-xs font-display font-semibold mt-3" style={{ color: wakeColor }}>
+                Average: {formatWakeTime(wakeUpData.avg)}
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>
