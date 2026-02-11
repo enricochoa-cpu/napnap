@@ -70,6 +70,18 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 
 - [x] Scroll to top on tab switch (`window.scrollTo(0, 0)` in `handleViewChange`)
 - [x] Freeze predicted nap/bedtime ghost cards during active nap (ref-based snapshot)
+- [x] StatsView date range picker: replaced `sr-only` + `showPicker()` with transparent overlay `<input type="date">`
+- [x] Avg Nap Time: fixed to per-nap average (totalNapMinutes / totalNapCount), not per-day total
+- [x] KPI reorder: Total Sleep → Night Sleep → Nap Time → Naps/Day
+- [x] Active nap/bedtime editing: removed WakeUpSheet routing, fixed SleepEntrySheet to only auto-end on pure Stop (no changes)
+
+## ProfileMenu Simplification (2026-02-11) [COMPLETED]
+
+- [x] Removed hero baby card (avatar, name, age) from ProfileMenu
+- [x] Removed algorithm status card, StatusPill, SparklesIcon
+- [x] Three clean Napper-style ListRows: My Babies → Settings → Support (icon left, text centre, arrow right)
+- [x] Cleaned up unused prop chain: algorithmStatus removed from App → ProfileSection → ProfileMenu
+- [x] Removed unused imports (extractWakeWindowsFromEntries, getSleepConfigForAge, determineCalibrationState, AlgorithmStatusCard, BabyAvatarPicker, calculateAge)
 
 ## Other Pending Items
 
