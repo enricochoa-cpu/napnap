@@ -8,6 +8,7 @@ import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
 import { ProfileSection } from './components/Profile';
 import { SleepEntrySheet } from './components/SleepEntrySheet';
+import { WakeUpSheet } from './components/WakeUpSheet';
 import { QuickActionSheet } from './components/QuickActionSheet';
 import { StatsView } from './components/StatsView';
 import { useBabyProfile } from './hooks/useBabyProfile';
@@ -112,6 +113,8 @@ function App() {
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
   const [showEntrySheet, setShowEntrySheet] = useState(false);
+  const [showWakeUpSheet, setShowWakeUpSheet] = useState(false);
+  const [wakeUpEntry, setWakeUpEntry] = useState<SleepEntry | null>(null);
   const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
   const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
   const [showAddEntryMenu, setShowAddEntryMenu] = useState(false);
@@ -235,6 +238,12 @@ function App() {
   };
 
   const handleEdit = (entry: SleepEntry) => {
+    // Active night entry → show focused Wake Up sheet instead of full editor
+    if (entry.type === 'night' && !entry.endTime) {
+      setWakeUpEntry(entry);
+      setShowWakeUpSheet(true);
+      return;
+    }
     setEditingEntry(entry);
     setSelectedDate(entry.date);
     setShowEntrySheet(true);
@@ -266,11 +275,29 @@ function App() {
     setShowActionMenu(false);
   };
 
+  const handleWakeUpConfirm = (wakeTime: Date) => {
+    if (wakeUpEntry) {
+      endSleep(wakeUpEntry.id, formatDateTime(wakeTime));
+    }
+    setShowWakeUpSheet(false);
+    setWakeUpEntry(null);
+  };
+
+  const handleWakeUpDelete = () => {
+    if (wakeUpEntry) {
+      deleteEntry(wakeUpEntry.id);
+    }
+    setShowWakeUpSheet(false);
+    setWakeUpEntry(null);
+  };
+
   // Handle logging wake-up time
   const handleLogWakeUp = () => {
-    // If there's an active night sleep, end it
+    // If there's an active night sleep, show focused Wake Up sheet
     if (activeSleep && activeSleep.type === 'night') {
-      handleEndSleep(activeSleep.id);
+      setWakeUpEntry(activeSleep);
+      setShowWakeUpSheet(true);
+      setShowActionMenu(false);
       return;
     }
 
@@ -280,7 +307,8 @@ function App() {
     );
 
     if (activeNightSleep) {
-      endSleep(activeNightSleep.id, formatDateTime(new Date()));
+      setWakeUpEntry(activeNightSleep);
+      setShowWakeUpSheet(true);
       setShowActionMenu(false);
       return;
     }
@@ -520,7 +548,12 @@ function App() {
         }}
         hasActiveSleep={!!activeSleep}
         onEndSleep={activeSleep ? () => {
-          handleEndSleep(activeSleep.id);
+          if (activeSleep.type === 'night') {
+            setWakeUpEntry(activeSleep);
+            setShowWakeUpSheet(true);
+          } else {
+            handleEndSleep(activeSleep.id);
+          }
           setShowActionMenu(false);
         } : undefined}
       />
@@ -557,6 +590,18 @@ function App() {
         onSave={handleAddEntry}
         onDelete={deleteEntry}
         selectedDate={selectedDate}
+      />
+
+      {/* Wake Up Sheet — Napper-style focused modal for ending night sleep */}
+      <WakeUpSheet
+        isOpen={showWakeUpSheet}
+        onClose={() => {
+          setShowWakeUpSheet(false);
+          setWakeUpEntry(null);
+        }}
+        onConfirm={handleWakeUpConfirm}
+        onDelete={handleWakeUpDelete}
+        bedtime={wakeUpEntry?.startTime ?? ''}
       />
     </div>
   );

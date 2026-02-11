@@ -394,7 +394,8 @@ export function SleepEntrySheet({
                 {isEditing && onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--glass-bg)] text-[var(--text-muted)] hover:text-[var(--danger-color)] hover:bg-[var(--danger-color)]/10 transition-colors"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
+                    style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
                     aria-label="Delete"
                   >
                     <TrashIcon />
@@ -406,7 +407,8 @@ export function SleepEntrySheet({
                 {/* Close button (right) - circle bg */}
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-full flex items-center justify-center bg-[var(--glass-bg)] text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 transition-colors"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
                   aria-label="Close"
                 >
                   <CloseIcon />

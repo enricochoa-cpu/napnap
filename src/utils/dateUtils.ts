@@ -9,6 +9,7 @@ import {
   subDays,
   startOfDay,
   isToday,
+  addMinutes as fnsAddMinutes,
 } from 'date-fns';
 
 export function formatDate(date: Date | string): string {
@@ -1112,4 +1113,61 @@ export function calculateAllNapWindows(
       wakeWindowBeforeMinutes: nap.wakeWindowBefore,
     };
   });
+}
+
+// ============================================================================
+// NIGHT WAKE-UP PREDICTION
+// ============================================================================
+
+/**
+ * Predict when baby will wake up from night sleep.
+ *
+ * Uses a hybrid approach:
+ * - If >= 3 completed nights in last 7 days: average duration → bedtimeStart + avgDuration
+ * - Otherwise: age-based defaultWakeTime applied to today's date
+ *
+ * @returns predicted wake time and the source used for the prediction
+ */
+export function getExpectedNightWakeTime(
+  bedtimeStart: string,
+  dateOfBirth: string,
+  entries: { startTime: string; endTime: string | null; type: 'nap' | 'night' }[]
+): { predictedWakeTime: Date; source: 'historical' | 'age-based' } {
+  const bedtimeDate = parseISO(bedtimeStart);
+  const cutoff = subDays(startOfDay(new Date()), 7);
+
+  // Collect last 7 completed night entries
+  const completedNights = entries
+    .filter((e) => {
+      if (e.type !== 'night' || !e.endTime) return false;
+      const start = parseISO(e.startTime);
+      return start >= cutoff;
+    })
+    .sort((a, b) => parseISO(b.startTime).getTime() - parseISO(a.startTime).getTime())
+    .slice(0, 7);
+
+  // Historical average if we have enough data
+  if (completedNights.length >= 3) {
+    const totalMinutes = completedNights.reduce((sum, e) => {
+      return sum + differenceInMinutes(parseISO(e.endTime!), parseISO(e.startTime));
+    }, 0);
+    const avgMinutes = Math.round(totalMinutes / completedNights.length);
+    return {
+      predictedWakeTime: fnsAddMinutes(bedtimeDate, avgMinutes),
+      source: 'historical',
+    };
+  }
+
+  // Age-based fallback: use defaultWakeTime for today
+  const config = getSleepConfigForAge(dateOfBirth);
+  const today = new Date();
+  const wakeTime = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+    config.defaultWakeTime.hour,
+    config.defaultWakeTime.minute
+  );
+
+  return { predictedWakeTime: wakeTime, source: 'age-based' };
 }

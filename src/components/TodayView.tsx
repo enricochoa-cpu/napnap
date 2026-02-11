@@ -10,6 +10,7 @@ import {
   getRecommendedSchedule,
   calculateDynamicBedtime,
   extractWakeWindowsFromEntries,
+  getExpectedNightWakeTime,
   type NapIndex,
   type NapPrediction,
 } from '../utils/dateUtils';
@@ -42,18 +43,36 @@ function getMorningWakeUpEntry(entries: SleepEntry[]): SleepEntry | null {
   ) || null;
 }
 
-// Calculate expected wake-up time from active nap
-function getExpectedWakeTime(activeSleep: SleepEntry, profile: BabyProfile | null): Date | null {
-  if (!activeSleep || activeSleep.type !== 'nap') return null;
+// Calculate expected wake-up time from active sleep (nap or night)
+function getExpectedWakeTime(
+  activeSleep: SleepEntry,
+  profile: BabyProfile | null,
+  entries: SleepEntry[] = []
+): Date | null {
+  if (!activeSleep) return null;
 
-  let avgNapMinutes = 60;
-  if (profile?.dateOfBirth) {
-    const schedule = getRecommendedSchedule(profile.dateOfBirth);
-    avgNapMinutes = schedule.numberOfNaps >= 3 ? 45 : 90;
+  // Night sleep: use predicted wake-up time
+  if (activeSleep.type === 'night' && profile?.dateOfBirth) {
+    const { predictedWakeTime } = getExpectedNightWakeTime(
+      activeSleep.startTime,
+      profile.dateOfBirth,
+      entries.map((e) => ({ startTime: e.startTime, endTime: e.endTime, type: e.type }))
+    );
+    return predictedWakeTime;
   }
 
-  const startTime = parseISO(activeSleep.startTime);
-  return addMinutes(startTime, avgNapMinutes);
+  // Nap: use age-based average duration
+  if (activeSleep.type === 'nap') {
+    let avgNapMinutes = 60;
+    if (profile?.dateOfBirth) {
+      const schedule = getRecommendedSchedule(profile.dateOfBirth);
+      avgNapMinutes = schedule.numberOfNaps >= 3 ? 45 : 90;
+    }
+    const startTime = parseISO(activeSleep.startTime);
+    return addMinutes(startTime, avgNapMinutes);
+  }
+
+  return null;
 }
 
 // ============================================================================
@@ -160,7 +179,7 @@ export function TodayView({
     const hasActiveNap = activeSleep && activeSleep.type === 'nap';
 
     if (hasActiveNap) {
-      activeNapExpectedEnd = getExpectedWakeTime(activeSleep, profile);
+      activeNapExpectedEnd = getExpectedWakeTime(activeSleep, profile, entries);
       activeNapExpectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
 
       // Add active nap to completed naps data for simulation
@@ -384,8 +403,8 @@ export function TodayView({
   // Expected wake up time (if sleeping)
   const expectedWakeUp = useMemo(() => {
     if (!activeSleep) return null;
-    return getExpectedWakeTime(activeSleep, profile);
-  }, [activeSleep, profile]);
+    return getExpectedWakeTime(activeSleep, profile, entries);
+  }, [activeSleep, profile, entries]);
 
   // Duration of current sleep
   const currentSleepDuration = useMemo(() => {
@@ -432,49 +451,46 @@ export function TodayView({
     );
   }
 
-  // Special state: Active night sleep from yesterday - prompt to log wake up
+  // Special state: Active night sleep from yesterday - show predicted wake-up time
   if (hasActiveNightFromYesterday && !hasTodayActivity) {
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
-        <div className="pt-8 pb-6">
-          {/* Hero: Sleeping duration */}
-          <div className="text-center mb-6">
-            <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2">
-              Night Sleep
+        <div className="pt-6 pb-4">
+          {/* Hero: Predicted Wake-Up Time */}
+          <div
+            className="rounded-3xl p-6 text-center"
+            style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}
+          >
+            <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+              Expected Wake Up
             </p>
-            <h1 className="text-4xl font-display font-bold text-[var(--night-color)] mb-2">
-              {formatDuration(currentSleepDuration)}
+            <h1 className="hero-countdown text-[var(--wake-color)] mb-3">
+              {expectedWakeUp ? formatTime(expectedWakeUp) : '—'}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm">
-              Since {formatTime(activeSleep!.startTime)}
+              Bedtime at {formatTime(activeSleep!.startTime)}
             </p>
           </div>
 
-          {/* Prompt to log wake up */}
-          <div className="text-center mb-4">
-            <p className="text-[var(--text-muted)] font-display text-xs">
-              Tap below to log wake up time
-            </p>
-          </div>
-
-          {/* Night sleep card - compact horizontal */}
+          {/* Wake Up action card */}
           <button
             type="button"
             onClick={() => onEdit?.(activeSleep!)}
-            className="w-full card-night-solid py-2.5 px-4 flex items-center gap-3 text-left rounded-xl animate-glow-night"
+            className="w-full mt-4 py-3 px-4 flex items-center gap-3 text-left rounded-2xl border border-[var(--wake-color)]/30"
+            style={{ background: 'color-mix(in srgb, var(--wake-color) 8%, var(--glass-bg))', boxShadow: 'var(--shadow-sm)' }}
           >
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0">
-              <MoonIcon className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0">
+              <SunIcon className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                Night Sleep
-              </p>
-              <p className="text-white font-display font-semibold text-base">
-                {formatTime(activeSleep!.startTime)} → ?
+              <p className="text-[var(--wake-color)] font-display font-semibold text-base">
+                Wake Up
               </p>
             </div>
-            <div className="text-white/50">
+            <p className="text-[var(--text-muted)] font-display text-xs">
+              Tap to log
+            </p>
+            <div className="text-[var(--text-muted)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M9 5l7 7-7 7" />
               </svg>
@@ -522,9 +538,9 @@ export function TodayView({
               <h1 className="hero-countdown text-[var(--nap-color)] mb-3">
                 {formatDuration(currentSleepDuration)}
               </h1>
-              {expectedWakeUp && activeSleep.type === 'nap' && (
+              {expectedWakeUp && (
                 <p className="text-[var(--text-secondary)] font-display text-sm">
-                  Expected wake at <span className="text-[var(--text-primary)] font-semibold">{formatTime(expectedWakeUp)}</span>
+                  Expected wake at <span className={`font-semibold ${activeSleep.type === 'night' ? 'text-[var(--wake-color)]' : 'text-[var(--text-primary)]'}`}>{formatTime(expectedWakeUp)}</span>
                 </p>
               )}
             </div>
@@ -634,7 +650,7 @@ export function TodayView({
             {/* Expected Bedtime - Ghost Card */}
             {expectedBedtime && isBefore(now, expectedBedtime) && !(activeSleep && activeSleep.type === 'night') && (
               <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
-                <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--night-color)]/30" style={{ background: 'color-mix(in srgb, var(--night-color) 5%, transparent)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--night-color)]/30" style={{ background: 'color-mix(in srgb, var(--night-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
                     <MoonIcon className="w-5 h-5" />
                   </div>
@@ -662,7 +678,7 @@ export function TodayView({
                 >
                   <div
                     className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--nap-color)]/30"
-                    style={{ background: 'color-mix(in srgb, var(--nap-color) 5%, transparent)', boxShadow: 'var(--shadow-sm)' }}
+                    style={{ background: 'color-mix(in srgb, var(--nap-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}
                   >
                     <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
                       <CloudIcon className="w-5 h-5" />
@@ -746,7 +762,7 @@ export function TodayView({
                   type="button"
                   onClick={() => onEdit?.(morningWakeUpEntry)}
                   className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl backdrop-blur-xl border border-[var(--wake-color)]/30"
-                  style={{ background: 'color-mix(in srgb, var(--wake-color) 6%, var(--glass-bg))', boxShadow: 'var(--shadow-sm)' }}
+                  style={{ background: 'color-mix(in srgb, var(--wake-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}
                 >
                   <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0 z-10">
                     <SunIcon className="w-5 h-5" />

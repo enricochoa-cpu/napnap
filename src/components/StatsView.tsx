@@ -70,6 +70,13 @@ const formatInputDate = (date: Date): string => {
   return format(date, 'yyyy-MM-dd');
 };
 
+// Get nap bar color by index
+const getNapColor = (napIndex: number): string => {
+  if (napIndex === 1) return 'var(--nap-color)';
+  if (napIndex === 2) return 'var(--night-color)';
+  return 'var(--text-secondary)';
+};
+
 // Custom tooltip component
 interface TooltipProps {
   active?: boolean;
@@ -120,6 +127,20 @@ function WakeTooltip({ active, payload, label }: TooltipProps) {
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-medium" style={{ color: 'var(--wake-color)' }}>
         Woke up: {formatWakeTime(payload[0].value)}
+      </p>
+    </div>
+  );
+}
+
+// Bedtime tooltip
+function BedTooltip({ active, payload, label }: TooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+
+  return (
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
+      <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="text-sm font-medium" style={{ color: 'var(--night-color)' }}>
+        Bedtime: {formatWakeTime(payload[0].value)}
       </p>
     </div>
   );
@@ -292,6 +313,144 @@ export function StatsView({ entries }: StatsViewProps) {
     const maxVal = Math.ceil(Math.max(...allMins) / 30) * 30;
 
     return { points, avg, domain: [minVal, maxVal] as [number, number] };
+  }, [entries, startDate, endDate]);
+
+  // Bedtime data from night entries
+  const bedtimeData = useMemo(() => {
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    const points: { day: string; bedMinutes: number }[] = [];
+
+    for (const date of days) {
+      if (isToday(date)) continue;
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
+
+      // Find night entry whose startTime falls on this day
+      const bedEntry = entries.find((e) => {
+        if (e.type !== 'night') return false;
+        const entryStart = parseISO(e.startTime);
+        return entryStart >= dayStart && entryStart <= dayEnd;
+      });
+
+      if (bedEntry) {
+        const start = parseISO(bedEntry.startTime);
+        const minutesSinceMidnight = start.getHours() * 60 + start.getMinutes();
+        points.push({ day: format(date, 'd/M'), bedMinutes: minutesSinceMidnight });
+      }
+    }
+
+    if (points.length === 0) return null;
+
+    const avg = Math.round(points.reduce((s, p) => s + p.bedMinutes, 0) / points.length);
+
+    // Y-axis domain: pad to nearest 30min
+    const allMins = points.map((p) => p.bedMinutes);
+    const minVal = Math.floor(Math.min(...allMins) / 30) * 30;
+    const maxVal = Math.ceil(Math.max(...allMins) / 30) * 30;
+
+    return { points, avg, domain: [minVal, maxVal] as [number, number] };
+  }, [entries, startDate, endDate]);
+
+  // Schedule/Gantt data for daily schedule chart
+  const scheduleData = useMemo(() => {
+    const days = eachDayOfInterval({ start: startDate, end: endDate });
+
+    type ScheduleEvent = {
+      type: 'wake' | 'nap' | 'bedtime';
+      startMin: number;
+      endMin?: number;
+      napIndex?: number;
+    };
+
+    type DaySchedule = {
+      day: string;
+      events: ScheduleEvent[];
+    };
+
+    const allDays: DaySchedule[] = [];
+    let globalMin = Infinity;
+    let globalMax = -Infinity;
+    let maxNapIdx = 0;
+
+    for (const date of days) {
+      const dayStr = format(date, 'yyyy-MM-dd');
+      const events: ScheduleEvent[] = [];
+
+      // Wake up: night entry whose endTime falls on this day
+      const wakeEntry = entries.find((e) => {
+        if (e.type !== 'night' || !e.endTime) return false;
+        return format(parseISO(e.endTime), 'yyyy-MM-dd') === dayStr;
+      });
+      if (wakeEntry && wakeEntry.endTime) {
+        const end = parseISO(wakeEntry.endTime);
+        const min = end.getHours() * 60 + end.getMinutes();
+        events.push({ type: 'wake', startMin: min });
+        globalMin = Math.min(globalMin, min);
+        globalMax = Math.max(globalMax, min);
+      }
+
+      // Naps: completed nap entries starting on this day
+      const dayStart = startOfDay(date);
+      const dayEnd = endOfDay(date);
+      const dayNaps = entries
+        .filter((e) => {
+          if (e.type !== 'nap' || !e.endTime) return false;
+          const entryStart = parseISO(e.startTime);
+          return entryStart >= dayStart && entryStart <= dayEnd;
+        })
+        .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+      dayNaps.forEach((nap, idx) => {
+        const start = parseISO(nap.startTime);
+        const end = parseISO(nap.endTime!);
+        const startMin = start.getHours() * 60 + start.getMinutes();
+        const endMin = end.getHours() * 60 + end.getMinutes();
+        events.push({ type: 'nap', startMin, endMin, napIndex: idx + 1 });
+        globalMin = Math.min(globalMin, startMin);
+        globalMax = Math.max(globalMax, endMin);
+        maxNapIdx = Math.max(maxNapIdx, idx + 1);
+      });
+
+      // Bedtime: night entry whose startTime falls on this day
+      const bedtimeEntry = entries.find((e) => {
+        if (e.type !== 'night') return false;
+        const entryStart = parseISO(e.startTime);
+        return entryStart >= dayStart && entryStart <= dayEnd;
+      });
+      if (bedtimeEntry) {
+        const start = parseISO(bedtimeEntry.startTime);
+        const min = start.getHours() * 60 + start.getMinutes();
+        events.push({ type: 'bedtime', startMin: min });
+        globalMin = Math.min(globalMin, min);
+        globalMax = Math.max(globalMax, min);
+      }
+
+      if (events.length > 0) {
+        allDays.push({ day: format(date, 'd/M'), events });
+      }
+    }
+
+    if (allDays.length === 0) return null;
+
+    // Pad to nearest 30 min
+    const minTime = Math.floor(globalMin / 30) * 30;
+    const maxTime = Math.ceil(globalMax / 30) * 30;
+    const range = maxTime - minTime || 60; // avoid division by zero
+
+    // Determine tick interval based on range
+    let tickInterval: number;
+    if (range <= 360) tickInterval = 60;
+    else if (range <= 720) tickInterval = 120;
+    else tickInterval = 180;
+
+    const ticks: number[] = [];
+    const firstTick = Math.ceil(minTime / tickInterval) * tickInterval;
+    for (let t = firstTick; t <= maxTime; t += tickInterval) {
+      ticks.push(t);
+    }
+
+    return { days: allDays, minTime, maxTime, range, maxNapIndex: maxNapIdx, ticks };
   }, [entries, startDate, endDate]);
 
   // Get CSS variable values for charts
@@ -665,6 +824,179 @@ export function StatsView({ entries }: StatsViewProps) {
               <p className="text-center text-xs font-display font-semibold mt-3" style={{ color: wakeColor }}>
                 Average: {formatWakeTime(wakeUpData.avg)}
               </p>
+            </div>
+          )}
+
+          {/* Bedtime Chart */}
+          {bedtimeData && (
+            <div className="rounded-3xl backdrop-blur-xl p-4 mt-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Bedtime
+              </h3>
+              <div className="h-40">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={bedtimeData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="bedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={gridColor}
+                      strokeOpacity={0.1}
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="day"
+                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      interval={bedtimeData.points.length > 8 ? 1 : 0}
+                    />
+                    <YAxis
+                      domain={bedtimeData.domain}
+                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={formatWakeTime}
+                    />
+                    <Tooltip content={<BedTooltip />} />
+                    <ReferenceLine
+                      y={bedtimeData.avg}
+                      stroke={nightColor}
+                      strokeDasharray="6 4"
+                      strokeOpacity={0.6}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="bedMinutes"
+                      stroke={nightColor}
+                      strokeWidth={2}
+                      fill="url(#bedGradient)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="text-center text-xs font-display font-semibold mt-3" style={{ color: nightColor }}>
+                Average: {formatWakeTime(bedtimeData.avg)}
+              </p>
+            </div>
+          )}
+
+          {/* Daily Schedule Gantt Chart */}
+          {scheduleData && (
+            <div className="rounded-3xl backdrop-blur-xl p-4 mt-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Daily Schedule
+              </h3>
+
+              <div className="flex">
+                {/* Date labels column */}
+                <div className="w-10 flex-shrink-0">
+                  {/* Spacer for time axis */}
+                  <div className="h-5" />
+                  {scheduleData.days.map((day) => (
+                    <div key={day.day} className="h-7 flex items-center">
+                      <span className="text-[10px] text-[var(--text-muted)]">{day.day}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Chart area */}
+                <div className="flex-1 relative overflow-hidden">
+                  {/* Time axis */}
+                  <div className="h-5 relative">
+                    {scheduleData.ticks.map((tick) => {
+                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
+                      return (
+                        <span
+                          key={tick}
+                          className="absolute text-[10px] text-[var(--text-muted)] -translate-x-1/2"
+                          style={{ left: `${pct}%` }}
+                        >
+                          {formatWakeTime(tick)}
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  {/* Rows with grid lines */}
+                  <div className="relative">
+                    {/* Grid lines */}
+                    {scheduleData.ticks.map((tick) => {
+                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
+                      return (
+                        <div
+                          key={tick}
+                          className="absolute top-0 bottom-0 w-px"
+                          style={{ left: `${pct}%`, background: 'var(--text-muted)', opacity: 0.1 }}
+                        />
+                      );
+                    })}
+
+                    {/* Day rows */}
+                    {scheduleData.days.map((day) => (
+                      <div key={day.day} className="h-7 relative flex items-center">
+                        {day.events.map((event, i) => {
+                          if (event.type === 'wake') {
+                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            return (
+                              <div
+                                key={`wake-${i}`}
+                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--wake-color)' }}
+                              />
+                            );
+                          }
+                          if (event.type === 'bedtime') {
+                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            return (
+                              <div
+                                key={`bed-${i}`}
+                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--night-color)' }}
+                              />
+                            );
+                          }
+                          if (event.type === 'nap' && event.endMin != null) {
+                            const leftPct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            const widthPct = ((event.endMin - event.startMin) / scheduleData.range) * 100;
+                            const color = getNapColor(event.napIndex!);
+                            return (
+                              <div
+                                key={`nap-${i}`}
+                                className="absolute h-[7px] rounded-full"
+                                style={{ left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`, background: color }}
+                              />
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="flex flex-wrap justify-center gap-4 mt-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
+                  <span className="text-[10px] text-[var(--text-muted)]">Wake Up</span>
+                </div>
+                {Array.from({ length: scheduleData.maxNapIndex }, (_, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-3 h-[7px] rounded-full" style={{ background: getNapColor(i + 1) }} />
+                    <span className="text-[10px] text-[var(--text-muted)]">Nap {i + 1}</span>
+                  </div>
+                ))}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--night-color)' }} />
+                  <span className="text-[10px] text-[var(--text-muted)]">Bedtime</span>
+                </div>
+              </div>
             </div>
           )}
         </>
