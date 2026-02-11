@@ -107,6 +107,7 @@ function App() {
   const handleViewChange = (newView: View) => {
     previousView.current = currentView;
     setCurrentView(newView);
+    window.scrollTo(0, 0);
   };
   const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
