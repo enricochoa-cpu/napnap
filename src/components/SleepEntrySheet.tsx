@@ -241,12 +241,12 @@ export function SleepEntrySheet({
     return '';
   }, [endTime, duration, selectedDate, now, isActiveEntry]);
 
-  // Icon state: Play (new, no end), Stop (editing active), Check (has end or editing completed)
+  // Icon state: Play (new, no end), Stop (active + no changes = end sleep), Check (save edits)
   const saveIcon = useMemo(() => {
     if (!isEditing && !endTime) return 'play';
-    if (isActiveEntry) return 'stop';
+    if (isActiveEntry && !endTime && !hasChanges) return 'stop';
     return 'check';
-  }, [isEditing, endTime, isActiveEntry]);
+  }, [isEditing, endTime, isActiveEntry, hasChanges]);
 
   // Temporal validation
   const validation = useMemo((): { isValid: boolean; warning: string | null; error: string | null } => {
@@ -282,8 +282,9 @@ export function SleepEntrySheet({
     if (!validation.isValid) return;
     if (!hasChanges && isEditing && !isActiveEntry) return;
 
-    // For stop action on active entry: use current time as end
-    const resolvedEndTime = (isActiveEntry && !endTime) ? getCurrentTime() : endTime;
+    // Only auto-end if it's a pure Stop action (active entry, no changes, no end time set)
+    // If user edited the start time, save the edit without ending the sleep
+    const resolvedEndTime = (isActiveEntry && !endTime && !hasChanges) ? getCurrentTime() : endTime;
 
     if (sleepType === 'nap') {
       let endDateTime: string | null = null;

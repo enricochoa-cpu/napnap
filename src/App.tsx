@@ -239,12 +239,6 @@ function App() {
   };
 
   const handleEdit = (entry: SleepEntry) => {
-    // Active night entry → show focused Wake Up sheet instead of full editor
-    if (entry.type === 'night' && !entry.endTime) {
-      setWakeUpEntry(entry);
-      setShowWakeUpSheet(true);
-      return;
-    }
     setEditingEntry(entry);
     setSelectedDate(entry.date);
     setShowEntrySheet(true);
