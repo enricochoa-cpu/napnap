@@ -41,7 +41,7 @@ interface OnboardingFlowProps {
 
 const defaultDraft = (): OnboardingDraft => ({
   babyName: '',
-  babyDob: '', // User must pick a date; Next stays disabled until then
+  babyDob: formatDate(new Date()), // Default to today; user can change
   userName: '',
   relationship: 'mum',
 });

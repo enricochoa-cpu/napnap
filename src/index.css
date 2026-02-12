@@ -476,6 +476,13 @@ input, textarea {
   transform: scale(0.95);
 }
 
+/* Disabled primary buttons must look clearly inactive (e.g. onboarding Next until step complete) */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .btn-nap {
   background: var(--nap-color);
   color: var(--bg-deep);
