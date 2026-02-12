@@ -259,3 +259,6 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ### 10.16 Dynamic Time Labels Over Static Section
 **Decision (2026-02-09):** Removed the standalone duration section from SleepEntrySheet. Duration now appears as the start time label (e.g. "2h 30m" instead of "Start"), and the end time label shows relative time (e.g. "15m ago" instead of "End"). Active entries show "Sleeping..." under the end time. **Rationale:** Puts contextual information exactly where the eye is already looking. The previous central duration section was wasted vertical space.
+
+### 10.17 Bottom Sheets: No Bounce + Handle Implies Drag
+**Decision (2026-02-12):** (1) All bottom sheets use **tween** for enter/exit (`duration: 0.25, ease: 'easeOut'`) — no spring, no bounce. Bouncy modals were perceived as bad practice. (2) Any sheet that displays a **drag handle** (the thin bar) must support **drag-to-dismiss**; otherwise the visual affordance is misleading. QuickActionSheet and ShareAccess Edit Access sheet had handles but no drag — both now have `drag="y"`, `onDragEnd`, and backdrop opacity tied to drag position.

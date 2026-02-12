@@ -207,18 +207,23 @@ const profile: BabyProfile = {
 ```
 
 ### Bottom Sheets (all modals)
+- **No bounce:** Use tween for open/close so sheets don’t overshoot. Spring is not used for sheet enter/exit.
+- **Handle bar = drag-to-dismiss:** If the sheet shows a drag handle (thin bar), it must support `drag="y"` and `onDragEnd` to close (e.g. offset > 150px or velocity > 500). Otherwise the affordance is misleading.
+
 ```typescript
 <motion.div
   initial={{ y: '100%' }}
   animate={{ y: 0 }}
   exit={{ y: '100%' }}
-  transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+  transition={{ duration: 0.25, ease: 'easeOut' }}
   drag="y"
   dragConstraints={{ top: 0, bottom: 0 }}
   dragElastic={{ top: 0, bottom: 0.6 }}
   onDragEnd={(_, info) => {
-    if (info.velocity.y > 500 || info.offset.y > 100) onClose();
+    if (info.velocity.y > 500 || info.offset.y > 150) onClose();
   }}
+  style={{ y }}  // useMotionValue + useTransform for backdrop opacity
+  className="... touch-none"
 />
 ```
 
@@ -226,7 +231,7 @@ const profile: BabyProfile = {
 | Context | Stiffness | Damping | Notes |
 |---------|-----------|---------|-------|
 | View slides | 300 | 30 | Crisp page transitions |
-| Bottom sheets | 300 | 25 | Slightly softer for swipe feel |
+| Bottom sheets enter/exit | — | — | **Tween** `duration: 0.25, ease: 'easeOut'` (no bounce) |
 | Card entrances | 400 | 30 | Snappy item animations |
 | Backdrop fade | — | — | `duration: 0.2`, no spring |
 

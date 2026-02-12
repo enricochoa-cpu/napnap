@@ -108,6 +108,12 @@ The date navigation was upgraded from a basic prev/next arrow picker to a Napper
 - Baby age displayed as subtitle
 - Premium feel matching the rest of the app
 
+### 6.4 Stats View (Sleep Trends)
+**Status: Improved (2026-02-12)**
+
+- Single **date range picker**: one control opens a bottom sheet with calendar range selection (start then end), max 15 days. Replaces two separate date inputs.
+- All bottom sheets use tween open/close (no bounce); any sheet with a drag handle supports drag-to-dismiss (QuickActionSheet and ShareAccess Edit sheet updated).
+
 ### 6.2 Profile Section
 **Status: Significantly improved (2026-02-09)**
 

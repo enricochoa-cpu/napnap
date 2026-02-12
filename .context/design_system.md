@@ -175,6 +175,8 @@ In practice, Tailwind utility classes (`p-4`, `gap-3`, `mb-6`) are used more oft
 | `--ease-smooth` | `cubic-bezier(0.4, 0, 0.2, 1)` | Shadow, background transitions |
 | `--circadian-transition` | `1.5s ease-in-out` | Theme crossfade between circadian phases |
 
+**Bottom sheets (Framer Motion):** Open/close use tween `duration: 0.25, ease: 'easeOut'` — no bounce. Any sheet that shows a drag handle must support drag-to-dismiss (offset > 150px or velocity > 500 to close).
+
 ---
 
 ## Safe Areas
