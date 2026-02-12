@@ -165,6 +165,13 @@ const CalendarIcon = () => (
   </svg>
 );
 
+// Chevron for tappable date chips
+const ChevronDownIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+);
+
 export function StatsView({ entries }: StatsViewProps) {
   // Date range state - default to last 7 days
   const today = new Date();
@@ -516,9 +523,9 @@ export function StatsView({ entries }: StatsViewProps) {
             <CalendarIcon />
           </span>
 
-          {/* Start Date */}
-          <div className="relative">
-            <div className="flex items-baseline gap-1">
+          {/* Start Date — pill with chevron so users know it’s tappable */}
+          <div className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl min-w-0" style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)', border: '1px solid var(--glass-border)' }}>
+            <div className="flex items-baseline gap-1 pointer-events-none">
               <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
                 {formatDateParts(startDate).dayMonth}
               </span>
@@ -526,21 +533,25 @@ export function StatsView({ entries }: StatsViewProps) {
                 {formatDateParts(startDate).year}
               </span>
             </div>
+            <span className="text-[var(--text-muted)] pointer-events-none flex-shrink-0" aria-hidden="true">
+              <ChevronDownIcon />
+            </span>
             <input
               type="date"
               value={formatInputDate(startDate)}
               onChange={handleStartDateChange}
               max={formatInputDate(today)}
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="Change start date"
             />
           </div>
 
           {/* Separator */}
-          <span className="text-[var(--text-muted)] text-sm">—</span>
+          <span className="text-[var(--text-muted)] text-sm flex-shrink-0">—</span>
 
-          {/* End Date */}
-          <div className="relative">
-            <div className="flex items-baseline gap-1">
+          {/* End Date — pill with chevron so users know it’s tappable */}
+          <div className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl min-w-0" style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)', border: '1px solid var(--glass-border)' }}>
+            <div className="flex items-baseline gap-1 pointer-events-none">
               <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
                 {formatDateParts(endDate).dayMonth}
               </span>
@@ -548,12 +559,16 @@ export function StatsView({ entries }: StatsViewProps) {
                 {formatDateParts(endDate).year}
               </span>
             </div>
+            <span className="text-[var(--text-muted)] pointer-events-none flex-shrink-0" aria-hidden="true">
+              <ChevronDownIcon />
+            </span>
             <input
               type="date"
               value={formatInputDate(endDate)}
               onChange={handleEndDateChange}
               max={formatInputDate(today)}
-              className="absolute inset-0 opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              aria-label="Change end date"
             />
           </div>
 
@@ -625,7 +640,7 @@ export function StatsView({ entries }: StatsViewProps) {
               <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
                 Total Sleep Distribution
               </h3>
-              <div className="flex justify-center">
+              <div className="flex justify-center" role="img" aria-label="Total sleep distribution: proportion of night sleep versus nap sleep for the selected period">
                 <div className="relative" style={{ width: 180, height: 180 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -670,7 +685,7 @@ export function StatsView({ entries }: StatsViewProps) {
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Daily Sleep
             </h3>
-            <div className="h-48">
+            <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart: night sleep and nap time per day for the selected period">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid
@@ -715,7 +730,7 @@ export function StatsView({ entries }: StatsViewProps) {
             <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
               Sleep Trend
             </h3>
-            <div className="h-40">
+            <div className="h-40" role="img" aria-label="Sleep trend area chart: night and nap sleep over time for the selected period">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
@@ -773,7 +788,7 @@ export function StatsView({ entries }: StatsViewProps) {
               <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
                 Woke Up
               </h3>
-              <div className="h-40">
+              <div className="h-40" role="img" aria-label="Woke up time trend: morning wake-up time per day with average">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={wakeUpData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
@@ -831,7 +846,7 @@ export function StatsView({ entries }: StatsViewProps) {
               <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
                 Bedtime
               </h3>
-              <div className="h-40">
+              <div className="h-40" role="img" aria-label="Bedtime trend: bedtime per day with average">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bedtimeData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <defs>
@@ -890,7 +905,7 @@ export function StatsView({ entries }: StatsViewProps) {
                 Daily Schedule
               </h3>
 
-              <div className="flex">
+              <div className="flex" role="img" aria-label="Daily schedule Gantt chart: wake-up, naps, and bedtime across days">
                 {/* Date labels column */}
                 <div className="w-10 flex-shrink-0">
                   {/* Spacer for time axis */}
@@ -958,7 +973,7 @@ export function StatsView({ entries }: StatsViewProps) {
                               />
                             );
                           }
-                          if (event.type === 'nap' && event.endMin != null) {
+                          if (event.type === 'nap' && typeof event.endMin === 'number') {
                             const leftPct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
                             const widthPct = ((event.endMin - event.startMin) / scheduleData.range) * 100;
                             const color = getNapColor(event.napIndex!);

@@ -10,7 +10,8 @@ interface BabyDetailViewProps {
   baby: BabyProfile;
   isOwner: boolean;
   onBack: () => void;
-  onUpdate: (data: Partial<Omit<BabyProfile, 'id'>>) => void;
+  /** Can return a Promise so we can show loading and prevent double-submit */
+  onUpdate: (data: Partial<Omit<BabyProfile, 'id'>>) => void | Promise<void>;
   onUploadAvatar?: (file: File) => Promise<string | null>;
   // Sharing props (owners only)
   myShares: BabyShare[];
@@ -35,6 +36,7 @@ export function BabyDetailView({
   inviterName,
 }: BabyDetailViewProps) {
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: baby.name || '',
@@ -94,9 +96,15 @@ export function BabyDetailView({
 
   const isValid = formData.name.trim() !== '' && formData.dateOfBirth !== '';
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!isValid) return;
-    onUpdate(formData);
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await Promise.resolve(onUpdate(formData));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const age = baby.dateOfBirth ? calculateAge(baby.dateOfBirth) : '';
@@ -222,17 +230,33 @@ export function BabyDetailView({
 
       {/* Save button — only visible when form has unsaved changes */}
       {isOwner && hasChanges && (
-        <button
-          onClick={handleSave}
-          disabled={!isValid}
-          className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] ${
-            isValid
-              ? 'bg-[var(--nap-color)] text-white shadow-lg shadow-[var(--nap-color)]/20'
-              : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
-          }`}
-        >
-          Save Changes
-        </button>
+        <div>
+          <button
+            onClick={handleSave}
+            disabled={!isValid || isSaving}
+            className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+              isValid && !isSaving
+                ? 'bg-[var(--nap-color)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--nap-color)]/20'
+                : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
+            }`}
+            aria-busy={isSaving}
+            aria-describedby={!isValid ? 'save-helper' : undefined}
+          >
+            {isSaving ? (
+              <>
+                <span className="w-5 h-5 rounded-full border-2 border-current/30 border-t-current animate-spin" aria-hidden="true" />
+                Saving…
+              </>
+            ) : (
+              'Save Changes'
+            )}
+          </button>
+          {!isValid && (
+            <p id="save-helper" className="text-xs text-[var(--text-muted)] text-center mt-2">
+              Name and birthday are required
+            </p>
+          )}
+        </div>
       )}
 
       {/* Section 2 — Sharing (owners only) */}

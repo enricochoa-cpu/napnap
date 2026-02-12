@@ -135,7 +135,8 @@ export function QuickActionSheet({
                     onClick={onSelectBedtime}
                     className="flex flex-col items-center gap-3 p-4 rounded-3xl bg-[var(--night-color)]/10 active:bg-[var(--night-color)]/20 active:scale-95 transition-all"
                   >
-                    <div className="w-14 h-14 rounded-full bg-[var(--night-color)] flex items-center justify-center text-white">
+                    {/* Use theme-aware text-on-accent token so icon is legible in both dark and light themes */}
+                    <div className="w-14 h-14 rounded-full bg-[var(--night-color)] flex items-center justify-center text-[var(--text-on-accent)]">
                       <MoonIcon className="w-7 h-7" />
                     </div>
                     <span className="font-display font-semibold text-sm text-[var(--night-color)]">

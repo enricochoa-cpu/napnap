@@ -80,22 +80,26 @@ function WeekStrip({
   };
 
   return (
-    <motion.div
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.3}
-      onDragEnd={handleSwipeEnd}
-      className="touch-none"
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={currentWeekStart.toISOString()}
-          initial={{ opacity: 0, x: weekOffset > 0 ? 40 : -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: weekOffset > 0 ? -40 : 40 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="grid grid-cols-7 gap-1"
-        >
+    <div className="relative">
+      {/* Edge fades hint that more weeks exist (swipe left/right); touch-none suppresses native scroll feedback */}
+      <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[var(--bg-deep)] to-transparent pointer-events-none z-10" aria-hidden="true" />
+      <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--bg-deep)] to-transparent pointer-events-none z-10" aria-hidden="true" />
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.3}
+        onDragEnd={handleSwipeEnd}
+        className="touch-none relative"
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={currentWeekStart.toISOString()}
+            initial={{ opacity: 0, x: weekOffset > 0 ? 40 : -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: weekOffset > 0 ? -40 : 40 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="grid grid-cols-7 gap-1"
+          >
           {days.map((day) => {
             const dayStr = formatDate(day);
             const isSelected = isSameDay(day, selectedParsed);
@@ -136,9 +140,10 @@ function WeekStrip({
               </button>
             );
           })}
-        </motion.div>
-      </AnimatePresence>
-    </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      </motion.div>
+    </div>
   );
 }
 

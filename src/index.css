@@ -429,19 +429,21 @@ input, textarea {
 .card-ghost {
   background: transparent;
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(255, 255, 255, 0.08);
+  /* Use glass-border token so ghost cards are visible on both dark and light backgrounds */
+  border: 2px dashed var(--glass-border);
 }
 
 .card-ghost-nap {
   background: rgba(157, 186, 183, 0.03);
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(157, 186, 183, 0.25);
+  /* Derive border from nap accent colour instead of hardcoded white */
+  border: 2px dashed color-mix(in srgb, var(--nap-color) 60%, transparent);
 }
 
 .card-ghost-night {
   background: rgba(138, 146, 179, 0.03);
   border-radius: var(--radius-3xl);
-  border: 2px dashed rgba(138, 146, 179, 0.25);
+  border: 2px dashed color-mix(in srgb, var(--night-color) 60%, transparent);
 }
 
 /* ============================================================================
@@ -651,11 +653,12 @@ select {
   justify-content: space-between;
   height: 64px;
   padding: 0 0.5rem;
-  background: rgba(18, 20, 28, 0.85);
+  /* Use theme token so nav background adapts to circadian theme */
+  background: var(--glass-nav-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border);
   transition: background-color var(--circadian-transition);
 }
 
@@ -844,11 +847,12 @@ select {
   top: 0;
   bottom: 0;
   width: 2px;
+  /* Use muted text token for the river line so it remains visible on light backgrounds */
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(255, 255, 255, 0.08) 10%,
-    rgba(255, 255, 255, 0.08) 90%,
+    color-mix(in srgb, var(--text-muted) 15%, transparent) 10%,
+    color-mix(in srgb, var(--text-muted) 15%, transparent) 90%,
     transparent 100%
   );
   z-index: 0;

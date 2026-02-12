@@ -6,7 +6,8 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 interface WakeUpSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (wakeUpTime: Date) => void;
+  /** Can return a Promise so the sheet can show loading and prevent double-submit */
+  onConfirm: (wakeUpTime: Date) => void | Promise<void>;
   onDelete?: () => void;
   bedtime: string; // ISO datetime string
 }
@@ -79,6 +80,7 @@ const ICON_CIRCLE_STYLE = { background: 'color-mix(in srgb, var(--text-muted) 15
 export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: WakeUpSheetProps) {
   const [timeValue, setTimeValue] = useState('');
   const [relativeLabel, setRelativeLabel] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset to current time when opening
   useEffect(() => {
@@ -131,8 +133,16 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
     setRelativeLabel(formatRelativeTime(next));
   }, [bedtime, wakeDate]);
 
-  const handleConfirm = () => {
-    onConfirm(wakeDate());
+  const handleConfirm = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await Promise.resolve(onConfirm(wakeDate()));
+      // Parent typically closes the sheet after confirm; call onClose in case it doesn’t
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -190,9 +200,14 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
             className="fixed bottom-0 left-0 right-0 z-50 touch-none"
           >
             <div className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]">
-              {/* Handle bar */}
+              {/* Handle bar — subtle bounce on open hints that the sheet is swipeable */}
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
-                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
+                <motion.div
+                  className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full"
+                  initial={{ scaleX: 0.7, opacity: 0.5 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.15 }}
+                />
               </div>
 
               {/* Header */}
@@ -310,18 +325,24 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
 
                   <motion.button
                     onClick={handleConfirm}
-                    whileTap={{ scale: 0.9 }}
+                    disabled={isSaving}
+                    whileTap={!isSaving ? { scale: 0.9 } : undefined}
                     transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                    className="rounded-full flex items-center justify-center shadow-lg"
+                    className={`rounded-full flex items-center justify-center shadow-lg ${isSaving ? 'opacity-80 cursor-wait' : ''}`}
                     style={{
                       width: 72,
                       height: 72,
                       backgroundColor: 'var(--wake-color)',
                       color: 'var(--bg-deep)',
                     }}
-                    aria-label="Confirm wake up"
+                    aria-label={isSaving ? 'Saving…' : 'Confirm wake up'}
+                    aria-busy={isSaving}
                   >
-                    <CheckIcon />
+                    {isSaving ? (
+                      <div className="w-8 h-8 rounded-full border-2 border-current/30 border-t-current animate-spin" aria-hidden="true" />
+                    ) : (
+                      <CheckIcon />
+                    )}
                   </motion.button>
 
                   <button

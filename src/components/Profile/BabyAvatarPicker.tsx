@@ -1,4 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+
+const UPLOAD_TIMEOUT_MS = 30_000;
 
 interface BabyAvatarPickerProps {
   avatarUrl?: string;
@@ -106,10 +108,12 @@ export function BabyAvatarPicker({
   uploading = false,
 }: BabyAvatarPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const initial = babyName ? babyName.charAt(0).toUpperCase() : '?';
 
   const handleClick = () => {
     if (editable && fileInputRef.current) {
+      setUploadError(null);
       fileInputRef.current.click();
     }
   };
@@ -118,75 +122,110 @@ export function BabyAvatarPicker({
     const file = e.target.files?.[0];
     if (!file || !onUpload) return;
 
-    // Validate file type
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      alert('Please select a JPEG, PNG, or WebP image.');
+      setUploadError('Please select a JPEG, PNG, or WebP image.');
+      e.target.value = '';
       return;
     }
 
+    setUploadError(null);
     try {
-      // Compress image before upload (handles any size)
       const compressedFile = await compressImage(file);
-      await onUpload(compressedFile);
+      const uploadPromise = onUpload(compressedFile);
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Upload timed out')), UPLOAD_TIMEOUT_MS);
+      });
+      await Promise.race([uploadPromise, timeoutPromise]);
     } catch (error) {
+      const message = error instanceof Error && error.message === 'Upload timed out'
+        ? 'Upload took too long. Check your connection and try again.'
+        : 'Failed to upload image. Please try again.';
+      setUploadError(message);
       console.error('Upload failed:', error);
-      alert('Failed to upload image. Please try again.');
     }
 
-    // Reset input so same file can be selected again
     e.target.value = '';
   };
 
+  // When not editable, use a div so the avatar doesn't capture clicks (e.g. card is the tap target).
+  const avatarClassName = `
+    ${sizeClasses[size]}
+    rounded-full
+    border-2 border-[var(--bg-soft)]
+    flex items-center justify-center
+    overflow-hidden
+    ${editable ? 'cursor-pointer hover:border-[var(--nap-color)]/50' : 'cursor-default'}
+    transition-colors
+    relative
+  `;
+
+  const avatarContent = (
+    <>
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={`${babyName}'s avatar`}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-[var(--nap-color)]/20 flex items-center justify-center">
+          <span className="font-display font-bold text-[var(--nap-color)]">
+            {initial}
+          </span>
+        </div>
+      )}
+
+      {/* Loading overlay */}
+      {uploading && (
+        <div className="absolute inset-0 bg-[var(--bg-deep)]/70 flex items-center justify-center">
+          <div className="spinner w-6 h-6 border-2 border-[var(--nap-color)]/30 border-t-[var(--nap-color)] rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Edit overlay */}
+      {editable && !uploading && (
+        <div className="absolute inset-0 bg-[var(--bg-deep)]/60 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+          <div className="text-[var(--text-primary)]">
+            <CameraIcon />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="relative inline-block">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={!editable || uploading}
-        className={`
-          ${sizeClasses[size]}
-          rounded-full
-          border-2 border-[var(--bg-soft)]
-          flex items-center justify-center
-          overflow-hidden
-          ${editable ? 'cursor-pointer hover:border-[var(--nap-color)]/50' : 'cursor-default'}
-          transition-colors
-          relative
-        `}
-        aria-label={editable ? 'Change profile picture' : `${babyName}'s avatar`}
-      >
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={`${babyName}'s avatar`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <span className="font-display font-bold text-[var(--nap-color)]">
-              {initial}
-            </span>
-          </div>
-        )}
+      {editable ? (
+        <button
+          type="button"
+          onClick={handleClick}
+          disabled={uploading}
+          className={avatarClassName}
+          aria-label="Change profile picture"
+          aria-describedby={uploadError ? 'avatar-upload-error' : undefined}
+        >
+          {avatarContent}
+        </button>
+      ) : (
+        <div className={avatarClassName} role="img" aria-label={`${babyName}'s avatar`}>
+          {avatarContent}
+        </div>
+      )}
 
-        {/* Loading overlay */}
-        {uploading && (
-          <div className="absolute inset-0 bg-[var(--bg-deep)]/70 flex items-center justify-center">
-            <div className="spinner w-6 h-6 border-2 border-[var(--nap-color)]/30 border-t-[var(--nap-color)] rounded-full animate-spin" />
-          </div>
-        )}
+      {/* Error message and retry when upload fails or times out */}
+      {editable && uploadError && (
+        <div id="avatar-upload-error" className="mt-2 text-center">
+          <p className="text-xs text-[var(--danger-color)] mb-1">{uploadError}</p>
+          <button
+            type="button"
+            onClick={handleClick}
+            className="text-xs font-display font-semibold text-[var(--nap-color)] hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      )}
 
-        {/* Edit overlay */}
-        {editable && !uploading && (
-          <div className="absolute inset-0 bg-[var(--bg-deep)]/60 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-            <div className="text-[var(--text-primary)]">
-              <CameraIcon />
-            </div>
-          </div>
-        )}
-      </button>
-
-      {/* Hidden file input */}
       {editable && (
         <input
           ref={fileInputRef}

@@ -11,7 +11,8 @@ interface SleepEntrySheetProps {
   initialType?: SleepType;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Omit<SleepEntry, 'id' | 'date'>) => void;
+  /** Can return a Promise so the sheet can show loading and prevent double-submit */
+  onSave: (data: Omit<SleepEntry, 'id' | 'date'>) => void | Promise<void>;
   onDelete?: (id: string) => void;
   selectedDate: string;
 }
@@ -187,6 +188,7 @@ export function SleepEntrySheet({
   const [startTime, setStartTime] = useState(initialStartTime);
   const [endTime, setEndTime] = useState(initialEndTime);
   const [now, setNow] = useState(() => new Date());
+  const [isSaving, setIsSaving] = useState(false);
 
   // Refresh "now" every 30 seconds while sheet is open
   useEffect(() => {
@@ -280,13 +282,13 @@ export function SleepEntrySheet({
     return { isValid: true, warning: null, error: null };
   }, [startTime, endTime, sleepType]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!validation.isValid) return;
     if (!hasChanges && isEditing && !isActiveEntry) return;
+    if (isSaving) return;
 
-    // Only auto-end if it's a pure Stop action (active entry, no changes, no end time set)
-    // If user edited the start time, save the edit without ending the sleep
     const resolvedEndTime = (isActiveEntry && !endTime && !hasChanges) ? getCurrentTime() : endTime;
+    let payload: Omit<SleepEntry, 'id' | 'date'>;
 
     if (sleepType === 'nap') {
       let endDateTime: string | null = null;
@@ -297,17 +299,15 @@ export function SleepEntrySheet({
           endDateTime = combineDateTime(selectedDate, resolvedEndTime);
         }
       }
-      onSave({
+      payload = {
         startTime: combineDateTime(selectedDate, startTime),
         endTime: endDateTime,
         type: 'nap',
-      });
+      };
     } else {
-      // Night sleep
       const [startHour] = startTime.split(':').map(Number);
       const isPostMidnightBedtime = startHour >= 0 && startHour <= 3;
       const bedtimeDate = isPostMidnightBedtime ? getPreviousDay(selectedDate) : selectedDate;
-
       let endDateTime: string | null = null;
       if (resolvedEndTime) {
         if (isTimeBefore(resolvedEndTime, startTime)) {
@@ -318,14 +318,20 @@ export function SleepEntrySheet({
           endDateTime = combineDateTime(bedtimeDate, resolvedEndTime);
         }
       }
-
-      onSave({
+      payload = {
         startTime: combineDateTime(bedtimeDate, startTime),
         endTime: endDateTime,
         type: 'night',
-      });
+      };
     }
-    onClose();
+
+    setIsSaving(true);
+    try {
+      await Promise.resolve(onSave(payload));
+      onClose();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -401,9 +407,14 @@ export function SleepEntrySheet({
               className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]"
               style={{ minHeight: '50dvh' }}
             >
-              {/* Handle bar - visual drag indicator */}
+              {/* Handle bar — subtle bounce on open hints that the sheet is swipeable */}
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
-                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
+                <motion.div
+                  className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full"
+                  initial={{ scaleX: 0.7, opacity: 0.5 }}
+                  animate={{ scaleX: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.15 }}
+                />
               </div>
 
               {/* Header with delete and close */}
@@ -509,25 +520,36 @@ export function SleepEntrySheet({
               </div>
 
               {/* Save button - circular tick with spring animation */}
-              <div className="flex justify-center pb-8 pt-4">
+              <div className="flex flex-col items-center pb-8 pt-4">
                 <motion.button
                   onClick={handleSave}
-                  disabled={!validation.isValid || (isEditing && !hasChanges && !isActiveEntry)}
-                  whileTap={(validation.isValid && (!isEditing || hasChanges || isActiveEntry)) ? { scale: 0.9 } : undefined}
+                  disabled={!validation.isValid || (isEditing && !hasChanges && !isActiveEntry) || isSaving}
+                  whileTap={(validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving) ? { scale: 0.9 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                   className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
-                    (validation.isValid && (!isEditing || hasChanges || isActiveEntry))
+                    (validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving)
                       ? ''
                       : 'opacity-40 cursor-not-allowed'
                   }`}
                   style={{
-                    backgroundColor: (validation.isValid && (!isEditing || hasChanges || isActiveEntry)) ? themeBg : 'var(--text-muted)',
-                    color: sleepType === 'night' ? 'white' : 'var(--bg-deep)',
+                    backgroundColor: (validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving) ? themeBg : 'var(--text-muted)',
+                    color: sleepType === 'night' ? 'var(--text-on-accent)' : 'var(--bg-deep)',
                   }}
-                  aria-label="Save"
+                  aria-label={isSaving ? 'Saving…' : 'Save'}
+                  aria-busy={isSaving}
+                  aria-describedby={isEditing && !hasChanges && !isActiveEntry && validation.isValid ? 'save-helper' : undefined}
                 >
-                  {saveIcon === 'play' ? <PlayIcon /> : saveIcon === 'stop' ? <StopIcon /> : <CheckIcon />}
+                  {isSaving ? (
+                    <div className="w-8 h-8 rounded-full border-2 border-current/30 border-t-current animate-spin" aria-hidden="true" />
+                  ) : (
+                    saveIcon === 'play' ? <PlayIcon /> : saveIcon === 'stop' ? <StopIcon /> : <CheckIcon />
+                  )}
                 </motion.button>
+                {isEditing && !hasChanges && !isActiveEntry && validation.isValid && (
+                  <p id="save-helper" className="text-xs text-[var(--text-muted)] text-center mt-2">
+                    Adjust start or end time to save
+                  </p>
+                )}
               </div>
             </div>
           </motion.div>

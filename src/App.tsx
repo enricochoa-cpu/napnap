@@ -187,7 +187,7 @@ function App() {
     }) || null;
   };
 
-  const handleAddEntry = (data: Omit<SleepEntry, 'id' | 'date'>) => {
+  const handleAddEntry = async (data: Omit<SleepEntry, 'id' | 'date'>) => {
     const collision = checkCollision(data.startTime, data.endTime);
     if (collision && !editingEntry) {
       setCollisionEntry(collision);
@@ -196,9 +196,9 @@ function App() {
     }
 
     if (editingEntry) {
-      updateEntry(editingEntry.id, data);
+      await updateEntry(editingEntry.id, data);
     } else {
-      addEntry(data);
+      await addEntry(data);
     }
     setEditingEntry(null);
     setShowEntrySheet(false);
@@ -246,9 +246,9 @@ function App() {
     setShowActionMenu(false);
   };
 
-  const handleWakeUpConfirm = (wakeTime: Date) => {
+  const handleWakeUpConfirm = async (wakeTime: Date) => {
     if (wakeUpEntry) {
-      endSleep(wakeUpEntry.id, formatDateTime(wakeTime));
+      await endSleep(wakeUpEntry.id, formatDateTime(wakeTime));
     }
     setShowWakeUpSheet(false);
     setWakeUpEntry(null);
@@ -321,13 +321,15 @@ function App() {
                 className="fixed inset-0 z-40"
                 onClick={() => setShowAddEntryMenu(false)}
               />
-              <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-white/10 overflow-hidden min-w-[140px]">
+              {/* Use theme-aware glass border so dropdown works on both dark and light backgrounds */}
+              <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-[var(--glass-border)] overflow-hidden min-w-[140px]">
                 <button
                   onClick={() => {
                     handleOpenNewEntry('nap');
                     setShowAddEntryMenu(false);
                   }}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/5 active:bg-white/10 transition-colors"
+                  /* Use muted text token for hover so it stays visible in light themes */
+                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-[var(--nap-color)]/15 flex items-center justify-center text-[var(--nap-color)]">
                     <CloudIconSmall />
@@ -339,7 +341,7 @@ function App() {
                     handleOpenNewEntry('night');
                     setShowAddEntryMenu(false);
                   }}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-white/5 active:bg-white/10 transition-colors"
+                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-[var(--night-color)]/15 flex items-center justify-center text-[var(--night-color)]">
                     <MoonIconSmall />
