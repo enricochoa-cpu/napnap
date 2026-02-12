@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface MissingBedtimeModalProps {
   onLogBedtime: (date: string) => void;
@@ -56,6 +57,8 @@ export function MissingBedtimeModal({
   onSkip,
 }: MissingBedtimeModalProps) {
   const [selectedDate, setSelectedDate] = useState(getYesterday());
+  const titleId = useId();
+  const dialogRef = useFocusTrap(true, onSkip);
 
   const handleLogBedtime = () => {
     onLogBedtime(selectedDate);
@@ -63,11 +66,18 @@ export function MissingBedtimeModal({
 
   return (
     <div className="modal-overlay" onClick={onSkip}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Close button */}
         <button
           onClick={onSkip}
-          className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 active:scale-95 transition-transform"
+          className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 active:scale-95 transition-transform min-w-[44px] min-h-[44px]"
           aria-label="Close"
         >
           <CloseIcon />
@@ -81,7 +91,7 @@ export function MissingBedtimeModal({
         </div>
 
         {/* Title */}
-        <h2 className="text-display-sm text-center mb-3">Forgot to log bedtime?</h2>
+        <h2 id={titleId} className="text-display-sm text-center mb-3">Forgot to log bedtime?</h2>
 
         {/* Subtitle */}
         <p className="text-[var(--text-secondary)] text-center mb-6 leading-relaxed">

@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ConfirmationModal } from './ConfirmationModal';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import type { SleepEntry } from '../types';
 
 type SleepType = 'nap' | 'night';
@@ -326,9 +328,16 @@ export function SleepEntrySheet({
     onClose();
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = () => {
-    if (entry && onDelete && confirm('Delete this sleep entry?')) {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (entry && onDelete) {
       onDelete(entry.id);
+      setShowDeleteConfirm(false);
       onClose();
     }
   };
@@ -336,6 +345,8 @@ export function SleepEntrySheet({
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const themeBg = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const typeLabel = sleepType === 'nap' ? 'Nap' : 'Night Sleep';
+
+  const dialogRef = useFocusTrap(isOpen, onClose);
 
   // Motion values for drag-to-dismiss
   const y = useMotionValue(0);
@@ -349,6 +360,7 @@ export function SleepEntrySheet({
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -361,10 +373,15 @@ export function SleepEntrySheet({
             style={{ opacity: backdropOpacity }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           {/* Bottom Sheet with drag-to-dismiss */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={isEditing ? 'Edit sleep entry' : `Log ${typeLabel.toLowerCase()}`}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -395,20 +412,20 @@ export function SleepEntrySheet({
                 {isEditing && onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
                     style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
                     aria-label="Delete"
                   >
                     <TrashIcon />
                   </button>
                 ) : (
-                  <div className="w-10" />
+                  <div className="w-11" />
                 )}
 
                 {/* Close button (right) - circle bg */}
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
                   aria-label="Close"
                 >
@@ -448,15 +465,17 @@ export function SleepEntrySheet({
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
+                    aria-label="Start time"
                     className="text-center font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
                     style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch' }}
                   />
-                  <span className="text-2xl text-[var(--text-muted)] font-light">–</span>
+                  <span className="text-2xl text-[var(--text-muted)] font-light" aria-hidden="true">–</span>
                   <input
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
                     placeholder="--:--"
+                    aria-label="End time"
                     className="text-center font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
                     style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch', color: endTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
                   />
@@ -515,5 +534,14 @@ export function SleepEntrySheet({
         </>
       )}
     </AnimatePresence>
+
+    <ConfirmationModal
+      isOpen={showDeleteConfirm}
+      onConfirm={handleConfirmDelete}
+      onCancel={() => setShowDeleteConfirm(false)}
+      title="Delete entry?"
+      description="This sleep entry will be permanently removed."
+    />
+    </>
   );
 }

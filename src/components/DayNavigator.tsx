@@ -14,6 +14,7 @@ import {
   isToday as isDateToday,
 } from 'date-fns';
 import { formatDate } from '../utils/dateUtils';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface DayNavigatorProps {
   selectedDate: string;
@@ -105,6 +106,7 @@ function WeekStrip({
               <button
                 key={dayStr}
                 onClick={() => handleDayTap(day)}
+                aria-label={format(day, 'EEEE, MMMM d')}
                 className="flex flex-col items-center py-1.5 rounded-2xl transition-all min-h-[56px] min-w-[44px]"
               >
                 {/* Day letter */}
@@ -205,6 +207,8 @@ function CalendarModal({
     onClose();
   };
 
+  const dialogRef = useFocusTrap(isOpen, onClose);
+
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
 
@@ -228,10 +232,15 @@ function CalendarModal({
             className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
             onAnimationStart={handleOpen}
+            aria-hidden="true"
           />
 
           {/* Bottom Sheet */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Calendar"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -253,7 +262,7 @@ function CalendarModal({
               <div className="flex items-center justify-between px-6 pb-4">
                 <button
                   onClick={() => setCalendarMonth(prev => subMonths(prev, 1))}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
                   aria-label="Previous month"
                 >
                   <ChevronLeft />
@@ -263,7 +272,7 @@ function CalendarModal({
                 </span>
                 <button
                   onClick={() => setCalendarMonth(prev => addMonths(prev, 1))}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
                   aria-label="Next month"
                 >
                   <ChevronRight />
@@ -291,6 +300,7 @@ function CalendarModal({
                     <button
                       key={i}
                       onClick={() => handleSelectDay(date)}
+                      aria-label={format(date, 'EEEE, MMMM d, yyyy')}
                       className={`flex flex-col items-center justify-center py-1 rounded-xl min-h-[44px] transition-all ${
                         !isCurrentMonth ? 'opacity-20' : ''
                       }`}
@@ -353,6 +363,7 @@ export function DayNavigator({ selectedDate, onDateChange, babyAge, datesWithEnt
         {/* Tappable date header — opens calendar */}
         <button
           onClick={() => setIsCalendarOpen(true)}
+          aria-label="Open calendar"
           className="flex items-center gap-1.5 active:opacity-70 transition-opacity"
         >
           <span className="font-display font-semibold text-lg text-[var(--text-primary)]">

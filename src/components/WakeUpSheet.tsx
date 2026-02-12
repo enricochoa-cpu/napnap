@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { ConfirmationModal } from './ConfirmationModal';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface WakeUpSheetProps {
   isOpen: boolean;
@@ -133,11 +135,18 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
     onConfirm(wakeDate());
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = () => {
-    if (confirm('Delete this sleep entry?')) {
-      onDelete?.();
-    }
+    setShowDeleteConfirm(true);
   };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirm(false);
+    onDelete?.();
+  };
+
+  const dialogRef = useFocusTrap(isOpen, onClose);
 
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
@@ -149,6 +158,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -160,9 +170,14 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
             style={{ opacity: backdropOpacity }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Log wake up time"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -185,18 +200,18 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                 {onDelete ? (
                   <button
                     onClick={handleDelete}
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
+                    className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
                     style={ICON_CIRCLE_STYLE}
                     aria-label="Delete"
                   >
                     <TrashIcon />
                   </button>
                 ) : (
-                  <div className="w-10" />
+                  <div className="w-11" />
                 )}
                 <button
                   onClick={onClose}
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   style={ICON_CIRCLE_STYLE}
                   aria-label="Close"
                 >
@@ -232,6 +247,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     type="text"
                     inputMode="numeric"
                     maxLength={2}
+                    aria-label="Hours"
                     value={timeValue.split(':')[0] ?? ''}
                     onChange={(e) => {
                       const v = e.target.value.replace(/\D/g, '').slice(0, 2);
@@ -246,11 +262,12 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     className="w-[2.4ch] text-right font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
                     style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
                   />
-                  <span className="font-display font-bold text-[var(--text-primary)]" style={{ fontSize: '3.5rem', lineHeight: 1.2 }}>:</span>
+                  <span className="font-display font-bold text-[var(--text-primary)]" style={{ fontSize: '3.5rem', lineHeight: 1.2 }} aria-hidden="true">:</span>
                   <input
                     type="text"
                     inputMode="numeric"
                     maxLength={2}
+                    aria-label="Minutes"
                     value={timeValue.split(':')[1] ?? ''}
                     onChange={(e) => {
                       const v = e.target.value.replace(/\D/g, '').slice(0, 2);
@@ -330,5 +347,14 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
         </>
       )}
     </AnimatePresence>
+
+    <ConfirmationModal
+      isOpen={showDeleteConfirm}
+      onConfirm={handleConfirmDelete}
+      onCancel={() => setShowDeleteConfirm(false)}
+      title="Delete entry?"
+      description="This sleep entry will be permanently removed."
+    />
+    </>
   );
 }

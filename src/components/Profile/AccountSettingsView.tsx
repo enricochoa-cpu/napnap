@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { UserProfile } from '../../types';
 import { SubViewHeader } from './SubViewHeader';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface AccountSettingsViewProps {
   userProfile: UserProfile | null;
@@ -30,6 +31,9 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+
+  const logoutDialogRef = useFocusTrap(showLogoutConfirm, () => setShowLogoutConfirm(false));
+  const deleteDialogRef = useFocusTrap(showDeleteConfirm, () => setShowDeleteConfirm(false));
 
   const [formData, setFormData] = useState({
     userName: userProfile?.userName || '',
@@ -211,9 +215,16 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
           <div
             className="fixed inset-0 bg-black/60 z-50"
             onClick={() => setShowLogoutConfirm(false)}
+            aria-hidden="true"
           />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto">
-            <div className="card p-6">
+            <div
+              ref={logoutDialogRef}
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Sign out confirmation"
+              className="card p-6"
+            >
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center text-[var(--text-muted)]">
                 <LogoutIcon />
               </div>
@@ -251,9 +262,16 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
           <div
             className="fixed inset-0 bg-black/60 z-50"
             onClick={() => setShowDeleteConfirm(false)}
+            aria-hidden="true"
           />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto">
-            <div className="card p-6">
+            <div
+              ref={deleteDialogRef}
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Delete account confirmation"
+              className="card p-6"
+            >
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--danger-color)]/20 flex items-center justify-center text-[var(--danger-color)]">
                 <TrashIcon />
               </div>
@@ -261,7 +279,7 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
                 Delete account?
               </h3>
               <p className="text-[var(--text-muted)] text-sm text-center mb-6">
-                This action cannot be undone. All your data including sleep entries and baby profiles will be permanently deleted.
+                Account deletion is not yet available. Please contact support if you need to delete your account.
               </p>
               <div className="flex gap-3">
                 <button
@@ -271,13 +289,10 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: Implement actual account deletion
-                    setShowDeleteConfirm(false);
-                  }}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold"
+                  disabled
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold opacity-40 cursor-not-allowed"
                 >
-                  Delete
+                  Not yet available
                 </button>
               </div>
             </div>

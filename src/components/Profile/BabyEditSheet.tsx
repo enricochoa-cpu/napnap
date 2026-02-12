@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyProfile } from '../../types';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
+import { ConfirmationModal } from '../ConfirmationModal';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface BabyEditSheetProps {
   baby: BabyProfile | null;
@@ -9,6 +11,7 @@ interface BabyEditSheetProps {
   onClose: () => void;
   onSave: (data: Partial<Omit<BabyProfile, 'id'>>) => void;
   onUploadAvatar?: (file: File) => Promise<string | null>;
+  onDeleteBaby?: () => Promise<void>;
   isNewBaby?: boolean;
 }
 
@@ -18,9 +21,11 @@ export function BabyEditSheet({
   onClose,
   onSave,
   onUploadAvatar,
+  onDeleteBaby,
   isNewBaby = false,
 }: BabyEditSheetProps) {
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     dateOfBirth: '',
@@ -85,6 +90,8 @@ export function BabyEditSheet({
 
   const isValid = formData.name.trim() !== '' && formData.dateOfBirth !== '';
 
+  const dialogRef = useFocusTrap(isOpen, onClose);
+
   // Motion values for drag-to-dismiss
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
@@ -96,6 +103,7 @@ export function BabyEditSheet({
   };
 
   return (
+    <>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -108,10 +116,15 @@ export function BabyEditSheet({
             style={{ opacity: backdropOpacity }}
             className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           {/* Glass Bottom Sheet */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label={isNewBaby ? 'Add baby' : 'Edit baby profile'}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -271,15 +284,10 @@ export function BabyEditSheet({
               </div>
 
               {/* Delete Baby - Subtle at bottom (only for existing babies) */}
-              {!isNewBaby && baby && (
+              {!isNewBaby && baby && onDeleteBaby && (
                 <div className="px-6 pb-8 pt-4 border-t border-[var(--text-muted)]/10">
                   <button
-                    onClick={() => {
-                      // TODO: Implement delete functionality
-                      if (confirm('Are you sure you want to remove this baby profile?')) {
-                        onClose();
-                      }
-                    }}
+                    onClick={() => setShowDeleteConfirm(true)}
                     className="w-full text-center text-xs text-[var(--danger-color)]/60 hover:text-[var(--danger-color)] transition-colors font-display"
                   >
                     Delete baby profile
@@ -291,5 +299,20 @@ export function BabyEditSheet({
         </>
       )}
     </AnimatePresence>
+
+    <ConfirmationModal
+      isOpen={showDeleteConfirm}
+      onConfirm={async () => {
+        if (onDeleteBaby) {
+          await onDeleteBaby();
+          setShowDeleteConfirm(false);
+          onClose();
+        }
+      }}
+      onCancel={() => setShowDeleteConfirm(false)}
+      title="Delete baby profile?"
+      description={`${baby?.name || 'This baby'}'s profile and all associated sleep entries will be permanently removed.`}
+    />
+    </>
   );
 }

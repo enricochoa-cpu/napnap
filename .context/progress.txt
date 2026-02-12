@@ -83,8 +83,49 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Cleaned up unused prop chain: algorithmStatus removed from App → ProfileSection → ProfileMenu
 - [x] Removed unused imports (extractWakeWindowsFromEntries, getSleepConfigForAge, determineCalibrationState, AlgorithmStatusCard, BabyAvatarPicker, calculateAge)
 
+## Code Quality Audit — Phase 1: Broken Flows (2026-02-12) [COMPLETED]
+
+- [x] Created reusable `ConfirmationModal` component (themed, replaces native `confirm()`)
+- [x] Replaced all 4 native `confirm()` calls with `ConfirmationModal` (SleepEntrySheet, WakeUpSheet, BabyDetailView, BabyEditSheet)
+- [x] Wired up Delete Baby functionality (prop threading through App → ProfileSection → BabyDetailView/BabyEditSheet)
+- [x] Delete Account shows "Not yet available" with disabled button (properly communicated)
+
+## Code Quality Audit — Phase 2: Accessibility (2026-02-12) [COMPLETED]
+
+- [x] Created `useFocusTrap` hook (Tab/Shift+Tab cycling, Escape key, focus save/restore)
+- [x] Added `<MotionConfig reducedMotion="user">` to App root (all Framer Motion animations respect prefers-reduced-motion)
+- [x] Added CSS `@media (prefers-reduced-motion: reduce)` block (kills all CSS animations/transitions)
+- [x] Added `role="dialog"` / `role="alertdialog"` + `aria-modal="true"` to all 9 modals/sheets
+- [x] Added focus trap to all 9 modals/sheets
+- [x] Added `aria-label` to icon-only buttons (day buttons, time inputs, calendar triggers)
+- [x] Added `aria-hidden="true"` to all 7 backdrop overlays
+- [x] Increased all 40px touch targets to 44px (WCAG minimum)
+
+## Code Quality Audit — Phase 3: Light Mode Polish [PENDING]
+
+- [ ] Replace `border-white/10` and `hover:bg-white/5` in History dropdown (App.tsx)
+- [ ] Replace `text-white` on bedtime icon in QuickActionSheet
+- [ ] Replace hardcoded `white` in SleepEntrySheet save button
+- [ ] Replace `bg-white/[0.08]` in timeline river CSS
+- [ ] Replace hardcoded `rgba(255,255,255,...)` in ghost card borders CSS
+- [ ] Replace hardcoded `rgba(18,20,28,0.85)` nav bar background CSS
+
+## Code Quality Audit — Phase 4: UX Improvements [PENDING]
+
+- [ ] Add loading states on save operations (prevent double-tap)
+- [ ] Add visual affordance to StatsView date pickers
+- [ ] Add drag-to-dismiss visual hint on bottom sheets
+- [ ] Fix DailySummary cloud icon colour (night → nap)
+- [ ] Add timeout on avatar uploads
+
+## Code Quality Audit — Phase 5: Nice-to-Have [PENDING]
+
+- [ ] Add chart accessibility (aria-labels on Recharts containers)
+- [ ] Fix Gantt chart midnight edge case
+- [ ] Add week strip scroll indicator
+- [ ] Improve form validation feedback
+
 ## Other Pending Items
 
 - [ ] Delete Account button is a TODO (does nothing) — AccountSettingsView
 - [ ] Resend domain verification for production invitation emails
-- [ ] Delete Baby functionality — confirmation shows but doesn't actually delete the baby profile

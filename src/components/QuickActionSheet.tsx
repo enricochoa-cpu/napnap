@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface QuickActionSheetProps {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export function QuickActionSheet({
   hasActiveSleep,
   onEndSleep,
 }: QuickActionSheetProps) {
+  const dialogRef = useFocusTrap(isOpen, onClose);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,10 +60,15 @@ export function QuickActionSheet({
             transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/60 z-40"
             onClick={onClose}
+            aria-hidden="true"
           />
 
           {/* Bottom Sheet */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Quick actions"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}

@@ -32,6 +32,7 @@ interface ProfileSectionProps {
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteBaby?: () => Promise<void>;
 }
 
 export function ProfileSection({
@@ -51,6 +52,7 @@ export function ProfileSection({
   onRevokeAccess,
   onAcceptInvitation,
   onDeclineInvitation,
+  onDeleteBaby,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
@@ -185,6 +187,7 @@ export function ProfileSection({
                 onInvite={onInvite}
                 onUpdateRole={onUpdateRole}
                 onRevokeAccess={onRevokeAccess}
+                onDeleteBaby={selectedBaby.isOwner ? onDeleteBaby : undefined}
                 inviterName={userProfile?.userName || userProfile?.email}
               />
             </motion.div>

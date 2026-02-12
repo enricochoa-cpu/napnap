@@ -15,7 +15,7 @@ export function SubViewHeader({ title, subtitle, onBack }: SubViewHeaderProps) {
     <div className="flex items-center gap-4">
       <button
         onClick={onBack}
-        className="w-10 h-10 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+        className="w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
         aria-label="Go back"
       >
         <BackIcon />

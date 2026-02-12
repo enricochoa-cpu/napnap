@@ -1,6 +1,8 @@
+import { useId } from 'react';
 import type { SleepEntry } from '../types';
 import { formatTime } from '../utils/dateUtils';
 import { format, parseISO } from 'date-fns';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 // Format date for display in collision modal
 function formatEntryDate(dateTime: string): string {
@@ -19,9 +21,19 @@ export function ActivityCollisionModal({
   onReplace,
   onCancel,
 }: ActivityCollisionModalProps) {
+  const titleId = useId();
+  const dialogRef = useFocusTrap(true, onCancel);
+
   return (
     <div className="modal-overlay" onClick={onCancel}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={dialogRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Warning Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-[var(--wake-color)]/10 flex items-center justify-center">
@@ -42,7 +54,7 @@ export function ActivityCollisionModal({
         </div>
 
         {/* Title */}
-        <h2 className="text-display-sm text-center mb-2">Activity Collision</h2>
+        <h2 id={titleId} className="text-display-sm text-center mb-2">Activity Collision</h2>
 
         {/* Description */}
         <p className="text-[var(--text-secondary)] text-center mb-6">

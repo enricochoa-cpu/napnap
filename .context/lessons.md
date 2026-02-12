@@ -254,5 +254,8 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 ### 10.14 Napper-style DayNavigator
 **Decision (2026-02-10):** Replaced the basic prev/next arrow DayNavigator (with native `<input type="date">`) with a premium week strip + calendar modal. The week strip shows 7 days (Mon–Sun) with swipe navigation. Tapping the date header opens a full calendar bottom sheet. **Rationale:** The native date picker felt out of place in a premium mobile app. The week strip gives immediate context (what day of the week), and the calendar modal allows jumping to any date without repeated arrow tapping. Entry dots on days with data help parents find logged days quickly.
 
-### 10.15 Dynamic Time Labels Over Static Section
+### 10.15 Accessibility (A11Y) as a Systemic Pass
+**Decision (2026-02-12):** A11y was added as a full-app pass rather than per-component incremental work. Created a shared `useFocusTrap` hook used by all 9 modals. Used `MotionConfig reducedMotion="user"` at the App root to cover all Framer Motion animations with zero per-component changes. Touch targets bumped from 40px to 44px (WCAG minimum). **Key insight:** Framer Motion's `MotionConfig` is the highest-leverage a11y fix — one line covers all animations. Focus trapping is best done as a hook rather than inline logic to avoid 9 duplicate implementations.
+
+### 10.16 Dynamic Time Labels Over Static Section
 **Decision (2026-02-09):** Removed the standalone duration section from SleepEntrySheet. Duration now appears as the start time label (e.g. "2h 30m" instead of "Start"), and the end time label shows relative time (e.g. "15m ago" instead of "End"). Active entries show "Sleeping..." under the end time. **Rationale:** Puts contextual information exactly where the eye is already looking. The previous central duration section was wasted vertical space.

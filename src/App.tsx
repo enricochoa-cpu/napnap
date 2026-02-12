@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
 import { ActivityCollisionModal } from './components/ActivityCollisionModal';
@@ -52,6 +52,7 @@ function App() {
     createProfile,
     updateProfile,
     uploadBabyAvatar,
+    deleteProfile,
     refreshProfile,
   } = useBabyProfile();
 
@@ -384,10 +385,12 @@ function App() {
       onRevokeAccess={revokeAccess}
       onAcceptInvitation={handleAcceptInvitation}
       onDeclineInvitation={declineInvitation}
+      onDeleteBaby={deleteProfile}
     />
   );
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
       {/* Circadian Sky Background */}
       <SkyBackground theme={theme} />
@@ -573,6 +576,7 @@ function App() {
         bedtime={wakeUpEntry?.startTime ?? ''}
       />
     </div>
+    </MotionConfig>
   );
 }
 

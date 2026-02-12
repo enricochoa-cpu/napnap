@@ -4,6 +4,7 @@ import { calculateAge } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ShareAccess } from '../ShareAccess';
+import { ConfirmationModal } from '../ConfirmationModal';
 
 interface BabyDetailViewProps {
   baby: BabyProfile;
@@ -16,6 +17,7 @@ interface BabyDetailViewProps {
   onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onDeleteBaby?: () => Promise<void>;
   inviterName?: string;
 }
 
@@ -29,9 +31,11 @@ export function BabyDetailView({
   onInvite,
   onUpdateRole,
   onRevokeAccess,
+  onDeleteBaby,
   inviterName,
 }: BabyDetailViewProps) {
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
     name: baby.name || '',
     dateOfBirth: baby.dateOfBirth || '',
@@ -247,21 +251,30 @@ export function BabyDetailView({
       )}
 
       {/* Delete baby — subtle at bottom (owners only) */}
-      {isOwner && (
+      {isOwner && onDeleteBaby && (
         <div className="pt-4 pb-8 border-t border-[var(--text-muted)]/10">
           <button
-            onClick={() => {
-              // TODO: Implement delete functionality
-              if (confirm('Are you sure you want to remove this baby profile?')) {
-                onBack();
-              }
-            }}
+            onClick={() => setShowDeleteConfirm(true)}
             className="w-full text-center text-xs text-[var(--danger-color)]/60 hover:text-[var(--danger-color)] transition-colors font-display"
           >
             Delete baby profile
           </button>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onConfirm={async () => {
+          if (onDeleteBaby) {
+            await onDeleteBaby();
+            setShowDeleteConfirm(false);
+            onBack();
+          }
+        }}
+        onCancel={() => setShowDeleteConfirm(false)}
+        title="Delete baby profile?"
+        description={`${baby.name || 'This baby'}'s profile and all associated sleep entries will be permanently removed.`}
+      />
     </div>
   );
 }
