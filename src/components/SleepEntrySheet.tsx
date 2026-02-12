@@ -78,10 +78,10 @@ const isToday = (dateStr: string): boolean => {
   return dateStr === today;
 };
 
-const formatDateLabel = (dateStr: string): string => {
-  if (isToday(dateStr)) return 'Today';
-  const date = new Date(dateStr + 'T12:00:00'); // Avoid timezone issues
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+const isYesterday = (dateStr: string): boolean => {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return dateStr === yesterday.toISOString().split('T')[0];
 };
 
 const getDefaultTime = (selectedDate: string, sleepType: SleepType): string => {
@@ -137,6 +137,26 @@ const calculateDuration = (startTime: string, endTime: string | null): string =>
   return `${hours}h ${minutes} min`;
 };
 
+// Duration for display under start time: "29min long", "1h 30min long"
+const formatDurationLong = (startTime: string, endTime: string | null): string => {
+  const raw = calculateDuration(startTime, endTime);
+  if (!raw) return '';
+  // Map "29 min" | "1h" | "1h 30 min" → "29min long" | "1h long" | "1h 30min long"
+  if (raw.endsWith(' min')) return raw.replace(' min', 'min long');
+  if (raw.endsWith('h')) return `${raw} long`;
+  if (raw.includes('h ') && raw.endsWith(' min')) return raw.replace(' min', 'min long');
+  return `${raw} long`;
+};
+
+// Label under end time: today = "Xh Y min ago", yesterday = "Yesterday", older = "Feb 10"
+const getRelativeDateLabel = (dateStr: string, endTime: string | null, now: Date, isActiveEntry: boolean): string => {
+  if (!endTime) return isActiveEntry ? 'Sleeping...' : '—';
+  if (isToday(dateStr)) return getRelativeAgo(endTime, dateStr, now) || '';
+  if (isYesterday(dateStr)) return 'Yesterday';
+  const date = new Date(dateStr + 'T12:00:00');
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 // Compute duration in minutes (for validation)
 const computeDurationMinutes = (start: string, end: string): number => {
   if (!start || !end) return 0;
@@ -169,6 +189,16 @@ const getRelativeAgo = (timeStr: string, dateStr: string, now: Date): string => 
   return `${Math.floor(diffHours / 24)}d ago`;
 };
 
+/**
+ * SleepEntrySheet — add or edit a single sleep entry (nap or night).
+ *
+ * Information we show:
+ * - Header: type icon (cloud/moon) and type label ("Nap" / "Bedtime"). No entry date in header.
+ * - Start and end time inputs (large, horizontal). End is optional for new entries (ongoing sleep).
+ * - Below start time: duration in "Xmin long" / "Xh Ymin long" format (or "—" when no end time).
+ * - Below end time: today = "Xh Y min ago"; yesterday = "Yesterday"; older = "Feb 10" (month + day). "Sleeping..." when editing an active entry with no end.
+ * - Validation messages and midnight-crossing hint. Delete/Close in top bar; Save at bottom.
+ */
 export function SleepEntrySheet({
   entry,
   initialType = 'nap',
@@ -224,26 +254,15 @@ export function SleepEntrySheet({
     return startTime !== currentInitialStart || endTime !== currentInitialEnd;
   }, [entry, startTime, endTime]);
 
-  // Calculate duration in real-time
-  const duration = useMemo(() => {
-    return calculateDuration(startTime, endTime);
-  }, [startTime, endTime]);
-
   // Is this an active (ongoing) entry? Has start but no end
   const isActiveEntry = isEditing && !entry?.endTime;
 
-  // Combined label: "29 min duration · 5h 48 min ago"
-  const combinedLabel = useMemo(() => {
-    if (endTime) {
-      const parts: string[] = [];
-      if (duration) parts.push(`${duration} duration`);
-      const ago = getRelativeAgo(endTime, selectedDate, now);
-      if (ago) parts.push(ago);
-      return parts.join(' · ');
-    }
-    if (isActiveEntry) return 'Sleeping...';
-    return '';
-  }, [endTime, duration, selectedDate, now, isActiveEntry]);
+  // Duration under start time: "29min long"; relative date under end time: "2h ago" | "Yesterday" | "Feb 10"
+  const durationLabel = useMemo(() => formatDurationLong(startTime, endTime), [startTime, endTime]);
+  const relativeDateLabel = useMemo(
+    () => getRelativeDateLabel(selectedDate, endTime, now, isActiveEntry),
+    [selectedDate, endTime, now, isActiveEntry]
+  );
 
   // Icon state: Play (new, no end), Stop (active + no changes = end sleep), Check (save edits)
   const saveIcon = useMemo(() => {
@@ -455,9 +474,6 @@ export function SleepEntrySheet({
                 >
                   {typeLabel}
                 </span>
-                <span className="text-sm text-[var(--text-muted)] mt-1">
-                  {formatDateLabel(selectedDate)}
-                </span>
               </div>
 
               {/* Time inputs - large, horizontal */}
@@ -483,12 +499,18 @@ export function SleepEntrySheet({
                   />
                 </div>
 
-                {/* Combined label: duration · ago */}
-                {combinedLabel && (
-                  <p className={`text-sm text-center mt-5 tracking-wide text-[var(--text-muted)] ${isActiveEntry && !endTime ? 'italic' : ''}`}>
-                    {combinedLabel}
+                {/* Duration below start time, relative date below end time; nowrap so they stay on one line */}
+                <div className="flex justify-center items-baseline gap-4 mt-5">
+                  <p className="min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap">
+                    {durationLabel || '—'}
                   </p>
-                )}
+                  <p className="text-center text-sm text-[var(--text-muted)] italic shrink-0" aria-hidden="true">
+                    –
+                  </p>
+                  <p className={`min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap ${!endTime && isActiveEntry ? 'italic' : ''}`}>
+                    {relativeDateLabel}
+                  </p>
+                </div>
 
                 {/* Validation messages */}
                 {validation.error && (
@@ -528,7 +550,6 @@ export function SleepEntrySheet({
                   }}
                   aria-label={isSaving ? 'Saving…' : 'Save'}
                   aria-busy={isSaving}
-                  aria-describedby={isEditing && !hasChanges && !isActiveEntry && validation.isValid ? 'save-helper' : undefined}
                 >
                   {isSaving ? (
                     <div className="w-8 h-8 rounded-full border-2 border-current/30 border-t-current animate-spin" aria-hidden="true" />
@@ -536,11 +557,6 @@ export function SleepEntrySheet({
                     saveIcon === 'play' ? <PlayIcon /> : saveIcon === 'stop' ? <StopIcon /> : <CheckIcon />
                   )}
                 </motion.button>
-                {isEditing && !hasChanges && !isActiveEntry && validation.isValid && (
-                  <p id="save-helper" className="text-xs text-[var(--text-muted)] text-center mt-2">
-                    Adjust start or end time to save
-                  </p>
-                )}
               </div>
             </div>
           </motion.div>

@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-12 — Code Quality Audit Phase 3 (Light Mode Polish), Phase 4 (UX Improvements), and Phase 5 (Nice-to-Have) completed.
+**Last updated:** 2026-02-12 — SleepEntrySheet Napper-style layout (no date in header; duration/ago below times; Yesterday/Feb 10; single-line labels).
 
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
@@ -133,7 +133,8 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Add chart accessibility (aria-labels on Recharts containers) — StatsView: role="img" + aria-label on Pie (distribution), Bar (daily sleep), Area (trend, woke up, bedtime), Gantt (daily schedule)
 - [x] Fix Gantt chart midnight edge case (endMin check in StatsView) — `event.endMin != null` → `typeof event.endMin === 'number'` so nap ending at 00:00 (endMin 0) renders
 - [x] Add week strip scroll indicator — DayNavigator: left/right edge fade gradients (var(--bg-deep) to transparent) to hint swipe for more weeks
-- [x] Improve form validation feedback — BabyDetailView: "Name and birthday are required" when save disabled; SleepEntrySheet: "Adjust start or end time to save" when no changes to save
+- [x] Improve form validation feedback — BabyDetailView: "Name and birthday are required" when save disabled; SleepEntrySheet: "Adjust start or end time to save" when no changes to save (later removed; duration/ago layout added instead)
+- [x] SleepEntrySheet Napper-style layout — No date in header; duration below start time ("29min long"), relative date below end time (today: "Xh Y min ago", yesterday: "Yesterday", older: "Feb 10"); single-line labels (whitespace-nowrap, min-w-[7ch])
 
 ## Other Pending Items
 

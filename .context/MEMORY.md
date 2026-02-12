@@ -24,7 +24,7 @@
 
 ### Animation Standards (Framer Motion)
 - **Route Transitions**: `AnimatePresence` con slide horizontal (`stiffness: 300, damping: 30`)
-- **Bottom Sheets**: Spring physics + drag-to-dismiss (`dragElastic: 0.6`, dismiss en `offset.y > 150` o `velocity.y > 500`)
+- **Bottom Sheets**: Tween para open/close (`duration: 0.25, ease: 'easeOut'` — sin bounce). Cualquier sheet con handle bar debe tener drag-to-dismiss (`drag="y"`, `onDragEnd`; dismiss en `offset.y > 150` o `velocity.y > 500`).
 - **Modals**: Scale-in con backdrop blur
 
 ### Viewport & Mobile
@@ -90,9 +90,9 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 ### Smart Editor (SleepEntrySheet)
 - Bottom sheet desde abajo (50dvh)
 - **Drag-to-dismiss**: Swipe down para cerrar
-- Duración en tiempo real bajo el label "Start"/"Bedtime"
+- **Header:** solo icono de tipo (nube/luna) + label "Nap"/"Bedtime" — sin fecha en el header
+- **Debajo de start time:** duración "Xmin long" / "Xh Ymin long" (o "—" si no hay end). **Debajo de end time:** hoy = "Xh Y min ago"; ayer = "Yesterday"; más viejo = "Feb 10" (mes + día). "Sleeping..." si entry activa sin end. Labels en una sola línea (whitespace-nowrap, min-w-[7ch])
 - Botón save con iconos contextuales: Play (nueva sin fin), Stop (entry activa), Check (completada)
-- Labels dinámicos: start muestra duración, end muestra "Xm ago" / "Sleeping..."
 - **Temporal Validation**: bloquea duración 0, nap > 5h, night > 14h. Warn: nap > 4h, night > 13h, cross-midnight nap
 - Trash icon gris sutil, opacidad completa (era /60, ahora full)
 
@@ -126,9 +126,9 @@ Cambio automático basado en hora del día:
 |-----------|----------------|
 | `App.tsx` | Router, AnimatePresence transitions, collision detection |
 | `TodayView.tsx` | Smart dashboard, predictions, skeleton loading |
-| `StatsView.tsx` | Sleep statistics with Recharts (bar/area charts, date range picker) |
+| `StatsView.tsx` | Sleep statistics with Recharts (bar/area charts), single date range picker (one control opens DateRangePickerSheet for start+end) |
 | `SleepEntrySheet.tsx` | Add/edit entries, temporal validation, dynamic labels, Framer Motion drag-to-dismiss |
-| `QuickActionSheet.tsx` | 3-column quick actions grid |
+| `QuickActionSheet.tsx` | 3-column quick actions grid; bottom sheet with drag-to-dismiss |
 | `DayNavigator.tsx` | Napper-style week strip + calendar modal (date selection for History view) |
 | `SleepList.tsx` | History view, uses SleepEntry variants |
 | `SleepEntry.tsx` | NapEntry, BedtimeEntry, WakeUpEntry components |
@@ -200,6 +200,8 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-09 | BabyDetailView: full-screen baby editing replaces BabyEditSheet for owned babies |
 | 2026-02-09 | SleepEntrySheet: temporal validation, dynamic relative labels, Play/Stop/Check icons, alignment polish |
 | 2026-02-10 | DayNavigator redesign: Napper-style swipeable week strip + calendar bottom sheet modal |
+| 2026-02-12 | StatsView: single date range picker (DateRangePickerSheet), no more two separate date inputs |
+| 2026-02-12 | All bottom sheets: tween open/close (no bounce); QuickActionSheet + ShareAccess Edit sheet: added drag-to-dismiss |
 
 ---
 
