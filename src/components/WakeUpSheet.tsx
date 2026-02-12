@@ -191,7 +191,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.6 }}
@@ -200,14 +200,9 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
             className="fixed bottom-0 left-0 right-0 z-50 touch-none"
           >
             <div className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]">
-              {/* Handle bar — subtle bounce on open hints that the sheet is swipeable */}
+              {/* Handle bar — drag to dismiss */}
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
-                <motion.div
-                  className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full"
-                  initial={{ scaleX: 0.7, opacity: 0.5 }}
-                  animate={{ scaleX: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20, delay: 0.15 }}
-                />
+                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
               </div>
 
               {/* Header */}

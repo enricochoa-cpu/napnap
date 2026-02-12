@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyShare } from '../types';
 
 type ShareRole = 'caregiver' | 'viewer';
@@ -37,6 +37,10 @@ export function ShareAccess({
   const [selectedShare, setSelectedShare] = useState<BabyShare | null>(null);
   const [editingRole, setEditingRole] = useState<ShareRole>('caregiver');
   const [isUpdating, setIsUpdating] = useState(false);
+
+  // Edit sheet drag — opacity follows drag so swipe-down feels connected
+  const shareSheetY = useMotionValue(0);
+  const shareSheetBackdropOpacity = useTransform(shareSheetY, [0, 300], [1, 0]);
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,15 +302,17 @@ export function ShareAccess({
         )}
       </div>
 
-      {/* Edit Access Bottom Sheet */}
+      {/* Edit Access Bottom Sheet — tween (no bounce), drag down to dismiss */}
       <AnimatePresence>
         {selectedShare && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop — opacity follows drag */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ opacity: shareSheetBackdropOpacity }}
               onClick={() => !isUpdating && setSelectedShare(null)}
               className="fixed inset-0 bg-black/60 z-50"
             />
@@ -316,11 +322,18 @@ export function ShareAccess({
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-50 bg-[var(--bg-card)] rounded-t-3xl max-h-[85vh] overflow-hidden"
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.6 }}
+              onDragEnd={(_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+                if (info.offset.y > 150 || info.velocity.y > 500) setSelectedShare(null);
+              }}
+              style={{ y: shareSheetY }}
+              className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-50 bg-[var(--bg-card)] rounded-t-3xl max-h-[85vh] overflow-hidden touch-none"
             >
-              {/* Handle */}
-              <div className="flex justify-center pt-3 pb-2">
+              {/* Handle — drag to dismiss */}
+              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1 rounded-full bg-[var(--text-muted)]/30" />
               </div>
 

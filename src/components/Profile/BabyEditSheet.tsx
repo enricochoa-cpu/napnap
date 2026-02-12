@@ -129,9 +129,8 @@ export function BabyEditSheet({
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{
-              type: 'spring',
-              damping: 25,
-              stiffness: 300,
+              duration: 0.25,
+              ease: 'easeOut',
             }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}

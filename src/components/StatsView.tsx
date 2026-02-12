@@ -1,4 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import {
   AreaChart,
   Area,
@@ -25,6 +27,14 @@ import {
   isAfter,
   isBefore,
   isToday,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  addDays,
+  getDay,
+  isSameDay,
+  isWithinInterval,
 } from 'date-fns';
 import type { SleepEntry } from '../types';
 
@@ -63,11 +73,6 @@ const formatDateParts = (date: Date): { dayMonth: string; year: string } => {
     dayMonth: format(date, 'dd MMM'),
     year: format(date, 'yyyy'),
   };
-};
-
-// Format date for input value (YYYY-MM-DD)
-const formatInputDate = (date: Date): string => {
-  return format(date, 'yyyy-MM-dd');
 };
 
 // Get nap bar color by index
@@ -172,41 +177,256 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
+const ChevronLeftIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="15 18 9 12 15 6" />
+  </svg>
+);
+
+const ChevronRightIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 6 15 12 9 18" />
+  </svg>
+);
+
+// ── Date Range Picker Sheet ─────────────────────────────
+// Single bottom sheet to pick start and end date as a range (not two separate date inputs).
+// First tap sets start, second tap sets end; range is clamped to maxDays and maxDate (today).
+function DateRangePickerSheet({
+  isOpen,
+  onClose,
+  startDate,
+  endDate,
+  onRangeChange,
+  maxDays,
+  maxDate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  startDate: Date;
+  endDate: Date;
+  onRangeChange: (start: Date, end: Date) => void;
+  maxDays: number;
+  maxDate: Date;
+}) {
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(startDate));
+  // Temporary range while user is selecting (start + end); applying commits to parent
+  const [tempStart, setTempStart] = useState<Date>(startDate);
+  const [tempEnd, setTempEnd] = useState<Date | null>(endDate);
+
+  const handleOpen = useCallback(() => {
+    setCalendarMonth(startOfMonth(startDate));
+    setTempStart(startDate);
+    setTempEnd(endDate);
+  }, [startDate, endDate]);
+
+  const calendarDays = useMemo(() => {
+    const monthStart = startOfMonth(calendarMonth);
+    const monthEnd = endOfMonth(calendarMonth);
+    const startDayOfWeek = getDay(monthStart);
+    const offset = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
+
+    const days: Array<{ date: Date; isCurrentMonth: boolean }> = [];
+    for (let i = offset - 1; i >= 0; i--) {
+      days.push({ date: addDays(monthStart, -i - 1), isCurrentMonth: false });
+    }
+    let d = monthStart;
+    while (d <= monthEnd) {
+      days.push({ date: d, isCurrentMonth: true });
+      d = addDays(d, 1);
+    }
+    let trailIdx = 1;
+    while (days.length % 7 !== 0) {
+      days.push({ date: addDays(monthEnd, trailIdx++), isCurrentMonth: false });
+    }
+    return days;
+  }, [calendarMonth]);
+
+  const handleDayClick = (date: Date) => {
+    const normalized = startOfDay(date);
+    if (isAfter(normalized, maxDate)) return;
+
+    if (tempEnd !== null) {
+      // Starting a new range
+      setTempStart(normalized);
+      setTempEnd(null);
+      return;
+    }
+
+    // Setting end date
+    let newStart = tempStart;
+    let newEnd = normalized;
+    if (isBefore(newEnd, newStart)) [newStart, newEnd] = [newEnd, newStart];
+    const daysDiff = differenceInDays(newEnd, newStart) + 1;
+    if (daysDiff > maxDays) {
+      newEnd = addDays(newStart, maxDays - 1);
+    }
+    if (isAfter(newEnd, maxDate)) newEnd = maxDate;
+    setTempStart(newStart);
+    setTempEnd(newEnd);
+  };
+
+  const handleApply = () => {
+    const end = tempEnd ?? tempStart;
+    const start = tempStart;
+    let finalStart = start;
+    let finalEnd = end;
+    if (isAfter(finalEnd, finalStart)) {
+      const daysDiff = differenceInDays(finalEnd, finalStart) + 1;
+      if (daysDiff > maxDays) finalEnd = addDays(finalStart, maxDays - 1);
+    } else {
+      finalEnd = finalStart;
+    }
+    if (isAfter(finalEnd, maxDate)) finalEnd = maxDate;
+    onRangeChange(finalStart, finalEnd);
+    onClose();
+  };
+
+  const rangeStart = tempStart;
+  const rangeEnd = tempEnd ?? tempStart;
+  const [lo, hi] = isBefore(rangeStart, rangeEnd) ? [rangeStart, rangeEnd] : [rangeEnd, rangeStart];
+
+  const dialogRef = useFocusTrap(isOpen, onClose);
+  const y = useMotionValue(0);
+  const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
+
+  const handleDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
+    if (info.offset.y > 150 || info.velocity.y > 500) onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ opacity: backdropOpacity, zIndex: 100 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+            onAnimationStart={handleOpen}
+            aria-hidden="true"
+          />
+          <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pick date range"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.6 }}
+            onDragEnd={handleDragEnd}
+            style={{ y, zIndex: 100 }}
+            className="fixed bottom-0 left-0 right-0 touch-none"
+          >
+            <div className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] max-w-lg mx-auto">
+              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
+              </div>
+              <div className="flex items-center justify-between px-6 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setCalendarMonth((prev) => subMonths(prev, 1))}
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
+                  aria-label="Previous month"
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <span className="font-display font-semibold text-[var(--text-primary)] text-lg">
+                  {format(calendarMonth, 'MMMM yyyy')}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setCalendarMonth((prev) => addMonths(prev, 1))}
+                  className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
+                  aria-label="Next month"
+                >
+                  <ChevronRightIcon />
+                </button>
+              </div>
+              <div className="grid grid-cols-7 px-4 mb-2">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+                  <div key={d} className="text-center text-xs font-medium text-[var(--text-muted)]">
+                    {d}
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-7 px-4 gap-y-1">
+                {calendarDays.map(({ date, isCurrentMonth }, i) => {
+                  const isInRange =
+                    isWithinInterval(date, { start: lo, end: hi }) ||
+                    isSameDay(date, lo) ||
+                    isSameDay(date, hi);
+                  const isStart = isSameDay(date, lo);
+                  const isEnd = isSameDay(date, hi);
+                  const isTodayCell = isToday(date);
+                  const isDisabled = isAfter(date, maxDate);
+
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => handleDayClick(date)}
+                      disabled={isDisabled}
+                      aria-label={format(date, 'EEEE, MMMM d, yyyy')}
+                      className={`flex items-center justify-center py-1 rounded-xl min-h-[44px] transition-all ${
+                        !isCurrentMonth ? 'opacity-20' : ''
+                      } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                          isStart || isEnd
+                            ? 'bg-[var(--nap-color)] text-[var(--text-on-accent)] font-semibold'
+                            : isInRange
+                              ? 'bg-[var(--nap-color)]/30 text-[var(--text-primary)]'
+                              : isTodayCell
+                                ? 'ring-1 ring-[var(--text-muted)] text-[var(--text-primary)]'
+                                : 'text-[var(--text-secondary)]'
+                        }`}
+                      >
+                        {format(date, 'd')}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-col items-center gap-3 px-6 pt-4 pb-28">
+                <button
+                  type="button"
+                  onClick={handleApply}
+                  className="w-full py-3 rounded-2xl font-display font-semibold text-sm bg-[var(--nap-color)] text-[var(--text-on-accent)] active:scale-[0.97] transition-transform"
+                >
+                  Apply range
+                </button>
+                <button type="button" onClick={onClose} className="py-2 font-display font-medium text-sm text-[var(--text-muted)]">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 export function StatsView({ entries }: StatsViewProps) {
   // Date range state - default to last 7 days
   const today = new Date();
   const [endDate, setEndDate] = useState<Date>(today);
   const [startDate, setStartDate] = useState<Date>(subDays(today, 6));
+  const [isRangePickerOpen, setIsRangePickerOpen] = useState(false);
 
-  // Handle start date change
-  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newStart = parseISO(e.target.value);
-    const daysDiff = differenceInDays(endDate, newStart);
-
-    if (daysDiff > MAX_DAYS - 1) {
-      // Adjust end date to max range
-      setEndDate(subDays(newStart, -(MAX_DAYS - 1)));
-    } else if (isAfter(newStart, endDate)) {
-      // Start can't be after end
-      setEndDate(newStart);
-    }
-    setStartDate(newStart);
-  };
-
-  // Handle end date change
-  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEnd = parseISO(e.target.value);
-    const daysDiff = differenceInDays(newEnd, startDate);
-
-    if (daysDiff > MAX_DAYS - 1) {
-      // Adjust start date to max range
-      setStartDate(subDays(newEnd, MAX_DAYS - 1));
-    } else if (isBefore(newEnd, startDate)) {
-      // End can't be before start
-      setStartDate(newEnd);
-    }
-    setEndDate(newEnd);
-  };
+  const handleRangeChange = useCallback((start: Date, end: Date) => {
+    setStartDate(startOfDay(start));
+    setEndDate(startOfDay(end));
+  }, []);
 
   // Calculate data for date range
   const rangeData = useMemo(() => {
@@ -515,69 +735,47 @@ export function StatsView({ entries }: StatsViewProps) {
         </div>
       )}
 
-      {/* Date Range Filter - Glassmorphism */}
+      {/* Date range picker — single tappable control opens range sheet */}
       <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-        <div className="flex items-center gap-3">
-          {/* Calendar Icon */}
+        <button
+          type="button"
+          onClick={() => setIsRangePickerOpen(true)}
+          aria-label="Change date range"
+          className="w-full flex items-center gap-3 text-left"
+        >
           <span className="text-[var(--text-muted)] flex-shrink-0">
             <CalendarIcon />
           </span>
-
-          {/* Start Date — pill with chevron so users know it’s tappable */}
-          <div className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl min-w-0" style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)', border: '1px solid var(--glass-border)' }}>
-            <div className="flex items-baseline gap-1 pointer-events-none">
-              <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-                {formatDateParts(startDate).dayMonth}
-              </span>
-              <span className="text-xs text-[var(--text-muted)]">
-                {formatDateParts(startDate).year}
-              </span>
-            </div>
-            <span className="text-[var(--text-muted)] pointer-events-none flex-shrink-0" aria-hidden="true">
-              <ChevronDownIcon />
+          <div className="flex-1 min-w-0 flex items-baseline gap-2 flex-wrap">
+            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+              {formatDateParts(startDate).dayMonth}
             </span>
-            <input
-              type="date"
-              value={formatInputDate(startDate)}
-              onChange={handleStartDateChange}
-              max={formatInputDate(today)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              aria-label="Change start date"
-            />
-          </div>
-
-          {/* Separator */}
-          <span className="text-[var(--text-muted)] text-sm flex-shrink-0">—</span>
-
-          {/* End Date — pill with chevron so users know it’s tappable */}
-          <div className="relative flex items-center gap-1.5 px-3 py-2 rounded-xl min-w-0" style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)', border: '1px solid var(--glass-border)' }}>
-            <div className="flex items-baseline gap-1 pointer-events-none">
-              <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-                {formatDateParts(endDate).dayMonth}
-              </span>
-              <span className="text-xs text-[var(--text-muted)]">
-                {formatDateParts(endDate).year}
-              </span>
-            </div>
-            <span className="text-[var(--text-muted)] pointer-events-none flex-shrink-0" aria-hidden="true">
-              <ChevronDownIcon />
+            <span className="text-[var(--text-muted)]">–</span>
+            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
+              {formatDateParts(endDate).dayMonth}
             </span>
-            <input
-              type="date"
-              value={formatInputDate(endDate)}
-              onChange={handleEndDateChange}
-              max={formatInputDate(today)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              aria-label="Change end date"
-            />
+            <span className="text-xs text-[var(--text-muted)]">
+              {format(startDate, 'yyyy') === format(endDate, 'yyyy') ? format(endDate, 'yyyy') : `${format(startDate, 'yyyy')} – ${format(endDate, 'yyyy')}`}
+            </span>
           </div>
-
-          {/* Days count badge */}
-          <span className="ml-auto text-xs text-[var(--text-muted)] bg-[var(--bg-soft)] px-2 py-1 rounded-full">
+          <span className="text-[var(--text-muted)] flex-shrink-0" aria-hidden="true">
+            <ChevronDownIcon />
+          </span>
+          <span className="text-xs text-[var(--text-muted)] bg-[var(--bg-soft)] px-2 py-1 rounded-full flex-shrink-0">
             {daysInRange}d
           </span>
-        </div>
+        </button>
       </div>
+
+      <DateRangePickerSheet
+        isOpen={isRangePickerOpen}
+        onClose={() => setIsRangePickerOpen(false)}
+        startDate={startDate}
+        endDate={endDate}
+        onRangeChange={handleRangeChange}
+        maxDays={MAX_DAYS}
+        maxDate={today}
+      />
 
       {!hasData ? (
         <div className="rounded-3xl backdrop-blur-xl p-8 text-center" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
