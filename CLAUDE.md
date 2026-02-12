@@ -46,6 +46,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useBabyProfile` handles baby and user profile CRUD via Supabase
 - `useBabyShares` handles multi-user sharing (invitations, access management)
 - `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
+- `useFocusTrap` traps keyboard focus inside modals/sheets (Tab cycling, Escape key, focus save/restore)
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
@@ -70,6 +71,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `SleepList`/`SleepEntry`: Display entries with edit/delete/wake actions (NapEntry, BedtimeEntry, WakeUpEntry variants)
 - `DayNavigator`: Date selection for viewing past entries
 - `DailySummary`: Aggregated sleep statistics
+- `ConfirmationModal`: Reusable themed confirmation dialog (`role="alertdialog"`, focus trap). Used by SleepEntrySheet, WakeUpSheet, BabyEditSheet for delete confirmations
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
 - `ShareAccess`: Invite caregivers with role selector (caregiver/viewer), manage sharing via bottom sheet (edit role, remove access)
 - `SkyBackground`: Animated background atmosphere with inline NightSky (stars), MorningSky (sun), AfternoonSky (clouds)
