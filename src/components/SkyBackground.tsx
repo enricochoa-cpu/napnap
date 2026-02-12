@@ -82,8 +82,10 @@ function NightSky() {
         ))}
       </div>
 
-      {/* Soft 3D moon (Napper-style); replaces previous CSS .moon */}
-      <Moon3D />
+      {/* Moon */}
+      <div className="fixed inset-0 z-[-4] pointer-events-none">
+        <div className="moon" />
+      </div>
     </>
   );
 }
