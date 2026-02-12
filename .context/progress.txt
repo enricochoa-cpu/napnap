@@ -1,5 +1,7 @@
 # Progress
 
+**Last updated:** 2026-02-12 — Code Quality Audit Phase 3 (Light Mode Polish), Phase 4 (UX Improvements), and Phase 5 (Nice-to-Have) completed.
+
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
 - [x] #1 Hero card: replaced hardcoded `bg-white/[0.06]` with `var(--glass-bg)` / `var(--glass-border)` / `var(--shadow-md)`
@@ -101,31 +103,45 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Added `aria-hidden="true"` to all 7 backdrop overlays
 - [x] Increased all 40px touch targets to 44px (WCAG minimum)
 
-## Code Quality Audit — Phase 3: Light Mode Polish [PENDING]
+## Code Quality Audit — Phase 3: Light Mode Polish (2026-02-12) [COMPLETED]
 
-- [ ] Replace `border-white/10` and `hover:bg-white/5` in History dropdown (App.tsx)
-- [ ] Replace `text-white` on bedtime icon in QuickActionSheet
-- [ ] Replace hardcoded `white` in SleepEntrySheet save button
-- [ ] Replace `bg-white/[0.08]` in timeline river CSS
-- [ ] Replace hardcoded `rgba(255,255,255,...)` in ghost card borders CSS
-- [ ] Replace hardcoded `rgba(18,20,28,0.85)` nav bar background CSS
+- [x] Replace `border-white/10` and `hover:bg-white/5` in History dropdown (App.tsx) → `border-[var(--glass-border)]`, `hover:bg-[var(--text-muted)]/10`
+- [x] Replace `text-white` on bedtime icon in QuickActionSheet → `text-[var(--text-on-accent)]`
+- [x] Replace hardcoded `white` in SleepEntrySheet save button → `var(--text-on-accent)` for night type
+- [x] Replace `bg-white/[0.08]` in timeline river CSS (index.css) → `color-mix(in srgb, var(--text-muted) 15%, transparent)`
+- [x] Replace hardcoded `rgba(255,255,255,...)` in ghost card borders CSS → `var(--glass-border)` and `color-mix` with `--nap-color`/`--night-color`
+- [x] Replace hardcoded `rgba(18,20,28,0.85)` nav bar background CSS → `var(--glass-nav-bg)` and `var(--glass-border)`
 
-## Code Quality Audit — Phase 4: UX Improvements [PENDING]
+## StatsView + Bottom Sheet UX (2026-02-12) [COMPLETED]
 
-- [ ] Add loading states on save operations (prevent double-tap)
-- [ ] Add visual affordance to StatsView date pickers
-- [ ] Add drag-to-dismiss visual hint on bottom sheets
-- [ ] Fix DailySummary cloud icon colour (night → nap)
-- [ ] Add timeout on avatar uploads
+- [x] StatsView: single date range picker — one control opens DateRangePickerSheet (calendar range selection), max 15 days
+- [x] All bottom sheets: tween open/close (no bounce) — `duration: 0.25, ease: 'easeOut'`
+- [x] QuickActionSheet: added drag-to-dismiss (had handle bar but no drag)
+- [x] ShareAccess Edit Access sheet: added drag-to-dismiss + tween
+- [x] Removed handle bar bounce animation in SleepEntrySheet and WakeUpSheet
 
-## Code Quality Audit — Phase 5: Nice-to-Have [PENDING]
+## Code Quality Audit — Phase 4: UX Improvements (2026-02-12) [COMPLETED]
 
-- [ ] Add chart accessibility (aria-labels on Recharts containers)
-- [ ] Fix Gantt chart midnight edge case
-- [ ] Add week strip scroll indicator
-- [ ] Improve form validation feedback
+- [x] Add loading states on save operations (SleepEntrySheet, WakeUpSheet, BabyDetailView: isSaving, spinner, disabled button; App handleAddEntry/handleWakeUpConfirm async/await)
+- [x] Add visual affordance to StatsView date pickers — start/end date blocks as pills with chevron-down icon and subtle border/bg so they read as tappable
+- [x] Add drag-to-dismiss visual hint on bottom sheets — subtle handle bar bounce on open (scaleX + opacity spring) in SleepEntrySheet and WakeUpSheet
+- [x] Fix DailySummary cloud icon colour (Nap Time block: --night-color → --nap-color, stat-value-night → stat-value-nap)
+- [x] Add timeout on avatar uploads — BabyAvatarPicker: 30s Promise.race, error state, "Try again" button
+
+## Code Quality Audit — Phase 5: Nice-to-Have (2026-02-12) [COMPLETED]
+
+- [x] Add chart accessibility (aria-labels on Recharts containers) — StatsView: role="img" + aria-label on Pie (distribution), Bar (daily sleep), Area (trend, woke up, bedtime), Gantt (daily schedule)
+- [x] Fix Gantt chart midnight edge case (endMin check in StatsView) — `event.endMin != null` → `typeof event.endMin === 'number'` so nap ending at 00:00 (endMin 0) renders
+- [x] Add week strip scroll indicator — DayNavigator: left/right edge fade gradients (var(--bg-deep) to transparent) to hint swipe for more weeks
+- [x] Improve form validation feedback — BabyDetailView: "Name and birthday are required" when save disabled; SleepEntrySheet: "Adjust start or end time to save" when no changes to save
 
 ## Other Pending Items
 
-- [ ] Delete Account button is a TODO (does nothing) — AccountSettingsView
+**Implemented (for reference):**
+- **Delete Baby**: Implemented. Link "Delete baby profile" at bottom of BabyDetailView (full-screen edit) and in BabyEditSheet when editing an existing baby. Uses ConfirmationModal and `onDeleteBaby` → `deleteProfile` from App.
+- **Add Baby**: Implemented. MyBabiesView shows ghost card "Add your baby"; tapping it opens BabyEditSheet in create mode.
+
+**Not implemented / pending:**
+- [ ] **Delete Account**: UI exists (link + confirmation modal in AccountSettingsView), but the confirm action is disabled with "Not yet available" and no backend logic. Requires Supabase auth + cascade delete design.
+- [ ] **Multi-baby (2+ babies per account)**: Not supported. Current design: one profile row per user (profiles.id = user.id), so only one "own" baby. Adding a second baby would require: (1) Supabase — e.g. a `babies` table (baby_id, user_id, name, date_of_birth, …) or multiple profile rows per user, and sleep_entries linked to baby_id; (2) UI/UX — gallery already shows "Add your baby" but createProfile currently inserts a single profile row (works only when user has no profile yet). Need full flow: add baby, switch active baby, and ensure sleep entries/filters/scopes are per baby.
 - [ ] Resend domain verification for production invitation emails
