@@ -262,3 +262,6 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ### 10.17 Bottom Sheets: No Bounce + Handle Implies Drag
 **Decision (2026-02-12):** (1) All bottom sheets use **tween** for enter/exit (`duration: 0.25, ease: 'easeOut'`) — no spring, no bounce. Bouncy modals were perceived as bad practice. (2) Any sheet that displays a **drag handle** (the thin bar) must support **drag-to-dismiss**; otherwise the visual affordance is misleading. QuickActionSheet and ShareAccess Edit Access sheet had handles but no drag — both now have `drag="y"`, `onDragEnd`, and backdrop opacity tied to drag position.
+
+### 10.18 Onboarding Next Button: Disabled Until Step Complete
+**Decision (2026-02-12):** In OnboardingFlow, the "Next" button must be disabled until the user has completed the current step's required input (baby name, baby DOB, your name). Baby DOB defaults to empty string so the user must explicitly pick a date; relationship defaults to "mum" so that step can always proceed. **Rationale:** Prevents advancing with empty data and makes it clear what action is required before continuing.

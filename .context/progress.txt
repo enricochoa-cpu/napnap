@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-12 — SleepEntrySheet Napper-style layout (no date in header; duration/ago below times; Yesterday/Feb 10; single-line labels).
+**Last updated:** 2026-02-12 — Onboarding: Next disabled until step complete; docs updated (logs, MEMORY, lessons, progress, n-boarding, ONBOARDING-PLAN, prd).
 
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
@@ -146,3 +146,14 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [ ] **Delete Account**: UI exists (link + confirmation modal in AccountSettingsView), but the confirm action is disabled with "Not yet available" and no backend logic. Requires Supabase auth + cascade delete design.
 - [ ] **Multi-baby (2+ babies per account)**: Not supported. Current design: one profile row per user (profiles.id = user.id), so only one "own" baby. Adding a second baby would require: (1) Supabase — e.g. a `babies` table (baby_id, user_id, name, date_of_birth, …) or multiple profile rows per user, and sleep_entries linked to baby_id; (2) UI/UX — gallery already shows "Add your baby" but createProfile currently inserts a single profile row (works only when user has no profile yet). Need full flow: add baby, switch active baby, and ensure sleep entries/filters/scopes are per baby.
 - [ ] Resend domain verification for production invitation emails
+
+## Onboarding (2026-02-12) [UX/UI DONE — BACKEND PENDING]
+
+- [x] Entry choice (Get started / I have an account)
+- [x] OnboardingFlow: Welcome → Baby name → Baby DOB → Your name → Your relationship → Account
+- [x] Napper-style layout (question top, Next bottom), no scroll, safe-area padding
+- [x] Circadian theme on entry/onboarding (useApplyCircadianTheme in AuthGuard)
+- [x] Next button disabled until required field(s) completed per step (baby name, DOB, your name)
+- [ ] Persist onboarding draft (e.g. localStorage); resume on return
+- [ ] Supabase: schema for onboarding payload; write baby + user profile on first login
+- [ ] "Has completed onboarding" flag (skip entry for returning users)

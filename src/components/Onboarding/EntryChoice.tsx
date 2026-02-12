@@ -10,7 +10,7 @@ interface EntryChoiceProps {
 
 export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4 safe-pad-top safe-pad-bottom">
       <div className="text-center mb-10">
         <div
           className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--night-color)]/20 flex items-center justify-center"

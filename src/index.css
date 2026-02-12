@@ -49,6 +49,10 @@
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
 
+  /* Full-screen views: padding so content isn't flush with browser chrome */
+  --pad-safe-top: max(1.5rem, var(--safe-top));
+  --pad-safe-bottom: max(1.5rem, var(--safe-bottom));
+
   /* ========== DEFAULT: NIGHT THEME (for initial load) ========== */
   --bg-deep: #1A1B2E;
   --bg-mid: #1F2038;
@@ -639,6 +643,14 @@ select {
   z-index: 50;
   padding: 0 1rem;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Full-screen auth/onboarding: keep content away from browser URL bar and nav */
+.safe-pad-top {
+  padding-top: var(--pad-safe-top);
+}
+.safe-pad-bottom {
+  padding-bottom: var(--pad-safe-bottom);
 }
 
 .floating-nav-inner {

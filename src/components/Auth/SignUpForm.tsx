@@ -47,7 +47,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
   if (success) {
     return (
-      <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+      <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4 safe-pad-top safe-pad-bottom">
         <div className="card p-8 w-full max-w-sm text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--success-color)]/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-[var(--success-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,21 +70,20 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
   }
 
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
-      {/* Logo/Header */}
-      <div className="text-center mb-8">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4 safe-pad-top">
+      {/* Logo + short info (Napper-style: clear top section) */}
+      <div className="text-center pt-2 pb-6 flex-shrink-0">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
           <svg className="w-8 h-8 text-[var(--nap-color)]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
           </svg>
         </div>
         <h1 className="text-display-lg text-[var(--text-primary)]">Create account</h1>
-        <p className="text-[var(--text-muted)] font-display mt-2">Start tracking your baby's sleep</p>
+        <p className="text-[var(--text-muted)] font-display mt-2">Start tracking your baby&apos;s sleep</p>
       </div>
 
-      {/* Form Card */}
-      <div className="card p-6 w-full max-w-sm">
-        {/* Google Sign In - Primary option for quick access */}
+      {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
+      <div className="card p-6 w-full max-w-sm mx-auto">
         <GoogleSignInButton onSignIn={onGoogleSignIn} />
 
         <AuthDivider />
@@ -145,7 +144,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-nap w-full"
+            className="btn btn-nap w-full min-h-[56px]"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
@@ -163,6 +162,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
           </p>
         </div>
       </div>
+
+      <div className="flex-shrink-0 safe-pad-bottom min-h-[1.5rem]" />
     </div>
   );
 }

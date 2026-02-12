@@ -1,5 +1,5 @@
 /**
- * Multi-step onboarding: Welcome (merged) → Baby → Your name → Your relationship → Account.
+ * Multi-step onboarding: Welcome → Baby name → Baby DOB → Your name → Your relationship → Account.
  * Napper-style layout: question at top, Next at bottom. No scroll (fixed viewport).
  */
 
@@ -18,12 +18,13 @@ export interface OnboardingDraft {
   relationship: OnboardingRelationship;
 }
 
-const TOTAL_STEPS = 5; // Welcome, Baby, Your name, Your relationship, Account
+const TOTAL_STEPS = 6; // Welcome, Baby name, Baby DOB, Your name, Your relationship, Account
 const STEP_WELCOME = 0;
-const STEP_BABY = 1;
-const STEP_YOUR_NAME = 2;
-const STEP_YOUR_RELATIONSHIP = 3;
-const STEP_ACCOUNT = 4;
+const STEP_BABY_NAME = 1;
+const STEP_BABY_DOB = 2;
+const STEP_YOUR_NAME = 3;
+const STEP_YOUR_RELATIONSHIP = 4;
+const STEP_ACCOUNT = 5;
 
 const RELATIONSHIP_OPTIONS: { value: OnboardingRelationship; label: string }[] = [
   { value: 'mum', label: 'Mum' },
@@ -40,7 +41,7 @@ interface OnboardingFlowProps {
 
 const defaultDraft = (): OnboardingDraft => ({
   babyName: '',
-  babyDob: formatDate(new Date()),
+  babyDob: '', // User must pick a date; Next stays disabled until then
   userName: '',
   relationship: 'mum',
 });
@@ -71,7 +72,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     </div>
   );
 
-  // Step 4: Account — reuse auth forms (no-scroll wrapper)
+  // Step 5: Account — reuse auth forms (no-scroll wrapper)
   if (step === STEP_ACCOUNT) {
     if (accountView === 'forgot-password') {
       return (
@@ -103,73 +104,95 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     );
   }
 
+  // Next is enabled only when the current step's required input is complete (no advancing with empty name/DOB)
   const canProceed =
-    (step === STEP_BABY && draft.babyName.trim() && draft.babyDob) ||
-    (step === STEP_YOUR_NAME && draft.userName.trim()) ||
-    (step === STEP_YOUR_RELATIONSHIP) ||
-    step === STEP_WELCOME;
+    step === STEP_WELCOME ||
+    (step === STEP_BABY_NAME && draft.babyName.trim().length > 0) ||
+    (step === STEP_BABY_DOB && draft.babyDob.length > 0) ||
+    (step === STEP_YOUR_NAME && draft.userName.trim().length > 0) ||
+    step === STEP_YOUR_RELATIONSHIP;
 
-  // Napper-style: question at top, content in middle, Next at bottom. No scroll.
+  // Napper-style: question at top, content in middle, Next at bottom. Safe-area padding so content isn't flush with browser chrome.
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4 safe-pad-top">
       {progressDots}
 
       {/* Welcome (merged with Trust) */}
       {step === STEP_WELCOME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             Hi there
           </h2>
           <p className="text-[var(--text-secondary)] font-display mt-3 text-center">
             A few quick details so we can suggest when your baby should sleep. No fuss.
           </p>
           <div className="flex-1" />
-          <button
-            type="button"
-            onClick={goNext}
-            className="btn btn-night w-full min-h-[56px] mt-auto mb-6"
-          >
-            Next
-          </button>
+          <div className="mt-auto safe-pad-bottom">
+            <button
+              type="button"
+              onClick={goNext}
+              className="btn btn-night w-full min-h-[56px]"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Baby */}
-      {step === STEP_BABY && (
+      {/* Baby name */}
+      {step === STEP_BABY_NAME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+            What’s your baby’s name?
+          </h2>
+          <div className="flex-1 flex flex-col justify-center py-6">
+            <input
+              type="text"
+              value={draft.babyName}
+              onChange={(e) => setDraft((d) => ({ ...d, babyName: e.target.value }))}
+              placeholder="Name"
+              className="input"
+              autoComplete="off"
+            />
+          </div>
+          <div className="flex gap-3 mt-auto safe-pad-bottom">
+            <button
+              type="button"
+              onClick={goBack}
+              className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              disabled={!canProceed}
+              className="btn btn-night flex-1 min-h-[56px]"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Baby DOB */}
+      {step === STEP_BABY_DOB && (
+        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             When was your baby born?
           </h2>
           <p className="text-[var(--text-muted)] text-sm font-display mt-2 text-center">
             We need this for sleep suggestions.
           </p>
-          <div className="flex-1 flex flex-col justify-center space-y-4 py-6">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Baby’s name
-              </label>
-              <input
-                type="text"
-                value={draft.babyName}
-                onChange={(e) => setDraft((d) => ({ ...d, babyName: e.target.value }))}
-                placeholder="Name"
-                className="input"
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Date of birth
-              </label>
-              <input
-                type="date"
-                value={draft.babyDob}
-                onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
-                className="input"
-              />
-            </div>
+          <div className="flex-1 flex flex-col justify-center py-6">
+            <input
+              type="date"
+              value={draft.babyDob}
+              onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
+              className="input"
+            />
           </div>
-          <div className="flex gap-3 mt-auto pb-6">
+          <div className="flex gap-3 mt-auto safe-pad-bottom">
             <button
               type="button"
               onClick={goBack}
@@ -192,7 +215,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {/* Your name */}
       {step === STEP_YOUR_NAME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             What’s your name?
           </h2>
           <div className="flex-1 flex flex-col justify-center py-6">
@@ -205,7 +228,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               autoComplete="name"
             />
           </div>
-          <div className="flex gap-3 mt-auto pb-6">
+          <div className="flex gap-3 mt-auto safe-pad-bottom">
             <button
               type="button"
               onClick={goBack}
@@ -228,7 +251,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {/* Your relationship */}
       {step === STEP_YOUR_RELATIONSHIP && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             You’re their…
           </h2>
           <div className="flex-1 flex flex-col justify-center gap-2 py-6">
@@ -245,7 +268,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               </button>
             ))}
           </div>
-          <div className="flex gap-3 mt-auto pb-6">
+          <div className="flex gap-3 mt-auto safe-pad-bottom">
             <button
               type="button"
               onClick={goBack}

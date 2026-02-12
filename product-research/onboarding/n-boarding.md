@@ -232,3 +232,14 @@ Napper uses onboarding as a “trust ritual”: value (benefits + education) and
 
 Reference filenames in this folder:  
 `IMG_6850.PNG` … `IMG_6874.PNG` (see Screen index table above).
+
+---
+
+## Implementation notes (Baby Sleep Tracker)
+
+We built a **shorter** flow inspired by Napper (see [ONBOARDING-PLAN.md](ONBOARDING-PLAN.md)):
+
+- **Entry** → **Welcome (merged)** → **Baby name** → **Baby DOB** → **Your name** → **Your relationship** → **Account**. No acquisition, goals, education carousel, baby photo, first-born, other parent, or team celebration.
+- Layout: question at top, Next at bottom; fixed viewport (no scroll); safe-area padding; circadian theme from first screen.
+- **Next** is disabled until the current step’s required input is complete (name, DOB, your name). Baby DOB defaults to empty so the user must pick a date.
+- Data is **in-memory only** in this phase; Supabase schema and persistence on first login are planned next.

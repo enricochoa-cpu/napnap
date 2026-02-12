@@ -30,9 +30,9 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
   };
 
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
-      {/* Logo/Header */}
-      <div className="text-center mb-8">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4 safe-pad-top">
+      {/* Logo + short info (Napper-style) */}
+      <div className="text-center pt-2 pb-6 flex-shrink-0">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
           <svg className="w-8 h-8 text-[var(--nap-color)]" fill="currentColor" viewBox="0 0 24 24">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
@@ -42,9 +42,8 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
         <p className="text-[var(--text-muted)] font-display mt-2">Sign in to continue tracking sleep</p>
       </div>
 
-      {/* Form Card */}
-      <div className="card p-6 w-full max-w-sm">
-        {/* Google Sign In - Primary option for quick access */}
+      {/* Form Card: Google + email */}
+      <div className="card p-6 w-full max-w-sm mx-auto">
         <GoogleSignInButton onSignIn={onGoogleSignIn} />
 
         <AuthDivider />
@@ -97,7 +96,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
           <button
             type="submit"
             disabled={loading}
-            className="btn btn-nap w-full"
+            className="btn btn-nap w-full min-h-[56px]"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
@@ -105,7 +104,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
 
         <div className="mt-6 text-center">
           <p className="text-[var(--text-muted)] text-sm font-display">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <button
               onClick={onSwitchToSignUp}
               className="text-[var(--nap-color)] font-medium hover:underline"
@@ -115,6 +114,8 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
           </p>
         </div>
       </div>
+
+      <div className="flex-shrink-0 safe-pad-bottom min-h-[1.5rem]" />
     </div>
   );
 }

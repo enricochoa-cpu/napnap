@@ -102,6 +102,12 @@ Cambio automático basado en hora del día:
 - **Afternoon (12:00-18:59)**: Fondo neutro, colores saturados
 - **Night (19:00-05:59)**: Fondo oscuro, colores desaturados
 
+### Pre-auth onboarding (UX/UI only)
+- **Entry:** AuthGuard muestra primero EntryChoice ("Get started" / "I have an account"). Si "Get started" → OnboardingFlow; si "I have an account" → Login.
+- **Flujo:** Welcome (merged) → Baby name → Baby DOB → Your name → Your relationship → Account (SignUp/Login). Layout Napper-style: pregunta arriba, Next abajo; viewport fijo (no scroll); safe-pad-top / safe-pad-bottom para no pegar al browser.
+- **Validación:** Next deshabilitado hasta completar el paso (nombre bebé, DOB, nombre usuario). DOB por defecto vacío para forzar elección.
+- **Pendiente:** Persistencia (localStorage/Supabase), schema, escribir perfil al primer login.
+
 ---
 
 ## 5. User Preferences & Style
@@ -132,6 +138,8 @@ Cambio automático basado en hora del día:
 | `DayNavigator.tsx` | Napper-style week strip + calendar modal (date selection for History view) |
 | `SleepList.tsx` | History view, uses SleepEntry variants |
 | `SleepEntry.tsx` | NapEntry, BedtimeEntry, WakeUpEntry components |
+| `EntryChoice.tsx` | Pre-auth: "Get started" vs "I have an account" |
+| `OnboardingFlow.tsx` | Welcome → Baby name → Baby DOB → Your name → Your relationship → Account (multi-step, in-memory draft only) |
 
 ### Hooks
 | Hook | Purpose |

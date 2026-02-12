@@ -43,7 +43,7 @@ main.tsx → <AuthGuard> → <App />
 | **Path** | `entryChoice === 'new'` |
 | **Component** | `OnboardingFlow` → `components/Onboarding/OnboardingFlow.tsx` |
 | **Primary Goal** | Collect baby + user info, then create account or sign in |
-| **Steps** | Welcome (merged) → Baby (name, DOB) → Your name → Your relationship → Account (SignUp/Login/ForgotPassword). Napper-style layout (question top, Next bottom); no scroll. |
+| **Steps** | Welcome (merged) → Baby name → Baby DOB → Your name → Your relationship → Account (SignUp/Login/ForgotPassword). Napper-style layout (question top, Next bottom); no scroll; safe-area padding top/bottom. |
 | **Golden Path** | Next through steps → Create account or Sign in → App |
 | **Branching Options** | Back on Baby/You; on Account: Sign up ↔ Sign in ↔ Forgot password |
 | **Escape Routes** | None (data in-memory only; persistence deferred) |
