@@ -13,11 +13,18 @@ dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor / IDE (keep shared .vscode, ignore local Cursor)
 .vscode/*
 !.vscode/extensions.json
 .idea
+.cursor
 .DS_Store
+
+# Claude/Cursor local and generated
+.claude/settings.local.json
+.agents
+.claude/skills
+supabase/.temp
 *.suo
 *.ntvs*
 *.njsproj
