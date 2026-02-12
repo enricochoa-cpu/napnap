@@ -119,7 +119,7 @@ All theme values are CSS variables in `:root`:
 - **Colors**: `--nap-color` (#9DBAB7 matte sage), `--night-color` (#8A92B3 muted periwinkle), `--wake-color` (#E8D3A3 warm parchment)
 - **Text**: `--text-primary`, `--text-secondary`, `--text-muted`
 - **UI**: `--success-color`, `--danger-color`
-- **Typography**: `--font-display` (Quicksand), `--font-body` (Nunito)
+- **Typography**: `--font-display` (Plus Jakarta Sans), `--font-body` (Plus Jakarta Sans)
 
 ### Reusable CSS Classes
 - `.card`: Dark glass-morphism cards with subtle border

@@ -39,7 +39,7 @@ function buildEmailHtml(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>You're invited to NapNap</title>
 </head>
-<body style="margin:0;padding:0;background-color:#12141C;font-family:'Nunito',system-ui,-apple-system,sans-serif;">
+<body style="margin:0;padding:0;background-color:#12141C;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#12141C;">
     <tr>
       <td align="center" style="padding:40px 20px;">

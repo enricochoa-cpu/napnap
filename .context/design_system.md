@@ -86,10 +86,10 @@ All tokens below shift per-theme. Components consume `var(--token)` and never ha
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--font-display` | `'Quicksand', sans-serif` | Headings, buttons, display text, stats |
-| `--font-body` | `'Nunito', sans-serif` | Body copy, inputs, labels |
+| `--font-display` | `'Plus Jakarta Sans', sans-serif` | Headings, buttons, display text, stats |
+| `--font-body` | `'Plus Jakarta Sans', sans-serif` | Body copy, inputs, labels |
 
-Weights loaded: **500** (medium), **600** (semibold), **700** (bold) for both families.
+Weights loaded: **500** (medium), **600** (semibold), **700** (bold). Single family for a cohesive, professional look.
 
 ### Body Defaults
 
@@ -105,14 +105,14 @@ Weights loaded: **500** (medium), **600** (semibold), **700** (bold) for both fa
 
 | Class | Font | Size | Weight | Letter Spacing |
 |-------|------|------|--------|----------------|
-| `.text-display-lg` | Quicksand | `2rem` (32px) | 700 | `-0.02em` |
-| `.text-display-md` | Quicksand | `1.5rem` (24px) | 600 | `-0.01em` |
-| `.text-display-sm` | Quicksand | `1.125rem` (18px) | 600 | — |
-| `.hero-countdown` | Quicksand | `3.5rem` (56px) | 700 | `-0.03em` |
-| `.hero-secondary` | Quicksand | `1.0625rem` (17px) | 600 | `0.05em` |
-| `.stat-value` | Quicksand | `1.5rem` (24px) | 700 | — |
+| `.text-display-lg` | Plus Jakarta Sans | `2rem` (32px) | 700 | `-0.02em` |
+| `.text-display-md` | Plus Jakarta Sans | `1.5rem` (24px) | 600 | `-0.01em` |
+| `.text-display-sm` | Plus Jakarta Sans | `1.125rem` (18px) | 600 | — |
+| `.hero-countdown` | Plus Jakarta Sans | `3.5rem` (56px) | 700 | `-0.03em` |
+| `.hero-secondary` | Plus Jakarta Sans | `1.0625rem` (17px) | 600 | `0.05em` |
+| `.stat-value` | Plus Jakarta Sans | `1.5rem` (24px) | 700 | — |
 | `.stat-label` | (inherit) | `0.875rem` (14px) | 500 | — |
-| `.tag` | Quicksand | `0.8125rem` (13px) | 600 | — |
+| `.tag` | Plus Jakarta Sans | `0.8125rem` (13px) | 600 | — |
 
 ---
 

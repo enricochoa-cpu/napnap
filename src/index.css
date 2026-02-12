@@ -4,7 +4,8 @@
    ============================================================================ */
 
 /* Fonts: Professional softness - Medium weight base for 3AM readability */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700&family=Quicksand:wght@500;600;700&display=swap');
+/* Plus Jakarta Sans: professional, clean, still warm — better fit than Quicksand/Nunito for a trustworthy app feel */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -15,8 +16,8 @@
   /* ========== SHARED DESIGN TOKENS ========== */
 
   /* Typography */
-  --font-display: 'Quicksand', sans-serif;
-  --font-body: 'Nunito', sans-serif;
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
 
   /* Spacing - generous for touch */
   --space-xs: 0.25rem;

@@ -88,8 +88,7 @@ src/
 
 ### Typography
 
-- **Display**: Quicksand (headings, buttons)
-- **Body**: Nunito (content, forms)
+- **Display & body**: Plus Jakarta Sans (headings, buttons, content, forms)
 
 ### Key Classes
 

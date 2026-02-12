@@ -108,8 +108,8 @@ Themes are CSS class overrides on `:root`, applied by `useApplyCircadianTheme()`
 ### Key Design Tokens
 ```css
 /* Typography */
---font-display: 'Quicksand';   /* Headings, display text */
---font-body: 'Nunito';         /* Body copy, UI text */
+--font-display: 'Plus Jakarta Sans';   /* Headings, display text */
+--font-body: 'Plus Jakarta Sans';     /* Body copy, UI text */
 
 /* Semantic colours */
 --nap-color    /* Sage/teal — daytime naps */

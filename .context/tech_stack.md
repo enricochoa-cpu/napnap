@@ -19,7 +19,7 @@
 ## Styling
 - **Tailwind CSS** 4.1 — imported via `@import "tailwindcss"` in `src/index.css`
 - **CSS Custom Properties** — full design token system (colors, spacing, radii, typography)
-- **Google Fonts** — Quicksand (display) + Nunito (body), loaded via CSS `@import`
+- **Google Fonts** — Plus Jakarta Sans (display + body), loaded via CSS `@import`
 - **No component library** — all UI is hand-built
 
 ## Key Libraries
