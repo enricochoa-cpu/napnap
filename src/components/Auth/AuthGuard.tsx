@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { EntryChoice } from '../Onboarding';
+import { OnboardingFlow } from '../Onboarding';
 import { LoginForm } from './LoginForm';
 import { SignUpForm } from './SignUpForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { LoadingScreen } from '../LoadingScreen';
 
 type AuthView = 'login' | 'signup' | 'forgot-password';
+/** User has not chosen yet: show entry. After choice, we show either onboarding or auth. */
+type EntryChoiceState = null | 'new' | 'account';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -13,6 +17,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, loading, signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
+  const [entryChoice, setEntryChoice] = useState<EntryChoiceState>(null);
   const [authView, setAuthView] = useState<AuthView>('login');
 
   // Show loading screen while checking auth status
@@ -25,7 +30,29 @@ export function AuthGuard({ children }: AuthGuardProps) {
     return <>{children}</>;
   }
 
-  // User is not authenticated, show auth screens
+  // Not authenticated: show entry choice first (I'm new vs I have an account)
+  if (entryChoice === null) {
+    return (
+      <EntryChoice
+        onNew={() => setEntryChoice('new')}
+        onHaveAccount={() => setEntryChoice('account')}
+      />
+    );
+  }
+
+  // User chose "I'm new" — show onboarding; last step is account (SignUp/Login/ForgotPassword)
+  if (entryChoice === 'new') {
+    return (
+      <OnboardingFlow
+        signUp={signUp}
+        signIn={signIn}
+        signInWithGoogle={signInWithGoogle}
+        resetPassword={resetPassword}
+      />
+    );
+  }
+
+  // User chose "I have an account" — show auth screens as before
   switch (authView) {
     case 'signup':
       return (

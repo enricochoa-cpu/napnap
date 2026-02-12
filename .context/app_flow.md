@@ -14,29 +14,52 @@ main.tsx → <AuthGuard> → <App />
 
 ## 1. Auth Gate (unauthenticated)
 
-### 1.1 Loading Screen
+### 1.0 Loading Screen
 
 | Field | Value |
 |-------|-------|
 | **Path** | (initial render) |
 | **Component** | `LoadingScreen` → `components/LoadingScreen.tsx` |
 | **Primary Goal** | Reassure the user while auth status is checked |
-| **Golden Path** | Auto-resolve → Login or App |
+| **Golden Path** | Auto-resolve → Entry Choice or App |
 | **Branching Options** | None |
 | **Escape Routes** | None |
 
-### 1.2 Login
+### 1.1 Entry Choice
 
 | Field | Value |
 |-------|-------|
-| **Path** | `authView === 'login'` |
+| **Path** | Not authenticated, `entryChoice === null` |
+| **Component** | `EntryChoice` → `components/Onboarding/EntryChoice.tsx` |
+| **Primary Goal** | Choose path: new user (onboarding) or existing user (login) |
+| **Golden Path** | Tap "I'm new" → Onboarding **or** "I have an account" → Login |
+| **Branching Options** | Two equal CTAs |
+| **Escape Routes** | None |
+
+### 1.2 Onboarding (when user chose "I'm new")
+
+| Field | Value |
+|-------|-------|
+| **Path** | `entryChoice === 'new'` |
+| **Component** | `OnboardingFlow` → `components/Onboarding/OnboardingFlow.tsx` |
+| **Primary Goal** | Collect baby + user info, then create account or sign in |
+| **Steps** | Welcome → Trust → Baby (name, DOB) → You (name, relationship) → Account (SignUp/Login/ForgotPassword) |
+| **Golden Path** | Next through steps → Create account or Sign in → App |
+| **Branching Options** | Back on Baby/You; on Account: Sign up ↔ Sign in ↔ Forgot password |
+| **Escape Routes** | None (data in-memory only; persistence deferred) |
+
+### 1.3 Login
+
+| Field | Value |
+|-------|-------|
+| **Path** | `entryChoice === 'account'` and `authView === 'login'` |
 | **Component** | `LoginForm` → `components/Auth/LoginForm.tsx` |
 | **Primary Goal** | Authenticate and enter the app |
 | **Golden Path** | Submit credentials → App |
 | **Branching Options** | 1. Google Sign In, 2. "Forgot password?" link, 3. "Sign up" link |
-| **Escape Routes** | None (this IS the entry point) |
+| **Escape Routes** | None |
 
-### 1.3 Sign Up
+### 1.4 Sign Up
 
 | Field | Value |
 |-------|-------|
@@ -47,7 +70,7 @@ main.tsx → <AuthGuard> → <App />
 | **Branching Options** | 1. Google Sign In, 2. "Sign in" link (back to Login) |
 | **Escape Routes** | "Sign in" link → Login |
 
-### 1.4 Forgot Password
+### 1.5 Forgot Password
 
 | Field | Value |
 |-------|-------|
@@ -119,11 +142,11 @@ Tab Bar
 | **Path** | `currentView === 'stats'` |
 | **Component** | `StatsView` → `components/StatsView.tsx` |
 | **Primary Goal** | Reassurance that sleep patterns are forming |
-| **Golden Path** | Glance at summary cards → adjust date range if needed |
-| **Branching Options** | 1. Start date picker, 2. End date picker, 3. Tab bar navigation |
+| **Golden Path** | Glance at summary cards → tap date range to adjust if needed |
+| **Branching Options** | 1. Date range picker (single control opens calendar sheet for start+end), 2. Tab bar navigation |
 | **Escape Routes** | Tab bar → other views |
 
-**Contents:** Insight tag, 4 summary cards (avg total, avg naps/day, avg nap time, avg night), stacked bar chart (daily sleep), area chart (sleep trend). Date range max 15 days.
+**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), 4 summary cards (avg total, avg naps/day, avg nap time, avg night), stacked bar chart (daily sleep), area chart (sleep trend). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet` — one calendar to pick start then end (range selection).
 
 ### 2.4 Profile (container)
 
@@ -244,7 +267,9 @@ These float above all content. Managed by boolean state in `App.tsx`. Available 
 | **Golden Path (active sleep)** | Tap Wake Up → ends active sleep immediately |
 | **Branching Options (no active sleep)** | 1. Wake Up, 2. Nap, 3. Bedtime |
 | **Branching Options (active sleep)** | 1. Wake Up (only option shown) |
-| **Escape Routes** | Tap backdrop, swipe down |
+| **Escape Routes** | Tap backdrop, drag down (handle bar) to dismiss |
+
+All bottom sheets that show a drag handle support drag-to-dismiss; open/close use tween (no bounce).
 
 ### 3.2 Sleep Entry Sheet
 
