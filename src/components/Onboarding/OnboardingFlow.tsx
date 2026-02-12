@@ -1,6 +1,6 @@
 /**
- * Multi-step onboarding: Welcome → Trust → Baby → You → Account.
- * State is in-memory only; persistence (e.g. localStorage / Supabase) is out of scope for this phase.
+ * Multi-step onboarding: Welcome (merged) → Baby → Your name → Your relationship → Account.
+ * Napper-style layout: question at top, Next at bottom. No scroll (fixed viewport).
  */
 
 import { useState } from 'react';
@@ -18,11 +18,11 @@ export interface OnboardingDraft {
   relationship: OnboardingRelationship;
 }
 
-const TOTAL_STEPS = 5; // Welcome, Trust, Baby, You, Account
+const TOTAL_STEPS = 5; // Welcome, Baby, Your name, Your relationship, Account
 const STEP_WELCOME = 0;
-const STEP_TRUST = 1;
-const STEP_BABY = 2;
-const STEP_YOU = 3;
+const STEP_BABY = 1;
+const STEP_YOUR_NAME = 2;
+const STEP_YOUR_RELATIONSHIP = 3;
 const STEP_ACCOUNT = 4;
 
 const RELATIONSHIP_OPTIONS: { value: OnboardingRelationship; label: string }[] = [
@@ -71,11 +71,11 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     </div>
   );
 
-  // Step 4: Account — reuse auth forms
+  // Step 4: Account — reuse auth forms (no-scroll wrapper)
   if (step === STEP_ACCOUNT) {
     if (accountView === 'forgot-password') {
       return (
-        <div className="min-h-screen bg-[var(--bg-deep)]">
+        <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)]">
           <ForgotPasswordForm
             onSubmit={resetPassword}
             onBack={() => setAccountView('login')}
@@ -84,7 +84,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       );
     }
     return (
-      <div className="min-h-screen bg-[var(--bg-deep)]">
+      <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)]">
         {accountView === 'signup' ? (
           <SignUpForm
             onSubmit={signUp}
@@ -105,46 +105,29 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
 
   const canProceed =
     (step === STEP_BABY && draft.babyName.trim() && draft.babyDob) ||
-    (step === STEP_YOU && draft.userName.trim() && draft.relationship) ||
-    step === STEP_WELCOME ||
-    step === STEP_TRUST;
+    (step === STEP_YOUR_NAME && draft.userName.trim()) ||
+    (step === STEP_YOUR_RELATIONSHIP) ||
+    step === STEP_WELCOME;
 
+  // Napper-style: question at top, content in middle, Next at bottom. No scroll.
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4">
       {progressDots}
 
-      {/* Welcome */}
+      {/* Welcome (merged with Trust) */}
       {step === STEP_WELCOME && (
-        <div className="w-full max-w-sm text-center">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display mb-3">
+        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
             Hi there
           </h2>
-          <p className="text-[var(--text-secondary)] font-display mb-8">
-            We’ll help you get clear on when your baby should sleep — in a few short steps.
+          <p className="text-[var(--text-secondary)] font-display mt-3 text-center">
+            A few quick details so we can suggest when your baby should sleep. No fuss.
           </p>
+          <div className="flex-1" />
           <button
             type="button"
             onClick={goNext}
-            className="btn btn-night w-full min-h-[56px]"
-          >
-            Next
-          </button>
-        </div>
-      )}
-
-      {/* Trust */}
-      {step === STEP_TRUST && (
-        <div className="w-full max-w-sm text-center">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display mb-3">
-            Why we ask a few details
-          </h2>
-          <p className="text-[var(--text-secondary)] font-display mb-8">
-            Your baby’s age and name let us tailor nap and bedtime suggestions. No judgement — just calm, practical guidance.
-          </p>
-          <button
-            type="button"
-            onClick={goNext}
-            className="btn btn-night w-full min-h-[56px]"
+            className="btn btn-night w-full min-h-[56px] mt-auto mb-6"
           >
             Next
           </button>
@@ -153,14 +136,14 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
 
       {/* Baby */}
       {step === STEP_BABY && (
-        <div className="w-full max-w-sm">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display mb-2 text-center">
+        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
             When was your baby born?
           </h2>
-          <p className="text-[var(--text-muted)] text-sm font-display mb-6 text-center">
+          <p className="text-[var(--text-muted)] text-sm font-display mt-2 text-center">
             We need this for sleep suggestions.
           </p>
-          <div className="space-y-4 mb-6">
+          <div className="flex-1 flex flex-col justify-center space-y-4 py-6">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
                 Baby’s name
@@ -186,11 +169,11 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               />
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 mt-auto pb-6">
             <button
               type="button"
               onClick={goBack}
-              className="btn btn-ghost flex-1 min-h-[56px]"
+              className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
               Back
             </button>
@@ -206,54 +189,27 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
         </div>
       )}
 
-      {/* You */}
-      {step === STEP_YOU && (
-        <div className="w-full max-w-sm">
-          <h2 className="text-display-md text-[var(--text-primary)] font-display mb-2 text-center">
-            And what’s your name?
+      {/* Your name */}
+      {step === STEP_YOUR_NAME && (
+        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+            What’s your name?
           </h2>
-          <p className="text-[var(--text-muted)] text-sm font-display mb-6 text-center">
-            So we can say hi.
-          </p>
-          <div className="space-y-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Your name
-              </label>
-              <input
-                type="text"
-                value={draft.userName}
-                onChange={(e) => setDraft((d) => ({ ...d, userName: e.target.value }))}
-                placeholder="Name"
-                className="input"
-                autoComplete="name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                You’re their…
-              </label>
-              <div className="flex gap-2 flex-wrap">
-                {RELATIONSHIP_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, relationship: opt.value }))}
-                    className={`btn min-h-[48px] flex-1 min-w-[80px] ${
-                      draft.relationship === opt.value ? 'btn-night' : 'btn-ghost'
-                    }`}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div className="flex-1 flex flex-col justify-center py-6">
+            <input
+              type="text"
+              value={draft.userName}
+              onChange={(e) => setDraft((d) => ({ ...d, userName: e.target.value }))}
+              placeholder="Name"
+              className="input"
+              autoComplete="name"
+            />
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 mt-auto pb-6">
             <button
               type="button"
               onClick={goBack}
-              className="btn btn-ghost flex-1 min-h-[56px]"
+              className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
               Back
             </button>
@@ -261,6 +217,45 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               type="button"
               onClick={goNext}
               disabled={!canProceed}
+              className="btn btn-night flex-1 min-h-[56px]"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Your relationship */}
+      {step === STEP_YOUR_RELATIONSHIP && (
+        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-4 text-center">
+            You’re their…
+          </h2>
+          <div className="flex-1 flex flex-col justify-center gap-2 py-6">
+            {RELATIONSHIP_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setDraft((d) => ({ ...d, relationship: opt.value }))}
+                className={`btn min-h-[56px] w-full ${
+                  draft.relationship === opt.value ? 'btn-night' : 'btn-ghost border border-[var(--night-color)]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-3 mt-auto pb-6">
+            <button
+              type="button"
+              onClick={goBack}
+              className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
               className="btn btn-night flex-1 min-h-[56px]"
             >
               Next

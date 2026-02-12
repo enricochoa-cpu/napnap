@@ -10,7 +10,7 @@ interface EntryChoiceProps {
 
 export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
       <div className="text-center mb-10">
         <div
           className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--night-color)]/20 flex items-center justify-center"
@@ -35,12 +35,12 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
           onClick={onNew}
           className="btn btn-night w-full min-h-[56px]"
         >
-          I’m new — set up my baby
+          Get started
         </button>
         <button
           type="button"
           onClick={onHaveAccount}
-          className="btn btn-ghost w-full min-h-[56px] border border-[var(--glass-border)]"
+          className="btn btn-ghost w-full min-h-[56px] border border-[var(--night-color)]"
         >
           I have an account
         </button>

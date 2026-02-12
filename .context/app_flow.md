@@ -32,7 +32,7 @@ main.tsx → <AuthGuard> → <App />
 | **Path** | Not authenticated, `entryChoice === null` |
 | **Component** | `EntryChoice` → `components/Onboarding/EntryChoice.tsx` |
 | **Primary Goal** | Choose path: new user (onboarding) or existing user (login) |
-| **Golden Path** | Tap "I'm new" → Onboarding **or** "I have an account" → Login |
+| **Golden Path** | Tap "Get started" → Onboarding **or** "I have an account" → Login |
 | **Branching Options** | Two equal CTAs |
 | **Escape Routes** | None |
 
@@ -43,7 +43,7 @@ main.tsx → <AuthGuard> → <App />
 | **Path** | `entryChoice === 'new'` |
 | **Component** | `OnboardingFlow` → `components/Onboarding/OnboardingFlow.tsx` |
 | **Primary Goal** | Collect baby + user info, then create account or sign in |
-| **Steps** | Welcome → Trust → Baby (name, DOB) → You (name, relationship) → Account (SignUp/Login/ForgotPassword) |
+| **Steps** | Welcome (merged) → Baby (name, DOB) → Your name → Your relationship → Account (SignUp/Login/ForgotPassword). Napper-style layout (question top, Next bottom); no scroll. |
 | **Golden Path** | Next through steps → Create account or Sign in → App |
 | **Branching Options** | Back on Baby/You; on Account: Sign up ↔ Sign in ↔ Forgot password |
 | **Escape Routes** | None (data in-memory only; persistence deferred) |

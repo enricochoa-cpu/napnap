@@ -6,25 +6,27 @@ Short, Napper-inspired onboarding (UX/UI only). Persistence and schema are out o
 
 ## Flow
 
-1. **Entry** — Single choice: "I'm new" (start onboarding) or "I have an account" (go to login).
-2. **Welcome** — App name, one-line value, calm visual. Next.
-3. **Trust** — One short benefit / "why we need a few details". Next.
-4. **Baby** — Baby name (text), date of birth (date picker). Next.
-5. **You** — Caregiver name (text), relationship to baby (Mum / Dad / Other). Next.
+1. **Entry** — Single choice: "Get started" (onboarding) or "I have an account" (login).
+2. **Welcome** — Merged intro: Hi there + short "why we ask" (one screen). Next.
+3. **Baby** — Baby name (text), date of birth (date picker). Next.
+4. **Your name** — Caregiver name only. Next.
+5. **Your relationship** — Mum / Dad / Other. Next.
 6. **Account** — Create account or sign in (reuse existing Login/SignUp). On success, user enters app; onboarding payload will be attached to account in a later phase.
+
+Layout: Napper-style (question at top, Next at bottom). Fixed viewport (no scroll) on all entry/onboarding/auth screens. Circadian theme (morning/afternoon/night) applied from AuthGuard.
 
 ---
 
 ## Screens (copy direction)
 
-| Step   | Screen   | Copy direction                                              | Fields (UI only)                    |
-|--------|----------|-------------------------------------------------------------|-------------------------------------|
-| 0      | Entry    | Two equal CTAs; optional app name/tagline                   | None                                |
-| 1      | Welcome  | App name, one-line value prop, calm visual                  | None                                |
-| 2      | Trust    | One short benefit or "why we need a few details"            | None                                |
-| 3      | Baby     | Ask baby name and date of birth                            | Name, DOB (ISO date string)         |
-| 4      | You      | Ask caregiver name and relationship to baby                | Name, relationship (dad/mum/other)  |
-| 5      | Account  | Create account / Sign in (existing auth components)         | Consent + auth method               |
+| Step   | Screen           | Copy direction                                        | Fields (UI only)                    |
+|--------|------------------|--------------------------------------------------------|-------------------------------------|
+| 0      | Entry            | Two CTAs; app name/tagline                             | None                                |
+| 1      | Welcome (merged) | Hi there + "A few quick details… No fuss."             | None                                |
+| 2      | Baby             | When was your baby born? Name + DOB                    | Name, DOB (ISO date string)         |
+| 3      | Your name        | What's your name?                                      | Name                                |
+| 4      | Your relationship| You're their… (Mum / Dad / Other)                      | relationship (dad/mum/other)       |
+| 5      | Account          | Create account / Sign in (existing auth components)   | Consent + auth method               |
 
 ---
 

@@ -29,7 +29,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+      <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
         <div className="card p-8 w-full max-w-sm text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--success-color)]/20 flex items-center justify-center">
             <svg className="w-8 h-8 text-[var(--success-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +52,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
+    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4">
       {/* Logo/Header */}
       <div className="text-center mb-8">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">

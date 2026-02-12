@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useApplyCircadianTheme } from '../../hooks/useCircadianTheme';
 import { EntryChoice } from '../Onboarding';
 import { OnboardingFlow } from '../Onboarding';
 import { LoginForm } from './LoginForm';
@@ -16,6 +17,7 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
+  useApplyCircadianTheme(); // Apply morning/afternoon/night theme even when showing entry or onboarding
   const { isAuthenticated, loading, signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
   const [entryChoice, setEntryChoice] = useState<EntryChoiceState>(null);
   const [authView, setAuthView] = useState<AuthView>('login');
