@@ -216,6 +216,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Condition to show the modal triggered before data finished loading, detecting a false "no activity today" state.
 - **Permanent Fix:** Guard the modal trigger behind loading state — only evaluate conditions after entries are fully loaded.
 
+### 8.2 MissingBedtimeModal After Adding Bedtime + Wake-Up
+**Date:** 2026-02-13 (documented from plan)
+
+- **Problem:** After the user added a completed night (bedtime + wake-up) from the sheet, the "Forgot bedtime?" modal still appeared.
+- **Root Cause:** We store night end time on the **next calendar day** (e.g. wake 08:00 → endTime tomorrow 08:00). The modal only treated "night ended **today**" as "we have a wake-up", so it kept showing.
+- **Permanent Fix:** Treat any completed night whose end date is **today or tomorrow** as "we have a wake-up" and suppress the modal. In App.tsx: `hasCompletedNightRecently` uses `endDateStr === todayStr || endDateStr === tomorrowStr`.
+
 ---
 
 ## 9. Navigation / View Bugs

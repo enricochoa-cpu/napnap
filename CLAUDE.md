@@ -91,7 +91,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 **Auth Components** (`src/components/Auth/`):
 - `AuthGuard`: Shows entry choice first ("Get started" / "I have an account"); then OnboardingFlow or Login. Protects routes requiring authentication.
-- `EntryChoice`/`OnboardingFlow`: Pre-auth onboarding (Welcome → Baby name → Baby DOB → Your name → Your relationship → Account). UX/UI only; Next disabled until step complete. See `product-research/onboarding/ONBOARDING-PLAN.md`.
+- `EntryChoice`/`OnboardingFlow`: Pre-auth onboarding (Welcome → Baby name → Baby DOB → Your name → Your relationship → Account). UX/UI only; Next disabled until step complete. See `product-research/onboarding/onboarding-plan.md`.
 - `LoginForm`/`SignUpForm`/`ForgotPasswordForm`: Authentication flows
 - `GoogleSignInButton`: Dark-themed OAuth button with Google's colored "G" logo (56px touch target)
 - `AuthDivider`: "or" separator between social and email login options

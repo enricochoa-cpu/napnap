@@ -44,7 +44,7 @@ This means:
 - The interface must be scannable, not readable — glanceable information at arm's length
 - New features must never add friction to existing flows
 
-**Pre-auth onboarding (optional):** New users see a short Napper-style flow (entry choice → welcome → baby name/DOB → your name/relationship → account). Returning users choose "I have an account" and go straight to login. Onboarding is value-first and minimal; scope and backlog are in `product-research/onboarding/ONBOARDING-PLAN.md`.
+**Pre-auth onboarding (optional):** New users see a short Napper-style flow (entry choice → welcome → baby name/DOB → your name/relationship → account). Returning users choose "I have an account" and go straight to login. Onboarding is value-first and minimal; scope and backlog are in `product-research/onboarding/onboarding-plan.md`.
 
 **Competitive framing:** Most baby trackers require long onboarding tutorials. We keep a short, trust-building path for new users while letting returning users get to the app in one tap.
 
