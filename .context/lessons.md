@@ -297,3 +297,14 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ### 11.18 Onboarding Next Button: Disabled Until Step Complete
 **Decision (2026-02-12):** In OnboardingFlow, the "Next" button must be disabled until the user has completed the current step's required input (baby name, baby DOB, your name). Baby DOB defaults to empty string so the user must explicitly pick a date; relationship defaults to "mum" so that step can always proceed. **Rationale:** Prevents advancing with empty data and makes it clear what action is required before continuing.
+
+---
+
+## 12. Onboarding / First-Login
+
+### 12.1 Onboarding Draft Not Persisted — New User Lands With No Profile
+**Date:** 2026-02-13
+
+- **Problem:** User completes onboarding (baby name, DOB, your name, relationship), clicks Create account (or Google). Auth succeeds but the app shows no baby and no user name/relationship — "Add your baby" is the only path.
+- **Root Cause:** OnboardingFlow kept the draft only in React state. The Account step called `signUp` / `signInWithGoogle` with email/password only; the draft was never sent or stored. After sign-up, no profile row existed.
+- **Permanent Fix:** (1) When the user reaches the Account step (`step === STEP_ACCOUNT`), persist the draft to **sessionStorage** in a `useEffect([step, draft])` so it's available after redirect (e.g. Google OAuth). (2) In App, when the user is authenticated and profile has finished loading with **no profile**, read the onboarding draft from sessionStorage; if valid (babyName + babyDob), call `createProfile` with mapped fields (name, dateOfBirth, userName, userRole from relationship); on success remove the draft. Use a ref to avoid applying twice; on create failure reset the ref so the user can retry. **Reusable rule:** sessionStorage (not localStorage) keeps the draft tab-scoped and available after OAuth redirect without persisting indefinitely.

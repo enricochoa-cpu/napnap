@@ -125,7 +125,7 @@ Checked via MCP: your project already has the right **database** setup for casca
 
 | Item | UI | Backend | Notes |
 |------|----|---------|--------|
-| Onboarding persistence + first-login profile write | Done | Missing | New users see empty app after sign-up. |
+| Onboarding persistence + first-login profile write | Done | Done | 2026-02-13: draft in sessionStorage on Account step; App applies draft and createProfile after sign-up. |
 | “Has completed onboarding” (skip to login) | Missing | Missing | Returning users always see Entry choice. |
 | Delete account | Done | Done | Implemented 2026-02-13 (anonymize + Edge Function + client). |
 | Multi-baby (add/switch/scope) | Partial | Missing | Schema + full flow not implemented. |
@@ -136,7 +136,8 @@ Checked via MCP: your project already has the right **database** setup for casca
 
 ## Suggested order of work
 
-1. **Onboarding backend** — Persist draft (e.g. localStorage), write baby + user profile on first login, add “has completed onboarding” and skip Entry choice for returning users. This unblocks real use for new sign-ups.
+1. ~~**Onboarding backend (persist + first-login profile)**~~ — Implemented 2026-02-13. Remaining: add "has completed onboarding" and skip Entry choice for returning users.
+
 2. **Supabase base schema** — Add initial migration that creates `profiles` and `sleep_entries` (and their RLS) so the repo fully describes the DB.
 3. ~~**Delete account**~~ — Implemented (anonymized tables, Edge Function delete-account, client flow).
 4. **Multi-baby** — Only if required for launch; then schema change first, then UI (switch baby, scoped entries).

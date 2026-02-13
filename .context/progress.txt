@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-13 — Delete account + anonymization implemented; RLS/Edge Function/client lessons documented; context and docs updated.
+**Last updated:** 2026-02-13 — Delete account + anonymization implemented; onboarding persistence + first-login profile write implemented; RLS/Edge Function/client lessons documented; context and docs updated.
 
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
@@ -160,13 +160,13 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 **Implemented (for reference):**
 - **Delete Account**: Implemented (2026-02-13). Full flow: storage cleanup → delete-account Edge Function (anonymize + deleteUser) → signOut (ignore 403) → redirect. See .context/plans/delete-account-with-anonymization.md and lessons 4.1, 4.2, 5.2, 5.3.
 
-## Onboarding (2026-02-12) [UX/UI DONE — BACKEND PENDING]
+## Onboarding (2026-02-12 / 2026-02-13) [UX/UI DONE — FIRST-LOGIN PROFILE DONE]
 
 - [x] Entry choice (Get started / I have an account)
 - [x] OnboardingFlow: Welcome → Baby name → Baby DOB → Your name → Your relationship → Account
 - [x] Napper-style layout (question top, Next bottom), no scroll, safe-area padding
 - [x] Circadian theme on entry/onboarding (useApplyCircadianTheme in AuthGuard)
 - [x] Next button disabled until required field(s) completed per step (baby name, DOB, your name)
-- [ ] Persist onboarding draft (e.g. localStorage); resume on return
-- [ ] Supabase: schema for onboarding payload; write baby + user profile on first login
+- [x] Persist onboarding draft on Account step (sessionStorage) so it survives sign-up/Google redirect; App applies draft and calls createProfile when authenticated user has no profile (2026-02-13)
+- [ ] Optional: resume on return (refresh still loses draft — sessionStorage is tab-scoped)
 - [ ] "Has completed onboarding" flag (skip entry for returning users)

@@ -102,11 +102,12 @@ Cambio automático basado en hora del día:
 - **Afternoon (12:00-18:59)**: Fondo neutro, colores saturados
 - **Night (19:00-05:59)**: Fondo oscuro, colores desaturados
 
-### Pre-auth onboarding (UX/UI only)
+### Pre-auth onboarding
 - **Entry:** AuthGuard muestra primero EntryChoice ("Get started" / "I have an account"). Si "Get started" → OnboardingFlow; si "I have an account" → Login.
 - **Flujo:** Welcome (merged) → Baby name → Baby DOB → Your name → Your relationship → Account (SignUp/Login). Layout Napper-style: pregunta arriba, Next abajo; viewport fijo (no scroll); safe-pad-top / safe-pad-bottom para no pegar al browser.
 - **Validación:** Next deshabilitado hasta completar el paso (nombre bebé, DOB, nombre usuario). DOB por defecto vacío para forzar elección.
-- **Pendiente:** Persistencia (localStorage/Supabase), schema, escribir perfil al primer login.
+- **Persistencia:** Al llegar al paso Account, el draft (baby name, DOB, user name, relationship) se guarda en sessionStorage. Tras sign-up (email o Google), App aplica el draft y llama `createProfile` para que el usuario nuevo tenga bebé y perfil de usuario desde el primer login. Ver lessons.md §12.1 (onboarding draft).
+- **Pendiente:** Flag "has completed onboarding" para que usuarios que vuelven vayan directo a Login; opcional resume-on-refresh (el draft en sessionStorage se pierde al refrescar).
 
 ---
 
@@ -139,7 +140,7 @@ Cambio automático basado en hora del día:
 | `SleepList.tsx` | History view, uses SleepEntry variants |
 | `SleepEntry.tsx` | NapEntry, BedtimeEntry, WakeUpEntry components |
 | `EntryChoice.tsx` | Pre-auth: "Get started" vs "I have an account" |
-| `OnboardingFlow.tsx` | Welcome → Baby name → Baby DOB → Your name → Your relationship → Account (multi-step, in-memory draft only) |
+| `OnboardingFlow.tsx` | Welcome → Baby name → Baby DOB → Your name → Your relationship → Account (multi-step; draft persisted to sessionStorage on Account step, applied in App after sign-up) |
 
 ### Hooks
 | Hook | Purpose |
@@ -152,7 +153,7 @@ Cambio automático basado en hora del día:
 
 ### Key Utilities
 - `dateUtils.ts`: Prediction algorithms, duration formatting, age calculations
-- `storage.ts`: localStorage helpers
+- `storage.ts`: localStorage helpers; sessionStorage helpers for onboarding draft (ONBOARDING_DRAFT key)
 
 ---
 
@@ -212,6 +213,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-12 | StatsView: single date range picker (DateRangePickerSheet), no more two separate date inputs |
 | 2026-02-12 | All bottom sheets: tween open/close (no bounce); QuickActionSheet + ShareAccess Edit sheet: added drag-to-dismiss |
 | 2026-02-13 | Delete account + anonymization: anonymized_baby_profiles / anonymized_sleep_entries tables, RLS (separate block SELECT/UPDATE/DELETE; authenticated INSERT + SELECT on anonymized_baby for .select('id')); delete baby copies to anonymized then deletes; Edge Function delete-account (verify_jwt off, getUser inside), client storage cleanup → invoke with Bearer token → signOut (try/catch 403); config.toml verify_jwt = false for delete-account |
+| 2026-02-13 | Onboarding persistence: draft saved to sessionStorage on Account step; App applies draft after sign-up and calls createProfile so new users get baby + user profile on first login (see lessons.md §12.1) |
 
 ---
 
