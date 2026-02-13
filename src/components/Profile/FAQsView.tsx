@@ -6,8 +6,15 @@ interface FAQsViewProps {
   onBack: () => void;
 }
 
-// Hardcoded FAQs - no database needed for static content
+// Hardcoded FAQs - no database needed for static content. Branding: NapNap.
 const FAQS = [
+  {
+    id: 'about',
+    question: 'What is NapNap?',
+    answer: `**NapNap** is a sleep tracker for babies (0–18 months) that helps you log naps and night sleep and get simple, age-based suggestions for when your baby might need to sleep next.
+
+We focus on **decision replacement**: instead of showing lots of data to analyze, we suggest things like "Next nap around 13:42" or "Bedtime around 19:30" so you have one clear next step. The app is designed for night-time and one-handed use, with a calm, non-judgmental tone.`,
+  },
   {
     id: '1',
     question: 'What is a wake window?',
@@ -21,7 +28,7 @@ Wake windows vary by age:
 - **8-12 months**: 2.5-4 hours
 - **12-18 months**: 4-6 hours
 
-Watching for your baby's sleepy cues within these windows helps prevent overtiredness.`,
+Watching for your baby's sleepy cues within these windows helps prevent overtiredness. NapNap uses age-based wake windows to suggest when to offer the next nap or bedtime.`,
   },
   {
     id: '2',
@@ -127,6 +134,31 @@ An earlier bedtime (even 30-60 minutes) can help break the overtired cycle.`,
 
 Don't worry if naps are 30-45 minutes while nights are much longer – this is biologically normal!`,
   },
+  {
+    id: '7',
+    question: 'What are circadian rhythm and sleep pressure?',
+    answer: `**Circadian rhythm** is your baby's internal body clock. It helps align sleep with day and night (more melatonin in the dark, more alert in the light). Over the first months, babies develop a longer stretch at night partly because of this.
+
+**Sleep pressure** (homeostatic drive) is the need to sleep that builds the longer someone is awake. NapNap's suggestions work with both: we use wake windows (sleep pressure) and time-of-day (circadian rhythm) to suggest nap times and a reasonable bedtime.`,
+  },
+  {
+    id: '8',
+    question: 'What is a sleep cycle?',
+    answer: `A **sleep cycle** is a block of light and deep sleep (and sometimes brief waking) before the body moves into the next cycle. In babies, one cycle is often around 30–45 minutes.
+
+Many short naps are one cycle: baby wakes between cycles and hasn't yet learned to link them. That's why you might see 30-minute naps in NapNap—they're normal. As your baby gets older, naps often lengthen as they consolidate cycles.`,
+  },
+  {
+    id: 'science',
+    question: 'Where does NapNap get its science from?',
+    answer: `NapNap's suggestions are based on widely used infant sleep guidelines and research:
+
+- **Wake windows and age-based nap counts**: Aligned with evidence-based ranges used in pediatric sleep resources (e.g. [National Sleep Foundation](https://www.sleepfoundation.org/baby-sleep), [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/default.aspx)) and common clinical practice for 0–18 months.
+- **Circadian development**: Use of morning wake-up and time-of-day for bedtime follows established understanding of how infant circadian rhythm develops in the first year.
+- **Short-nap compensation**: Adjusting the next wake window after a short nap reflects the idea that less daytime sleep increases sleep pressure sooner; this is a practical approach used in many parent-facing sleep resources.
+
+NapNap is a tool to support you, not a substitute for professional advice. If you have concerns about your baby's sleep or health, please speak with your pediatrician or a qualified sleep consultant.`,
+  },
 ];
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -217,7 +249,7 @@ export function FAQsView({ onBack }: FAQsViewProps) {
 
   return (
     <div className="space-y-6">
-      <SubViewHeader title="FAQs" subtitle="Let's solve your doubts" onBack={onBack} />
+      <SubViewHeader title="FAQs" subtitle="NapNap key terms and answers" onBack={onBack} />
 
       {/* FAQ Accordion List */}
       <div className="card p-5">

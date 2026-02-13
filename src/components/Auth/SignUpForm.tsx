@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { GoogleSignInButton } from './GoogleSignInButton';
+import { PRIVACY_POLICY_SECTIONS } from '../../constants/privacyPolicy';
 import { AuthDivider } from './AuthDivider';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
@@ -15,6 +16,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +32,11 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
     // Validate password strength
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
+      return;
+    }
+
+    if (!agreedToPrivacy) {
+      setError('Please agree to the Privacy Policy to continue');
       return;
     }
 
@@ -86,7 +94,31 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
         <div className="card p-6 w-full max-w-sm mx-auto">
-          <GoogleSignInButton onSignIn={onGoogleSignIn} />
+          {/* Privacy consent required for both Google and email sign-up */}
+          <div className="space-y-3">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={agreedToPrivacy}
+                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                disabled={loading}
+                className="mt-1 w-4 h-4 rounded border-[var(--text-muted)] bg-[var(--bg-soft)] text-[var(--nap-color)] focus:ring-[var(--nap-color)]"
+                aria-describedby="privacy-desc"
+              />
+              <span id="privacy-desc" className="text-sm text-[var(--text-secondary)] font-display">
+                I agree to NapNap&apos;s{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacyModal(true)}
+                  className="text-[var(--nap-color)] font-medium underline underline-offset-2"
+                >
+                  Privacy Policy
+                </button>
+              </span>
+            </label>
+          </div>
+
+          <GoogleSignInButton onSignIn={onGoogleSignIn} disabled={!agreedToPrivacy} />
 
           <AuthDivider />
 
@@ -145,7 +177,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToPrivacy}
               className="btn btn-nap w-full min-h-[56px]"
             >
               {loading ? 'Creating account...' : 'Create Account'}
@@ -167,6 +199,53 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         <div className="safe-pad-bottom min-h-[2rem]" />
       </div>
+
+      {/* Privacy Policy modal for sign-up consent */}
+      {showPrivacyModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="privacy-modal-title"
+        >
+          <div className="bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-2xl shadow-xl max-h-[85vh] w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[var(--text-muted)]/20 flex items-center justify-between flex-shrink-0">
+              <h2 id="privacy-modal-title" className="text-lg font-display font-semibold text-[var(--text-primary)]">
+                NapNap Privacy Policy
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowPrivacyModal(false)}
+                className="p-2 rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-primary)]"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4 space-y-4">
+              {PRIVACY_POLICY_SECTIONS.map((section) => (
+                <div key={section.title}>
+                  <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-1">
+                    {section.title}
+                  </h3>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{section.body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 border-t border-[var(--text-muted)]/20 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowPrivacyModal(false)}
+                className="btn btn-night w-full min-h-[48px]"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

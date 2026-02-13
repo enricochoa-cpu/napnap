@@ -2,9 +2,10 @@ import { useState } from 'react';
 
 interface GoogleSignInButtonProps {
   onSignIn: () => Promise<{ message: string } | null>;
+  disabled?: boolean;
 }
 
-export function GoogleSignInButton({ onSignIn }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ onSignIn, disabled = false }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export function GoogleSignInButton({ onSignIn }: GoogleSignInButtonProps) {
       <button
         type="button"
         onClick={handleClick}
-        disabled={loading}
+        disabled={loading || disabled}
         className="w-full min-h-[56px] flex items-center justify-center gap-3 px-4 py-3
                    bg-white/10 hover:bg-white/15 active:bg-white/20
                    border border-white/20 rounded-xl

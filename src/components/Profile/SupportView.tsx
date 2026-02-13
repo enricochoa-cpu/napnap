@@ -29,7 +29,7 @@ const HeartIcon = () => (
 export function SupportView({ onBack, onNavigate }: SupportViewProps) {
   return (
     <div className="space-y-6">
-      <SubViewHeader title="Support" subtitle="We're here to help" onBack={onBack} />
+      <SubViewHeader title="Support" subtitle="NapNap help and privacy" onBack={onBack} />
 
       {/* Support Options */}
       <div className="space-y-4">
@@ -67,7 +67,7 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
               Quick tip
             </p>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-              Check our FAQs first—most questions are answered there. If you can't find what you're looking for, we're just a message away.
+              Check our FAQs first for key terms and science behind NapNap. You can also read our Privacy Policy here. If you need more help, we&apos;re just a message away.
             </p>
           </div>
         </div>
