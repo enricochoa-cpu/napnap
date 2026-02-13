@@ -47,6 +47,13 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
           onClick={() => onNavigate('contact')}
           iconColorClass="bg-[var(--wake-color)]/20 text-[var(--wake-color)]"
         />
+        <ListRow
+          icon={<HelpIcon />}
+          title="Privacy policy"
+          subtitle="How we use and protect your data"
+          onClick={() => onNavigate('privacy')}
+          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
+        />
       </div>
 
       {/* Helpful tip card */}

@@ -15,6 +15,7 @@ import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
 import { useBabyShares } from './hooks/useBabyShares';
 import { useAuth } from './hooks/useAuth';
+import { useDeleteAccount } from './hooks/useDeleteAccount';
 import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import {
   formatDate,
@@ -41,6 +42,7 @@ const MoonIconSmall = () => (
 
 function App() {
   const { signOut } = useAuth();
+  const { deleteAccount, isDeleting: isDeletingAccount, error: deleteAccountError } = useDeleteAccount(signOut);
   const { theme } = useApplyCircadianTheme();
   const {
     profile,
@@ -388,6 +390,9 @@ function App() {
       onAcceptInvitation={handleAcceptInvitation}
       onDeclineInvitation={declineInvitation}
       onDeleteBaby={deleteProfile}
+      onDeleteAccount={deleteAccount}
+      isDeletingAccount={isDeletingAccount}
+      deleteAccountError={deleteAccountError}
     />
   );
 

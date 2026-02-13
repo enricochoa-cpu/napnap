@@ -8,6 +8,7 @@ import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
 import { SupportView } from './SupportView';
+import { PrivacyPolicyView } from './PrivacyPolicyView';
 
 interface SharedBabyProfile extends BabyProfile {
   isOwner: boolean;
@@ -33,6 +34,9 @@ interface ProfileSectionProps {
   onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeleteBaby?: () => Promise<void>;
+  onDeleteAccount: () => Promise<void>;
+  isDeletingAccount: boolean;
+  deleteAccountError: string | null;
 }
 
 export function ProfileSection({
@@ -53,6 +57,9 @@ export function ProfileSection({
   onAcceptInvitation,
   onDeclineInvitation,
   onDeleteBaby,
+  onDeleteAccount,
+  isDeletingAccount,
+  deleteAccountError,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
@@ -96,12 +103,16 @@ export function ProfileSection({
 
   const handleBackFromFaqsOrContact = () => {
     direction.current = -1;
-    // Go back to support if we came from there, otherwise go to menu
     if (previousView.current === 'support') {
       setCurrentView('support');
     } else {
       setCurrentView('menu');
     }
+  };
+
+  const handleBackFromPrivacy = () => {
+    direction.current = -1;
+    setCurrentView(previousView.current);
   };
 
   const slideVariants = {
@@ -251,7 +262,25 @@ export function ProfileSection({
               onBack={handleBack}
               onSignOut={onSignOut}
               onUpdateUser={onUpdate}
+              onDeleteAccount={onDeleteAccount}
+              isDeletingAccount={isDeletingAccount}
+              deleteAccountError={deleteAccountError}
+              onNavigateToPrivacy={() => handleNavigate('privacy')}
             />
+          </motion.div>
+        )}
+
+        {currentView === 'privacy' && (
+          <motion.div
+            key="privacy"
+            custom={direction.current}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={slideTransition}
+          >
+            <PrivacyPolicyView onBack={handleBackFromPrivacy} />
           </motion.div>
         )}
       </AnimatePresence>

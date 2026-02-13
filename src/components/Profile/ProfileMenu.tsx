@@ -1,6 +1,6 @@
 import type { BabyShare, UserProfile } from '../../types';
 
-export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support';
+export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy';
 
 interface ProfileMenuProps {
   pendingInvitations: BabyShare[];

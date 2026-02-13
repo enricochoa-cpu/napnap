@@ -8,6 +8,10 @@ interface AccountSettingsViewProps {
   onBack: () => void;
   onSignOut: () => void;
   onUpdateUser: (data: Partial<Omit<UserProfile, 'email'>>) => void;
+  onDeleteAccount: () => Promise<void>;
+  isDeletingAccount: boolean;
+  deleteAccountError: string | null;
+  onNavigateToPrivacy?: () => void;
 }
 
 const LogoutIcon = () => (
@@ -27,7 +31,16 @@ const TrashIcon = () => (
   </svg>
 );
 
-export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUser }: AccountSettingsViewProps) {
+export function AccountSettingsView({
+  userProfile,
+  onBack,
+  onSignOut,
+  onUpdateUser,
+  onDeleteAccount,
+  isDeletingAccount,
+  deleteAccountError,
+  onNavigateToPrivacy,
+}: AccountSettingsViewProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -261,7 +274,7 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
         <>
           <div
             className="fixed inset-0 bg-black/60 z-50"
-            onClick={() => setShowDeleteConfirm(false)}
+            onClick={() => !isDeletingAccount && setShowDeleteConfirm(false)}
             aria-hidden="true"
           />
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto">
@@ -278,21 +291,50 @@ export function AccountSettingsView({ userProfile, onBack, onSignOut, onUpdateUs
               <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
                 Delete account?
               </h3>
-              <p className="text-[var(--text-muted)] text-sm text-center mb-6">
-                Account deletion is not yet available. Please contact support if you need to delete your account.
-              </p>
+              <div className="text-[var(--text-muted)] text-sm text-center mb-4 space-y-2">
+                <p>
+                  We will permanently delete your account, your profile, and all linked data (names, photos, and sleep logs).
+                </p>
+                <p>
+                  We may keep anonymized sleep and growth data (no names or identifiers) to improve our product and research.
+                </p>
+                <p className="text-xs">
+                  You will be signed out immediately and will not be able to recover your account.
+                </p>
+                {onNavigateToPrivacy && (
+                  <p className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        onNavigateToPrivacy();
+                      }}
+                      className="text-[var(--nap-color)] underline underline-offset-2"
+                    >
+                      Privacy policy
+                    </button>
+                  </p>
+                )}
+              </div>
+              {deleteAccountError && (
+                <p className="text-sm text-[var(--danger-color)] text-center mb-3" role="alert">
+                  {deleteAccountError}
+                </p>
+              )}
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
+                  disabled={isDeletingAccount}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
-                  disabled
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold opacity-40 cursor-not-allowed"
+                  onClick={() => onDeleteAccount()}
+                  disabled={isDeletingAccount}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
                 >
-                  Not yet available
+                  {isDeletingAccount ? 'Deleting…' : 'Delete account'}
                 </button>
               </div>
             </div>
