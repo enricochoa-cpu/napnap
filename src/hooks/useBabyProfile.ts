@@ -163,18 +163,20 @@ export function useBabyProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
+      const insertPayload = {
+        id: user.id,
+        baby_name: data.name,
+        baby_date_of_birth: data.dateOfBirth || null,
+        baby_gender: data.gender,
+        baby_weight: data.weight || null,
+        baby_height: data.height || null,
+        baby_avatar_url: data.avatarUrl || null,
+        user_name: data.userName || null,
+        user_role: data.userRole || null,
+      };
       const { error } = await supabase
         .from('profiles')
-        .insert({
-          id: user.id,
-          baby_name: data.name,
-          baby_date_of_birth: data.dateOfBirth || null,
-          baby_gender: data.gender,
-          baby_weight: data.weight || null,
-          baby_height: data.height || null,
-          user_name: data.userName || null,
-          user_role: data.userRole || null,
-        });
+        .insert(insertPayload);
 
       if (error) {
         console.error('Error creating profile:', error);
@@ -188,6 +190,7 @@ export function useBabyProfile() {
         gender: data.gender,
         weight: data.weight,
         height: data.height,
+        avatarUrl: data.avatarUrl,
       };
       setProfile(newProfile);
       setUserProfile({
@@ -307,7 +310,54 @@ export function useBabyProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Delete this baby's sleep entries first (UI promises "profile and all associated sleep entries")
+      // 1. Anonymize: copy baby profile and sleep entries to anonymized tables before delete
+      if (profile) {
+        const { data: anonBaby, error: anonBabyError } = await supabase
+          .from('anonymized_baby_profiles')
+          .insert({
+            baby_date_of_birth: profile.dateOfBirth || null,
+            baby_gender: profile.gender || null,
+            baby_weight: profile.weight ?? null,
+            baby_height: profile.height ?? null,
+          })
+          .select('id')
+          .single();
+
+        if (!anonBabyError && anonBaby?.id) {
+          const { data: sleepRows } = await supabase
+            .from('sleep_entries')
+            .select('start_time, end_time, type, created_at')
+            .eq('user_id', user.id);
+
+          if (sleepRows?.length) {
+            await supabase.from('anonymized_sleep_entries').insert(
+              sleepRows.map((row) => ({
+                anonymized_baby_id: anonBaby.id,
+                start_time: row.start_time,
+                end_time: row.end_time,
+                type: row.type,
+                created_at: row.created_at ?? new Date().toISOString(),
+              }))
+            );
+          }
+        }
+      }
+
+      // 2. Delete baby avatar(s) from Storage
+      const { data: avatarFiles, error: listError } = await supabase.storage
+        .from('baby-avatars')
+        .list(user.id, { limit: 500 });
+
+      if (!listError && avatarFiles?.length) {
+        const paths = avatarFiles
+          .filter((f) => f.name)
+          .map((f) => `${user.id}/${f.name}`);
+        if (paths.length) {
+          await supabase.storage.from('baby-avatars').remove(paths);
+        }
+      }
+
+      // 3. Delete sleep entries then profile row
       const { error: sleepError } = await supabase
         .from('sleep_entries')
         .delete()
@@ -315,7 +365,6 @@ export function useBabyProfile() {
 
       if (sleepError) {
         console.error('Error deleting sleep entries for profile:', sleepError);
-        // Continue to delete profile so we don't leave orphaned profile
       }
 
       const { error } = await supabase
@@ -341,7 +390,7 @@ export function useBabyProfile() {
     } catch (error) {
       console.error('Error deleting profile:', error);
     }
-  }, [sharedProfiles]);
+  }, [sharedProfiles, profile]);
 
   // Get the active baby profile
   const activeBabyProfile = sharedProfiles.find((p) => p.id === activeBabyId) || null;
