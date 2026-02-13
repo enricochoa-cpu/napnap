@@ -154,7 +154,7 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] supabase/config.toml: [functions.delete-account] verify_jwt = false for CLI deploys
 
 **Not implemented / pending:**
-- [ ] **Multi-baby (2+ babies per account)**: Not supported. Current design: one profile row per user (profiles.id = user.id), so only one "own" baby. Adding a second baby would require: (1) Supabase — e.g. a `babies` table (baby_id, user_id, name, date_of_birth, …) or multiple profile rows per user, and sleep_entries linked to baby_id; (2) UI/UX — gallery already shows "Add your baby" but createProfile currently inserts a single profile row (works only when user has no profile yet). Need full flow: add baby, switch active baby, and ensure sleep entries/filters/scopes are per baby.
+- [ ] **Multi-baby (2+ babies per account)**: DB not ready for 1 user + 2+ own babies. To do: (1) Add `babies` table (id, owner_id, name, date_of_birth, …); (2) profiles for user-only data; (3) sleep_entries.baby_id FK to babies; (4) baby_shares reference baby_id; (5) RLS + app (useBabyProfile, useSleepEntries, create/update/delete) aligned. Full checklist in .context/ESSENTIAL-GAPS.md Priority 3.
 - [ ] Resend domain verification for production invitation emails
 
 **Implemented (for reference):**

@@ -89,18 +89,27 @@ Checked via MCP: your project already has the right **database** setup for casca
 
 **What we have**
 
-- **UI:** “Add your baby” ghost card in MyBabiesView; BabyEditSheet used for “add” flow. Gallery and profile structure suggest multiple babies, but…
-- **Backend:** One profile row per user (`profiles.id = user.id`). `createProfile` inserts a single row with `id: user.id`; it only works when the user has no profile yet. Sleep entries are tied to `user_id` (owner), not to a separate baby entity. Sharing is per “baby owner” (one profile = one baby).
+- **UI:** “Add your baby” ghost card in MyBabiesView; BabyEditSheet used for “add” flow. Gallery and profile structure suggest multiple babies. **Active-baby selection:** user can choose which baby's data is shown (Today/History/Stats) via the circle on each card in My babies; choice persisted in localStorage.
+- **Backend:** One profile row per user (`profiles.id = user.id`). `createProfile` inserts a single row with `id: user.id`; it only works when the user has no profile yet. Sleep entries are tied to `user_id` (profile id = baby id). Sharing is per "baby owner" (one profile = one baby). **Database is not ready for 1 user + 2+ own babies.**
 
 **What we’re missing**
 
 | Gap | UI | Backend |
 |-----|----|---------|
 | Add second (or more) baby | Partial (card + sheet exist; createProfile only works for “first” baby) | New schema: e.g. `babies` table (baby_id, user_id, name, dob, …) with sleep_entries referencing baby_id, or multiple profile rows per user. RLS and sharing (baby_shares) must be aligned. |
-| Switch active baby | No | Need active_baby_id (or default) and all reads/writes (sleep entries, today view, history, stats) scoped to selected baby. |
-| Scope entries/filters per baby | No | useSleepEntries and UI currently assume one “effective” baby (owner profile + shared). Need baby-scoped queries and UI state. |
+| Switch active baby | Done | Active baby persisted (localStorage); Today/History/Stats scoped to selected baby. |
+| Scope entries/filters per baby | Done | useSleepEntries(babyId) and UI use activeBabyId. |
 
-**Summary:** UI has “Add baby” entry point only; full flow and backend (schema + scoping) missing. Essential only if you need multiple babies per account for launch.
+**To do — Database change for 1 user + 2+ own babies**
+
+1. **New `babies` table:** `id` (PK), `owner_id` (FK → auth.users), `name`, `date_of_birth`, `gender`, `weight`, `height`, `avatar_url`, `created_at`. One user can have many rows.
+2. **`profiles`:** Keep for user-only data (e.g. `user_name`, `user_role`); one row per user. Optionally move baby columns out or leave for backward compatibility during migration.
+3. **`sleep_entries`:** Add `baby_id` (FK → babies.id) and use it for "which baby this log belongs to". Migrate existing: set `baby_id` from current `user_id` (profile id) where that profile exists.
+4. **`baby_shares`:** Reference `baby_id` (babies.id) instead of `baby_owner_id` (profiles.id). Update RLS and app to use baby_id.
+5. **App:** useBabyProfile, useSleepEntries, createProfile/updateProfile/deleteProfile, and all RLS policies updated for babies table and new FKs.
+
+**Summary:** UI has "Add baby" + active-baby switch; backend schema still 1 user = 1 profile = 1 own baby. To support multiple own babies, implement the database changes above first, then align app code.
+
 
 ---
 
@@ -128,7 +137,7 @@ Checked via MCP: your project already has the right **database** setup for casca
 | Onboarding persistence + first-login profile write | Done | Done | 2026-02-13: draft in sessionStorage on Account step; App applies draft and createProfile after sign-up. |
 | “Has completed onboarding” (skip to login) | Missing | Missing | Returning users always see Entry choice. |
 | Delete account | Done | Done | Implemented 2026-02-13 (anonymize + Edge Function + client). |
-| Multi-baby (add/switch/scope) | Partial | Missing | Schema + full flow not implemented. |
+| Multi-baby (add/switch/scope) | Done (switch + scope) | Missing | Schema: need `babies` table, sleep_entries.baby_id, baby_shares.baby_id; then app alignment. See Priority 3 "To do". |
 | Invitation emails production | N/A | Ops (Resend domain) | Verify domain for production. |
 | Base Supabase schema (profiles, sleep_entries) | N/A | Not in repo | Add initial migration for reproducibility. |
 
