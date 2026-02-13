@@ -113,7 +113,7 @@ export function BabyDetailView({
     <div className="space-y-6">
       <SubViewHeader
         title={baby.name || 'Baby'}
-        subtitle={age ? `${age} old` : 'Edit profile'}
+        subtitle={age ? `${age} old` : isOwner ? 'Edit profile' : 'View profile'}
         onBack={onBack}
       />
 
@@ -168,22 +168,27 @@ export function BabyDetailView({
           </div>
         </div>
 
-        {/* Gender */}
+        {/* Gender — dropdown for owners, plain text for view-only */}
         <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
           <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
             Gender
           </label>
-          <select
-            name="gender"
-            value={formData.gender}
-            onChange={handleChange}
-            disabled={!isOwner}
-            className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 disabled:opacity-60"
-          >
-            <option value="male">Boy</option>
-            <option value="female">Girl</option>
-            <option value="other">Not specified</option>
-          </select>
+          {isOwner ? (
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
+            >
+              <option value="male">Boy</option>
+              <option value="female">Girl</option>
+              <option value="other">Not specified</option>
+            </select>
+          ) : (
+            <p className="text-[var(--text-primary)] text-base font-display">
+              {formData.gender === 'male' ? 'Boy' : formData.gender === 'female' ? 'Girl' : 'Not specified'}
+            </p>
+          )}
         </div>
 
         {/* Measurements */}

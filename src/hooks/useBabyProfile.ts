@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { getFromStorage, setToStorage } from '../utils/storage';
+import { STORAGE_KEYS } from '../utils/storage';
 import type { BabyProfile, UserProfile } from '../types';
 
 export interface SharedBabyProfile extends BabyProfile {
@@ -13,6 +15,12 @@ export function useBabyProfile() {
   const [sharedProfiles, setSharedProfiles] = useState<SharedBabyProfile[]>([]);
   const [activeBabyId, setActiveBabyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  /** Set active baby and persist so Today/History/Stats show this baby's data after refresh. */
+  const setActiveBabyIdAndPersist = useCallback((id: string | null) => {
+    setActiveBabyId(id);
+    setToStorage(STORAGE_KEYS.ACTIVE_BABY_ID, id);
+  }, []);
 
   // Fetch profile on mount
   useEffect(() => {
@@ -139,16 +147,21 @@ export function useBabyProfile() {
       allProfiles.push(...sharedBabies);
       setSharedProfiles(allProfiles);
 
-      // Set active baby (prefer own profile, or first shared)
-      // Also update if current activeBabyId is not in the list of available babies
       const allBabyIds = allProfiles.map(p => p.id);
-      const needsUpdate = !activeBabyId || !allBabyIds.includes(activeBabyId);
+      const storedActiveId = getFromStorage<string | null>(STORAGE_KEYS.ACTIVE_BABY_ID, null);
+      const storedIsValid = storedActiveId && allBabyIds.includes(storedActiveId);
+      const needsUpdate =
+        !activeBabyId ||
+        !allBabyIds.includes(activeBabyId) ||
+        (storedIsValid && storedActiveId !== activeBabyId);
 
-      if (needsUpdate && allProfiles.length > 0) {
-        if (ownProfile) {
-          setActiveBabyId(ownProfile.id);
-        } else if (sharedBabies.length > 0) {
-          setActiveBabyId(sharedBabies[0].id);
+      if (allProfiles.length > 0) {
+        if (storedIsValid) {
+          setActiveBabyId(storedActiveId);
+        } else if (needsUpdate) {
+          const fallback = ownProfile ? ownProfile.id : sharedBabies[0].id;
+          setActiveBabyId(fallback);
+          setToStorage(STORAGE_KEYS.ACTIVE_BABY_ID, fallback);
         }
       }
     } catch (error) {
@@ -198,7 +211,7 @@ export function useBabyProfile() {
         userName: data.userName || '',
         userRole: data.userRole || 'other',
       });
-      setActiveBabyId(user.id);
+      setActiveBabyIdAndPersist(user.id);
 
       // Update shared profiles list
       setSharedProfiles((prev) => {
@@ -394,9 +407,9 @@ export function useBabyProfile() {
       // Set active baby to first shared profile if available
       const remaining = sharedProfiles.filter((p) => p.id !== user.id);
       if (remaining.length > 0) {
-        setActiveBabyId(remaining[0].id);
+        setActiveBabyIdAndPersist(remaining[0].id);
       } else {
-        setActiveBabyId(null);
+        setActiveBabyIdAndPersist(null);
       }
     } catch (error) {
       console.error('Error deleting profile:', error);
@@ -413,7 +426,7 @@ export function useBabyProfile() {
     userProfile,
     sharedProfiles,
     activeBabyId,
-    setActiveBabyId,
+    setActiveBabyId: setActiveBabyIdAndPersist,
     activeBabyProfile,
     isOwnerOfActiveBaby,
     hasMultipleBabies,

@@ -54,14 +54,10 @@ interface BabyProfileCardProps {
 }
 
 function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardProps) {
-  const handleClick = () => {
-    if (baby.isOwner && onEdit) {
-      // For owned babies, clicking opens edit sheet
-      onEdit();
-    } else {
-      // For shared babies, clicking selects them
-      onSelect();
-    }
+  const cardStyle = {
+    background: isActive ? 'color-mix(in srgb, var(--nap-color) 12%, var(--glass-bg))' : 'var(--glass-bg)',
+    border: isActive ? '1px solid color-mix(in srgb, var(--nap-color) 40%, transparent)' : '1px solid var(--glass-border)',
+    boxShadow: 'var(--shadow-md)',
   };
 
   return (
@@ -71,17 +67,15 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl transition-all duration-200"
+      style={cardStyle}
     >
+      {/* Main area: tap opens detail (edit or view) */}
       <button
-        onClick={handleClick}
-        className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl active:scale-[0.97] active:brightness-[1.12] transition-all duration-200"
-        style={{
-          background: isActive ? 'color-mix(in srgb, var(--nap-color) 12%, var(--glass-bg))' : 'var(--glass-bg)',
-          border: isActive ? '1px solid color-mix(in srgb, var(--nap-color) 40%, transparent)' : '1px solid var(--glass-border)',
-          boxShadow: 'var(--shadow-md)',
-        }}
+        type="button"
+        onClick={onEdit}
+        className="flex-1 flex items-center gap-4 min-w-0 text-left active:scale-[0.99] active:brightness-[1.08] transition-transform"
       >
-        {/* Left: Avatar */}
         <div className="flex-shrink-0">
           <BabyAvatarPicker
             avatarUrl={baby.avatarUrl}
@@ -90,9 +84,7 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
             editable={false}
           />
         </div>
-
-        {/* Center: Name & Age */}
-        <div className="flex-1 text-left min-w-0">
+        <div className="flex-1 min-w-0">
           <p className="font-display font-semibold text-[var(--text-primary)] text-lg truncate">
             {baby.name || 'Unnamed baby'}
           </p>
@@ -102,21 +94,33 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
               <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
             )}
           </p>
-          {baby.isOwner && (
-            <p className="text-[11px] text-[var(--text-muted)]/50 mt-1 font-display">Tap to edit</p>
-          )}
+          <p className="text-[11px] text-[var(--text-muted)]/50 mt-1 font-display">
+            {baby.isOwner ? 'Tap to edit' : 'Tap to view'}
+          </p>
         </div>
+      </button>
 
-        {/* Right: Active indicator */}
-        <div className="flex-shrink-0">
-          {isActive && (
-            <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-              <span className="text-[var(--nap-color)]">
-                <CheckIcon />
-              </span>
-            </div>
-          )}
-        </div>
+      {/* Right: tap to set as active baby (sleep logs / Today / History refer to this baby) */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect();
+        }}
+        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center min-w-[44px] min-h-[44px] touch-manipulation transition-colors hover:bg-[var(--text-muted)]/10 active:scale-95"
+        title={isActive ? 'Selected for sleep logs' : 'Use this baby for sleep logs'}
+        aria-pressed={isActive}
+        aria-label={isActive ? 'Selected for sleep logs' : 'Use this baby for sleep logs'}
+      >
+        {isActive ? (
+          <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
+            <span className="text-[var(--nap-color)]">
+              <CheckIcon />
+            </span>
+          </div>
+        ) : (
+          <div className="w-8 h-8 rounded-full border-2 border-[var(--text-muted)]/40" aria-hidden />
+        )}
       </button>
     </motion.div>
   );
@@ -158,6 +162,7 @@ export function MyBabiesView({
   onOpenAddSheetHandled,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
+  const hasMultipleBabies = sharedProfiles.length > 1;
 
   // Sheet state — only used for adding new babies; user opens via empty state / Add card
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -184,7 +189,15 @@ export function MyBabiesView({
 
   return (
     <div className="space-y-6">
-      <SubViewHeader title="My babies" subtitle="Manage your little ones" onBack={onBack} />
+      <SubViewHeader
+        title="My babies"
+        subtitle={
+          hasMultipleBabies
+            ? 'Tap the circle to choose whose sleep logs you see'
+            : 'Manage your little ones'
+        }
+        onBack={onBack}
+      />
 
       {/* Baby Gallery - Clean floating cards */}
       <AnimatePresence mode="popLayout">
@@ -195,7 +208,7 @@ export function MyBabiesView({
               baby={baby}
               isActive={activeBabyId === baby.id}
               onSelect={() => onActiveBabyChange(baby.id)}
-              onEdit={baby.isOwner ? () => onNavigateToBabyDetail(baby.id) : undefined}
+              onEdit={() => onNavigateToBabyDetail(baby.id)}
             />
           ))}
 

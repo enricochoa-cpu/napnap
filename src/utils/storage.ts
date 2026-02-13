@@ -3,6 +3,8 @@ export const STORAGE_KEYS = {
   SLEEP_ENTRIES: 'baby-sleep-tracker-entries',
   /** Stored when user reaches Account step in onboarding; applied after sign-up to create profile. */
   ONBOARDING_DRAFT: 'baby-sleep-tracker-onboarding-draft',
+  /** Which baby's sleep data is shown in Today / History / Stats (user can switch in My babies). */
+  ACTIVE_BABY_ID: 'baby-sleep-tracker-active-baby-id',
 } as const;
 
 export function getFromStorage<T>(key: string, defaultValue: T): T {
