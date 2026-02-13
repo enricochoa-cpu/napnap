@@ -3,8 +3,9 @@
  * Napper-style layout: question at top, Next at bottom. No scroll (fixed viewport).
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { formatDate } from '../../utils/dateUtils';
+import { setOnboardingDraftInSession } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
 import { SignUpForm } from '../Auth/SignUpForm';
@@ -50,6 +51,13 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
   const [step, setStep] = useState(STEP_WELCOME);
   const [draft, setDraft] = useState<OnboardingDraft>(defaultDraft);
   const [accountView, setAccountView] = useState<'signup' | 'login' | 'forgot-password'>('signup');
+
+  // Persist draft when on Account step so it can be applied after sign-up (email or Google redirect).
+  useEffect(() => {
+    if (step === STEP_ACCOUNT) {
+      setOnboardingDraftInSession(JSON.stringify(draft));
+    }
+  }, [step, draft]);
 
   const goNext = () => {
     if (step < STEP_ACCOUNT) setStep((s) => s + 1);

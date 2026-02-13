@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
@@ -22,6 +22,10 @@ import {
   formatDateTime,
   calculateAge,
 } from './utils/dateUtils';
+import {
+  getOnboardingDraftFromSession,
+  removeOnboardingDraftFromSession,
+} from './utils/storage';
 import { parseISO, isToday, addDays, format } from 'date-fns';
 import type { SleepEntry } from './types';
 
@@ -56,7 +60,36 @@ function App() {
     uploadBabyAvatar,
     deleteProfile,
     refreshProfile,
+    loading: profileLoading,
   } = useBabyProfile();
+
+  // Apply onboarding draft after first sign-up: create profile from stored baby name, DOB, user name, relationship.
+  const appliedOnboardingDraftRef = useRef(false);
+  useEffect(() => {
+    if (profileLoading || profile !== null || appliedOnboardingDraftRef.current) return;
+    const raw = getOnboardingDraftFromSession();
+    if (!raw) return;
+    let draft: { babyName?: string; babyDob?: string; userName?: string; relationship?: 'dad' | 'mum' | 'other' };
+    try {
+      draft = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (!draft || typeof draft.babyName !== 'string' || typeof draft.babyDob !== 'string') return;
+    appliedOnboardingDraftRef.current = true;
+    createProfile({
+      name: draft.babyName,
+      dateOfBirth: draft.babyDob,
+      gender: 'other',
+      weight: 0,
+      height: 0,
+      userName: draft.userName ?? '',
+      userRole: draft.relationship ?? 'other',
+    }).then((result) => {
+      if (result) removeOnboardingDraftFromSession();
+      else appliedOnboardingDraftRef.current = false; // Allow retry if create failed
+    });
+  }, [profileLoading, profile, createProfile]);
 
   const {
     myShares,
