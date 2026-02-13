@@ -37,9 +37,12 @@ import {
   isWithinInterval,
 } from 'date-fns';
 import type { SleepEntry } from '../types';
+import type { BabyProfile } from '../types';
+import { SleepReportView } from './SleepReportView';
 
 interface StatsViewProps {
   entries: SleepEntry[];
+  profile?: BabyProfile | null;
 }
 
 const MAX_DAYS = 15;
@@ -416,12 +419,13 @@ function DateRangePickerSheet({
   );
 }
 
-export function StatsView({ entries }: StatsViewProps) {
+export function StatsView({ entries, profile = null }: StatsViewProps) {
   // Date range state - default to last 7 days
   const today = new Date();
   const [endDate, setEndDate] = useState<Date>(today);
   const [startDate, setStartDate] = useState<Date>(subDays(today, 6));
   const [isRangePickerOpen, setIsRangePickerOpen] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     setStartDate(startOfDay(start));
@@ -708,6 +712,16 @@ export function StatsView({ entries }: StatsViewProps) {
     }
   }, [hasData, averages]);
 
+  if (showReport) {
+    return (
+      <SleepReportView
+        entries={entries}
+        profile={profile}
+        onBack={() => setShowReport(false)}
+      />
+    );
+  }
+
   return (
     <div className="pb-32 px-6 fade-in">
       {/* Header */}
@@ -776,6 +790,27 @@ export function StatsView({ entries }: StatsViewProps) {
         maxDays={MAX_DAYS}
         maxDate={today}
       />
+
+      {/* Generate report for last 30 days — copy sets precise expectations */}
+      <button
+        type="button"
+        onClick={() => setShowReport(true)}
+        className="w-full rounded-2xl backdrop-blur-xl p-4 mb-6 flex items-center justify-center gap-2 font-display font-semibold text-[var(--text-on-accent)] min-h-[56px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)]"
+        style={{
+          background: 'var(--night-color)',
+          border: '1px solid var(--glass-border)',
+          boxShadow: 'var(--shadow-sm)',
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6" />
+          <path d="M16 13H8" />
+          <path d="M16 17H8" />
+          <path d="M10 9H8" />
+        </svg>
+        Generate report (last 30 days)
+      </button>
 
       {!hasData ? (
         <div className="rounded-3xl backdrop-blur-xl p-8 text-center" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>

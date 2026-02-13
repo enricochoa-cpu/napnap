@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-13 — Delete account + anonymization implemented; onboarding persistence + first-login profile write implemented; RLS/Edge Function/client lessons documented; context and docs updated.
+**Last updated:** 2026-02-13 — Delete account + anonymization; onboarding persistence + first-login profile write; Sleep Report (last 30 days, icon bullets, warm Overview); baby age calculation fix (lessons §13.1); context and docs updated.
 
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
@@ -170,3 +170,11 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Persist onboarding draft on Account step (sessionStorage) so it survives sign-up/Google redirect; App applies draft and calls createProfile when authenticated user has no profile (2026-02-13)
 - [ ] Optional: resume on return (refresh still loses draft — sessionStorage is tab-scoped)
 - [ ] "Has completed onboarding" flag (skip entry for returning users)
+
+## Sleep Report (2026-02-13) [COMPLETED]
+
+- [x] reportData.ts: getReportData(), tip pool (Appendix A PRD), getBedtimeCopy, getWakeUpCopy, getPatternsCopy
+- [x] SleepReportView: last 30 days only (REPORT_CAP_DAYS), Overview (warm tone, no dates), Summary table, Bedtime & wake, Patterns, What to try; icon bullets (moon, sun, pattern, check); same line height (BULLET_LIST_CLASS)
+- [x] StatsView: "Generate report (last 30 days)" button; showReport state; profile prop; Back to trends
+- [x] Baby age fix: calculateAge() "days" = days since last month anniversary (addMonths), not totalDays % 30 — lessons §13.1
+- [x] PRD, app_flow, lessons, logs, MEMORY, progress, CLAUDE updated

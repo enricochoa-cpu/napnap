@@ -6,6 +6,7 @@ import {
   differenceInMonths,
   differenceInDays,
   addDays,
+  addMonths,
   subDays,
   startOfDay,
   isToday,
@@ -63,7 +64,8 @@ export function calculateAge(dateOfBirth: string): string {
 
   const months = differenceInMonths(now, dob);
   if (months >= 1) {
-    const days = differenceInDays(now, dob) % 30;
+    const lastMonthAnniversary = addMonths(dob, months);
+    const days = differenceInDays(now, lastMonthAnniversary);
     return `${months} month${months !== 1 ? 's' : ''}${days > 0 ? `, ${days} day${days !== 1 ? 's' : ''}` : ''}`;
   }
 

@@ -308,3 +308,14 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** User completes onboarding (baby name, DOB, your name, relationship), clicks Create account (or Google). Auth succeeds but the app shows no baby and no user name/relationship — "Add your baby" is the only path.
 - **Root Cause:** OnboardingFlow kept the draft only in React state. The Account step called `signUp` / `signInWithGoogle` with email/password only; the draft was never sent or stored. After sign-up, no profile row existed.
 - **Permanent Fix:** (1) When the user reaches the Account step (`step === STEP_ACCOUNT`), persist the draft to **sessionStorage** in a `useEffect([step, draft])` so it's available after redirect (e.g. Google OAuth). (2) In App, when the user is authenticated and profile has finished loading with **no profile**, read the onboarding draft from sessionStorage; if valid (babyName + babyDob), call `createProfile` with mapped fields (name, dateOfBirth, userName, userRole from relationship); on success remove the draft. Use a ref to avoid applying twice; on create failure reset the ref so the user can retry. **Reusable rule:** sessionStorage (not localStorage) keeps the draft tab-scoped and available after OAuth redirect without persisting indefinitely.
+
+---
+
+## 13. Display / dateUtils
+
+### 13.1 Baby Age "X months, Y days" Showing Wrong Days
+**Date:** 2026-02-13
+
+- **Problem:** Baby born 16 June 2025 showed "7 months, 2 days" in the UI when it should show "7 months, 28 days" (as of mid-Feb 2026).
+- **Root Cause:** In `calculateAge()` (dateUtils.ts), the "days" part for infants under 1 year was computed as `differenceInDays(now, dob) % 30`. That gives **total days since birth modulo 30**, not "days since the last month anniversary." Example: 242 total days → 242 % 30 = 2, hence "2 days."
+- **Permanent Fix:** Compute days as **days since the last full month**: `lastMonthAnniversary = addMonths(dob, months)` (with `months = differenceInMonths(now, dob)`), then `days = differenceInDays(now, lastMonthAnniversary)`. Import `addMonths` from date-fns. **Reusable rule:** For "X months, Y days" display, Y must be the offset from the month anniversary, not total days mod 30.

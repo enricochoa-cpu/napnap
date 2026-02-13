@@ -96,6 +96,12 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 - **Temporal Validation**: bloquea duración 0, nap > 5h, night > 14h. Warn: nap > 4h, night > 13h, cross-midnight nap
 - Trash icon gris sutil, opacidad completa (era /60, ahora full)
 
+### Sleep Report (Stats)
+- **Entry:** Stats tab → botón "Generate report (last 30 days)" (copy explícita: reporte cubre últimos 30 días).
+- **Alcance:** Reporte siempre sobre **últimos 30 días** de datos (independiente del date picker de Stats). Rationale: bebés varían mucho; padres necesitan una foto precisa y reciente.
+- **Vista:** SleepReportView (sub-view dentro de Stats). Secciones: Overview (tono cálido, sin fechas), Summary (tabla), Bedtime & wake times, Patterns we're seeing, What to try. Todas las listas con **icon bullets** (luna, sol, patrón, check) y mismo interlineado (`--night-color`). "Back to trends" vuelve a los charts.
+- **Datos:** `reportData.ts` — getReportData(), tip pool (Appendix A PRD), reglas sin LLM. Edad del bebé: calculateAge() en dateUtils; ver lessons.md §13.1 (fix "X months, Y days").
+
 ### Circadian Themes
 Cambio automático basado en hora del día:
 - **Morning (06:00-11:59)**: Fondo cálido, colores vibrantes

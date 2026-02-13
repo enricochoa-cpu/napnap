@@ -434,7 +434,7 @@ function App() {
 
   // Stats View
   const renderStatsView = () => (
-    <StatsView entries={entries} />
+    <StatsView entries={entries} profile={activeBabyProfile || profile} />
   );
 
   // Profile View

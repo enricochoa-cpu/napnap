@@ -146,7 +146,7 @@ Tab Bar
 | **Branching Options** | 1. Date range picker (single control opens calendar sheet for start+end), 2. Tab bar navigation |
 | **Escape Routes** | Tab bar → other views |
 
-**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), 4 summary cards (avg total, avg naps/day, avg nap time, avg night), stacked bar chart (daily sleep), area chart (sleep trend). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet` — one calendar to pick start then end (range selection).
+**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), **"Generate report (last 30 days)"** button, 4 summary cards (avg total, avg naps/day, avg nap time, avg night), stacked bar chart (daily sleep), area chart (sleep trend). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet` — one calendar to pick start then end (range selection). **Report sub-view:** Tapping "Generate report (last 30 days)" opens `SleepReportView` (narrative report for the last 30 days of data only; Overview, Summary table, Bedtime & wake times, Patterns, What to try; icon bullets; "Back to trends" returns to charts).
 
 ### 2.4 Profile (container)
 

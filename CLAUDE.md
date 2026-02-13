@@ -77,7 +77,8 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `ShareAccess`: Invite caregivers with role selector (caregiver/viewer), manage sharing via bottom sheet (edit role, remove access)
 - `SkyBackground`: Animated background atmosphere with inline NightSky (stars), MorningSky (sun), AfternoonSky (clouds)
 - `LoadingScreen`: Full-screen loading state with animated moon
-- `StatsView`: Sleep statistics dashboard with Recharts. Features date range picker (max 15 days), summary cards (avg total sleep, avg naps/day, avg nap time, avg night sleep), stacked bar chart (daily sleep), and area chart (sleep trends). Uses CSS variables for theming
+- `StatsView`: Sleep statistics dashboard with Recharts. Features date range picker (max 15 days), **"Generate report (last 30 days)"** button (opens SleepReportView), summary cards (avg total sleep, avg naps/day, avg nap time, avg night sleep), stacked bar chart (daily sleep), and area chart (sleep trends). Uses CSS variables for theming
+- `SleepReportView`: Narrative sleep report for the **last 30 days** of data (capped; independent of Stats date picker). Sections: Overview (warm tone, no dates), Summary table, Bedtime & wake times, Patterns we're seeing, What to try. All bullet sections use icon bullets (moon, sun, pattern, check) and same line height. "Back to trends" returns to Stats charts. Data from `reportData.ts` (getReportData, tip pool per PRD Appendix A). Baby age via `calculateAge()` in dateUtils (see lessons.md §13.1 for days-calculation fix)
 
 **Profile Section** (`src/components/Profile/`):
 - `ProfileSection`: Container with navigation between profile views
