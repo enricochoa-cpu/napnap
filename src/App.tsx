@@ -22,7 +22,7 @@ import {
   formatDateTime,
   calculateAge,
 } from './utils/dateUtils';
-import { parseISO, isToday } from 'date-fns';
+import { parseISO, isToday, addDays, format } from 'date-fns';
 import type { SleepEntry } from './types';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
@@ -119,13 +119,26 @@ function App() {
   const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
   const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
   const [showAddEntryMenu, setShowAddEntryMenu] = useState(false);
+  const [entrySheetError, setEntrySheetError] = useState<string | null>(null);
+  const [logWakeUpMode, setLogWakeUpMode] = useState(false);
+  const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
+
+  const hasAnyBaby = sharedProfiles.length > 0;
+
+  const goToAddBaby = () => {
+    handleViewChange('profile');
+    setRequestOpenAddBaby(true);
+  };
 
   const dayEntries = getEntriesForDate(selectedDate);
 
-  // Check if we should show the missing bedtime modal
-  // Show when: no activity today AND no active night sleep from yesterday
+  // Check if we should show the missing bedtime modal.
+  // Suppress when user has any completed night whose end date is today OR tomorrow
+  // (tonight's bedtime + tomorrow's wake is stored with endTime tomorrow, so we must count that).
   const shouldShowMissingBedtimeModal = useMemo(() => {
     if (!showMissingBedtimeModal) return false;
+
+    if (!hasAnyBaby) return false;
 
     // Don't show while entries are loading
     if (entriesLoading) return false;
@@ -133,11 +146,17 @@ function App() {
     // Don't show for new users with no entries (nothing to "forget")
     if (entries.length === 0) return false;
 
-    // Check for morning wake up (night sleep that ended today)
-    const hasMorningWakeUp = entries.some(
-      (e) => e.type === 'night' && e.endTime && isToday(parseISO(e.endTime))
-    );
-    if (hasMorningWakeUp) return false;
+    const today = new Date();
+    const tomorrow = addDays(today, 1);
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+
+    const hasCompletedNightRecently = entries.some((e) => {
+      if (e.type !== 'night' || !e.endTime) return false;
+      const endDateStr = format(parseISO(e.endTime), 'yyyy-MM-dd');
+      return endDateStr === todayStr || endDateStr === tomorrowStr;
+    });
+    if (hasCompletedNightRecently) return false;
 
     // Check for any naps today (started or ended today)
     const hasTodayNaps = entries.some(
@@ -165,7 +184,7 @@ function App() {
 
     // No activity today - show the modal
     return true;
-  }, [showMissingBedtimeModal, entries, activeSleep, entriesLoading]);
+  }, [showMissingBedtimeModal, hasAnyBaby, entries, activeSleep, entriesLoading]);
 
   // Dates that have at least one sleep entry (for calendar dots)
   const datesWithEntries = useMemo(() => new Set(entries.map(e => e.date)), [entries]);
@@ -190,6 +209,7 @@ function App() {
   };
 
   const handleAddEntry = async (data: Omit<SleepEntry, 'id' | 'date'>) => {
+    setEntrySheetError(null);
     const collision = checkCollision(data.startTime, data.endTime);
     if (collision && !editingEntry) {
       setCollisionEntry(collision);
@@ -198,12 +218,21 @@ function App() {
     }
 
     if (editingEntry) {
-      await updateEntry(editingEntry.id, data);
+      const ok = await updateEntry(editingEntry.id, data);
+      if (!ok) {
+        setEntrySheetError('Could not save. Please try again.');
+        return;
+      }
     } else {
-      await addEntry(data);
+      const result = await addEntry(data);
+      if (result === null) {
+        setEntrySheetError('Could not save. Please try again.');
+        return;
+      }
     }
     setEditingEntry(null);
     setShowEntrySheet(false);
+    setLogWakeUpMode(false);
   };
 
   const handleReplaceEntry = () => {
@@ -286,16 +315,14 @@ function App() {
       return;
     }
 
-    // No active night sleep - create a completed night sleep entry
-    // Default to 8 hours ago as bedtime
-    const now = new Date();
-    const defaultBedtime = new Date(now.getTime() - 8 * 60 * 60 * 1000);
-    const data = {
-      startTime: formatDateTime(defaultBedtime),
-      endTime: formatDateTime(now),
-      type: 'night' as const,
-    };
-    addEntry(data);
+    // No active night sleep: open entry sheet for "last night" with bedtime default 20:00 and wake = now
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    setSelectedDate(formatDate(yesterday));
+    setEditingEntry(null);
+    setNewEntryType('night');
+    setLogWakeUpMode(true);
+    setShowEntrySheet(true);
     setShowActionMenu(false);
   };
 
@@ -309,49 +336,56 @@ function App() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
         <div className="relative">
-          <button
-            onClick={() => setShowAddEntryMenu(!showAddEntryMenu)}
-            className="text-[var(--nap-color)] font-display font-semibold text-sm"
-          >
-            + Add Entry
-          </button>
-
-          {/* Add Entry Dropdown */}
-          {showAddEntryMenu && (
+          {hasAnyBaby ? (
             <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowAddEntryMenu(false)}
-              />
-              {/* Use theme-aware glass border so dropdown works on both dark and light backgrounds */}
-              <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-[var(--glass-border)] overflow-hidden min-w-[140px]">
-                <button
-                  onClick={() => {
-                    handleOpenNewEntry('nap');
-                    setShowAddEntryMenu(false);
-                  }}
-                  /* Use muted text token for hover so it stays visible in light themes */
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-full bg-[var(--nap-color)]/15 flex items-center justify-center text-[var(--nap-color)]">
-                    <CloudIconSmall />
+              <button
+                onClick={() => setShowAddEntryMenu(!showAddEntryMenu)}
+                className="text-[var(--nap-color)] font-display font-semibold text-sm"
+              >
+                + Add Entry
+              </button>
+              {showAddEntryMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowAddEntryMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-[var(--glass-border)] overflow-hidden min-w-[140px]">
+                    <button
+                      onClick={() => {
+                        handleOpenNewEntry('nap');
+                        setShowAddEntryMenu(false);
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-[var(--nap-color)]/15 flex items-center justify-center text-[var(--nap-color)]">
+                        <CloudIconSmall />
+                      </div>
+                      <span className="text-[var(--text-primary)] font-display font-medium">Nap</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleOpenNewEntry('night');
+                        setShowAddEntryMenu(false);
+                      }}
+                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-[var(--night-color)]/15 flex items-center justify-center text-[var(--night-color)]">
+                        <MoonIconSmall />
+                      </div>
+                      <span className="text-[var(--text-primary)] font-display font-medium">Bedtime</span>
+                    </button>
                   </div>
-                  <span className="text-[var(--text-primary)] font-display font-medium">Nap</span>
-                </button>
-                <button
-                  onClick={() => {
-                    handleOpenNewEntry('night');
-                    setShowAddEntryMenu(false);
-                  }}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-full bg-[var(--night-color)]/15 flex items-center justify-center text-[var(--night-color)]">
-                    <MoonIconSmall />
-                  </div>
-                  <span className="text-[var(--text-primary)] font-display font-medium">Bedtime</span>
-                </button>
-              </div>
+                </>
+              )}
             </>
+          ) : (
+            <button
+              onClick={goToAddBaby}
+              className="text-[var(--nap-color)] font-display font-semibold text-sm"
+            >
+              Add a baby to log sleep
+            </button>
           )}
         </div>
       </div>
@@ -393,6 +427,8 @@ function App() {
       onDeleteAccount={deleteAccount}
       isDeletingAccount={isDeletingAccount}
       deleteAccountError={deleteAccountError}
+      requestOpenAddBaby={requestOpenAddBaby}
+      onClearRequestOpenAddBaby={() => setRequestOpenAddBaby(false)}
     />
   );
 
@@ -426,6 +462,8 @@ function App() {
                 onEdit={handleEdit}
                 loading={entriesLoading}
                 totalEntries={entries.length}
+                hasNoBaby={!hasAnyBaby}
+                onAddBabyClick={goToAddBaby}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
@@ -466,12 +504,12 @@ function App() {
               </svg>
             </button>
 
-            {/* Center Action Button */}
+            {/* Center Action Button — opens sleep menu when user has a baby, else goes to add baby */}
             <div className="nav-action">
               <button
-                onClick={() => setShowActionMenu(true)}
+                onClick={() => (hasAnyBaby ? setShowActionMenu(true) : goToAddBaby())}
                 className="nav-action-btn"
-                aria-label="Log sleep"
+                aria-label={hasAnyBaby ? 'Log sleep' : 'Add a baby to start logging'}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
@@ -565,10 +603,14 @@ function App() {
         onClose={() => {
           setShowEntrySheet(false);
           setEditingEntry(null);
+          setEntrySheetError(null);
+          setLogWakeUpMode(false);
         }}
         onSave={handleAddEntry}
         onDelete={deleteEntry}
         selectedDate={selectedDate}
+        saveError={entrySheetError}
+        defaultEndTimeToNow={logWakeUpMode}
       />
 
       {/* Wake Up Sheet — Napper-style focused modal for ending night sleep */}

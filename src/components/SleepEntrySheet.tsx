@@ -15,6 +15,10 @@ interface SleepEntrySheetProps {
   onSave: (data: Omit<SleepEntry, 'id' | 'date'>) => void | Promise<void>;
   onDelete?: (id: string) => void;
   selectedDate: string;
+  /** Shown when save failed (e.g. network error); sheet stays open */
+  saveError?: string | null;
+  /** When true (e.g. "Wake up" with no active night): pre-fill end time with now and require it */
+  defaultEndTimeToNow?: boolean;
 }
 
 // Icons
@@ -207,6 +211,8 @@ export function SleepEntrySheet({
   onSave,
   onDelete,
   selectedDate,
+  saveError = null,
+  defaultEndTimeToNow = false,
 }: SleepEntrySheetProps) {
   const isEditing = !!entry;
   const sleepType: SleepType = entry?.type || initialType;
@@ -236,10 +242,10 @@ export function SleepEntrySheet({
         setEndTime(entry.endTime ? extractTime(entry.endTime) : '');
       } else {
         setStartTime(getDefaultTime(selectedDate, sleepType));
-        setEndTime('');
+        setEndTime(defaultEndTimeToNow ? getCurrentTime() : '');
       }
     }
-  }, [entry, isOpen, selectedDate, sleepType]);
+  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow]);
 
   // Check if values have changed
   const hasChanges = useMemo(() => {
@@ -273,7 +279,11 @@ export function SleepEntrySheet({
 
   // Temporal validation
   const validation = useMemo((): { isValid: boolean; warning: string | null; error: string | null } => {
-    // No end time = no validation needed (ongoing entry)
+    // "Log wake up" flow requires end time (bedtime + wake-up)
+    if (defaultEndTimeToNow && !endTime) {
+      return { isValid: false, warning: null, error: 'Please set wake-up time' };
+    }
+    // No end time = no validation needed (ongoing entry), unless we require it above
     if (!endTime) return { isValid: true, warning: null, error: null };
 
     const mins = computeDurationMinutes(startTime, endTime);
@@ -299,7 +309,7 @@ export function SleepEntrySheet({
     }
 
     return { isValid: true, warning: null, error: null };
-  }, [startTime, endTime, sleepType]);
+  }, [startTime, endTime, sleepType, defaultEndTimeToNow]);
 
   const handleSave = async () => {
     if (!validation.isValid) return;
@@ -532,6 +542,12 @@ export function SleepEntrySheet({
                 )}
               </div>
 
+              {/* Save error from parent (e.g. network failure) */}
+              {saveError && (
+                <p className="text-center text-sm text-[var(--danger-color)] px-6 pb-2" role="alert">
+                  {saveError}
+                </p>
+              )}
               {/* Save button - circular tick with spring animation */}
               <div className="flex flex-col items-center pb-8 pt-4">
                 <motion.button

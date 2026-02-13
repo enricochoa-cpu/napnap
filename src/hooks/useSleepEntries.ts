@@ -125,7 +125,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     }
   }, [babyId]);
 
-  const updateEntry = useCallback(async (id: string, data: Partial<Omit<SleepEntry, 'id'>>) => {
+  const updateEntry = useCallback(async (id: string, data: Partial<Omit<SleepEntry, 'id'>>): Promise<boolean> => {
     try {
       const updateData: Record<string, unknown> = {};
       if (data.startTime !== undefined) updateData.start_time = toSupabaseTimestamp(data.startTime);
@@ -140,7 +140,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
 
       if (error) {
         console.error('Error updating entry:', error);
-        return;
+        return false;
       }
 
       setEntries((prev) =>
@@ -153,8 +153,10 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
           return updated;
         })
       );
+      return true;
     } catch (error) {
       console.error('Error updating entry:', error);
+      return false;
     }
   }, []);
 

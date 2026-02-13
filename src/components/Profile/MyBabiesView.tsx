@@ -27,6 +27,9 @@ interface MyBabiesViewProps {
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   inviterName?: string;
+  /** When true, open the add-baby sheet on mount (e.g. navigated from FAB with no baby) */
+  openAddSheetOnMount?: boolean;
+  onOpenAddSheetHandled?: () => void;
 }
 
 const CheckIcon = () => (
@@ -151,18 +154,21 @@ export function MyBabiesView({
   onUploadAvatar,
   onBack,
   onNavigateToBabyDetail,
+  openAddSheetOnMount = false,
+  onOpenAddSheetHandled,
 }: MyBabiesViewProps) {
   const hasAnyBabies = sharedProfiles.length > 0;
 
-  // Sheet state — only used for adding new babies
+  // Sheet state — only used for adding new babies; user opens via empty state / Add card
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
 
-  // Auto-open add sheet if no babies exist
+  // When parent requested "open add baby" (e.g. FAB with no baby), open sheet and clear request
   useEffect(() => {
-    if (!hasAnyBabies && !profile) {
+    if (openAddSheetOnMount) {
       setIsAddSheetOpen(true);
+      onOpenAddSheetHandled?.();
     }
-  }, [hasAnyBabies, profile]);
+  }, [openAddSheetOnMount]); // eslint-disable-line react-hooks/exhaustive-deps -- only when flag is set
 
   const handleAddBaby = () => {
     setIsAddSheetOpen(true);

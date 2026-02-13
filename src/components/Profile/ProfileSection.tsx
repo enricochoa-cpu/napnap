@@ -37,6 +37,9 @@ interface ProfileSectionProps {
   onDeleteAccount: () => Promise<void>;
   isDeletingAccount: boolean;
   deleteAccountError: string | null;
+  /** When true, switch to My Babies and open add-baby sheet (e.g. from FAB when user has no baby) */
+  requestOpenAddBaby?: boolean;
+  onClearRequestOpenAddBaby?: () => void;
 }
 
 export function ProfileSection({
@@ -60,11 +63,22 @@ export function ProfileSection({
   onDeleteAccount,
   isDeletingAccount,
   deleteAccountError,
+  requestOpenAddBaby = false,
+  onClearRequestOpenAddBaby,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
   const previousView = useRef<ProfileView>('menu');
   const direction = useRef(1); // 1 = forward (drill in), -1 = backward (go back)
+
+  // When app requests "open add baby" (e.g. FAB with no baby), go to My Babies; sheet opens in MyBabiesView
+  useEffect(() => {
+    if (requestOpenAddBaby) {
+      previousView.current = currentView;
+      direction.current = 1;
+      setCurrentView('my-babies');
+    }
+  }, [requestOpenAddBaby]); // eslint-disable-line react-hooks/exhaustive-deps -- only react to request flag
 
   // Track previous view for nested navigation
   const handleNavigate = (view: ProfileView) => {
@@ -171,6 +185,8 @@ export function ProfileSection({
               onUpdateRole={onUpdateRole}
               onRevokeAccess={onRevokeAccess}
               inviterName={userProfile?.userName || userProfile?.email}
+              openAddSheetOnMount={requestOpenAddBaby}
+              onOpenAddSheetHandled={onClearRequestOpenAddBaby}
             />
           </motion.div>
         )}

@@ -27,6 +27,9 @@ interface TodayViewProps {
   onEdit?: (entry: SleepEntry) => void;
   loading?: boolean;
   totalEntries?: number;
+  /** When true, show "add a baby" CTA in empty state instead of "tap + to add activity" */
+  hasNoBaby?: boolean;
+  onAddBabyClick?: () => void;
 }
 
 // Get today's completed naps
@@ -115,6 +118,8 @@ export function TodayView({
   awakeMinutes,
   onEdit,
   loading = false,
+  hasNoBaby = false,
+  onAddBabyClick,
 }: TodayViewProps) {
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
@@ -532,11 +537,24 @@ export function TodayView({
               <MoonIcon className="w-8 h-8 text-[var(--text-muted)]" />
             </div>
             <h1 className="text-xl font-display font-bold text-[var(--text-primary)] mb-2">
-              Good morning!
+              {hasNoBaby ? 'Add a baby to get started' : 'Good morning!'}
             </h1>
-            <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed">
-              This space is still empty. Tap the <span className="text-[var(--nap-color)]">+</span> button to add your first activity for today.
+            <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed mb-6">
+              {hasNoBaby
+                ? 'Log sleep for your little one by adding their profile first. Then you can track naps and bedtime.'
+                : 'This space is still empty. Tap the '}
+              {!hasNoBaby && <span className="text-[var(--nap-color)]">+</span>}
+              {!hasNoBaby && ' button to add your first activity for today.'}
             </p>
+            {hasNoBaby && onAddBabyClick && (
+              <button
+                onClick={onAddBabyClick}
+                className="px-6 py-3 rounded-2xl font-display font-semibold text-[var(--bg-deep)] transition-transform active:scale-[0.98]"
+                style={{ background: 'var(--nap-color)' }}
+              >
+                Add your baby
+              </button>
+            )}
           </div>
         </div>
       </div>

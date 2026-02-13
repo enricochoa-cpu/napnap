@@ -307,6 +307,17 @@ export function useBabyProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Delete this baby's sleep entries first (UI promises "profile and all associated sleep entries")
+      const { error: sleepError } = await supabase
+        .from('sleep_entries')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (sleepError) {
+        console.error('Error deleting sleep entries for profile:', sleepError);
+        // Continue to delete profile so we don't leave orphaned profile
+      }
+
       const { error } = await supabase
         .from('profiles')
         .delete()

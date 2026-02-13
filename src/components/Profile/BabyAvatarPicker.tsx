@@ -17,8 +17,19 @@ const sizeClasses = {
   lg: 'w-[120px] h-[120px] text-4xl',
 };
 
-const CameraIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+const CameraIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+    width={className ? undefined : 20}
+    height={className ? undefined : 20}
+    style={className ? { width: '100%', height: '100%' } : undefined}
+  >
     <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
     <circle cx="12" cy="13" r="4" />
   </svg>
@@ -109,7 +120,6 @@ export function BabyAvatarPicker({
 }: BabyAvatarPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const initial = babyName ? babyName.charAt(0).toUpperCase() : '?';
 
   const handleClick = () => {
     if (editable && fileInputRef.current) {
@@ -168,9 +178,12 @@ export function BabyAvatarPicker({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-          <span className="font-display font-bold text-[var(--nap-color)]">
-            {initial}
+        <div className="w-full h-full bg-[var(--nap-color)]/20 flex items-center justify-center text-[var(--nap-color)]">
+          <span
+            className={`inline-block flex-shrink-0 ${size === 'sm' ? 'w-6 h-6' : size === 'md' ? 'w-8 h-8' : 'w-12 h-12'}`}
+            aria-hidden="true"
+          >
+            <CameraIcon className="w-full h-full" />
           </span>
         </div>
       )}
