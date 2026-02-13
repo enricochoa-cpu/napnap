@@ -145,9 +145,10 @@ Cambio automático basado en hora del día:
 | Hook | Purpose |
 |------|---------|
 | `useSleepEntries` | CRUD entries, activeSleep, awakeMinutes |
-| `useBabyProfile` | Baby/user profiles, multi-baby switching |
+| `useBabyProfile` | Baby/user profiles, multi-baby switching, delete baby (anonymize then delete) |
 | `useBabyShares` | Sharing/invitations between caregivers |
 | `useCircadianTheme` | Time-based theme switching |
+| `useDeleteAccount` | Delete account: client deletes storage objects, invokes delete-account Edge Function with JWT, then signOut (ignore 403); redirects via onSignedOut |
 
 ### Key Utilities
 - `dateUtils.ts`: Prediction algorithms, duration formatting, age calculations
@@ -210,6 +211,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-10 | DayNavigator redesign: Napper-style swipeable week strip + calendar bottom sheet modal |
 | 2026-02-12 | StatsView: single date range picker (DateRangePickerSheet), no more two separate date inputs |
 | 2026-02-12 | All bottom sheets: tween open/close (no bounce); QuickActionSheet + ShareAccess Edit sheet: added drag-to-dismiss |
+| 2026-02-13 | Delete account + anonymization: anonymized_baby_profiles / anonymized_sleep_entries tables, RLS (separate block SELECT/UPDATE/DELETE; authenticated INSERT + SELECT on anonymized_baby for .select('id')); delete baby copies to anonymized then deletes; Edge Function delete-account (verify_jwt off, getUser inside), client storage cleanup → invoke with Bearer token → signOut (try/catch 403); config.toml verify_jwt = false for delete-account |
 
 ---
 

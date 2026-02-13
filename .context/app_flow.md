@@ -215,7 +215,7 @@ Tab Bar
 | **Branching Options** | 1. Edit profile (inline form toggle), 2. Sign Out card → confirmation modal, 3. "Delete account" text link → confirmation modal |
 | **Escape Routes** | Back button → Profile Menu |
 
-**Inline modals:** Logout confirmation, Delete account confirmation (delete is TODO — not yet implemented).
+**Inline modals:** Logout confirmation, Delete account confirmation (implemented: storage cleanup → delete-account Edge Function → sign out).
 
 ### 2.4.4 Support
 

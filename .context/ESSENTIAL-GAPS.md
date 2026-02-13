@@ -41,7 +41,7 @@
 
 ---
 
-## Priority 2 — Delete account
+## Priority 2 — Delete account [IMPLEMENTED 2026-02-13]
 
 **What we have**
 
@@ -127,7 +127,7 @@ Checked via MCP: your project already has the right **database** setup for casca
 |------|----|---------|--------|
 | Onboarding persistence + first-login profile write | Done | Missing | New users see empty app after sign-up. |
 | “Has completed onboarding” (skip to login) | Missing | Missing | Returning users always see Entry choice. |
-| Delete account | Done (disabled) | Missing | Need cascade + auth delete. |
+| Delete account | Done | Done | Implemented 2026-02-13 (anonymize + Edge Function + client). |
 | Multi-baby (add/switch/scope) | Partial | Missing | Schema + full flow not implemented. |
 | Invitation emails production | N/A | Ops (Resend domain) | Verify domain for production. |
 | Base Supabase schema (profiles, sleep_entries) | N/A | Not in repo | Add initial migration for reproducibility. |
@@ -138,6 +138,6 @@ Checked via MCP: your project already has the right **database** setup for casca
 
 1. **Onboarding backend** — Persist draft (e.g. localStorage), write baby + user profile on first login, add “has completed onboarding” and skip Entry choice for returning users. This unblocks real use for new sign-ups.
 2. **Supabase base schema** — Add initial migration that creates `profiles` and `sleep_entries` (and their RLS) so the repo fully describes the DB.
-3. **Delete account** — Design cascade (profiles, sleep_entries, baby_shares, storage), then implement (e.g. Edge Function + Auth admin or client-side with proper permissions).
+3. ~~**Delete account**~~ — Implemented (anonymized tables, Edge Function delete-account, client flow).
 4. **Multi-baby** — Only if required for launch; then schema change first, then UI (switch baby, scoped entries).
 5. **Production emails** — Resend domain verification when you’re ready to send real invitation emails.

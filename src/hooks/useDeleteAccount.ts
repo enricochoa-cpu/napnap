@@ -46,10 +46,19 @@ export function useDeleteAccount(onSignedOut: () => void) {
         return;
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setError('Session expired. Please sign in again.');
+        return;
+      }
+
       await deleteUserStorageObjects(user.id);
 
       const { data, error: fnError } = await supabase.functions.invoke('delete-account', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
 
       if (fnError) {
@@ -63,7 +72,13 @@ export function useDeleteAccount(onSignedOut: () => void) {
         return;
       }
 
-      await supabase.auth.signOut();
+      // Account is deleted; logout may 403 because the user no longer exists. Clear local
+      // session best-effort, then always run the signed-out callback so the UI redirects.
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        // Ignore: user was already deleted, so /auth/v1/logout can return 403.
+      }
       onSignedOut();
     } catch (e) {
       console.error('Delete account error:', e);

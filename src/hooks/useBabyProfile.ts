@@ -311,7 +311,9 @@ export function useBabyProfile() {
       if (!user) return;
 
       // 1. Anonymize: copy baby profile and sleep entries to anonymized tables before delete
-      if (profile) {
+      if (!profile) {
+        console.warn('deleteProfile: no profile in state, skipping anonymization');
+      } else {
         const { data: anonBaby, error: anonBabyError } = await supabase
           .from('anonymized_baby_profiles')
           .insert({
@@ -323,22 +325,31 @@ export function useBabyProfile() {
           .select('id')
           .single();
 
-        if (!anonBabyError && anonBaby?.id) {
-          const { data: sleepRows } = await supabase
+        if (anonBabyError) {
+          console.error('Anonymize baby profile failed:', anonBabyError.message, anonBabyError);
+        } else if (anonBaby?.id) {
+          const { data: sleepRows, error: sleepSelectError } = await supabase
             .from('sleep_entries')
             .select('start_time, end_time, type, created_at')
             .eq('user_id', user.id);
 
-          if (sleepRows?.length) {
-            await supabase.from('anonymized_sleep_entries').insert(
-              sleepRows.map((row) => ({
-                anonymized_baby_id: anonBaby.id,
-                start_time: row.start_time,
-                end_time: row.end_time,
-                type: row.type,
-                created_at: row.created_at ?? new Date().toISOString(),
-              }))
-            );
+          if (sleepSelectError) {
+            console.error('Anonymize: fetch sleep_entries failed:', sleepSelectError.message);
+          } else if (sleepRows?.length) {
+            const { error: sleepInsertError } = await supabase
+              .from('anonymized_sleep_entries')
+              .insert(
+                sleepRows.map((row) => ({
+                  anonymized_baby_id: anonBaby.id,
+                  start_time: row.start_time,
+                  end_time: row.end_time,
+                  type: row.type,
+                  created_at: row.created_at ?? new Date().toISOString(),
+                }))
+              );
+            if (sleepInsertError) {
+              console.error('Anonymize sleep entries failed:', sleepInsertError.message, sleepInsertError);
+            }
           }
         }
       }

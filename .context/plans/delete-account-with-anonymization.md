@@ -1,5 +1,7 @@
 # Delete account with data anonymization — implementation plan
 
+**Status: IMPLEMENTED (2026-02-13).** Anonymized tables, RLS, delete-baby (client anonymize), Edge Function delete-account (verify_jwt off), client useDeleteAccount (storage → invoke with Bearer → signOut + onSignedOut). See .context/logs/2026-02-13.md and .context/lessons.md §4.1, 4.2, 5.2, 5.3.
+
 ## Goal
 
 When a user deletes their account: remove auth user, profile, sleep entries, baby_shares, avatar files, and all PII; keep anonymized baby + sleep data (DOB, gender, weight, height, sleep times/type) in separate tables. Clear disclosure in the UI and optional full privacy policy.

@@ -47,6 +47,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useBabyShares` handles multi-user sharing (invitations, access management)
 - `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
 - `useFocusTrap` traps keyboard focus inside modals/sheets (Tab cycling, Escape key, focus save/restore)
+- `useDeleteAccount` handles account deletion (storage cleanup, invoke delete-account Edge Function with JWT, signOut + onSignedOut; see .context/lessons.md §5.2, 5.3)
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)

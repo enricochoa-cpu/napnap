@@ -1,0 +1,6 @@
+# Supabase local/config (see https://supabase.com/docs/guides/functions/function-configuration)
+
+[functions.delete-account]
+# Validate JWT inside the function via anonClient.auth.getUser() instead of at the edge.
+# Avoids 401s from gateway JWT validation (e.g. token format/expiry quirks); function still returns 401 if token missing/invalid.
+verify_jwt = false

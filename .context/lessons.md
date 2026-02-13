@@ -88,23 +88,55 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 4. Supabase Edge Function Gotchas
+## 4. Supabase RLS — Anonymized / Write-Only Tables
 
-### 4.1 Manual JWT Verification Causes 401
+### 4.1 RLS "Block FOR ALL" Blocks INSERT Too
+**Date:** 2026-02-13
+
+- **Problem:** Client got 403 when inserting into `anonymized_baby_profiles` (and similarly `anonymized_sleep_entries`) with error "new row violates row-level security policy".
+- **Root Cause:** A single policy "Block anon and authenticated" was defined as `FOR ALL` with `WITH CHECK (false)`. In Postgres, **FOR ALL** applies to SELECT, INSERT, UPDATE, and DELETE. So the block policy was evaluated on INSERT and rejected the row. RLS requires the row to satisfy all applicable policies; the "Authenticated can insert" policy allowed it, but the block policy denied it.
+- **Permanent Fix:** Do not use one policy with `FOR ALL` to "block everyone from reading/updating/deleting." Create **separate** policies: "Block select", "Block update", "Block delete" — each with its own `FOR SELECT` / `FOR UPDATE` / `FOR DELETE`. Leave INSERT controlled only by the "Authenticated can insert" policy. **Reusable rule:** For write-only or analytics tables where authenticated users should only INSERT, block SELECT/UPDATE/DELETE with separate policies, not FOR ALL.
+
+### 4.2 INSERT with .select('id') Requires SELECT Policy
+**Date:** 2026-02-13
+
+- **Problem:** After fixing the block policy, client still got 403 on insert into `anonymized_baby_profiles` when using `.insert({...}).select('id').single()`.
+- **Root Cause:** PostgREST runs a **SELECT** after the INSERT to return the requested columns. We had "Block select" (USING (false)) on the table, so that follow-up SELECT was denied → 403.
+- **Permanent Fix:** Either (1) allow authenticated SELECT on that table (e.g. "Authenticated can select anonymized_baby_profiles" with USING (true)) so the insert-return pattern works — acceptable when the table has no PII — or (2) avoid `.select('id')` and use a DB function (SECURITY DEFINER) that inserts and returns the id. For anonymized analytics tables, (1) is usually fine.
+
+---
+
+## 5. Supabase Edge Function Gotchas
+
+### 5.1 Manual JWT Verification Causes 401
 **Date:** 2026-02-06
 
 - **Problem:** Edge Function returned 401 on every request despite valid auth tokens.
 - **Root Cause:** Added manual `getUser()` check inside the function. Supabase already verifies JWT at the infrastructure level — the manual check was redundant and failed.
 - **Permanent Fix:** Never add manual JWT verification in Edge Functions. Supabase handles it. If you need to bypass verification entirely (e.g., for public endpoints), use `--no-verify-jwt` flag during deploy.
 
-### 4.2 Deploy Uses Local Files, Not Git Remote
+### 5.2 Edge Function 401 = Gateway JWT Verification (verify_jwt)
+**Date:** 2026-02-13
+
+- **Problem:** POST to Edge Function returned 401 Unauthorized even when the client sent `Authorization: Bearer <session.access_token>` and the user was logged in.
+- **Root Cause:** With **verify_jwt: true** (default), the **Supabase gateway** validates the JWT **before** the request reaches your function. If validation fails (expired token, wrong key, or client not attaching the header correctly in some edge cases), the gateway returns 401 and your function code never runs.
+- **Permanent Fix:** (1) **Client:** Pass the token explicitly: get session with `getSession()`, then `supabase.functions.invoke('fn-name', { headers: { Authorization: \`Bearer ${session.access_token}\` } })`. (2) **Function:** Either keep verify_jwt and ensure tokens are valid and sent, or **disable verify_jwt** for that function (Dashboard → Edge Functions → function → Settings → "Enforce JWT verification" OFF, or deploy with `--no-verify-jwt`). When verify_jwt is off, the function must validate the user itself (e.g. read Authorization header and call `createClient(..., { global: { headers: { Authorization: authHeader } } }).auth.getUser()` and return 401 if no user). **Reusable rule:** For "delete account" or similar flows, using verify_jwt = false + manual getUser() inside the function avoids gateway 401s while keeping the same security.
+
+### 5.3 signOut() Returns 403 After deleteUser()
+**Date:** 2026-02-13
+
+- **Problem:** After the delete-account Edge Function successfully deleted the user, the client called `supabase.auth.signOut()` and got 403 on `POST .../auth/v1/logout`.
+- **Root Cause:** The user no longer exists in Supabase Auth. The logout endpoint rejects the request for a deleted/invalid session.
+- **Permanent Fix:** After a successful delete-account response, wrap `signOut()` in try/catch and **always** call the signed-out callback (e.g. `onSignedOut()`) so the UI redirects and clears state. Ignore errors from signOut(); the account is already gone. The 403 may still appear in the browser console — that's expected.
+
+### 5.4 Deploy Uses Local Files, Not Git Remote
 **Date:** 2026-02-06
 
 - **Problem:** Deployed Edge Function still had old code even after pushing fixes to git.
 - **Root Cause:** `npx supabase functions deploy` reads from the local filesystem, not from the git remote.
 - **Permanent Fix:** Always `git pull` before running `npx supabase functions deploy`.
 
-### 4.3 CORS Blocked on Error Responses
+### 5.5 CORS Blocked on Error Responses
 **Date:** 2026-02-06
 
 - **Problem:** Frontend got CORS errors on Edge Function calls that returned errors (non-200).
@@ -113,30 +145,30 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 5. CSS / Visual Bugs
+## 6. CSS / Visual Bugs
 
-### 5.1 MenuCard Black Borders
+### 6.1 MenuCard Black Borders
 **Date:** 2026-02-02
 
 - **Problem:** Profile menu cards showed ugly black borders.
 - **Root Cause:** Used `border-[var(--border-subtle)]` but the CSS variable `--border-subtle` didn't exist — CSS defaulted to black.
 - **Permanent Fix:** Never reference CSS variables without checking they exist in the theme. Replaced with `shadow-sm hover:shadow-md` (no border needed).
 
-### 5.2 Afternoon Clouds Too Visible
+### 6.2 Afternoon Clouds Too Visible
 **Date:** 2026-02-06
 
 - **Problem:** AfternoonSky clouds appeared as visible white blobs over content.
 - **Root Cause:** Cloud opacity was 0.6 with only 1px blur, and the sky component lacked a `fixed` container with proper z-index (unlike Morning and Night skies).
 - **Permanent Fix:** Added `fixed inset-0 z-[-5]` container (matching other sky components). Reduced cloud opacity to 0.15 and increased blur to 8px. Background elements must always be `fixed` with negative z-index.
 
-### 5.3 Navigation Icons Invisible in Light Themes
+### 6.3 Navigation Icons Invisible in Light Themes
 **Date:** 2026-01-28
 
 - **Problem:** Navigation icons disappeared against light theme backgrounds.
 - **Root Cause:** Icon colors were hardcoded for the dark theme.
 - **Permanent Fix:** Use CSS variables for icon colors so they adapt across all circadian themes.
 
-### 5.4 Light Mode Collapse — Hardcoded White Opacities
+### 6.4 Light Mode Collapse — Hardcoded White Opacities
 **Date:** 2026-02-09
 
 - **Problem:** The entire TodayView hero card, timeline river, and ghost cards were invisible in morning/afternoon themes. ProfileMenu cards and AccountSettingsView sign-out card had the same issue.
@@ -153,7 +185,7 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-### 5.5 Tailwind v4 `z-[n]` Not Overriding CSS `z-index`
+### 6.5 Tailwind v4 `z-[n]` Not Overriding CSS `z-index`
 **Date:** 2026-02-10
 
 - **Problem:** Calendar modal with Tailwind `z-[60]` appeared UNDER the floating nav bar which has CSS `z-index: 50`. The nav covered the modal's footer buttons.
@@ -164,9 +196,9 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 6. Statistics Bugs
+## 7. Statistics Bugs
 
-### 6.1 Stats Averages Skewed by Incomplete Today
+### 7.1 Stats Averages Skewed by Incomplete Today
 **Date:** 2026-02-06
 
 - **Problem:** If today has 2 of 3 usual naps, the "average naps per day" dropped.
@@ -175,9 +207,9 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 7. UX / Modal Bugs
+## 8. UX / Modal Bugs
 
-### 7.1 MissingBedtimeModal Showing on Load
+### 8.1 MissingBedtimeModal Showing on Load
 **Date:** 2026-02-01
 
 - **Problem:** Modal appeared incorrectly when the app first loaded.
@@ -186,9 +218,9 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 8. Navigation / View Bugs
+## 9. Navigation / View Bugs
 
-### 10.1 Scroll Position Persists Across Main Tabs
+### 9.1 Scroll Position Persists Across Main Tabs
 **Date:** 2026-02-11
 
 - **Problem:** Switching from Stats (scrolled down) to Home showed the Home view scrolled partway down instead of at the top.
@@ -197,9 +229,9 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 9. Prediction Display Bugs
+## 10. Prediction Display Bugs
 
-### 9.1 Predicted Nap Cards Shift During Active Nap
+### 10.1 Predicted Nap Cards Shift During Active Nap
 **Date:** 2026-02-11
 
 - **Problem:** While a nap was in progress, predicted ghost cards for future naps and bedtime kept re-rendering every minute, giving the impression that times were shifting.
@@ -210,58 +242,58 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 ---
 
-## 10. Technical Decisions
+## 11. Technical Decisions
 
-### 10.1 Predictions Visible During Active Nap
+### 11.1 Predictions Visible During Active Nap
 **Decision (2026-02-02):** Show future predicted naps even when a nap is in progress. Previously they were all hidden. Rationale: parents want to see "what comes next" while the baby sleeps.
 
-### 10.2 Bottom Sheet Over Full View Swap
+### 11.2 Bottom Sheet Over Full View Swap
 **Decision (2026-02-05):** Always use bottom sheets for editing (SleepEntrySheet, BabyEditSheet, ShareAccess). Never swap the full view — it feels jarring and loses spatial context. The user can still see the list behind the blur.
 
-### 10.3 Client-Side Image Compression
+### 11.3 Client-Side Image Compression
 **Decision (2026-02-05):** Compress images on the client (Canvas API: 400x400, JPEG 80%) before uploading to Supabase Storage. Avoids upload friction regardless of source image size.
 
-### 10.4 Fire-and-Forget Invitation Emails
+### 11.4 Fire-and-Forget Invitation Emails
 **Decision (2026-02-06):** Email sending is non-blocking. If the email fails, the invitation in the database still exists. No rollback. The parent can still share the link manually.
 
-### 10.5 Google OAuth Button Placement
+### 11.5 Google OAuth Button Placement
 **Decision (2026-02-03):** Google sign-in button placed at TOP of auth forms, above email/password. Follows "Decision Replacement" principle — fastest path first for sleep-deprived parents.
 
-### 10.6 Resend Free Tier Limitation
+### 11.6 Resend Free Tier Limitation
 **Decision (2026-02-06):** `onboarding@resend.dev` can only send to the Resend account owner's email. Need a verified custom domain (e.g., `napnap.app`) to send to arbitrary recipients. Blocked until domain verification is completed.
 
-### 10.7 Drag-to-Dismiss Thresholds
+### 11.7 Drag-to-Dismiss Thresholds
 **Decision (2026-02-02):** 150px offset OR 500px/s velocity to dismiss a bottom sheet. Calibrated for mobile — high enough to prevent accidental dismisses, low enough to feel responsive.
 
-### 10.8 Decision Replacement in UI Copy
+### 11.8 Decision Replacement in UI Copy
 **Decision (2026-02-03):** Show time ranges ("14:38 — 15:23") instead of durations ("~45m"). Parents shouldn't do mental arithmetic. The dashed border already signals predictions — no need for the `~` symbol.
 
-### 10.9 "Tell, Don't Ask" in Prediction Labels
+### 11.9 "Tell, Don't Ask" in Prediction Labels
 **Decision (2026-02-09):** Renamed "Predicted Nap" to "Nap {n}" (e.g. "Nap 2") and "Catnap" to "Short Nap". The dashed border already communicates "future/not-yet" visually. Using the word "Predicted" surfaces algorithm uncertainty to the parent, violating the "decision replacement" North Star. "Catnap" is jargon that first-time parents may not understand.
 
-### 10.10 Redundant Navigation Removal
+### 11.10 Redundant Navigation Removal
 **Decision (2026-02-09):** Removed the "My Babies" ListRow from ProfileMenu. The primary baby card already navigates to `my-babies` and is the dominant visual element. Having a secondary list row for the same destination diluted the Golden Path and added visual noise (6 interactive elements → 5).
 
-### 10.11 Full-Screen Detail View Over Bottom Sheet for Complex Editing
-**Decision (2026-02-09):** Owned baby profiles now open a full-screen `BabyDetailView` instead of the `BabyEditSheet` bottom sheet. The bottom sheet is retained only for the "Add Baby" quick flow (ghost card). **Rationale:** The baby edit form + ShareAccess sharing management is too much content for a bottom sheet. A full-screen view provides space for all sections, better scrolling, and clearer navigation hierarchy. This is an exception to decision 8.2 (bottom sheets over full view swap) — complex multi-section forms warrant a dedicated screen.
+### 11.11 Full-Screen Detail View Over Bottom Sheet for Complex Editing
+**Decision (2026-02-09):** Owned baby profiles now open a full-screen `BabyDetailView` instead of the `BabyEditSheet` bottom sheet. The bottom sheet is retained only for the "Add Baby" quick flow (ghost card). **Rationale:** The baby edit form + ShareAccess sharing management is too much content for a bottom sheet. A full-screen view provides space for all sections, better scrolling, and clearer navigation hierarchy. This is an exception to decision 11.2 (bottom sheets over full view swap) — complex multi-section forms warrant a dedicated screen.
 
-### 10.12 Temporal Validation as Client-Side Guard
+### 11.12 Temporal Validation as Client-Side Guard
 **Decision (2026-02-09):** Sleep entry validation (max 5h nap, max 14h night, 0-duration block, cross-midnight warnings) is purely client-side. No server enforcement. **Rationale:** These are UX guardrails, not data integrity constraints. Cross-midnight naps are warned but allowed because late-evening naps for older infants are legitimate.
 
-### 10.13 Contextual Save Icons (Play/Stop/Check)
+### 11.13 Contextual Save Icons (Play/Stop/Check)
 **Decision (2026-02-09):** The SleepEntrySheet save button now shows different icons based on entry state: Play (filled triangle) for new entries without an end time, Stop (filled square) for editing active entries, Check (tick) for completed entries. **Rationale:** The icon communicates the action about to happen — "start tracking" vs "stop this sleep" vs "confirm changes". Reduces cognitive load at 3AM.
 
-### 10.14 Napper-style DayNavigator
+### 11.14 Napper-style DayNavigator
 **Decision (2026-02-10):** Replaced the basic prev/next arrow DayNavigator (with native `<input type="date">`) with a premium week strip + calendar modal. The week strip shows 7 days (Mon–Sun) with swipe navigation. Tapping the date header opens a full calendar bottom sheet. **Rationale:** The native date picker felt out of place in a premium mobile app. The week strip gives immediate context (what day of the week), and the calendar modal allows jumping to any date without repeated arrow tapping. Entry dots on days with data help parents find logged days quickly.
 
-### 10.15 Accessibility (A11Y) as a Systemic Pass
+### 11.15 Accessibility (A11Y) as a Systemic Pass
 **Decision (2026-02-12):** A11y was added as a full-app pass rather than per-component incremental work. Created a shared `useFocusTrap` hook used by all 9 modals. Used `MotionConfig reducedMotion="user"` at the App root to cover all Framer Motion animations with zero per-component changes. Touch targets bumped from 40px to 44px (WCAG minimum). **Key insight:** Framer Motion's `MotionConfig` is the highest-leverage a11y fix — one line covers all animations. Focus trapping is best done as a hook rather than inline logic to avoid 9 duplicate implementations.
 
-### 10.16 Dynamic Time Labels Over Static Section
+### 11.16 Dynamic Time Labels Over Static Section
 **Decision (2026-02-09):** Removed the standalone duration section from SleepEntrySheet. Duration now appears as the start time label (e.g. "2h 30m" instead of "Start"), and the end time label shows relative time (e.g. "15m ago" instead of "End"). Active entries show "Sleeping..." under the end time. **Rationale:** Puts contextual information exactly where the eye is already looking. The previous central duration section was wasted vertical space.
 
-### 10.17 Bottom Sheets: No Bounce + Handle Implies Drag
+### 11.17 Bottom Sheets: No Bounce + Handle Implies Drag
 **Decision (2026-02-12):** (1) All bottom sheets use **tween** for enter/exit (`duration: 0.25, ease: 'easeOut'`) — no spring, no bounce. Bouncy modals were perceived as bad practice. (2) Any sheet that displays a **drag handle** (the thin bar) must support **drag-to-dismiss**; otherwise the visual affordance is misleading. QuickActionSheet and ShareAccess Edit Access sheet had handles but no drag — both now have `drag="y"`, `onDragEnd`, and backdrop opacity tied to drag position.
 
-### 10.18 Onboarding Next Button: Disabled Until Step Complete
+### 11.18 Onboarding Next Button: Disabled Until Step Complete
 **Decision (2026-02-12):** In OnboardingFlow, the "Next" button must be disabled until the user has completed the current step's required input (baby name, baby DOB, your name). Baby DOB defaults to empty string so the user must explicitly pick a date; relationship defaults to "mum" so that step can always proceed. **Rationale:** Prevents advancing with empty data and makes it clear what action is required before continuing.
