@@ -791,27 +791,6 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
         maxDate={today}
       />
 
-      {/* Generate report for last 30 days — copy sets precise expectations */}
-      <button
-        type="button"
-        onClick={() => setShowReport(true)}
-        className="w-full rounded-2xl backdrop-blur-xl p-4 mb-6 flex items-center justify-center gap-2 font-display font-semibold text-[var(--text-on-accent)] min-h-[56px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)]"
-        style={{
-          background: 'var(--night-color)',
-          border: '1px solid var(--glass-border)',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <path d="M14 2v6h6" />
-          <path d="M16 13H8" />
-          <path d="M16 17H8" />
-          <path d="M10 9H8" />
-        </svg>
-        Generate report (last 30 days)
-      </button>
-
       {!hasData ? (
         <div className="rounded-3xl backdrop-blur-xl p-8 text-center" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
@@ -865,6 +844,32 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
                 {averages.avgNapCount.toFixed(1)}
               </p>
             </div>
+          </div>
+
+          {/* Sleep report row — below KPIs; single line to keep height minimal; premium-ready */}
+          <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+            <button
+              type="button"
+              onClick={() => setShowReport(true)}
+              aria-label="View sleep report for last 30 days"
+              className="w-full flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)] focus-visible:ring-inset rounded-xl"
+            >
+              <span className="text-[var(--night-color)] flex-shrink-0" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <path d="M14 2v6h6" />
+                  <path d="M16 13H8" />
+                  <path d="M16 17H8" />
+                  <path d="M10 9H8" />
+                </svg>
+              </span>
+              <span className="flex-1 min-w-0 text-sm font-display font-semibold text-[var(--text-primary)]">
+                Sleep report <span className="text-[var(--text-muted)] font-normal">· Last 30 days</span>
+              </span>
+              <span className="text-[var(--text-muted)] flex-shrink-0" aria-hidden="true">
+                <ChevronRightIcon />
+              </span>
+            </button>
           </div>
 
           {/* Sleep Distribution Donut */}
