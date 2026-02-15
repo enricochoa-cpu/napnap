@@ -18,14 +18,6 @@ export function formatDate(date: Date | string): string {
   return format(d, 'yyyy-MM-dd');
 }
 
-export function formatDisplayDate(date: Date | string): string {
-  const d = typeof date === 'string' ? parseISO(date) : date;
-  if (isToday(d)) {
-    return 'Today';
-  }
-  return format(d, 'EEEE, MMMM d, yyyy');
-}
-
 export function formatTime(date: Date | string): string {
   const d = typeof date === 'string' ? parseISO(date) : date;
   return format(d, 'HH:mm');
@@ -81,10 +73,6 @@ export function getNextDay(date: Date | string): Date {
 export function getPreviousDay(date: Date | string): Date {
   const d = typeof date === 'string' ? parseISO(date) : date;
   return subDays(startOfDay(d), 1);
-}
-
-export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
 /*

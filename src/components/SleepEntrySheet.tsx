@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { formatDate, getNextDay, getPreviousDay } from '../utils/dateUtils';
 import type { SleepEntry } from '../types';
 
 type SleepType = 'nap' | 'night';
@@ -100,17 +101,9 @@ const combineDateTime = (date: string, time: string): string => {
   return `${date}T${time}`;
 };
 
-const getNextDay = (date: string): string => {
-  const d = new Date(date);
-  d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
-};
-
-const getPreviousDay = (date: string): string => {
-  const d = new Date(date);
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().split('T')[0];
-};
+// Use dateUtils for day arithmetic; format result to yyyy-MM-dd for combineDateTime
+const nextDayStr = (date: string): string => formatDate(getNextDay(date));
+const prevDayStr = (date: string): string => formatDate(getPreviousDay(date));
 
 const isTimeBefore = (time1: string, time2: string): boolean => {
   return time1 < time2;
@@ -323,7 +316,7 @@ export function SleepEntrySheet({
       let endDateTime: string | null = null;
       if (resolvedEndTime) {
         if (isTimeBefore(resolvedEndTime, startTime)) {
-          endDateTime = combineDateTime(getNextDay(selectedDate), resolvedEndTime);
+          endDateTime = combineDateTime(nextDayStr(selectedDate), resolvedEndTime);
         } else {
           endDateTime = combineDateTime(selectedDate, resolvedEndTime);
         }
@@ -336,11 +329,11 @@ export function SleepEntrySheet({
     } else {
       const [startHour] = startTime.split(':').map(Number);
       const isPostMidnightBedtime = startHour >= 0 && startHour <= 3;
-      const bedtimeDate = isPostMidnightBedtime ? getPreviousDay(selectedDate) : selectedDate;
+      const bedtimeDate = isPostMidnightBedtime ? prevDayStr(selectedDate) : selectedDate;
       let endDateTime: string | null = null;
       if (resolvedEndTime) {
         if (isTimeBefore(resolvedEndTime, startTime)) {
-          endDateTime = combineDateTime(getNextDay(bedtimeDate), resolvedEndTime);
+          endDateTime = combineDateTime(nextDayStr(bedtimeDate), resolvedEndTime);
         } else if (isPostMidnightBedtime) {
           endDateTime = combineDateTime(selectedDate, resolvedEndTime);
         } else {

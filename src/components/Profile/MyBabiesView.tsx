@@ -1,15 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
+import type { SharedBabyProfile } from '../../hooks/useBabyProfile';
 import { calculateAge } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { BabyEditSheet } from './BabyEditSheet';
 import { SubViewHeader } from './SubViewHeader';
-
-interface SharedBabyProfile extends BabyProfileType {
-  isOwner: boolean;
-  ownerName?: string;
-}
 
 interface MyBabiesViewProps {
   profile: BabyProfileType | null;

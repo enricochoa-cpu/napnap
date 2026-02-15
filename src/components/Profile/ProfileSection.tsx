@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile, UserProfile, BabyShare } from '../../types';
+import type { SharedBabyProfile } from '../../hooks/useBabyProfile';
 import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
 import { BabyDetailView } from './BabyDetailView';
@@ -9,11 +10,6 @@ import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
 import { SupportView } from './SupportView';
 import { PrivacyPolicyView } from './PrivacyPolicyView';
-
-interface SharedBabyProfile extends BabyProfile {
-  isOwner: boolean;
-  ownerName?: string;
-}
 
 interface ProfileSectionProps {
   profile: BabyProfile | null;

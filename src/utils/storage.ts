@@ -1,6 +1,4 @@
 export const STORAGE_KEYS = {
-  BABY_PROFILE: 'baby-sleep-tracker-profile',
-  SLEEP_ENTRIES: 'baby-sleep-tracker-entries',
   /** Stored when user reaches Account step in onboarding; applied after sign-up to create profile. */
   ONBOARDING_DRAFT: 'baby-sleep-tracker-onboarding-draft',
   /** Which baby's sleep data is shown in Today / History / Stats (user can switch in My babies). */
@@ -21,14 +19,6 @@ export function setToStorage<T>(key: string, value: T): void {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
     console.error('Error saving to localStorage:', error);
-  }
-}
-
-export function removeFromStorage(key: string): void {
-  try {
-    localStorage.removeItem(key);
-  } catch (error) {
-    console.error('Error removing from localStorage:', error);
   }
 }
 

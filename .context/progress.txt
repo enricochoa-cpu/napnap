@@ -1,6 +1,18 @@
 # Progress
 
-**Last updated:** 2026-02-13 — Delete account + anonymization; onboarding persistence + first-login profile write; Sleep Report (last 30 days, icon bullets, warm Overview); baby age calculation fix (lessons §13.1); context and docs updated.
+**Last updated:** 2026-02-15 — Code audit (low-risk + refactor): removed dead code and unused deps; consolidated SharedBabyProfile; SleepEntrySheet uses dateUtils for day arithmetic.
+
+## Code Audit Applied (2026-02-15) [COMPLETED]
+
+- [x] Low risk: Remove unused npm deps (three, @react-three/fiber, three-bvh-csg, @types/three)
+- [x] Low risk: Remove useLocalStorage.ts (never imported)
+- [x] Low risk: Remove BabyProfile.tsx (legacy; app uses ProfileSection/MyBabiesView/BabyDetailView)
+- [x] Low risk: storage.ts — remove removeFromStorage(), remove unused STORAGE_KEYS (BABY_PROFILE, SLEEP_ENTRIES)
+- [x] Refactor: Consolidate SharedBabyProfile — ProfileSection and MyBabiesView import from useBabyProfile
+- [x] Refactor: SleepEntrySheet uses dateUtils getNextDay/getPreviousDay via formatDate; removed local helpers
+- [x] Refactor: dateUtils — remove unused exports (formatDisplayDate, generateId)
+- [ ] Out of scope: AlgorithmStatusCard (decision: delete or re-add status pill)
+- [ ] Out of scope: Optional (Db* types, useCircadianTheme export, CSS audit, Sentry)
 
 ## Design Audit — Phase 1: Critical (2026-02-09) [COMPLETED]
 
