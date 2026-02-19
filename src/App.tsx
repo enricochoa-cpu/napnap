@@ -285,6 +285,12 @@ function App() {
   };
 
   const handleOpenNewEntry = (type: 'nap' | 'night') => {
+    // If we know user has no baby, redirect to add baby instead of opening entry sheet
+    if (!profileLoading && !hasAnyBaby) {
+      setShowActionMenu(false);
+      goToAddBaby();
+      return;
+    }
     setEditingEntry(null);
     setNewEntryType(type);
     setShowEntrySheet(true);
@@ -369,7 +375,7 @@ function App() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
         <div className="relative">
-          {hasAnyBaby ? (
+          {profileLoading || hasAnyBaby ? (
             <>
               <button
                 onClick={() => setShowAddEntryMenu(!showAddEntryMenu)}
@@ -462,6 +468,7 @@ function App() {
       deleteAccountError={deleteAccountError}
       requestOpenAddBaby={requestOpenAddBaby}
       onClearRequestOpenAddBaby={() => setRequestOpenAddBaby(false)}
+      profileLoading={profileLoading}
     />
   );
 
@@ -495,7 +502,7 @@ function App() {
                 onEdit={handleEdit}
                 loading={entriesLoading}
                 totalEntries={entries.length}
-                hasNoBaby={!hasAnyBaby}
+                hasNoBaby={!profileLoading && !hasAnyBaby}
                 onAddBabyClick={goToAddBaby}
               />
             )}
@@ -537,12 +544,12 @@ function App() {
               </svg>
             </button>
 
-            {/* Center Action Button — opens sleep menu when user has a baby, else goes to add baby */}
+            {/* Center Action Button — open sheet when loading or has baby (optimistic); only go to add baby when we know there is none */}
             <div className="nav-action">
               <button
-                onClick={() => (hasAnyBaby ? setShowActionMenu(true) : goToAddBaby())}
+                onClick={() => (profileLoading || hasAnyBaby ? setShowActionMenu(true) : goToAddBaby())}
                 className="nav-action-btn"
-                aria-label={hasAnyBaby ? 'Log sleep' : 'Add a baby to start logging'}
+                aria-label={profileLoading || hasAnyBaby ? 'Log sleep' : 'Add a baby to start logging'}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />

@@ -1,6 +1,6 @@
 # TodayView Prediction System - Complete Analysis
 
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-18
 **Status:** Under active revision - recurring bugs identified
 
 ---
@@ -159,6 +159,8 @@ const predictedNaps = useMemo(() => {
   return predictions;
 }, [...]);
 ```
+
+**Overdue nap display (2026-02-18):** When the first predicted nap is in the past, we still push it with `time: now` so bedtime anchor and hero "NAP NOW" stay correct (see lessons.md §1.4). For the **timeline ghost card** we must show the **original** suggested time so the parent sees when the nap was expected. Each prediction object has `prediction.predictedTime`. When we push the overdue slot we set `isOverdue: true`. In the card render, use **display start** = `napInfo.prediction.predictedTime` when `napInfo.isOverdue`, else `napInfo.time`; display end = display start + expected duration. So the card shows e.g. "13:42 — 14:27" (suggested window) while anchor math and hero still use "now". See lessons.md §1.6.
 
 ### Step 4: Calculate Expected Bedtime (lines 229-285)
 

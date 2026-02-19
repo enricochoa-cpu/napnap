@@ -207,7 +207,7 @@ export function TodayView({
       schedule.wakeTime.minute
     );
 
-    const predictions: { time: Date; isCatnap: boolean; expectedDuration: number; prediction: NapPrediction }[] = [];
+    const predictions: { time: Date; isCatnap: boolean; expectedDuration: number; prediction: NapPrediction; isOverdue?: boolean }[] = [];
     let firstPredictionCalibrationInfo: NapPrediction | null = null;
 
     // Determine anchor point: active nap's expected end, or last completed nap, or wake up
@@ -271,13 +271,15 @@ export function TodayView({
           lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
         }
         // If prediction is in the past (overdue) and no active nap, show as "now"
-        // This ensures parents see the nap is needed and bedtime calculates correctly
+        // This ensures parents see the nap is needed and bedtime calculates correctly.
+        // isOverdue: timeline card will show original predictedTime for display; we keep time: now for anchor math.
         else if (!hasActiveNap && predictions.length === 0) {
           predictions.push({
-            time: now, // Show as "now" since it's overdue
+            time: now,
             isCatnap: windowInfo.isCatnap,
             expectedDuration: windowInfo.expectedDurationMinutes,
             prediction: napPrediction,
+            isOverdue: true,
           });
           // For subsequent calculations, use now + expected duration as anchor
           lastEndTime = addMinutes(now, windowInfo.expectedDurationMinutes);
@@ -707,7 +709,11 @@ export function TodayView({
 
             {/* Predicted Naps - Ghost Cards */}
             {[...displayPredictions].reverse().map((napInfo, index) => {
-              const expectedEnd = addMinutes(napInfo.time, napInfo.expectedDuration);
+              // When overdue, show original suggested time in the card so user sees "expected nap"; keep anchor math using napInfo.time
+              const displayStart = napInfo.isOverdue && napInfo.prediction.predictedTime
+                ? napInfo.prediction.predictedTime
+                : napInfo.time;
+              const expectedEnd = addMinutes(displayStart, napInfo.expectedDuration);
               const reversedIndex = displayPredictions.length - index;
               const napNumber = todayNaps.length + (activeSleep?.type === 'nap' ? 1 : 0) + reversedIndex;
               return (
@@ -727,7 +733,7 @@ export function TodayView({
                         {napInfo.isCatnap ? 'Short Nap' : `Nap ${napNumber}`}
                       </p>
                       <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                        {formatTime(napInfo.time)} — {formatTime(expectedEnd)}
+                        {formatTime(displayStart)} — {formatTime(expectedEnd)}
                       </p>
                     </div>
                   </div>

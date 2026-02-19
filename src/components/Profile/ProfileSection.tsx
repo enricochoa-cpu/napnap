@@ -36,6 +36,8 @@ interface ProfileSectionProps {
   /** When true, switch to My Babies and open add-baby sheet (e.g. from FAB when user has no baby) */
   requestOpenAddBaby?: boolean;
   onClearRequestOpenAddBaby?: () => void;
+  /** When true, show loading skeleton instead of profile content (avoids empty My babies flash) */
+  profileLoading?: boolean;
 }
 
 export function ProfileSection({
@@ -61,6 +63,7 @@ export function ProfileSection({
   deleteAccountError,
   requestOpenAddBaby = false,
   onClearRequestOpenAddBaby,
+  profileLoading = false,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>('menu');
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
@@ -132,6 +135,20 @@ export function ProfileSection({
   };
 
   const slideTransition = { type: 'spring' as const, stiffness: 300, damping: 30 };
+
+  // Avoid showing empty/inconsistent profile state while babies are still loading
+  if (profileLoading) {
+    return (
+      <div className="pb-32 px-6 pt-8">
+        <div className="space-y-4">
+          <div className="h-8 w-48 bg-[var(--text-muted)]/15 rounded-lg animate-pulse" />
+          <div className="h-14 w-full bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+          <div className="h-14 w-full bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+          <div className="h-14 w-full bg-[var(--bg-card)] rounded-2xl animate-pulse" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pb-32 px-6 pt-8">

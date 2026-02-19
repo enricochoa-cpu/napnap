@@ -41,6 +41,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Algorithm only looked at completed naps and the active nap, but ignored any remaining predicted naps when computing bedtime.
 - **Permanent Fix:** Always include predicted naps in the bedtime anchor calculation, even when a nap is in progress.
 
+### 1.6 Overdue Nap Timeline Card Showing Current Time Instead of Predicted Time
+**Date:** 2026-02-18
+
+- **Problem:** When the first predicted nap was in the past ("overdue"), the hero correctly showed "NAP NOW", but the timeline ghost card showed the **current** time as the nap start (e.g. 14:00) and it kept updating every minute. The user lost sight of when the nap was actually suggested (e.g. 13:42).
+- **Root Cause:** For overdue predictions we push `time: now` so bedtime anchor and hero behaviour stay correct (lesson 1.4). The timeline card was displaying `napInfo.time` directly, so it showed "now" instead of the original suggested time.
+- **Permanent Fix:** Keep `time: now` for anchor/bedtime math. Add `isOverdue: true` when pushing the overdue prediction. In the timeline card render, use **display start** = `napInfo.prediction.predictedTime` when `napInfo.isOverdue` (and `napInfo.prediction.predictedTime` exists), otherwise `napInfo.time`. Compute displayed end from that start + expected duration. The card now shows the suggested window (e.g. 13:42 — 14:27) while the hero still shows "NAP NOW".
+
 > **Pattern:** TodayView prediction bugs are the #1 recurring issue. They always involve **priority ordering** (which data source wins) or **filtering logic** (removing data that should be kept). Always check: does the bedtime anchor account for ALL future events?
 
 ---
@@ -326,3 +333,35 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** Baby born 16 June 2025 showed "7 months, 2 days" in the UI when it should show "7 months, 28 days" (as of mid-Feb 2026).
 - **Root Cause:** In `calculateAge()` (dateUtils.ts), the "days" part for infants under 1 year was computed as `differenceInDays(now, dob) % 30`. That gives **total days since birth modulo 30**, not "days since the last month anniversary." Example: 242 total days → 242 % 30 = 2, hence "2 days."
 - **Permanent Fix:** Compute days as **days since the last full month**: `lastMonthAnniversary = addMonths(dob, months)` (with `months = differenceInMonths(now, dob)`), then `days = differenceInDays(now, lastMonthAnniversary)`. Import `addMonths` from date-fns. **Reusable rule:** For "X months, Y days" display, Y must be the offset from the month anniversary, not total days mod 30.
+
+---
+
+## 14. Loading / Profile Race Conditions
+
+### 14.1 FAB Opens Add-Baby When Tapping + Before Profile Loads
+**Date:** 2026-02-18
+
+- **Problem:** Opening the app and tapping the center + button very quickly took the user to Profile → My Babies and opened the add-baby sheet instead of the sleep action menu (QuickActionSheet).
+- **Root Cause:** `hasAnyBaby = sharedProfiles.length > 0`. Until `useBabyProfile`'s `fetchProfile()` completes, `sharedProfiles` is `[]` and `profileLoading` is true. So the FAB saw "no baby" and called `goToAddBaby()`.
+- **Permanent Fix:** Do not treat as "no baby" while profile is loading. **FAB:** Open QuickActionSheet when `profileLoading || hasAnyBaby`, else `goToAddBaby()`. Do not disable the FAB (optimistic: assume normal case). **handleOpenNewEntry:** At the start, if `!profileLoading && !hasAnyBaby`, close the action menu, call `goToAddBaby()`, and return — so if the user opened the sheet during load and then taps Nap/Bedtime, we redirect to add baby instead of opening the entry form. **Reusable rule:** Any UI that branches on "user has no baby" must only do so when `!profileLoading`; while loading, optimistically show the "has baby" path or a loading state.
+
+### 14.2 History "+ Add Entry" Same Race
+**Date:** 2026-02-18
+
+- **Problem:** In History view, during profile load the header showed "Add a baby to log sleep" and a tap would navigate to add baby even when the user had babies.
+- **Root Cause:** Same as 14.1 — `hasAnyBaby` was false until `sharedProfiles` loaded.
+- **Permanent Fix:** Show the "+ Add Entry" branch when `profileLoading || hasAnyBaby`; show "Add a baby to log sleep" only when `!profileLoading && !hasAnyBaby`.
+
+### 14.3 TodayView "Add a baby" Empty State During Load
+**Date:** 2026-02-18
+
+- **Problem:** During initial load, users with a baby could briefly see "Add a baby to get started" and the "Add your baby" button because `hasNoBaby` was derived from `!hasAnyBaby` (true while `sharedProfiles` was still empty).
+- **Root Cause:** TodayView received `hasNoBaby={!hasAnyBaby}` with no loading guard.
+- **Permanent Fix:** Pass `hasNoBaby={!profileLoading && !hasAnyBaby}` from App. Only show the add-baby empty state when we know there are no babies.
+
+### 14.4 Profile Tab Empty/Inconsistent While Profile Loading
+**Date:** 2026-02-18
+
+- **Problem:** Switching to the Profile tab before profile finished loading showed the full menu with empty `sharedProfiles` (e.g. empty My babies list), causing a flash of wrong or empty state.
+- **Root Cause:** ProfileSection did not receive or use profile loading state.
+- **Permanent Fix:** Pass `profileLoading` from App to ProfileSection. When `profileLoading` is true, render a lightweight skeleton (e.g. title placeholder + a few card-shaped placeholders with `animate-pulse`) instead of the full menu. When load completes, render the real content.

@@ -68,9 +68,10 @@ Cuando hay una nap en curso:
 ### Overdue Nap Handling (Critical)
 Cuando una predicción de nap está en el pasado ("overdue"):
 1. **NO filtrar silenciosamente** - esto causa que bedtime se ancle en datos viejos
-2. Si no hay nap activa y es la primera predicción: mostrar como "now"
+2. Si no hay nap activa y es la primera predicción: mostrar como "now" (para anchor y hero)
 3. Esto asegura que bedtime calcule desde el tiempo actual, no desde hace horas
-4. **Key learning:** El padre puede "saltarse" la ventana óptima; el sistema debe adaptarse
+4. **Timeline card:** Mostrar la **hora original sugerida** (`prediction.predictedTime`) en la card, no "now", para que el padre vea la ventana esperada (ej. 13:42 — 14:27). Flag `isOverdue: true` en el prediction; en el render usar ese tiempo para display. Ver lessons.md §1.6.
+5. **Key learning:** El padre puede "saltarse" la ventana óptima; el sistema debe adaptarse
 
 ---
 
@@ -80,6 +81,7 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 - Botón "+" central en nav bar abre `QuickActionSheet`
 - Grid 3 columnas: Wake Up, Nap, Bedtime
 - Si hay sleep activo: solo muestra "Wake Up"
+- **Loading guard:** No tratar como "no baby" mientras `profileLoading`. FAB abre sheet cuando `profileLoading || hasAnyBaby`; solo navega a add-baby cuando `!profileLoading && !hasAnyBaby`. Nunca deshabilitar el FAB (comportamiento optimista). En `handleOpenNewEntry`, si ya cargó y no hay baby, cerrar sheet y redirigir a add baby. Ver lessons.md §14.
 
 ### Timeline River (TodayView)
 - Cards compactas horizontales (~48px altura)
