@@ -68,6 +68,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** No scroll reset on view change within ProfileSection.
 - **Permanent Fix:** Add `useEffect(() => { window.scrollTo(0, 0); }, [currentView])` in ProfileSection.
 
+### 2.3 Language Selector Does Nothing (Settings)
+**Date:** 2026-02-20
+
+- **Problem:** Tapping English or Español in Account settings did nothing — UI did not switch language.
+- **Root Cause:** In `useBabyProfile.updateProfile()`, the Supabase upsert ran first; only on success did we call `i18n.changeLanguage()` and `setUserProfile()`. If the upsert failed (e.g. `profiles.locale` column missing because migration not run, or RLS), the function returned early and the UI never updated.
+- **Permanent Fix:** Apply locale changes **optimistically** at the start of `updateProfile()` when `data.locale` is set: call `i18n.changeLanguage(locale)`, `setToStorage(STORAGE_KEYS.LOCALE, locale)`, and `setUserProfile(prev => (prev ? { ...prev, locale } : prev))` before the Supabase upsert. The selector then works immediately; DB persistence is best-effort. **Pattern:** For user-facing toggles that can fail server-side (new column, RLS), apply the change to local state and i18n first so the UI always responds.
+
 ---
 
 ## 3. Supabase Query Bugs

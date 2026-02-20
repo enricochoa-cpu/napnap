@@ -238,6 +238,14 @@ export function useBabyProfile() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Apply locale change optimistically so the language selector updates immediately even if DB fails (e.g. migration not run)
+      if (data.locale !== undefined) {
+        const locale = data.locale === 'es' ? 'es' : 'en';
+        i18n.changeLanguage(locale);
+        setToStorage(STORAGE_KEYS.LOCALE, locale);
+        setUserProfile((prev) => (prev ? { ...prev, locale } : prev));
+      }
+
       const updateData: Record<string, unknown> = {};
       if (data.name !== undefined) updateData.baby_name = data.name;
       if (data.dateOfBirth !== undefined) updateData.baby_date_of_birth = data.dateOfBirth || null;
@@ -279,22 +287,14 @@ export function useBabyProfile() {
         );
       }
 
-      // When locale changes, apply to i18n and localStorage immediately so UI updates without refresh
-      if (data.locale !== undefined) {
-        const locale = data.locale === 'es' ? 'es' : 'en';
-        i18n.changeLanguage(locale);
-        setToStorage(STORAGE_KEYS.LOCALE, locale);
-      }
-
-      // Update user profile state
-      if (data.userName !== undefined || data.userRole !== undefined || data.locale !== undefined) {
+      // Update user profile state for non-locale fields (locale already applied above)
+      if (data.userName !== undefined || data.userRole !== undefined) {
         setUserProfile((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             ...(data.userName !== undefined && { userName: data.userName }),
             ...(data.userRole !== undefined && { userRole: data.userRole }),
-            ...(data.locale !== undefined && { locale: data.locale === 'es' ? 'es' : 'en' }),
           };
         });
       }
