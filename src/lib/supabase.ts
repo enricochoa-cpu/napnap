@@ -19,6 +19,7 @@ export interface DbProfile {
   baby_height: number | null;
   baby_avatar_url: string | null;
   created_at: string;
+  locale: string | null;
 }
 
 export interface DbSleepEntry {

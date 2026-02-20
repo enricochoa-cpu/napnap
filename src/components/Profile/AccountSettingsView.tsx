@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../types';
 import { SubViewHeader } from './SubViewHeader';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -41,6 +42,7 @@ export function AccountSettingsView({
   deleteAccountError,
   onNavigateToPrivacy,
 }: AccountSettingsViewProps) {
+  const { t } = useTranslation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -78,28 +80,62 @@ export function AccountSettingsView({
 
   const getRoleDisplay = (role: string) => {
     switch (role) {
-      case 'dad': return 'Dad';
-      case 'mum': return 'Mum';
-      default: return 'Something else';
+      case 'dad': return t('profile.roleDad');
+      case 'mum': return t('profile.roleMum');
+      default: return t('profile.roleOther');
     }
   };
 
+  const currentLocale = userProfile?.locale === 'es' ? 'es' : 'en';
+
   return (
     <div className="space-y-6">
-      <SubViewHeader title="Account settings" subtitle="Manage your account preferences" onBack={onBack} />
+      <SubViewHeader title={t('profile.accountSettings')} subtitle={t('profile.accountSettingsSubtitle')} onBack={onBack} />
+
+      {/* Language */}
+      <div className="card p-5">
+        <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-3">
+          {t('profile.language')}
+        </h3>
+        <p className="text-sm text-[var(--text-secondary)] mb-4">{t('profile.languageSubtitle')}</p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => currentLocale !== 'en' && onUpdateUser({ locale: 'en' })}
+            className={`flex-1 py-3 rounded-xl font-display font-medium transition-all ${
+              currentLocale === 'en'
+                ? 'bg-[var(--night-color)] text-white'
+                : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
+            }`}
+          >
+            {t('profile.english')}
+          </button>
+          <button
+            type="button"
+            onClick={() => currentLocale !== 'es' && onUpdateUser({ locale: 'es' })}
+            className={`flex-1 py-3 rounded-xl font-display font-medium transition-all ${
+              currentLocale === 'es'
+                ? 'bg-[var(--night-color)] text-white'
+                : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
+            }`}
+          >
+            {t('profile.spanish')}
+          </button>
+        </div>
+      </div>
 
       {/* Profile Info */}
       <div className="card p-5">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider">
-            Your profile
+            {t('profile.yourProfile')}
           </h3>
           {!isEditingProfile && (
             <button
               onClick={() => setIsEditingProfile(true)}
               className="text-[var(--nap-color)] text-sm font-medium font-display"
             >
-              Edit
+              {t('common.edit')}
             </button>
           )}
         </div>
@@ -108,7 +144,7 @@ export function AccountSettingsView({
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 type="email"
@@ -120,21 +156,21 @@ export function AccountSettingsView({
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Your Name
+                {t('profile.yourName')}
               </label>
               <input
                 type="text"
                 name="userName"
                 value={formData.userName}
                 onChange={handleFormChange}
-                placeholder="Enter your name..."
+                placeholder={t('profile.enterName')}
                 className="input"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Your Role
+                {t('profile.yourRole')}
               </label>
               <select
                 name="userRole"
@@ -142,15 +178,15 @@ export function AccountSettingsView({
                 onChange={handleFormChange}
                 className="input"
               >
-                <option value="dad">Dad</option>
-                <option value="mum">Mum</option>
-                <option value="other">Something else</option>
+                <option value="dad">{t('profile.roleDad')}</option>
+                <option value="mum">{t('profile.roleMum')}</option>
+                <option value="other">{t('profile.roleOther')}</option>
               </select>
             </div>
 
             <div className="flex gap-3 pt-2">
               <button type="submit" className="btn btn-nap flex-1">
-                Save Changes
+                {t('profile.saveChanges')}
               </button>
               <button
                 type="button"
@@ -163,26 +199,26 @@ export function AccountSettingsView({
                 }}
                 className="btn btn-ghost"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </form>
         ) : (
           <div className="space-y-3">
             <div className="p-4 rounded-xl bg-[var(--bg-soft)]">
-              <p className="text-sm text-[var(--text-muted)] mb-1">Email</p>
+              <p className="text-sm text-[var(--text-muted)] mb-1">{t('auth.email')}</p>
               <p className="text-[var(--text-primary)] font-medium">
-                {userProfile?.email || 'Not available'}
+                {userProfile?.email || t('profile.notAvailable')}
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-soft)]">
-              <p className="text-sm text-[var(--text-muted)] mb-1">Name</p>
+              <p className="text-sm text-[var(--text-muted)] mb-1">{t('common.name')}</p>
               <p className="text-[var(--text-primary)] font-medium">
-                {userProfile?.userName || 'Not set'}
+                {userProfile?.userName || t('profile.notSet')}
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-soft)]">
-              <p className="text-sm text-[var(--text-muted)] mb-1">Role</p>
+              <p className="text-sm text-[var(--text-muted)] mb-1">{t('profile.role')}</p>
               <p className="text-[var(--text-primary)] font-medium">
                 {getRoleDisplay(userProfile?.userRole || 'other')}
               </p>
@@ -204,10 +240,10 @@ export function AccountSettingsView({
         </div>
         <div className="flex-1 text-left">
           <p className="font-display font-semibold text-[var(--danger-color)] text-[17px]">
-            Sign out
+            {t('profile.signOut')}
           </p>
           <p className="text-sm text-[var(--text-muted)] mt-0.5">
-            You can always sign back in
+            {t('profile.signOutSubtitle')}
           </p>
         </div>
       </button>
@@ -218,7 +254,7 @@ export function AccountSettingsView({
           onClick={() => setShowDeleteConfirm(true)}
           className="text-xs text-[var(--text-muted)] opacity-50 hover:opacity-75 transition-opacity"
         >
-          Delete account
+          {t('profile.deleteAccount')}
         </button>
       </div>
 
@@ -235,24 +271,24 @@ export function AccountSettingsView({
               ref={logoutDialogRef}
               role="alertdialog"
               aria-modal="true"
-              aria-label="Sign out confirmation"
+              aria-label={t('profile.signOutConfirmTitle')}
               className="card p-6"
             >
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center text-[var(--text-muted)]">
                 <LogoutIcon />
               </div>
               <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
-                Sign out?
+                {t('profile.signOutConfirmTitle')}
               </h3>
               <p className="text-[var(--text-muted)] text-sm text-center mb-6">
-                You can always sign back in with your email and password.
+                {t('profile.signOutConfirmBody')}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
                   className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => {
@@ -261,7 +297,7 @@ export function AccountSettingsView({
                   }}
                   className="flex-1 px-4 py-3 rounded-xl bg-[var(--night-color)] text-white font-display font-semibold"
                 >
-                  Sign out
+                  {t('profile.signOut')}
                 </button>
               </div>
             </div>
@@ -282,24 +318,24 @@ export function AccountSettingsView({
               ref={deleteDialogRef}
               role="alertdialog"
               aria-modal="true"
-              aria-label="Delete account confirmation"
+              aria-label={t('profile.deleteConfirmTitle')}
               className="card p-6"
             >
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--danger-color)]/20 flex items-center justify-center text-[var(--danger-color)]">
                 <TrashIcon />
               </div>
               <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
-                Delete account?
+                {t('profile.deleteConfirmTitle')}
               </h3>
               <div className="text-[var(--text-muted)] text-sm text-center mb-4 space-y-2">
                 <p>
-                  We will permanently delete your account, your profile, and all linked data (names, photos, and sleep logs).
+                  {t('profile.deleteConfirmBody1')}
                 </p>
                 <p>
-                  We may keep anonymized sleep and growth data (no names or identifiers) to improve our product and research.
+                  {t('profile.deleteConfirmBody2')}
                 </p>
                 <p className="text-xs">
-                  You will be signed out immediately and will not be able to recover your account.
+                  {t('profile.deleteConfirmBody3')}
                 </p>
                 {onNavigateToPrivacy && (
                   <p className="pt-2">
@@ -311,7 +347,7 @@ export function AccountSettingsView({
                       }}
                       className="text-[var(--nap-color)] underline underline-offset-2"
                     >
-                      Privacy policy
+                      {t('auth.privacyPolicy')}
                     </button>
                   </p>
                 )}
@@ -327,14 +363,14 @@ export function AccountSettingsView({
                   disabled={isDeletingAccount}
                   className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium disabled:opacity-50"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => onDeleteAccount()}
                   disabled={isDeletingAccount}
                   className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
                 >
-                  {isDeletingAccount ? 'Deleting…' : 'Delete account'}
+                  {isDeletingAccount ? t('profile.deleting') : t('profile.deleteAccount')}
                 </button>
               </div>
             </div>

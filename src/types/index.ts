@@ -12,6 +12,8 @@ export interface UserProfile {
   email: string; // from auth, read-only
   userName: string;
   userRole: 'dad' | 'mum' | 'other';
+  /** Preferred app language; synced to DB and applied to i18n. */
+  locale?: 'en' | 'es';
 }
 
 export interface SleepEntry {

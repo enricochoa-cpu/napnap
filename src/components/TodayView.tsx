@@ -1,4 +1,5 @@
 import { useMemo, useEffect, useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
   formatTime,
@@ -121,6 +122,7 @@ export function TodayView({
   hasNoBaby = false,
   onAddBabyClick,
 }: TodayViewProps) {
+  const { t } = useTranslation();
   // Force re-render every minute for live countdowns
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -539,7 +541,7 @@ export function TodayView({
               <MoonIcon className="w-8 h-8 text-[var(--text-muted)]" />
             </div>
             <h1 className="text-xl font-display font-bold text-[var(--text-primary)] mb-2">
-              {hasNoBaby ? 'Add a baby to get started' : 'Good morning!'}
+              {hasNoBaby ? t('today.addABabySubtitle') : t('today.goodMorning')}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed mb-6">
               {hasNoBaby

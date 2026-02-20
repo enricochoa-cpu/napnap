@@ -5,15 +5,16 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { startOfDay, subDays } from 'date-fns';
 import type { SleepEntry } from '../types';
 import type { BabyProfile } from '../types';
 import {
   getReportData,
   formatMinutesToHours,
-  getBedtimeCopy,
-  getWakeUpCopy,
-  getPatternsCopy,
+  getBedtimeCopyKey,
+  getWakeUpCopyKey,
+  getPatternsCopyKeys,
 } from '../utils/reportData';
 
 const REPORT_CAP_DAYS = 30;
@@ -70,29 +71,32 @@ export function SleepReportView({
   profile,
   onBack,
 }: SleepReportViewProps) {
+  const { t } = useTranslation();
   const data = useMemo(() => {
     const today = startOfDay(new Date());
     const reportEndDate = today;
     const reportStartDate = subDays(today, REPORT_CAP_DAYS - 1);
     const filteredEntries = entries.filter((e) => {
-      const t = new Date(e.startTime).getTime();
-      return t >= reportStartDate.getTime() && t <= reportEndDate.getTime() + 86400000;
+      const ts = new Date(e.startTime).getTime();
+      return ts >= reportStartDate.getTime() && ts <= reportEndDate.getTime() + 86400000;
     });
     return getReportData(filteredEntries, reportStartDate, reportEndDate, profile);
   }, [entries, profile]);
 
-  const patternsLines = useMemo(() => getPatternsCopy(data), [data]);
+  const bedtimeCopy = useMemo(() => getBedtimeCopyKey(data), [data]);
+  const wakeUpCopy = useMemo(() => getWakeUpCopyKey(data), [data]);
+  const patternsLines = useMemo(() => getPatternsCopyKeys(data), [data]);
 
   const isEmpty = !data.flags.hasEnoughData;
 
   const overviewCopy = useMemo(() => {
     const name = data.babyName;
     if (!data.ageLabel) {
-      return `This is ${name}'s sleep so far. Here's what we're seeing.`;
+      return t('report.overviewNoAge', { name });
     }
-    const pronoun = profile?.gender === 'male' ? "He's" : profile?.gender === 'female' ? "She's" : "They're";
-    return `This is ${name}'s sleep so far. ${pronoun} ${data.ageLabel} — here's what we're seeing.`;
-  }, [data.babyName, data.ageLabel, profile?.gender]);
+    const pronoun = profile?.gender === 'male' ? t('report.pronounHe') : profile?.gender === 'female' ? t('report.pronounShe') : t('report.pronounThey');
+    return t('report.overviewWithAge', { name, pronoun, ageLabel: data.ageLabel });
+  }, [data.babyName, data.ageLabel, profile?.gender, t]);
 
   return (
     <div className="pb-32 px-6 fade-in">
@@ -102,16 +106,16 @@ export function SleepReportView({
           type="button"
           onClick={onBack}
           className="flex items-center justify-center w-10 h-10 rounded-full text-[var(--text-primary)] hover:bg-[var(--bg-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)]"
-          aria-label="Back to trends"
+          aria-label={t('stats.backToTrends')}
         >
           <BackIcon />
         </button>
         <div className="flex-1 min-w-0">
           <h1 className="text-xl font-display font-bold text-[var(--text-primary)]">
-            Sleep report
+            {t('report.title')}
           </h1>
           <p className="text-sm text-[var(--text-muted)]">
-            Last 30 days
+            {t('report.subtitle')}
           </p>
         </div>
       </div>
@@ -144,10 +148,10 @@ export function SleepReportView({
             </svg>
           </div>
           <h2 className="text-lg font-display font-semibold text-[var(--text-primary)] mb-2">
-            Not enough data yet
+            {t('report.notEnoughData')}
           </h2>
           <p className="text-[var(--text-muted)] text-sm">
-            Log a few more days of sleep to see your first report.
+            {t('report.logMoreDays')}
           </p>
         </div>
       ) : (
@@ -162,13 +166,13 @@ export function SleepReportView({
             }}
           >
             <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-2">
-              Overview
+              {t('report.overview')}
             </h2>
             <p className="text-[var(--text-primary)]">
               {overviewCopy}
             </p>
             <p className="text-sm text-[var(--text-muted)] mt-2">
-              Based on the last 30 days of logs.
+              {t('report.basedOnLast30')}
             </p>
           </section>
 
@@ -182,29 +186,29 @@ export function SleepReportView({
             }}
           >
             <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">
-              Summary
+              {t('report.summary')}
             </h2>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-xs text-[var(--text-muted)] font-display">Avg. total sleep</p>
+                <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgTotalSleep')}</p>
                 <p className="text-lg font-display font-semibold text-[var(--text-primary)]">
                   {formatMinutesToHours(data.averages.avgTotal)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[var(--text-muted)] font-display">Avg. naps per day</p>
+                <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgNapsPerDay')}</p>
                 <p className="text-lg font-display font-semibold text-[var(--text-primary)]">
                   {data.averages.avgNapCount.toFixed(1)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[var(--text-muted)] font-display">Avg. nap length</p>
+                <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgNapTime')}</p>
                 <p className="text-lg font-display font-semibold text-[var(--nap-color)]">
                   {formatMinutesToHours(data.averages.avgNapDuration)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[var(--text-muted)] font-display">Avg. night sleep</p>
+                <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgNightSleep')}</p>
                 <p className="text-lg font-display font-semibold text-[var(--night-color)]">
                   {formatMinutesToHours(data.averages.avgNight)}
                 </p>
@@ -222,11 +226,11 @@ export function SleepReportView({
             }}
           >
             <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">
-              Bedtime & wake times
+              {t('report.bedtimeWake')}
             </h2>
             <ul className={BULLET_LIST_CLASS}>
-              <ReportBulletItem icon={MoonIcon}>{getBedtimeCopy(data)}</ReportBulletItem>
-              <ReportBulletItem icon={SunIcon}>{getWakeUpCopy(data)}</ReportBulletItem>
+              <ReportBulletItem icon={MoonIcon}>{t(bedtimeCopy.key, bedtimeCopy.params)}</ReportBulletItem>
+              <ReportBulletItem icon={SunIcon}>{t(wakeUpCopy.key, wakeUpCopy.params)}</ReportBulletItem>
             </ul>
           </section>
 
@@ -245,7 +249,7 @@ export function SleepReportView({
               </h2>
               <ul className={BULLET_LIST_CLASS}>
                 {patternsLines.map((line, i) => (
-                  <ReportBulletItem key={i} icon={PatternIcon}>{line}</ReportBulletItem>
+                  <ReportBulletItem key={i} icon={PatternIcon}>{t(line.key, line.params)}</ReportBulletItem>
                 ))}
               </ul>
             </section>
@@ -262,11 +266,11 @@ export function SleepReportView({
               }}
             >
               <h2 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-3">
-                What to try
+                {t('report.whatToTry')}
               </h2>
               <ul className={BULLET_LIST_CLASS}>
                 {data.tips.map((tip) => (
-                  <ReportBulletItem key={tip.id} icon={CheckIcon}>{tip.copy}</ReportBulletItem>
+                  <ReportBulletItem key={tip.id} icon={CheckIcon}>{t(tip.key, tip.params)}</ReportBulletItem>
                 ))}
               </ul>
             </section>

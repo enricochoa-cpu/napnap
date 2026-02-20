@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../utils/dateUtils';
 import { setOnboardingDraftInSession } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
@@ -27,10 +28,10 @@ const STEP_YOUR_NAME = 3;
 const STEP_YOUR_RELATIONSHIP = 4;
 const STEP_ACCOUNT = 5;
 
-const RELATIONSHIP_OPTIONS: { value: OnboardingRelationship; label: string }[] = [
-  { value: 'mum', label: 'Mum' },
-  { value: 'dad', label: 'Dad' },
-  { value: 'other', label: 'Other' },
+const RELATIONSHIP_OPTIONS: { value: OnboardingRelationship; labelKey: string }[] = [
+  { value: 'mum', labelKey: 'onboarding.relationshipMum' },
+  { value: 'dad', labelKey: 'onboarding.relationshipDad' },
+  { value: 'other', labelKey: 'onboarding.relationshipOther' },
 ];
 
 interface OnboardingFlowProps {
@@ -48,6 +49,7 @@ const defaultDraft = (): OnboardingDraft => ({
 });
 
 export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword }: OnboardingFlowProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(STEP_WELCOME);
   const [draft, setDraft] = useState<OnboardingDraft>(defaultDraft);
   const [accountView, setAccountView] = useState<'signup' | 'login' | 'forgot-password'>('signup');
@@ -68,7 +70,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
   };
 
   const progressDots = (
-    <div className="flex justify-center gap-2 mb-6" aria-label={`Step ${step + 1} of ${TOTAL_STEPS}`}>
+    <div className="flex justify-center gap-2 mb-6" aria-label={t('onboarding.stepOf', { current: step + 1, total: TOTAL_STEPS })}>
       {Array.from({ length: TOTAL_STEPS }, (_, i) => (
         <span
           key={i}
@@ -129,10 +131,10 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_WELCOME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            Hi there
+            {t('onboarding.hiThere')}
           </h2>
           <p className="text-[var(--text-secondary)] font-display mt-3 text-center">
-            A few quick details so we can suggest when your baby should sleep. No fuss.
+            {t('onboarding.intro')}
           </p>
           <div className="flex-1" />
           <div className="mt-auto safe-pad-bottom">
@@ -141,7 +143,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               onClick={goNext}
               className="btn btn-night w-full min-h-[56px]"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>
@@ -151,14 +153,14 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_BABY_NAME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            What’s your baby’s name?
+            {t('onboarding.babyNameQuestion')}
           </h2>
           <div className="flex-1 flex flex-col justify-center py-6">
             <input
               type="text"
               value={draft.babyName}
               onChange={(e) => setDraft((d) => ({ ...d, babyName: e.target.value }))}
-              placeholder="Name"
+              placeholder={t('onboarding.namePlaceholder')}
               className="input"
               autoComplete="off"
             />
@@ -169,7 +171,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               onClick={goBack}
               className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
-              Back
+              {t('common.back')}
             </button>
             <button
               type="button"
@@ -177,7 +179,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               disabled={!canProceed}
               className="btn btn-night flex-1 min-h-[56px]"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>
@@ -187,10 +189,10 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_BABY_DOB && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            When was your baby born?
+            {t('onboarding.babyDobQuestion')}
           </h2>
           <p className="text-[var(--text-muted)] text-sm font-display mt-2 text-center">
-            We need this for sleep suggestions.
+            {t('onboarding.babyDobHint')}
           </p>
           <div className="flex-1 flex flex-col justify-center py-6">
             <input
@@ -206,7 +208,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               onClick={goBack}
               className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
-              Back
+              {t('common.back')}
             </button>
             <button
               type="button"
@@ -214,7 +216,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               disabled={!canProceed}
               className="btn btn-night flex-1 min-h-[56px]"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>
@@ -224,14 +226,14 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_YOUR_NAME && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            What’s your name?
+            {t('onboarding.yourNameQuestion')}
           </h2>
           <div className="flex-1 flex flex-col justify-center py-6">
             <input
               type="text"
               value={draft.userName}
               onChange={(e) => setDraft((d) => ({ ...d, userName: e.target.value }))}
-              placeholder="Name"
+              placeholder={t('onboarding.namePlaceholder')}
               className="input"
               autoComplete="name"
             />
@@ -242,7 +244,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               onClick={goBack}
               className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
-              Back
+              {t('common.back')}
             </button>
             <button
               type="button"
@@ -250,7 +252,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               disabled={!canProceed}
               className="btn btn-night flex-1 min-h-[56px]"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>
@@ -260,7 +262,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_YOUR_RELATIONSHIP && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            You’re their…
+            {t('onboarding.yourRelationshipQuestion')}
           </h2>
           <div className="flex-1 flex flex-col justify-center gap-2 py-6">
             {RELATIONSHIP_OPTIONS.map((opt) => (
@@ -272,7 +274,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
                   draft.relationship === opt.value ? 'btn-night' : 'btn-ghost border border-[var(--night-color)]'
                 }`}
               >
-                {opt.label}
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>
@@ -282,14 +284,14 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               onClick={goBack}
               className="btn btn-ghost flex-1 min-h-[56px] border border-[var(--night-color)]"
             >
-              Back
+              {t('common.back')}
             </button>
             <button
               type="button"
               onClick={goNext}
               className="btn btn-night flex-1 min-h-[56px]"
             >
-              Next
+              {t('common.next')}
             </button>
           </div>
         </div>

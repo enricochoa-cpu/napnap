@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { SleepList } from './components/SleepList';
 import { DayNavigator } from './components/DayNavigator';
@@ -49,6 +50,7 @@ function App() {
     refreshProfile,
     loading: profileLoading,
   } = useBabyProfile();
+  const { t } = useTranslation();
 
   // Apply onboarding draft after first sign-up: create profile from stored baby name, DOB, user name, relationship.
   const appliedOnboardingDraftRef = useRef(false);
@@ -462,7 +464,7 @@ function App() {
             <button
               onClick={() => handleViewChange('home')}
               className={`nav-tab ${currentView === 'home' ? 'nav-tab-active' : ''}`}
-              aria-label="Today"
+              aria-label={t('nav.today')}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
@@ -474,7 +476,7 @@ function App() {
             <button
               onClick={() => handleViewChange('history')}
               className={`nav-tab ${currentView === 'history' ? 'nav-tab-active' : ''}`}
-              aria-label="History"
+              aria-label={t('nav.history')}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
@@ -490,7 +492,7 @@ function App() {
               <button
                 onClick={() => (profileLoading || hasAnyBaby ? setShowActionMenu(true) : goToAddBaby())}
                 className="nav-action-btn"
-                aria-label={profileLoading || hasAnyBaby ? 'Log sleep' : 'Add a baby to start logging'}
+                aria-label={profileLoading || hasAnyBaby ? t('nav.logSleep') : t('nav.addBabyToStart')}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
@@ -502,7 +504,7 @@ function App() {
             <button
               onClick={() => handleViewChange('stats')}
               className={`nav-tab ${currentView === 'stats' ? 'nav-tab-active' : ''}`}
-              aria-label="Stats"
+              aria-label={t('nav.stats')}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="20" x2="18" y2="10" />
@@ -515,7 +517,7 @@ function App() {
             <button
               onClick={() => handleViewChange('profile')}
               className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}
-              aria-label="Profile"
+              aria-label={t('nav.profile')}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="4" />

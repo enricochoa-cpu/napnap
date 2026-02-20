@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { PRIVACY_POLICY_SECTIONS } from '../../constants/privacyPolicy';
+import { useTranslation } from 'react-i18next';
 import { AuthDivider } from './AuthDivider';
 import { GoogleSignInButton } from './GoogleSignInButton';
+
+const PRIVACY_SECTION_KEYS = ['whatWeCollect', 'howWeUse', 'accountDeletion', 'contact'] as const;
 
 interface SignUpFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
@@ -10,6 +12,7 @@ interface SignUpFormProps {
 }
 
 export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUpFormProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -23,20 +26,18 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
     e.preventDefault();
     setError(null);
 
-    // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsNoMatch'));
       return;
     }
 
-    // Validate password strength
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
     if (!agreedToPrivacy) {
-      setError('Please agree to the Privacy Policy to continue');
+      setError(t('auth.agreePrivacyRequired'));
       return;
     }
 
@@ -62,15 +63,15 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-display-sm text-[var(--text-primary)] mb-2">Check your email</h2>
+          <h2 className="text-display-sm text-[var(--text-primary)] mb-2">{t('auth.checkEmail')}</h2>
           <p className="text-[var(--text-secondary)] font-display mb-6">
-            We sent a confirmation link to <strong>{email}</strong>
+            {t('auth.confirmationSent')} <strong>{email}</strong>
           </p>
           <button
             onClick={onSwitchToLogin}
             className="btn btn-ghost w-full"
           >
-            Back to Sign In
+            {t('auth.backToSignIn')}
           </button>
         </div>
       </div>
@@ -88,8 +89,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </div>
-          <h1 className="text-display-lg text-[var(--text-primary)]">Create account</h1>
-          <p className="text-[var(--text-muted)] font-display mt-2">Start tracking your baby&apos;s sleep</p>
+          <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.createAccount')}</h1>
+          <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.createAccountSubtitle')}</p>
         </div>
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
@@ -106,13 +107,13 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
                 aria-describedby="privacy-desc"
               />
               <span id="privacy-desc" className="text-sm text-[var(--text-secondary)] font-display">
-                I agree to NapNap&apos;s{' '}
+                {t('auth.agreePrivacy')}{' '}
                 <button
                   type="button"
                   onClick={() => setShowPrivacyModal(true)}
                   className="text-[var(--nap-color)] font-medium underline underline-offset-2"
                 >
-                  Privacy Policy
+                  {t('auth.privacyPolicy')}
                 </button>
               </span>
             </label>
@@ -131,14 +132,14 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="input"
                 disabled={loading}
               />
@@ -146,30 +147,30 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 className="input"
                 disabled={loading}
               />
-              <p className="text-xs text-[var(--text-muted)] mt-1">At least 6 characters</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">{t('auth.atLeast6')}</p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Confirm Password
+                {t('auth.confirmPassword')}
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 className="input"
                 disabled={loading}
               />
@@ -180,18 +181,18 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               disabled={loading || !agreedToPrivacy}
               className="btn btn-nap w-full min-h-[56px]"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-[var(--text-muted)] text-sm font-display">
-              Already have an account?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <button
                 onClick={onSwitchToLogin}
                 className="text-[var(--nap-color)] font-medium hover:underline"
               >
-                Sign in
+                {t('auth.signIn')}
               </button>
             </p>
           </div>
@@ -211,13 +212,13 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
           <div className="bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-2xl shadow-xl max-h-[85vh] w-full max-w-md flex flex-col overflow-hidden">
             <div className="p-4 border-b border-[var(--text-muted)]/20 flex items-center justify-between flex-shrink-0">
               <h2 id="privacy-modal-title" className="text-lg font-display font-semibold text-[var(--text-primary)]">
-                NapNap Privacy Policy
+                {t('auth.privacyModalTitle')}
               </h2>
               <button
                 type="button"
                 onClick={() => setShowPrivacyModal(false)}
                 className="p-2 rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-primary)]"
-                aria-label="Close"
+                aria-label={t('auth.closeAria')}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -225,12 +226,12 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               </button>
             </div>
             <div className="overflow-y-auto p-4 space-y-4">
-              {PRIVACY_POLICY_SECTIONS.map((section) => (
-                <div key={section.title}>
+              {PRIVACY_SECTION_KEYS.map((key) => (
+                <div key={key}>
                   <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-1">
-                    {section.title}
+                    {t(`privacy.${key}`)}
                   </h3>
-                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{section.body}</p>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{t(`privacy.${key}Body`)}</p>
                 </div>
               ))}
             </div>
@@ -240,7 +241,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
                 onClick={() => setShowPrivacyModal(false)}
                 className="btn btn-night w-full min-h-[48px]"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>

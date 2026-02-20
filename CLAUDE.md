@@ -43,7 +43,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - **Components** are presentational and receive data/callbacks via props
 - `useAuth` handles user authentication (sign up, sign in, sign out, password reset)
 - `useSleepEntries` handles all sleep CRUD operations and provides computed values (active sleep, daily summaries)
-- `useBabyProfile` handles baby and user profile CRUD via Supabase
+- `useBabyProfile` handles baby and user profile CRUD via Supabase (including `locale` for i18n; syncs to `i18n.changeLanguage` and localStorage)
 - `useBabyShares` handles multi-user sharing (invitations, access management)
 - `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
 - `useFocusTrap` traps keyboard focus inside modals/sheets (Tab cycling, Escape key, focus save/restore)
@@ -52,7 +52,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 ### Key Types (`src/types/index.ts`)
 - `BabyProfile`: Baby info (name, DOB, gender, weight, height, avatarUrl)
-- `UserProfile`: User info (email, userName, userRole: dad/mum/other)
+- `UserProfile`: User info (email, userName, userRole: dad/mum/other, locale: en|es for app language)
 - `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
 - `BabyShare`: Multi-user sharing (babyOwnerId, sharedWithEmail, status, role: caregiver/viewer)
 
@@ -109,7 +109,9 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
   - `calculateSuggestedNapTime()`: Next nap prediction based on wake windows
   - `calculateAllNapWindows()`: Full day nap schedule prediction
   - `calculateDynamicBedtime()`: Bedtime calculation based on completed naps
-- `storage.ts`: localStorage keys and get/set helpers
+- `storage.ts`: localStorage keys and get/set helpers (includes `STORAGE_KEYS.LOCALE` for i18n)
+- `dateFnsLocale.ts`: Returns date-fns locale (es/enUS) from current i18n language for localized date formatting
+- **i18n**: `src/i18n.ts` bootstraps i18next with `src/locales/en.json` and `es.json`. Language chosen in **Settings → Account settings** (English / Español), persisted in `profiles.locale` and localStorage. Use `useTranslation()` and `t('key')` in components.
 
 ## Design System
 

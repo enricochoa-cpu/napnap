@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { BabyShare, UserProfile } from '../../types';
 
 export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy';
@@ -71,23 +72,6 @@ export function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightE
 }
 
 
-// Greetings based on time of day
-function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 18) return 'Good afternoon';
-  return 'Good evening';
-}
-
-// Time-contextual encouragement (not random — feels intentional)
-function getEncouragingMessage(): string {
-  const hour = new Date().getHours();
-  if (hour < 6) return 'You\'re doing great';
-  if (hour < 12) return 'Fresh start today';
-  if (hour < 18) return 'Keep going, you\'ve got this';
-  return 'Almost there';
-}
-
 export function ProfileMenu({
   pendingInvitations,
   onNavigate,
@@ -95,9 +79,16 @@ export function ProfileMenu({
   onDeclineInvitation,
   userProfile,
 }: ProfileMenuProps) {
-  const greeting = getGreeting();
-  const encouragement = getEncouragingMessage();
-  const parentName = userProfile?.userName || 'there';
+  const { t } = useTranslation();
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12 ? t('profile.greetingMorning') :
+    hour < 18 ? t('profile.greetingAfternoon') : t('profile.greetingEvening');
+  const encouragement =
+    hour < 6 ? t('profile.encouragementNight') :
+    hour < 12 ? t('profile.encouragementMorning') :
+    hour < 18 ? t('profile.encouragementDay') : t('profile.encouragementEvening');
+  const parentName = userProfile?.userName || t('profile.there');
 
   return (
     <div className="space-y-6">
@@ -113,7 +104,7 @@ export function ProfileMenu({
       {pendingInvitations.length > 0 && (
         <div className="rounded-2xl bg-gradient-to-br from-[var(--nap-color)]/15 to-[var(--nap-color)]/5 p-4 border border-[var(--nap-color)]/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <h3 className="text-sm font-display font-bold text-[var(--text-primary)] mb-3">
-            {pendingInvitations.length === 1 ? 'New Invitation' : `${pendingInvitations.length} Invitations`}
+            {pendingInvitations.length === 1 ? t('profile.newInvitation') : t('profile.invitations', { count: pendingInvitations.length })}
           </h3>
           <div className="space-y-2">
             {pendingInvitations.map((invitation) => (
@@ -123,22 +114,22 @@ export function ProfileMenu({
               >
                 <div className="min-w-0 flex-1">
                   <p className="font-display font-semibold text-[var(--text-primary)] text-sm truncate">
-                    {invitation.babyName || 'Baby'}
+                    {invitation.babyName || t('common.baby')}
                   </p>
-                  <p className="text-xs text-[var(--text-muted)]">from {invitation.ownerName || 'parent'}</p>
+                  <p className="text-xs text-[var(--text-muted)]">{t('profile.from')} {invitation.ownerName || t('profile.parent')}</p>
                 </div>
                 <div className="flex gap-2 ml-3">
                   <button
                     onClick={() => onAcceptInvitation(invitation.id)}
                     className="px-3 py-1.5 rounded-lg bg-[var(--nap-color)] text-[var(--bg-deep)] text-sm font-display font-semibold"
                   >
-                    Accept
+                    {t('profile.accept')}
                   </button>
                   <button
                     onClick={() => onDeclineInvitation(invitation.id)}
                     className="px-3 py-1.5 rounded-lg bg-[var(--bg-soft)] text-[var(--text-muted)] text-sm font-display"
                   >
-                    Decline
+                    {t('profile.decline')}
                   </button>
                 </div>
               </div>
@@ -151,19 +142,19 @@ export function ProfileMenu({
       <div className="space-y-3">
         <ListRow
           icon={<BabyIcon />}
-          title="My Babies"
+          title={t('profile.myBabies')}
           onClick={() => onNavigate('my-babies')}
           iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
         />
         <ListRow
           icon={<SettingsIcon />}
-          title="Settings"
+          title={t('profile.settings')}
           onClick={() => onNavigate('account-settings')}
           iconColorClass="bg-[var(--text-muted)]/15 text-[var(--text-muted)]"
         />
         <ListRow
           icon={<SupportIcon />}
-          title="Support"
+          title={t('profile.support')}
           onClick={() => onNavigate('support')}
           iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
         />

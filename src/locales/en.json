@@ -1,0 +1,371 @@
+{
+  "common": {
+    "baby": "Baby",
+    "next": "Next",
+    "back": "Back",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "close": "Close",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "loading": "Loading..."
+  },
+  "entry": {
+    "tagline": "Calm guidance for your baby's sleep",
+    "getStarted": "Get started",
+    "haveAccount": "I have an account"
+  },
+  "auth": {
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to continue tracking sleep",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Forgot password?",
+    "signingIn": "Signing in...",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "createAccount": "Create account",
+    "createAccountSubtitle": "Start tracking your baby's sleep",
+    "agreePrivacy": "I agree to NapNap's",
+    "privacyPolicy": "Privacy Policy",
+    "confirmPassword": "Confirm Password",
+    "atLeast6": "At least 6 characters",
+    "passwordsNoMatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "agreePrivacyRequired": "Please agree to the Privacy Policy to continue",
+    "creatingAccount": "Creating account...",
+    "createAccountButton": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "checkEmail": "Check your email",
+    "confirmationSent": "We sent a confirmation link to",
+    "resetLinkSent": "We sent a password reset link to",
+    "backToSignIn": "Back to Sign In",
+    "resetPassword": "Reset password",
+    "resetPasswordSubtitle": "Enter your email to receive a reset link",
+    "sending": "Sending...",
+    "sendResetLink": "Send Reset Link",
+    "privacyModalTitle": "NapNap Privacy Policy",
+    "closeAria": "Close"
+  },
+  "onboarding": {
+    "hiThere": "Hi there",
+    "intro": "A few quick details so we can suggest when your baby should sleep. No fuss.",
+    "babyNameQuestion": "What's your baby's name?",
+    "babyDobQuestion": "When was your baby born?",
+    "babyDobHint": "We need this for sleep suggestions.",
+    "yourNameQuestion": "What's your name?",
+    "yourRelationshipQuestion": "You're their…",
+    "relationshipMum": "Mum",
+    "relationshipDad": "Dad",
+    "relationshipOther": "Other",
+    "namePlaceholder": "Name",
+    "stepOf": "Step {{current}} of {{total}}"
+  },
+  "today": {
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
+    "tapToAdd": "Tap + to add activity",
+    "addABaby": "Add a baby",
+    "addABabySubtitle": "Create a profile to get predictions",
+    "noWakeUpYet": "Log morning wake up to see predictions",
+    "noWakeUpYetSubtitle": "Tap + and choose Wake Up when your baby gets out of bed",
+    "nextNap": "Next nap",
+    "around": "around",
+    "now": "now",
+    "bedtime": "Bedtime",
+    "asleep": "Asleep",
+    "expectedWake": "Expected wake",
+    "wakeUp": "Wake Up",
+    "nap": "Nap",
+    "night": "Night",
+    "calibration": "Learning your pattern",
+    "predictions": "Predictions"
+  },
+  "quickActions": {
+    "ariaLabel": "Quick actions",
+    "wakeUp": "Wake Up",
+    "nap": "Nap",
+    "bedtime": "Bedtime"
+  },
+  "nav": {
+    "today": "Today",
+    "home": "Home",
+    "history": "History",
+    "stats": "Stats",
+    "profile": "Profile",
+    "logSleep": "Log sleep",
+    "addBabyToStart": "Add a baby to start logging"
+  },
+  "profile": {
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening",
+    "encouragementNight": "You're doing great",
+    "encouragementMorning": "Fresh start today",
+    "encouragementDay": "Keep going, you've got this",
+    "encouragementEvening": "Almost there",
+    "there": "there",
+    "newInvitation": "New Invitation",
+    "invitations": "{{count}} Invitations",
+    "from": "from",
+    "parent": "parent",
+    "accept": "Accept",
+    "decline": "Decline",
+    "myBabies": "My Babies",
+    "settings": "Settings",
+    "support": "Support",
+    "accountSettings": "Account settings",
+    "accountSettingsSubtitle": "Manage your account preferences",
+    "yourProfile": "Your profile",
+    "yourName": "Your Name",
+    "yourRole": "Your Role",
+    "enterName": "Enter your name...",
+    "saveChanges": "Save Changes",
+    "notAvailable": "Not available",
+    "notSet": "Not set",
+    "role": "Role",
+    "roleDad": "Dad",
+    "roleMum": "Mum",
+    "roleOther": "Something else",
+    "signOut": "Sign out",
+    "signOutSubtitle": "You can always sign back in",
+    "deleteAccount": "Delete account",
+    "signOutConfirmTitle": "Sign out?",
+    "signOutConfirmBody": "You can always sign back in with your email and password.",
+    "deleteConfirmTitle": "Delete account?",
+    "deleteConfirmBody1": "We will permanently delete your account, your profile, and all linked data (names, photos, and sleep logs).",
+    "deleteConfirmBody2": "We may keep anonymized sleep and growth data (no names or identifiers) to improve our product and research.",
+    "deleteConfirmBody3": "You will be signed out immediately and will not be able to recover your account.",
+    "deleting": "Deleting…",
+    "language": "Language",
+    "languageSubtitle": "App language",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "privacy": {
+    "whatWeCollect": "What we collect",
+    "whatWeCollectBody": "We collect the information you give us when you use NapNap: your email and account details, your baby's profile (name, date of birth, optional weight and height), and the sleep data you log (nap and night sleep times).",
+    "howWeUse": "How we use it",
+    "howWeUseBody": "We use this data to run the app, show you sleep predictions and history, and improve our product. We do not sell your data.",
+    "accountDeletion": "Account deletion",
+    "accountDeletionBody": "When you delete your account we remove your email, name(s), photos, and all data linked to your account. We may keep anonymized sleep and growth data (no names or identifiers) for product improvement and research; this data cannot be linked back to you.",
+    "contact": "Contact",
+    "contactBody": "For questions about your data or this policy, use the Contact option in Support."
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Help and resources",
+    "faqs": "FAQs",
+    "faqsSubtitle": "NapNap key terms and answers",
+    "contact": "Contact",
+    "contactSubtitle": "Get in touch"
+  },
+  "myBabies": {
+    "title": "My Babies",
+    "subtitle": "Switch or add a baby",
+    "addBaby": "Add a baby",
+    "noBabies": "No babies yet",
+    "noBabiesSubtitle": "Add your first baby to start tracking sleep"
+  },
+  "babyEdit": {
+    "editBaby": "Edit baby",
+    "addBaby": "Add a baby",
+    "babyName": "Baby's name",
+    "dateOfBirth": "Date of birth",
+    "gender": "Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "avatar": "Photo",
+    "changePhoto": "Change photo",
+    "deleteBaby": "Delete baby",
+    "deleteBabyConfirm": "Remove this baby from your account? Sleep data will be deleted."
+  },
+  "babyDetail": {
+    "sharedWith": "Shared with",
+    "viewer": "Viewer",
+    "caregiver": "Caregiver",
+    "invite": "Invite",
+    "noShares": "Not shared yet"
+  },
+  "shareAccess": {
+    "title": "Share access",
+    "invitePlaceholder": "Email address",
+    "inviteButton": "Send invite",
+    "roleCaregiver": "Caregiver",
+    "roleViewer": "Viewer",
+    "remove": "Remove",
+    "editRole": "Edit role"
+  },
+  "history": {
+    "sleepLog": "Sleep log",
+    "noEntries": "No sleep entries for this day",
+    "today": "Today",
+    "dailySummary": "Daily summary",
+    "totalSleep": "Total sleep",
+    "naps": "Naps",
+    "night": "Night"
+  },
+  "dayNavigator": {
+    "today": "Today",
+    "ariaDay": "{{date}}"
+  },
+  "sleepEntry": {
+    "nap": "Nap",
+    "night": "Night",
+    "wakeUp": "Wake up",
+    "start": "Start",
+    "end": "End",
+    "notes": "Notes",
+    "notesPlaceholder": "Add a note...",
+    "deleteEntry": "Delete entry",
+    "deleteConfirm": "Delete this sleep entry?"
+  },
+  "sleepEntrySheet": {
+    "addNap": "Add nap",
+    "addBedtime": "Add bedtime",
+    "editEntry": "Edit entry",
+    "selectedDate": "Selected date",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "save": "Save",
+    "delete": "Delete"
+  },
+  "wakeUpSheet": {
+    "title": "Wake up",
+    "subtitle": "Baby woke up",
+    "confirm": "Confirm wake up",
+    "delete": "Delete night"
+  },
+  "missingBedtime": {
+    "title": "Log last night's bedtime?",
+    "body": "Select which night you forgot to log, and we'll help you add it.",
+    "logBedtime": "Log bedtime",
+    "skip": "Skip",
+    "startNewDay": "Start a new day",
+    "yesterday": "Yesterday"
+  },
+  "collision": {
+    "title": "Overlapping sleep",
+    "body": "This sleep overlaps with an existing entry. Replace the existing entry or cancel.",
+    "replace": "Replace",
+    "cancel": "Cancel"
+  },
+  "stats": {
+    "title": "Trends",
+    "dateRange": "Date range",
+    "generateReport": "Generate report (last 30 days)",
+    "avgTotalSleep": "Avg. total sleep",
+    "avgNapsPerDay": "Avg. naps/day",
+    "avgNapTime": "Avg. nap time",
+    "avgNightSleep": "Avg. night sleep",
+    "backToTrends": "Back to trends"
+  },
+  "report": {
+    "title": "Sleep report",
+    "subtitle": "Last 30 days",
+    "overviewNoAge": "This is {{name}}'s sleep so far. Here's what we're seeing.",
+    "overviewWithAge": "This is {{name}}'s sleep so far. {{pronoun}} {{ageLabel}} — here's what we're seeing.",
+    "pronounHe": "He's",
+    "pronounShe": "She's",
+    "pronounThey": "They're",
+    "overview": "Overview",
+    "notEnoughData": "Not enough data yet",
+    "logMoreDays": "Log a few more days of sleep to see your first report.",
+    "basedOnLast30": "Based on the last 30 days of logs.",
+    "summary": "Summary",
+    "bedtimeWake": "Bedtime & wake times",
+    "patterns": "Patterns we're seeing",
+    "whatToTry": "What to try",
+    "tips": {
+      "T1": "Sticking close to today's suggested bedtime will help the algorithm tune in.",
+      "T2": "Logging when {{babyName}} wakes up helps keep predictions accurate — try tapping wake up when they get out of bed.",
+      "T3": "A more consistent bedtime window can help patterns emerge. Try aiming for within about 30 minutes of the same time most nights.",
+      "T4": "A few more days of logging will make the report and predictions more personal.",
+      "T5": "Putting {{babyName}} down before they're overtired often helps — watch for early tired cues like eye rubbing or zoning out, and offer sleep before fussiness.",
+      "T6": "This week sleep looked a bit lighter; one-off days are normal. Keeping a consistent bedtime can help.",
+      "T7": "Nice consistency this period. Keeping the same bedtime window will help the algorithm stay in sync.",
+      "T8": "For {{babyName}}'s age, wake windows around {{avgWakeWindow}} are in a typical range — the app's suggested nap times are tuned to that.",
+      "T9": "Most babies this age do well with 2–3 naps. If you're seeing a lot of resistance at nap time, a small shift in timing might help — the app's suggestions adapt as you log.",
+      "T10": "A short wind-down before bed (e.g. dim lights, same steps each night) can help {{babyName}} recognise bedtime."
+    },
+    "bedtimeCopyVaried": "Bedtime varies from day to day — that's normal while we're learning.",
+    "bedtimeCopyRange": "Most nights you put {{babyName}} down between {{min}} and {{max}}.",
+    "wakeUpCopyMissing": "Logging when your baby wakes up helps the report and predictions stay accurate.",
+    "wakeUpCopyVariable": "Wake-up time varies — that's normal. Keeping a consistent bedtime can help the pattern settle.",
+    "wakeUpCopyRange": "Wake-up is usually between {{min}} and {{max}}.",
+    "patternMoreSleep": "This week {{babyName}} had a bit more total sleep than last week.",
+    "patternLessSleep": "This week a bit less total sleep than last week — one-off days are normal.",
+    "patternNapsCount": "Naps are usually {{count}} per day.",
+    "patternNapsRange": "Naps are usually {{min}}–{{max}} per day.",
+    "patternWakeWindows": "Wake windows are averaging around {{duration}}."
+  },
+  "faq": {
+    "about": {
+      "question": "What is NapNap?",
+      "answer": "**NapNap** is a sleep tracker for babies (0–18 months) that helps you log naps and night sleep and get simple, age-based suggestions for when your baby might need to sleep next.\n\nWe focus on **decision replacement**: instead of showing lots of data to analyze, we suggest things like \"Next nap around 13:42\" or \"Bedtime around 19:30\" so you have one clear next step. The app is designed for night-time and one-handed use, with a calm, non-judgmental tone."
+    },
+    "1": {
+      "question": "What is a wake window?",
+      "answer": "A **wake window** is the amount of time your baby can comfortably stay awake between sleep periods.\n\nWake windows vary by age:\n- **0-4 weeks**: 45-60 minutes\n- **4-12 weeks**: 60-90 minutes\n- **3-4 months**: 75-120 minutes\n- **5-7 months**: 2-3 hours\n- **8-12 months**: 2.5-4 hours\n- **12-18 months**: 4-6 hours\n\nWatching for your baby's sleepy cues within these windows helps prevent overtiredness. NapNap uses age-based wake windows to suggest when to offer the next nap or bedtime."
+    },
+    "2": {
+      "question": "What is a micro-nap and should I be concerned?",
+      "answer": "A **micro-nap** (or \"cat nap\") is a short sleep lasting only 20-30 minutes, typically just one sleep cycle.\n\n**Why it happens:**\n- Baby wakes between sleep cycles and hasn't learned to self-soothe\n- Undertired or overtired at nap time\n- Sleep environment issues (too bright, noisy)\n\n**Is it normal?**\nYes! Micro-naps are very common, especially under 5-6 months. Many babies naturally consolidate naps around 6 months as their sleep matures.\n\n**Tips:**\n- Ensure appropriate wake windows\n- Create a dark, quiet sleep environment\n- Stay consistent with your routine"
+    },
+    "3": {
+      "question": "What is a sleep regression?",
+      "answer": "A **sleep regression** is a period when a baby who was sleeping well suddenly has trouble falling asleep, wakes frequently, or takes shorter naps.\n\n**Common regression ages:**\n- **4 months**: Sleep architecture changes permanently\n- **8-10 months**: Separation anxiety, crawling, standing\n- **12 months**: Walking, dropping to one nap\n- **18 months**: Toddler independence, language explosion\n\n**How long do they last?**\nTypically 2-6 weeks if you stay consistent with your approach.\n\n**What helps:**\n- Maintain consistent routines\n- Offer extra comfort without creating new sleep associations\n- Adjust wake windows if needed\n- Be patient – this is temporary!"
+    },
+    "4": {
+      "question": "How do I know if my baby is overtired?",
+      "answer": "An **overtired baby** has been awake too long and their body produces cortisol (stress hormone), making it *harder* to fall and stay asleep.\n\n**Signs of overtiredness:**\n- Rubbing eyes, pulling ears\n- Yawning excessively\n- Fussiness and irritability\n- Arching back, stiff limbs\n- Hyperactive behavior (counterintuitive!)\n- Fighting sleep desperately\n\n**Prevention:**\n- Learn your baby's wake windows for their age\n- Watch for early sleepy cues\n- Start the nap routine *before* they seem tired\n\n**Recovery:**\nAn earlier bedtime (even 30-60 minutes) can help break the overtired cycle."
+    },
+    "5": {
+      "question": "What are sleepy cues?",
+      "answer": "**Sleepy cues** are signals your baby gives when they're getting tired and ready for sleep.\n\n**Early cues** (ideal time to start nap routine):\n- Staring off into space\n- Less active, calmer movements\n- Losing interest in toys or people\n- Slight eye redness\n\n**Late cues** (may already be overtired):\n- Eye rubbing\n- Yawning\n- Ear or hair pulling\n- Fussiness\n\n**Very late cues** (overtired):\n- Crying\n- Arching back\n- Hyperactivity\n- Difficult to soothe\n\n**Tip:** Aim to catch the early cues. If you wait for yawning and eye rubbing, you may have already missed the optimal sleep window."
+    },
+    "6": {
+      "question": "Is it normal for night sleep to be longer than naps?",
+      "answer": "**Yes, absolutely!** Night sleep and day sleep develop differently.\n\n**Why nights are longer:**\n- Melatonin (sleep hormone) is produced in darkness\n- Baby's circadian rhythm naturally supports longer night stretches\n- Sleep pressure builds throughout the day\n\n**Typical patterns:**\n- **Newborns**: Night and day may be confused initially\n- **2-3 months**: Longest stretch starts appearing at night (4-6 hours)\n- **4-6 months**: Night sleep consolidates (8-12 hours with feeds)\n- **6+ months**: Many babies can sleep 10-12 hours at night\n\n**Naps remain shorter** because daytime sleep pressure is lower and environmental factors (light, noise) affect sleep differently.\n\nDon't worry if naps are 30-45 minutes while nights are much longer – this is biologically normal!"
+    },
+    "7": {
+      "question": "What are circadian rhythm and sleep pressure?",
+      "answer": "**Circadian rhythm** is your baby's internal body clock. It helps align sleep with day and night (more melatonin in the dark, more alert in the light). Over the first months, babies develop a longer stretch at night partly because of this.\n\n**Sleep pressure** (homeostatic drive) is the need to sleep that builds the longer someone is awake. NapNap's suggestions work with both: we use wake windows (sleep pressure) and time-of-day (circadian rhythm) to suggest nap times and a reasonable bedtime."
+    },
+    "8": {
+      "question": "What is a sleep cycle?",
+      "answer": "A **sleep cycle** is a block of light and deep sleep (and sometimes brief waking) before the body moves into the next cycle. In babies, one cycle is often around 30–45 minutes.\n\nMany short naps are one cycle: baby wakes between cycles and hasn't yet learned to link them. That's why you might see 30-minute naps in NapNap—they're normal. As your baby gets older, naps often lengthen as they consolidate cycles."
+    },
+    "science": {
+      "question": "Where does NapNap get its science from?",
+      "answer": "NapNap's suggestions are based on widely used infant sleep guidelines and research:\n\n- **Wake windows and age-based nap counts**: Aligned with evidence-based ranges used in pediatric sleep resources (e.g. [National Sleep Foundation](https://www.sleepfoundation.org/baby-sleep), [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/default.aspx)) and common clinical practice for 0–18 months.\n- **Circadian development**: Use of morning wake-up and time-of-day for bedtime follows established understanding of how infant circadian rhythm develops in the first year.\n- **Short-nap compensation**: Adjusting the next wake window after a short nap reflects the idea that less daytime sleep increases sleep pressure sooner; this is a practical approach used in many parent-facing sleep resources.\n\nNapNap is a tool to support you, not a substitute for professional advice. If you have concerns about your baby's sleep or health, please speak with your pediatrician or a qualified sleep consultant."
+    }
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Get in touch with us",
+    "email": "Email",
+    "message": "Message"
+  },
+  "loading": {
+    "message": "Loading..."
+  },
+  "time": {
+    "today": "Today",
+    "minutesAgo": "{{count}} min ago",
+    "hoursAgo": "{{count}}h ago",
+    "yesterday": "Yesterday"
+  }
+}

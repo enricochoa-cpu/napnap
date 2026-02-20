@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-19 — Sleep Log: add entry is FAB-only; removed "+ Add Entry" button and dropdown from History. Empty state copy updated. See logs/2026-02-19.md.
+**Last updated:** 2026-02-20 — Spanish + English i18n: language selector in Settings, locale in profiles and localStorage, report/FAQs key-based. See logs/2026-02-20.md and plan spanish_+_english_i18n_8e8a9b45.plan.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

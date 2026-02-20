@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ForgotPasswordFormProps {
   onSubmit: (email: string) => Promise<{ message: string } | null>;
@@ -6,6 +7,7 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,15 +38,15 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
           </div>
-          <h2 className="text-display-sm text-[var(--text-primary)] mb-2">Check your email</h2>
+          <h2 className="text-display-sm text-[var(--text-primary)] mb-2">{t('auth.checkEmail')}</h2>
           <p className="text-[var(--text-secondary)] font-display mb-6">
-            We sent a password reset link to <strong>{email}</strong>
+            {t('auth.resetLinkSent')} <strong>{email}</strong>
           </p>
           <button
             onClick={onBack}
             className="btn btn-ghost w-full"
           >
-            Back to Sign In
+            {t('auth.backToSignIn')}
           </button>
         </div>
       </div>
@@ -61,8 +63,8 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
             </svg>
           </div>
-          <h1 className="text-display-lg text-[var(--text-primary)]">Reset password</h1>
-          <p className="text-[var(--text-muted)] font-display mt-2">Enter your email to receive a reset link</p>
+          <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.resetPassword')}</h1>
+          <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.resetPasswordSubtitle')}</p>
         </div>
 
         {/* Form Card */}
@@ -76,14 +78,14 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="input"
                 disabled={loading}
               />
@@ -94,7 +96,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
               disabled={loading}
               className="btn btn-nap w-full"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {loading ? t('auth.sending') : t('auth.sendResetLink')}
             </button>
 
             <button
@@ -102,7 +104,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
               onClick={onBack}
               className="btn btn-ghost w-full"
             >
-              Back to Sign In
+              {t('auth.backToSignIn')}
             </button>
           </form>
         </div>

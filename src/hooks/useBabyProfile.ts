@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { getFromStorage, setToStorage } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/storage';
+import i18n from '../i18n';
 import type { BabyProfile, UserProfile } from '../types';
 
 export interface SharedBabyProfile extends BabyProfile {
@@ -51,11 +52,17 @@ export function useBabyProfile() {
 
       let ownProfile: BabyProfile | null = null;
 
-      // Always set userProfile with at least the email
+      // Apply DB locale to i18n and localStorage so UI language matches (and persists before next profile load)
+      const locale = (data?.locale === 'es' ? 'es' : 'en') as 'en' | 'es';
+      i18n.changeLanguage(locale);
+      setToStorage(STORAGE_KEYS.LOCALE, locale);
+
+      // Always set userProfile with at least the email and locale
       setUserProfile({
         email: user.email || '',
         userName: data?.user_name || '',
         userRole: data?.user_role || 'other',
+        locale,
       });
 
       if (data && data.baby_name) {
@@ -240,6 +247,7 @@ export function useBabyProfile() {
       if (data.avatarUrl !== undefined) updateData.baby_avatar_url = data.avatarUrl || null;
       if (data.userName !== undefined) updateData.user_name = data.userName || null;
       if (data.userRole !== undefined) updateData.user_role = data.userRole || null;
+      if (data.locale !== undefined) updateData.locale = data.locale || null;
 
       // Use upsert to create profile row if it doesn't exist (e.g., invited users without own baby)
       const { error } = await supabase
@@ -271,14 +279,22 @@ export function useBabyProfile() {
         );
       }
 
+      // When locale changes, apply to i18n and localStorage immediately so UI updates without refresh
+      if (data.locale !== undefined) {
+        const locale = data.locale === 'es' ? 'es' : 'en';
+        i18n.changeLanguage(locale);
+        setToStorage(STORAGE_KEYS.LOCALE, locale);
+      }
+
       // Update user profile state
-      if (data.userName !== undefined || data.userRole !== undefined) {
+      if (data.userName !== undefined || data.userRole !== undefined || data.locale !== undefined) {
         setUserProfile((prev) => {
           if (!prev) return prev;
           return {
             ...prev,
             ...(data.userName !== undefined && { userName: data.userName }),
             ...(data.userRole !== undefined && { userRole: data.userRole }),
+            ...(data.locale !== undefined && { locale: data.locale === 'es' ? 'es' : 'en' }),
           };
         });
       }

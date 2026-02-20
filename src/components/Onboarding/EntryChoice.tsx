@@ -1,6 +1,7 @@
 /**
  * Landing screen (Napper-style order): app name → logo → message → buttons.
  */
+import { useTranslation } from 'react-i18next';
 
 interface EntryChoiceProps {
   onNew: () => void;
@@ -8,6 +9,7 @@ interface EntryChoiceProps {
 }
 
 export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
+  const { t } = useTranslation();
   return (
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4 safe-pad-top safe-pad-bottom">
       {/* 1. App name at top (Napper: "napper" → we use "napnap") */}
@@ -32,7 +34,7 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
 
       {/* 3. Short sentence (Napper: "The fastest way to a happy sleeping baby") */}
       <p className="text-[var(--text-secondary)] font-body text-center text-lg max-w-[280px] mb-10">
-        Calm guidance for your baby’s sleep
+        {t('entry.tagline')}
       </p>
 
       {/* 4. Buttons: Get started / I have an account */}
@@ -42,14 +44,14 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
           onClick={onNew}
           className="btn btn-night w-full min-h-[56px]"
         >
-          Get started
+          {t('entry.getStarted')}
         </button>
         <button
           type="button"
           onClick={onHaveAccount}
           className="btn btn-ghost w-full min-h-[56px] border border-[var(--night-color)]"
         >
-          I have an account
+          {t('entry.haveAccount')}
         </button>
       </div>
     </div>

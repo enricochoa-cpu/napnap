@@ -14,6 +14,7 @@ import {
   differenceInMonths,
   isToday,
 } from 'date-fns';
+import { getDateFnsLocale } from './dateFnsLocale';
 import type { SleepEntry } from '../types';
 import type { BabyProfile } from '../types';
 import { calculateAge } from './dateUtils';
@@ -83,9 +84,11 @@ export interface ReportData {
   tips: ReportTip[];
 }
 
+/** Tip for the report "What to try" section; copy is translated in the view via t(key, params). */
 export interface ReportTip {
   id: string;
-  copy: string;
+  key: string;
+  params?: Record<string, string | number>;
 }
 
 /** Max wake window (minutes) by age for overtiredness check. PRD Appendix A.2 */
@@ -277,7 +280,8 @@ export function getReportData(
     hasEnoughData,
   });
 
-  const dateRangeLabel = `${format(startDate, 'd MMM')} – ${format(endDate, 'd MMM yyyy')}`;
+  const locale = getDateFnsLocale();
+  const dateRangeLabel = `${format(startDate, 'd MMM', { locale })} – ${format(endDate, 'd MMM yyyy', { locale })}`;
 
   return {
     babyName,
@@ -314,109 +318,109 @@ interface TipContext {
 function selectTips(flags: ReportFlags, ctx: TipContext): ReportTip[] {
   const out: ReportTip[] = [];
   const used = new Set<string>();
+  const avgWakeStr = ctx.avgWakeWindowMinutes != null ? formatMinutesToHours(ctx.avgWakeWindowMinutes) : '—';
 
-  const add = (id: string, copy: string) => {
+  const add = (id: string, key: string, params?: Record<string, string | number>) => {
     if (used.has(id) || out.length >= 3) return;
     used.add(id);
-    out.push({ id, copy });
+    out.push({ id, key, params: { babyName: ctx.babyName, avgWakeWindow: avgWakeStr, ...params } });
   };
 
-  const fill = (template: string): string => {
-    return template
-      .replace(/\{babyName\}/g, ctx.babyName)
-      .replace(
-        /\{avgWakeWindow\}/g,
-        ctx.avgWakeWindowMinutes != null
-          ? formatMinutesToHours(ctx.avgWakeWindowMinutes)
-          : '—'
-      )
-      .replace(
-        /\{earliestBedtime\}/g,
-        ctx.bedtimeSpread
-          ? formatTimeFromMinutes(ctx.bedtimeSpread.min)
-          : '—'
-      )
-      .replace(
-        /\{latestBedtime\}/g,
-        ctx.bedtimeSpread
-          ? formatTimeFromMinutes(ctx.bedtimeSpread.max)
-          : '—'
-      );
-  };
-
-  // Priority: T4 (need data), T2 (logging), T3/T5, T6/T7, T1, T8, T9, T10. Never both T3 and T7.
   if (!flags.hasEnoughData) {
-    add('T4', fill("A few more days of logging will make the report and predictions more personal."));
+    add('T4', 'report.tips.T4');
   }
   if (flags.wakeUpOftenMissing) {
-    add('T2', fill("Logging when {babyName} wakes up helps keep predictions accurate — try tapping wake up when they get out of bed."));
+    add('T2', 'report.tips.T2');
   }
   if (flags.bedtimeVeryVariable && ctx.ageMonths >= 4 && !used.has('T7')) {
-    add('T3', fill("A more consistent bedtime window can help patterns emerge. Try aiming for within about 30 minutes of the same time most nights."));
+    add('T3', 'report.tips.T3');
   }
   if (flags.overtirednessRisk && ctx.ageMonths <= 12) {
-    add('T5', fill("Putting {babyName} down before they're overtired often helps — watch for early tired cues like eye rubbing or zoning out, and offer sleep before fussiness."));
+    add('T5', 'report.tips.T5');
   }
   if (flags.sleepDecreasedThisWeek) {
-    add('T6', fill("This week sleep looked a bit lighter; one-off days are normal. Keeping a consistent bedtime can help."));
+    add('T6', 'report.tips.T6');
   }
   if (flags.bedtimeStable && !used.has('T3')) {
-    add('T7', fill("Nice consistency this period. Keeping the same bedtime window will help the algorithm stay in sync."));
+    add('T7', 'report.tips.T7');
   }
-  add('T1', fill("Sticking close to today's suggested bedtime will help the algorithm tune in."));
+  add('T1', 'report.tips.T1');
   if (flags.hasEnoughData && ctx.avgWakeWindowMinutes != null) {
-    add('T8', fill("For {babyName}'s age, wake windows around {avgWakeWindow} are in a typical range — the app's suggested nap times are tuned to that."));
+    add('T8', 'report.tips.T8', { avgWakeWindow: avgWakeStr });
   }
   if (flags.napCountInconsistent && ctx.ageMonths >= 6 && ctx.ageMonths <= 15) {
-    add('T9', fill("Most babies this age do well with 2–3 naps. If you're seeing a lot of resistance at nap time, a small shift in timing might help — the app's suggestions adapt as you log."));
+    add('T9', 'report.tips.T9');
   }
   if ((flags.bedtimeVeryVariable || !flags.hasEnoughData) && ctx.ageMonths >= 4 && out.length < 3) {
-    add('T10', fill("A short wind-down before bed (e.g. dim lights, same steps each night) can help {babyName} recognise bedtime."));
+    add('T10', 'report.tips.T10');
   }
 
   return out.slice(0, 3);
 }
 
-export function getBedtimeCopy(data: ReportData): string {
-  if (!data.bedtimeSpread) {
-    return "Bedtime varies from day to day — that's normal while we're learning.";
-  }
-  if (data.flags.bedtimeVeryVariable) {
-    return "Bedtime varies from day to day — that's normal while we're learning.";
-  }
-  const { min, max } = data.bedtimeSpread;
-  return `Most nights you put ${data.babyName} down between ${formatTimeFromMinutes(min)} and ${formatTimeFromMinutes(max)}.`;
+export interface ReportCopyKey {
+  key: string;
+  params?: Record<string, string | number>;
 }
 
-export function getWakeUpCopy(data: ReportData): string {
+export function getBedtimeCopyKey(data: ReportData): ReportCopyKey {
+  if (!data.bedtimeSpread || data.flags.bedtimeVeryVariable) {
+    return { key: 'report.bedtimeCopyVaried' };
+  }
+  const { min, max } = data.bedtimeSpread;
+  return {
+    key: 'report.bedtimeCopyRange',
+    params: {
+      babyName: data.babyName,
+      min: formatTimeFromMinutes(min),
+      max: formatTimeFromMinutes(max),
+    },
+  };
+}
+
+export function getWakeUpCopyKey(data: ReportData): ReportCopyKey {
   if (!data.wakeUpSpread) {
-    return "Logging when your baby wakes up helps the report and predictions stay accurate.";
+    return { key: 'report.wakeUpCopyMissing' };
   }
   const { min, max } = data.wakeUpSpread;
   if (max - min > 90) {
-    return "Wake-up time varies — that's normal. Keeping a consistent bedtime can help the pattern settle.";
+    return { key: 'report.wakeUpCopyVariable' };
   }
-  return `Wake-up is usually between ${formatTimeFromMinutes(min)} and ${formatTimeFromMinutes(max)}.`;
+  return {
+    key: 'report.wakeUpCopyRange',
+    params: {
+      min: formatTimeFromMinutes(min),
+      max: formatTimeFromMinutes(max),
+    },
+  };
 }
 
-export function getPatternsCopy(data: ReportData): string[] {
-  const lines: string[] = [];
+export interface ReportPatternLine {
+  key: string;
+  params?: Record<string, string | number>;
+}
+
+export function getPatternsCopyKeys(data: ReportData): ReportPatternLine[] {
+  const lines: ReportPatternLine[] = [];
   if (data.flags.sleepIncreasedThisWeek && data.lastWeekTotalMinutes > 0) {
-    lines.push(`This week ${data.babyName} had a bit more total sleep than last week.`);
+    lines.push({ key: 'report.patternMoreSleep', params: { babyName: data.babyName } });
   }
   if (data.flags.sleepDecreasedThisWeek && data.lastWeekTotalMinutes > 0) {
-    lines.push("This week a bit less total sleep than last week — one-off days are normal.");
+    lines.push({ key: 'report.patternLessSleep' });
   }
   if (data.napCountRange) {
     const { min, max } = data.napCountRange;
     if (min === max) {
-      lines.push(`Naps are usually ${min} per day.`);
+      lines.push({ key: 'report.patternNapsCount', params: { count: min } });
     } else {
-      lines.push(`Naps are usually ${min}–${max} per day.`);
+      lines.push({ key: 'report.patternNapsRange', params: { min, max } });
     }
   }
   if (data.avgWakeWindowMinutes != null) {
-    lines.push(`Wake windows are averaging around ${formatMinutesToHours(data.avgWakeWindowMinutes)}.`);
+    lines.push({
+      key: 'report.patternWakeWindows',
+      params: { duration: formatMinutesToHours(data.avgWakeWindowMinutes) },
+    });
   }
   return lines;
 }

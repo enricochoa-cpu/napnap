@@ -1,4 +1,5 @@
 import { useState, useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface MissingBedtimeModalProps {
@@ -42,7 +43,7 @@ const formatDateDisplay = (dateStr: string): string => {
   yesterday.setDate(yesterday.getDate() - 1);
 
   if (dateStr === yesterday.toISOString().split('T')[0]) {
-    return 'Yesterday';
+    return 'Yesterday'; // Overridden in component with t('missingBedtime.yesterday') when i18n available
   }
 
   return date.toLocaleDateString('en-US', {
@@ -56,6 +57,7 @@ export function MissingBedtimeModal({
   onLogBedtime,
   onSkip,
 }: MissingBedtimeModalProps) {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(getYesterday());
   const titleId = useId();
   const dialogRef = useFocusTrap(true, onSkip);
@@ -78,7 +80,7 @@ export function MissingBedtimeModal({
         <button
           onClick={onSkip}
           className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-muted)] hover:bg-[var(--text-muted)]/10 active:scale-95 transition-transform min-w-[44px] min-h-[44px]"
-          aria-label="Close"
+          aria-label={t('auth.closeAria')}
         >
           <CloseIcon />
         </button>
@@ -91,11 +93,11 @@ export function MissingBedtimeModal({
         </div>
 
         {/* Title */}
-        <h2 id={titleId} className="text-display-sm text-center mb-3">Forgot to log bedtime?</h2>
+        <h2 id={titleId} className="text-display-sm text-center mb-3">{t('missingBedtime.title')}</h2>
 
         {/* Subtitle */}
         <p className="text-[var(--text-secondary)] text-center mb-6 leading-relaxed">
-          Select which night you forgot to log, and we'll help you add it.
+          {t('missingBedtime.body')}
         </p>
 
         {/* Date picker */}
@@ -103,7 +105,7 @@ export function MissingBedtimeModal({
           <label className="relative flex items-center justify-center gap-3 p-4 rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer">
             <CalendarIcon />
             <span className="text-[var(--text-primary)] font-display font-semibold">
-              {formatDateDisplay(selectedDate)}
+              {selectedDate === getYesterday() ? t('missingBedtime.yesterday') : formatDateDisplay(selectedDate)}
             </span>
             <input
               type="date"
@@ -125,13 +127,13 @@ export function MissingBedtimeModal({
               color: 'white',
             }}
           >
-            Log bedtime
+            {t('missingBedtime.logBedtime')}
           </button>
           <button
             onClick={onSkip}
             className="btn btn-ghost w-full py-4 rounded-2xl font-display font-semibold text-base"
           >
-            Start a new day
+            {t('missingBedtime.startNewDay')}
           </button>
         </div>
       </div>

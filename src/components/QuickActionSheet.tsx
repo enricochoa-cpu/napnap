@@ -1,4 +1,5 @@
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface QuickActionSheetProps {
@@ -46,6 +47,7 @@ export function QuickActionSheet({
   hasActiveSleep,
   onEndSleep,
 }: QuickActionSheetProps) {
+  const { t } = useTranslation();
   const dialogRef = useFocusTrap(isOpen, onClose);
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
@@ -75,7 +77,7 @@ export function QuickActionSheet({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Quick actions"
+            aria-label={t('quickActions.ariaLabel')}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -107,7 +109,7 @@ export function QuickActionSheet({
                       <SunIcon />
                     </div>
                     <span className="font-display font-semibold text-[var(--wake-color)]">
-                      Wake Up
+                      {t('quickActions.wakeUp')}
                     </span>
                   </button>
                 </div>
@@ -123,7 +125,7 @@ export function QuickActionSheet({
                       <SunIcon className="w-7 h-7" />
                     </div>
                     <span className="font-display font-semibold text-sm text-[var(--wake-color)]">
-                      Wake Up
+                      {t('quickActions.wakeUp')}
                     </span>
                   </button>
 
@@ -136,7 +138,7 @@ export function QuickActionSheet({
                       <CloudIcon className="w-7 h-7" />
                     </div>
                     <span className="font-display font-semibold text-sm text-[var(--nap-color)]">
-                      Nap
+                      {t('quickActions.nap')}
                     </span>
                   </button>
 
@@ -150,7 +152,7 @@ export function QuickActionSheet({
                       <MoonIcon className="w-7 h-7" />
                     </div>
                     <span className="font-display font-semibold text-sm text-[var(--night-color)]">
-                      Bedtime
+                      {t('quickActions.bedtime')}
                     </span>
                   </button>
                 </div>

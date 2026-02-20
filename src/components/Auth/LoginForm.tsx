@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { AuthDivider } from './AuthDivider';
 
@@ -10,6 +11,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgotPassword }: LoginFormProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +41,8 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </div>
-          <h1 className="text-display-lg text-[var(--text-primary)]">Welcome back</h1>
-          <p className="text-[var(--text-muted)] font-display mt-2">Sign in to continue tracking sleep</p>
+          <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.welcomeBack')}</h1>
+          <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.signInSubtitle')}</p>
         </div>
 
         {/* Form Card: Google + email */}
@@ -58,14 +60,14 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 className="input"
                 disabled={loading}
               />
@@ -73,14 +75,14 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
 
             <div>
               <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
                 className="input"
                 disabled={loading}
               />
@@ -91,7 +93,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
               onClick={onForgotPassword}
               className="text-sm text-[var(--nap-color)] font-display hover:underline"
             >
-              Forgot password?
+              {t('auth.forgotPassword')}
             </button>
 
             <button
@@ -99,18 +101,18 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
               disabled={loading}
               className="btn btn-nap w-full min-h-[56px]"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-[var(--text-muted)] text-sm font-display">
-              Don&apos;t have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <button
                 onClick={onSwitchToSignUp}
                 className="text-[var(--nap-color)] font-medium hover:underline"
               >
-                Sign up
+                {t('auth.signUp')}
               </button>
             </p>
           </div>

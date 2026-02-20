@@ -1,0 +1,371 @@
+{
+  "common": {
+    "baby": "Bebé",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "close": "Cerrar",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "loading": "Cargando..."
+  },
+  "entry": {
+    "tagline": "Guía tranquila para el sueño de tu bebé",
+    "getStarted": "Empezar",
+    "haveAccount": "Ya tengo cuenta"
+  },
+  "auth": {
+    "continueWithGoogle": "Continuar con Google",
+    "or": "o",
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInSubtitle": "Inicia sesión para seguir el sueño",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "emailPlaceholder": "tú@ejemplo.com",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "¿Olvidaste la contraseña?",
+    "signingIn": "Iniciando sesión...",
+    "signIn": "Iniciar sesión",
+    "noAccount": "¿No tienes cuenta?",
+    "signUp": "Registrarse",
+    "createAccount": "Crear cuenta",
+    "createAccountSubtitle": "Empieza a registrar el sueño de tu bebé",
+    "agreePrivacy": "Acepto la",
+    "privacyPolicy": "Política de privacidad",
+    "confirmPassword": "Confirmar contraseña",
+    "atLeast6": "Al menos 6 caracteres",
+    "passwordsNoMatch": "Las contraseñas no coinciden",
+    "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
+    "agreePrivacyRequired": "Debes aceptar la Política de privacidad para continuar",
+    "creatingAccount": "Creando cuenta...",
+    "createAccountButton": "Crear cuenta",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "checkEmail": "Revisa tu correo",
+    "confirmationSent": "Enviamos un enlace de confirmación a",
+    "resetLinkSent": "Enviamos un enlace para restablecer la contraseña a",
+    "backToSignIn": "Volver a iniciar sesión",
+    "resetPassword": "Restablecer contraseña",
+    "resetPasswordSubtitle": "Introduce tu correo para recibir un enlace",
+    "sending": "Enviando...",
+    "sendResetLink": "Enviar enlace",
+    "privacyModalTitle": "Política de privacidad de NapNap",
+    "closeAria": "Cerrar"
+  },
+  "onboarding": {
+    "hiThere": "Hola",
+    "intro": "Unos datos rápidos para sugerirte cuándo debe dormir tu bebé. Sin complicaciones.",
+    "babyNameQuestion": "¿Cómo se llama tu bebé?",
+    "babyDobQuestion": "¿Cuándo nació tu bebé?",
+    "babyDobHint": "Lo necesitamos para las sugerencias de sueño.",
+    "yourNameQuestion": "¿Cómo te llamas?",
+    "yourRelationshipQuestion": "Eres su…",
+    "relationshipMum": "Mamá",
+    "relationshipDad": "Papá",
+    "relationshipOther": "Otro",
+    "namePlaceholder": "Nombre",
+    "stepOf": "Paso {{current}} de {{total}}"
+  },
+  "today": {
+    "goodMorning": "Buenos días",
+    "goodAfternoon": "Buenas tardes",
+    "goodEvening": "Buenas noches",
+    "tapToAdd": "Toca + para añadir actividad",
+    "addABaby": "Añadir un bebé",
+    "addABabySubtitle": "Crea un perfil para ver predicciones",
+    "noWakeUpYet": "Registra la hora de despertar para ver predicciones",
+    "noWakeUpYetSubtitle": "Toca + y elige Despertar cuando tu bebé se levante",
+    "nextNap": "Próxima siesta",
+    "around": "alrededor de",
+    "now": "ahora",
+    "bedtime": "Hora de dormir",
+    "asleep": "Durmiendo",
+    "expectedWake": "Despertar previsto",
+    "wakeUp": "Despertar",
+    "nap": "Siesta",
+    "night": "Noche",
+    "calibration": "Aprendiendo tu patrón",
+    "predictions": "Predicciones"
+  },
+  "quickActions": {
+    "ariaLabel": "Acciones rápidas",
+    "wakeUp": "Despertar",
+    "nap": "Siesta",
+    "bedtime": "Hora de dormir"
+  },
+  "nav": {
+    "today": "Hoy",
+    "home": "Inicio",
+    "history": "Historial",
+    "stats": "Estadísticas",
+    "profile": "Perfil",
+    "logSleep": "Registrar sueño",
+    "addBabyToStart": "Añade un bebé para empezar"
+  },
+  "profile": {
+    "greetingMorning": "Buenos días",
+    "greetingAfternoon": "Buenas tardes",
+    "greetingEvening": "Buenas noches",
+    "encouragementNight": "Lo estás haciendo genial",
+    "encouragementMorning": "Nuevo comienzo hoy",
+    "encouragementDay": "Sigue así, puedes con esto",
+    "encouragementEvening": "Casi terminamos",
+    "there": "hola",
+    "newInvitation": "Nueva invitación",
+    "invitations": "{{count}} invitaciones",
+    "from": "de",
+    "parent": "padre/madre",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "myBabies": "Mis bebés",
+    "settings": "Ajustes",
+    "support": "Ayuda",
+    "accountSettings": "Ajustes de cuenta",
+    "accountSettingsSubtitle": "Gestiona las preferencias de tu cuenta",
+    "yourProfile": "Tu perfil",
+    "yourName": "Tu nombre",
+    "yourRole": "Tu rol",
+    "enterName": "Introduce tu nombre...",
+    "saveChanges": "Guardar cambios",
+    "notAvailable": "No disponible",
+    "notSet": "Sin definir",
+    "role": "Rol",
+    "roleDad": "Papá",
+    "roleMum": "Mamá",
+    "roleOther": "Otro",
+    "signOut": "Cerrar sesión",
+    "signOutSubtitle": "Siempre puedes volver a iniciar sesión",
+    "deleteAccount": "Eliminar cuenta",
+    "signOutConfirmTitle": "¿Cerrar sesión?",
+    "signOutConfirmBody": "Siempre puedes volver a iniciar sesión con tu correo y contraseña.",
+    "deleteConfirmTitle": "¿Eliminar cuenta?",
+    "deleteConfirmBody1": "Eliminaremos permanentemente tu cuenta, tu perfil y todos los datos vinculados (nombres, fotos y registros de sueño).",
+    "deleteConfirmBody2": "Podemos conservar datos de sueño y crecimiento anonimizados (sin nombres ni identificadores) para mejorar el producto y la investigación.",
+    "deleteConfirmBody3": "Se cerrará la sesión de inmediato y no podrás recuperar tu cuenta.",
+    "deleting": "Eliminando…",
+    "language": "Idioma",
+    "languageSubtitle": "Idioma de la app",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "privacy": {
+    "whatWeCollect": "Qué recogemos",
+    "whatWeCollectBody": "Recogemos la información que nos das al usar NapNap: tu correo y datos de cuenta, el perfil de tu bebé (nombre, fecha de nacimiento, peso y altura opcionales) y los datos de sueño que registras (siestas y noches).",
+    "howWeUse": "Cómo lo usamos",
+    "howWeUseBody": "Usamos estos datos para el funcionamiento de la app, mostrarte predicciones e historial de sueño y mejorar nuestro producto. No vendemos tus datos.",
+    "accountDeletion": "Eliminación de cuenta",
+    "accountDeletionBody": "Cuando eliminas tu cuenta, borramos tu correo, nombre(s), fotos y todos los datos vinculados. Podemos conservar datos de sueño y crecimiento anonimizados para mejorar el producto y la investigación; no pueden asociarse a ti.",
+    "contact": "Contacto",
+    "contactBody": "Para preguntas sobre tus datos o esta política, usa la opción Contacto en Ayuda."
+  },
+  "support": {
+    "title": "Ayuda",
+    "subtitle": "Recursos y soporte",
+    "faqs": "Preguntas frecuentes",
+    "faqsSubtitle": "Términos y respuestas de NapNap",
+    "contact": "Contacto",
+    "contactSubtitle": "Escríbenos"
+  },
+  "myBabies": {
+    "title": "Mis bebés",
+    "subtitle": "Cambiar o añadir bebé",
+    "addBaby": "Añadir bebé",
+    "noBabies": "Aún no hay bebés",
+    "noBabiesSubtitle": "Añade tu primer bebé para empezar a registrar el sueño"
+  },
+  "babyEdit": {
+    "editBaby": "Editar bebé",
+    "addBaby": "Añadir bebé",
+    "babyName": "Nombre del bebé",
+    "dateOfBirth": "Fecha de nacimiento",
+    "gender": "Género",
+    "male": "Masculino",
+    "female": "Femenino",
+    "other": "Otro",
+    "weight": "Peso (kg)",
+    "height": "Altura (cm)",
+    "avatar": "Foto",
+    "changePhoto": "Cambiar foto",
+    "deleteBaby": "Eliminar bebé",
+    "deleteBabyConfirm": "¿Quitar este bebé de tu cuenta? Se eliminarán los datos de sueño."
+  },
+  "babyDetail": {
+    "sharedWith": "Compartido con",
+    "viewer": "Lector",
+    "caregiver": "Cuidador",
+    "invite": "Invitar",
+    "noShares": "Aún no compartido"
+  },
+  "shareAccess": {
+    "title": "Compartir acceso",
+    "invitePlaceholder": "Correo electrónico",
+    "inviteButton": "Enviar invitación",
+    "roleCaregiver": "Cuidador",
+    "roleViewer": "Lector",
+    "remove": "Quitar",
+    "editRole": "Editar rol"
+  },
+  "history": {
+    "sleepLog": "Registro de sueño",
+    "noEntries": "No hay registros de sueño para este día",
+    "today": "Hoy",
+    "dailySummary": "Resumen del día",
+    "totalSleep": "Sueño total",
+    "naps": "Siestas",
+    "night": "Noche"
+  },
+  "dayNavigator": {
+    "today": "Hoy",
+    "ariaDay": "{{date}}"
+  },
+  "sleepEntry": {
+    "nap": "Siesta",
+    "night": "Noche",
+    "wakeUp": "Despertar",
+    "start": "Inicio",
+    "end": "Fin",
+    "notes": "Notas",
+    "notesPlaceholder": "Añadir nota...",
+    "deleteEntry": "Eliminar registro",
+    "deleteConfirm": "¿Eliminar este registro de sueño?"
+  },
+  "sleepEntrySheet": {
+    "addNap": "Añadir siesta",
+    "addBedtime": "Añadir hora de dormir",
+    "editEntry": "Editar registro",
+    "selectedDate": "Fecha seleccionada",
+    "startTime": "Hora de inicio",
+    "endTime": "Hora de fin",
+    "save": "Guardar",
+    "delete": "Eliminar"
+  },
+  "wakeUpSheet": {
+    "title": "Despertar",
+    "subtitle": "El bebé se despertó",
+    "confirm": "Confirmar despertar",
+    "delete": "Eliminar noche"
+  },
+  "missingBedtime": {
+    "title": "¿Registrar la hora de dormir de anoche?",
+    "body": "Elige qué noche olvidaste registrar y la añadimos.",
+    "logBedtime": "Registrar hora de dormir",
+    "skip": "Omitir",
+    "startNewDay": "Empezar un nuevo día",
+    "yesterday": "Ayer"
+  },
+  "collision": {
+    "title": "Sueño solapado",
+    "body": "Este registro se solapa con uno existente. ¿Reemplazar el existente o cancelar?",
+    "replace": "Reemplazar",
+    "cancel": "Cancelar"
+  },
+  "stats": {
+    "title": "Tendencias",
+    "dateRange": "Rango de fechas",
+    "generateReport": "Generar informe (últimos 30 días)",
+    "avgTotalSleep": "Sueño total medio",
+    "avgNapsPerDay": "Siestas/día media",
+    "avgNapTime": "Duración media siesta",
+    "avgNightSleep": "Sueño nocturno medio",
+    "backToTrends": "Volver a tendencias"
+  },
+  "report": {
+    "title": "Informe de sueño",
+    "subtitle": "Últimos 30 días",
+    "overviewNoAge": "Así ha dormido {{name}} hasta ahora. Esto es lo que vemos.",
+    "overviewWithAge": "Así ha dormido {{name}} hasta ahora. {{pronoun}} {{ageLabel}} — esto es lo que vemos.",
+    "pronounHe": "Es",
+    "pronounShe": "Es",
+    "pronounThey": "Es",
+    "overview": "Resumen",
+    "notEnoughData": "Aún no hay suficientes datos",
+    "logMoreDays": "Registra unos días más de sueño para ver tu primer informe.",
+    "basedOnLast30": "Según los últimos 30 días de registro.",
+    "summary": "Resumen",
+    "bedtimeWake": "Hora de dormir y despertar",
+    "patterns": "Patrones que vemos",
+    "whatToTry": "Qué probar",
+    "tips": {
+      "T1": "Mantener la hora de dormir sugerida hoy ayudará al algoritmo a afinar.",
+      "T2": "Registrar cuándo se despierta {{babyName}} mantiene las predicciones precisas — toca Despertar cuando se levante.",
+      "T3": "Una ventana de hora de dormir más estable ayuda a ver patrones. Intenta que sea en unos 30 minutos de la misma hora la mayoría de noches.",
+      "T4": "Unos días más de registro harán el informe y las predicciones más personales.",
+      "T5": "Acostar a {{babyName}} antes de que esté demasiado cansado suele ayudar — observa señales tempranas como frotarse los ojos o quedarse en blanco, y ofrece sueño antes del enfado.",
+      "T6": "Esta semana el sueño ha sido un poco menor; días puntuales son normales. Mantener una hora de dormir estable ayuda.",
+      "T7": "Buena consistencia en este periodo. Mantener la misma ventana de hora de dormir ayudará al algoritmo a seguir en sintonía.",
+      "T8": "Para la edad de {{babyName}}, ventanas de vigilia de unos {{avgWakeWindow}} están en un rango típico — las sugerencias de siesta de la app se ajustan a eso.",
+      "T9": "La mayoría de bebés de esta edad van bien con 2–3 siestas. Si ves mucha resistencia a la hora de la siesta, un pequeño cambio de horario puede ayudar — las sugerencias de la app se adaptan según registres.",
+      "T10": "Una breve rutina antes de dormir (luz tenue, mismos pasos cada noche) puede ayudar a {{babyName}} a reconocer la hora de dormir."
+    },
+    "bedtimeCopyVaried": "La hora de dormir varía cada día — es normal mientras aprendemos.",
+    "bedtimeCopyRange": "La mayoría de noches acuestas a {{babyName}} entre {{min}} y {{max}}.",
+    "wakeUpCopyMissing": "Registrar cuándo se despierta tu bebé ayuda a que el informe y las predicciones sean precisos.",
+    "wakeUpCopyVariable": "La hora de despertar varía — es normal. Una hora de dormir estable ayuda a que el patrón se asiente.",
+    "wakeUpCopyRange": "Suele despertar entre {{min}} y {{max}}.",
+    "patternMoreSleep": "Esta semana {{babyName}} ha dormido un poco más en total que la semana pasada.",
+    "patternLessSleep": "Esta semana un poco menos de sueño total que la semana pasada — días puntuales son normales.",
+    "patternNapsCount": "Suelen ser {{count}} siestas al día.",
+    "patternNapsRange": "Suelen ser {{min}}–{{max}} siestas al día.",
+    "patternWakeWindows": "Las ventanas de vigilia rondan {{duration}} de media."
+  },
+  "faq": {
+    "about": {
+      "question": "¿Qué es NapNap?",
+      "answer": "**NapNap** es un registro de sueño para bebés (0–18 meses) que te ayuda a anotar siestas y sueño nocturno y a obtener sugerencias sencillas según la edad sobre cuándo puede necesitar dormir tu bebé.\n\nNos centramos en **sustituir decisiones**: en lugar de mostrar muchos datos para analizar, sugerimos cosas como \"Próxima siesta sobre las 13:42\" o \"Hora de dormir sobre las 19:30\" para que tengas un siguiente paso claro. La app está pensada para uso nocturno y con una mano, con un tono tranquilo y no crítico."
+    },
+    "1": {
+      "question": "¿Qué es una ventana de vigilia?",
+      "answer": "Una **ventana de vigilia** es el tiempo que tu bebé puede estar despierto cómodamente entre periodos de sueño.\n\nVarían con la edad:\n- **0-4 semanas**: 45-60 min\n- **4-12 semanas**: 60-90 min\n- **3-4 meses**: 75-120 min\n- **5-7 meses**: 2-3 h\n- **8-12 meses**: 2,5-4 h\n- **12-18 meses**: 4-6 h\n\nObservar las señales de sueño de tu bebé dentro de estas ventanas ayuda a evitar el cansancio excesivo. NapNap usa ventanas de vigilia por edad para sugerir cuándo ofrecer la próxima siesta o la hora de dormir."
+    },
+    "2": {
+      "question": "¿Qué es una microsiesta y debo preocuparme?",
+      "answer": "Una **microsiesta** (o \"siesta corta\") es un sueño breve de solo 20-30 minutos, normalmente un ciclo de sueño.\n\n**Por qué ocurre:**\n- El bebé se despierta entre ciclos y aún no enlaza ciclos\n- Poco o muy cansado a la hora de la siesta\n- Entorno (demasiada luz, ruido)\n\n**¿Es normal?**\nSí. Las microsiestas son muy frecuentes, sobre todo antes de los 5-6 meses. Muchos bebés consolidan siestas hacia los 6 meses.\n\n**Consejos:**\n- Respeta ventanas de vigilia adecuadas\n- Crea un entorno oscuro y tranquilo\n- Mantén una rutina constante"
+    },
+    "3": {
+      "question": "¿Qué es una regresión de sueño?",
+      "answer": "Una **regresión de sueño** es un periodo en el que un bebé que dormía bien de repente tiene dificultad para dormirse, se despierta a menudo o hace siestas más cortas.\n\n**Edades típicas:**\n- **4 meses**: El sueño cambia de forma permanente\n- **8-10 meses**: Ansiedad de separación, gatear, ponerse de pie\n- **12 meses**: Caminar, pasar a una siesta\n- **18 meses**: Independencia, explosión del lenguaje\n\n**¿Cuánto duran?**\nSuelen ser 2-6 semanas si mantienes un enfoque constante.\n\n**Qué ayuda:**\n- Mantener rutinas constantes\n- Ofrecer más consuelo sin crear nuevas asociaciones\n- Ajustar ventanas de vigilia si hace falta\n- Paciencia — ¡es temporal!"
+    },
+    "4": {
+      "question": "¿Cómo sé si mi bebé está demasiado cansado?",
+      "answer": "Un **bebé demasiado cansado** ha estado despierto demasiado tiempo y su cuerpo produce cortisol (hormona del estrés), lo que *dificulta* dormirse y seguir dormido.\n\n**Señales:**\n- Frotarse los ojos, tocarse las orejas\n- Bostezos excesivos\n- Irritabilidad\n- Arqueo de espalda, rigidez\n- Hiperactividad\n- Luchar contra el sueño\n\n**Prevención:**\n- Conoce las ventanas de vigilia para su edad\n- Observa señales tempranas de sueño\n- Empieza la rutina de siesta *antes* de que parezca cansado\n\n**Recuperación:**\nUna hora de dormir más temprana (incluso 30-60 min) puede romper el ciclo de cansancio."
+    },
+    "5": {
+      "question": "¿Qué son las señales de sueño?",
+      "answer": "Las **señales de sueño** son indicios de que tu bebé se está cansando y se prepara para dormir.\n\n**Señales tempranas** (ideal para empezar la rutina):\n- Mirar al vacío\n- Menos actividad, movimientos más calmados\n- Menos interés en juguetes o personas\n- Ligero enrojecimiento de ojos\n\n**Señales tardías** (puede que ya esté demasiado cansado):\n- Frotarse los ojos\n- Bostezos\n- Tocarse oreja o pelo\n- Irritabilidad\n\n**Muy tardías:**\n- Llanto\n- Arqueo de espalda\n- Hiperactividad\n- Difícil de calmar\n\n**Consejo:** Intenta captar las señales tempranas. Si esperas al bostezo y a frotarse los ojos, puede que ya hayas pasado la ventana óptima."
+    },
+    "6": {
+      "question": "¿Es normal que duerma más por la noche que en siestas?",
+      "answer": "**¡Sí!** El sueño nocturno y el diurno se desarrollan de forma distinta.\n\n**Por qué las noches son más largas:**\n- La melatonina se produce en la oscuridad\n- El ritmo circadiano favorece tramos más largos de noche\n- La presión de sueño se acumula durante el día\n\n**Patrones típicos:**\n- **Recién nacidos**: Pueden confundir día y noche al principio\n- **2-3 meses**: El tramo más largo empieza a ser de noche (4-6 h)\n- **4-6 meses**: El sueño nocturno se consolida (8-12 h con tomas)\n- **6+ meses**: Muchos bebés duermen 10-12 h por la noche\n\n**Las siestas son más cortas** porque la presión de sueño diurna es menor y la luz y el ruido afectan distinto.\n\nNo te preocupes si las siestas son de 30-45 min y las noches mucho más largas — es biológicamente normal."
+    },
+    "7": {
+      "question": "¿Qué son el ritmo circadiano y la presión de sueño?",
+      "answer": "El **ritmo circadiano** es el reloj interno de tu bebé. Ayuda a alinear el sueño con el día y la noche (más melatonina con oscuridad, más despierto con luz). En los primeros meses, los bebés desarrollan un tramo más largo de noche en parte por esto.\n\nLa **presión de sueño** (drive homeostático) es la necesidad de dormir que aumenta cuanto más tiempo se está despierto. Las sugerencias de NapNap usan ambas: ventanas de vigilia (presión de sueño) y la hora del día (ritmo circadiano) para sugerir siestas y una hora de dormir razonable."
+    },
+    "8": {
+      "question": "¿Qué es un ciclo de sueño?",
+      "answer": "Un **ciclo de sueño** es un bloque de sueño ligero y profundo (y a veces un breve despertar) antes de pasar al siguiente. En bebés, un ciclo suele ser de unos 30–45 minutos.\n\nMuchas siestas cortas son un ciclo: el bebé se despierta entre ciclos y aún no enlaza varios. Por eso puedes ver siestas de 30 min en NapNap — son normales. Con la edad, las siestas suelen alargarse al consolidar ciclos."
+    },
+    "science": {
+      "question": "¿De dónde sale la base de NapNap?",
+      "answer": "Las sugerencias de NapNap se basan en guías e investigación ampliamente usadas sobre sueño infantil:\n\n- **Ventanas de vigilia y número de siestas por edad**: Alineadas con rangos basados en evidencia de recursos pediátricos (p. ej. [National Sleep Foundation](https://www.sleepfoundation.org/baby-sleep), [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/default.aspx)) y práctica clínica habitual para 0–18 meses.\n- **Desarrollo circadiano**: El uso de la hora de despertar y la hora del día para la hora de dormir sigue el conocimiento establecido sobre cómo se desarrolla el ritmo circadiano en el primer año.\n- **Compensación de siesta corta**: Ajustar la siguiente ventana de vigilia tras una siesta corta refleja que menos sueño diurno aumenta antes la presión de sueño; es un enfoque práctico usado en muchos recursos para padres.\n\nNapNap es una herramienta de apoyo, no un sustituto del consejo profesional. Si te preocupa el sueño o la salud de tu bebé, consulta con tu pediatra o un asesor de sueño cualificado."
+    }
+  },
+  "contact": {
+    "title": "Contacto",
+    "subtitle": "Escríbenos",
+    "email": "Correo",
+    "message": "Mensaje"
+  },
+  "loading": {
+    "message": "Cargando..."
+  },
+  "time": {
+    "today": "Hoy",
+    "minutesAgo": "hace {{count}} min",
+    "hoursAgo": "hace {{count}}h",
+    "yesterday": "Ayer"
+  }
+}
