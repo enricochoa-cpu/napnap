@@ -123,7 +123,7 @@ Tab Bar
 | **Component** | Inline in `App.tsx` (`renderHistoryView`) |
 | **Primary Goal** | Review and edit past sleep entries for a specific date |
 | **Golden Path** | Tap day in week strip → review entries |
-| **Branching Options** | 1. `DayNavigator` week strip (tap day or swipe ±1 week), 2. Tap date header → calendar modal (jump to any date), 3. "+ Add Entry" dropdown (Nap / Bedtime), 4. Tap any entry → SleepEntrySheet (edit), 5. Tab bar navigation |
+| **Branching Options** | 1. `DayNavigator` week strip (tap day or swipe ±1 week), 2. Tap date header → calendar modal (jump to any date), 3. Tap any entry → SleepEntrySheet (edit), 4. Tab bar; add new entries via FAB (+) from any tab |
 | **Escape Routes** | Tab bar → other views |
 
 **Sub-components:**
@@ -275,7 +275,7 @@ All bottom sheets that show a drag handle support drag-to-dismiss; open/close us
 
 | Field | Value |
 |-------|-------|
-| **Trigger** | Quick action (Nap/Bedtime), tap entry to edit, "+ Add Entry" in History |
+| **Trigger** | FAB → QuickActionSheet (Nap/Bedtime/Wake Up), or tap entry to edit |
 | **Component** | `SleepEntrySheet` → `components/SleepEntrySheet.tsx` |
 | **Primary Goal** | Set start/end time for a sleep event |
 | **Golden Path** | Adjust times → tap save (Play/Stop/Check icon depending on state) |

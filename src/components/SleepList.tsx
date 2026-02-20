@@ -200,7 +200,7 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSlee
           </svg>
         </div>
         <p className="text-[var(--text-secondary)] font-display">No sleep entries for this day</p>
-        <p className="text-[var(--text-muted)] text-sm mt-1">Tap "+ Add Entry" to log past sleep</p>
+        <p className="text-[var(--text-muted)] text-sm mt-1">Use the + button below to log past sleep</p>
       </div>
     );
   }

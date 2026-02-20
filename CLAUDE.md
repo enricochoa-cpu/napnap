@@ -62,7 +62,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `baby_shares` table: Multi-user sharing with invitation workflow
 
 ### Component Responsibilities
-- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar, add entry dropdown. **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30)
+- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar; add entry is FAB-only (no add-entry button on Sleep Log). **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30)
 - `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. Uses compact horizontal card layout (~48px height) with timeline river (vertical connector line) for mobile optimization. **Shows skeleton loading states** via `SkeletonTimelineCard` during data fetch. Predictions shown alongside active naps; bedtime updates in real-time based on active nap's expected wake time
 - `QuickActionSheet`: Napper-style bottom sheet with 3-column quick action grid (Wake Up, Nap, Bedtime). Uses framer-motion spring animations. Opens SleepEntrySheet with current time pre-loaded
 - `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates

@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-18 — Bug fixes and UX: overdue nap timeline card shows original predicted time; FAB/profile loading guards (optimistic sheet, no disable); History/TodayView/ProfileSection loading states. See lessons §1.6, §14 and logs/2026-02-18.md.
+**Last updated:** 2026-02-19 — Sleep Log: add entry is FAB-only; removed "+ Add Entry" button and dropdown from History. Empty state copy updated. See logs/2026-02-19.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

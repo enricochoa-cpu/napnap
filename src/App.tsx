@@ -31,19 +31,6 @@ import type { SleepEntry } from './types';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
 
-// Small icons for dropdown menu
-const CloudIconSmall = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-  </svg>
-);
-
-const MoonIconSmall = () => (
-  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
 function App() {
   const { signOut } = useAuth();
   const { deleteAccount, isDeleting: isDeletingAccount, error: deleteAccountError } = useDeleteAccount(signOut);
@@ -151,7 +138,6 @@ function App() {
   const [wakeUpEntry, setWakeUpEntry] = useState<SleepEntry | null>(null);
   const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
   const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
-  const [showAddEntryMenu, setShowAddEntryMenu] = useState(false);
   const [entrySheetError, setEntrySheetError] = useState<string | null>(null);
   const [logWakeUpMode, setLogWakeUpMode] = useState(false);
   const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
@@ -254,13 +240,13 @@ function App() {
       const ok = await updateEntry(editingEntry.id, data);
       if (!ok) {
         setEntrySheetError('Could not save. Please try again.');
-        return;
+        throw new Error('Save failed');
       }
     } else {
       const result = await addEntry(data);
       if (result === null) {
         setEntrySheetError('Could not save. Please try again.');
-        return;
+        throw new Error('Save failed');
       }
     }
     setEditingEntry(null);
@@ -374,59 +360,14 @@ function App() {
 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
-        <div className="relative">
-          {profileLoading || hasAnyBaby ? (
-            <>
-              <button
-                onClick={() => setShowAddEntryMenu(!showAddEntryMenu)}
-                className="text-[var(--nap-color)] font-display font-semibold text-sm"
-              >
-                + Add Entry
-              </button>
-              {showAddEntryMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40"
-                    onClick={() => setShowAddEntryMenu(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 z-50 bg-[var(--bg-card)] rounded-2xl shadow-lg border border-[var(--glass-border)] overflow-hidden min-w-[140px]">
-                    <button
-                      onClick={() => {
-                        handleOpenNewEntry('nap');
-                        setShowAddEntryMenu(false);
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-[var(--nap-color)]/15 flex items-center justify-center text-[var(--nap-color)]">
-                        <CloudIconSmall />
-                      </div>
-                      <span className="text-[var(--text-primary)] font-display font-medium">Nap</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleOpenNewEntry('night');
-                        setShowAddEntryMenu(false);
-                      }}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-[var(--text-muted)]/10 active:bg-[var(--text-muted)]/15 transition-colors"
-                    >
-                      <div className="w-7 h-7 rounded-full bg-[var(--night-color)]/15 flex items-center justify-center text-[var(--night-color)]">
-                        <MoonIconSmall />
-                      </div>
-                      <span className="text-[var(--text-primary)] font-display font-medium">Bedtime</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </>
-          ) : (
-            <button
-              onClick={goToAddBaby}
-              className="text-[var(--nap-color)] font-display font-semibold text-sm"
-            >
-              Add a baby to log sleep
-            </button>
-          )}
-        </div>
+        {!profileLoading && !hasAnyBaby && (
+          <button
+            onClick={goToAddBaby}
+            className="text-[var(--nap-color)] font-display font-semibold text-sm"
+          >
+            Add a baby to log sleep
+          </button>
+        )}
       </div>
       <SleepList
         entries={dayEntries}

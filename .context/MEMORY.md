@@ -78,7 +78,7 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 ## 4. Key UI/UX Patterns
 
 ### Quick Actions (FAB → Bottom Sheet)
-- Botón "+" central en nav bar abre `QuickActionSheet`
+- Botón "+" central en nav bar abre `QuickActionSheet` — **único punto de entrada** para añadir entradas (Nap, Bedtime, Wake Up). Sleep Log (History) ya no tiene botón "+ Add Entry".
 - Grid 3 columnas: Wake Up, Nap, Bedtime
 - Si hay sleep activo: solo muestra "Wake Up"
 - **Loading guard:** No tratar como "no baby" mientras `profileLoading`. FAB abre sheet cuando `profileLoading || hasAnyBaby`; solo navega a add-baby cuando `!profileLoading && !hasAnyBaby`. Nunca deshabilitar el FAB (comportamiento optimista). En `handleOpenNewEntry`, si ya cargó y no hay baby, cerrar sheet y redirigir a add baby. Ver lessons.md §14.
@@ -223,6 +223,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-13 | Delete account + anonymization: anonymized_baby_profiles / anonymized_sleep_entries tables, RLS (separate block SELECT/UPDATE/DELETE; authenticated INSERT + SELECT on anonymized_baby for .select('id')); delete baby copies to anonymized then deletes; Edge Function delete-account (verify_jwt off, getUser inside), client storage cleanup → invoke with Bearer token → signOut (try/catch 403); config.toml verify_jwt = false for delete-account |
 | 2026-02-13 | Onboarding persistence: draft saved to sessionStorage on Account step; App applies draft after sign-up and calls createProfile so new users get baby + user profile on first login (see lessons.md §12.1) |
 | 2026-02-15 | Code audit applied: removed unused deps (Three.js stack), useLocalStorage.ts, BabyProfile.tsx; cleaned storage.ts (removeFromStorage, unused STORAGE_KEYS); consolidated SharedBabyProfile (single type from useBabyProfile); SleepEntrySheet uses dateUtils getNextDay/getPreviousDay; removed formatDisplayDate and generateId from dateUtils |
+| 2026-02-19 | Sleep Log: removed "+ Add Entry" button/dropdown; add entry is FAB-only from any tab. SleepList empty state copy points to "+ button below". |
 
 ---
 

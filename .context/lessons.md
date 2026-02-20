@@ -345,12 +345,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** `hasAnyBaby = sharedProfiles.length > 0`. Until `useBabyProfile`'s `fetchProfile()` completes, `sharedProfiles` is `[]` and `profileLoading` is true. So the FAB saw "no baby" and called `goToAddBaby()`.
 - **Permanent Fix:** Do not treat as "no baby" while profile is loading. **FAB:** Open QuickActionSheet when `profileLoading || hasAnyBaby`, else `goToAddBaby()`. Do not disable the FAB (optimistic: assume normal case). **handleOpenNewEntry:** At the start, if `!profileLoading && !hasAnyBaby`, close the action menu, call `goToAddBaby()`, and return — so if the user opened the sheet during load and then taps Nap/Bedtime, we redirect to add baby instead of opening the entry form. **Reusable rule:** Any UI that branches on "user has no baby" must only do so when `!profileLoading`; while loading, optimistically show the "has baby" path or a loading state.
 
-### 14.2 History "+ Add Entry" Same Race
+### 14.2 History "+ Add Entry" Same Race (superseded 2026-02-19)
 **Date:** 2026-02-18
 
 - **Problem:** In History view, during profile load the header showed "Add a baby to log sleep" and a tap would navigate to add baby even when the user had babies.
 - **Root Cause:** Same as 14.1 — `hasAnyBaby` was false until `sharedProfiles` loaded.
-- **Permanent Fix:** Show the "+ Add Entry" branch when `profileLoading || hasAnyBaby`; show "Add a baby to log sleep" only when `!profileLoading && !hasAnyBaby`.
+- **Permanent Fix (then):** Show the "+ Add Entry" branch when `profileLoading || hasAnyBaby`; show "Add a baby to log sleep" only when `!profileLoading && !hasAnyBaby`.
+- **Update 2026-02-19:** History no longer has "+ Add Entry"; add entry is FAB-only. History header now shows only title and "Add a baby to log sleep" when `!profileLoading && !hasAnyBaby`.
 
 ### 14.3 TodayView "Add a baby" Empty State During Load
 **Date:** 2026-02-18
