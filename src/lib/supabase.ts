@@ -15,8 +15,6 @@ export interface DbProfile {
   baby_name: string | null;
   baby_date_of_birth: string | null;
   baby_gender: 'male' | 'female' | 'other' | null;
-  baby_weight: number | null;
-  baby_height: number | null;
   baby_avatar_url: string | null;
   created_at: string;
   locale: string | null;
@@ -41,5 +39,21 @@ export interface DbBabyShare {
   role: 'caregiver' | 'viewer';
   invited_at: string;
   accepted_at: string | null;
+  created_at: string;
+}
+
+export interface DbWeightLog {
+  id: string;
+  baby_id: string;
+  date: string;
+  value_kg: number;
+  created_at: string;
+}
+
+export interface DbHeightLog {
+  id: string;
+  baby_id: string;
+  date: string;
+  value_cm: number;
   created_at: string;
 }

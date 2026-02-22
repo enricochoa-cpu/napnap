@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { BabyProfile, BabyShare } from '../../types';
+import { useTranslation } from 'react-i18next';
+import type { BabyProfile, BabyShare, WeightLog, HeightLog } from '../../types';
 import { calculateAge } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ShareAccess } from '../ShareAccess';
 import { ConfirmationModal } from '../ConfirmationModal';
+import { useGrowthLogs } from '../../hooks/useGrowthLogs';
+import { GrowthLogSheet } from './GrowthLogSheet';
+import { GrowthLogSection } from './GrowthLogSection';
 
 interface BabyDetailViewProps {
   baby: BabyProfile;
@@ -13,6 +17,8 @@ interface BabyDetailViewProps {
   /** Can return a Promise so we can show loading and prevent double-submit */
   onUpdate: (data: Partial<Omit<BabyProfile, 'id'>>) => void | Promise<void>;
   onUploadAvatar?: (file: File) => Promise<string | null>;
+  /** When true, user can add/edit/delete weight and height logs (owner or caregiver). */
+  canEditGrowth?: boolean;
   // Sharing props (owners only)
   myShares: BabyShare[];
   onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
@@ -22,12 +28,17 @@ interface BabyDetailViewProps {
   inviterName?: string;
 }
 
+function getTodayDateStr(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
 export function BabyDetailView({
   baby,
   isOwner,
   onBack,
   onUpdate,
   onUploadAvatar,
+  canEditGrowth = isOwner,
   myShares,
   onInvite,
   onUpdateRole,
@@ -35,15 +46,32 @@ export function BabyDetailView({
   onDeleteBaby,
   inviterName,
 }: BabyDetailViewProps) {
+  const { t } = useTranslation();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const {
+    weightLogs,
+    heightLogs,
+    addWeightLog,
+    addHeightLog,
+    updateWeightLog,
+    updateHeightLog,
+    deleteWeightLog,
+    deleteHeightLog,
+    getWeightWarning,
+    getHeightWarning,
+  } = useGrowthLogs({ babyId: baby.id });
+
+  const [growthSheet, setGrowthSheet] = useState<'weight' | 'height' | null>(null);
+  const [editingWeightLog, setEditingWeightLog] = useState<WeightLog | null>(null);
+  const [editingHeightLog, setEditingHeightLog] = useState<HeightLog | null>(null);
+  const [growthDeleteConfirm, setGrowthDeleteConfirm] = useState<{ type: 'weight' | 'height'; id: string } | null>(null);
   const [formData, setFormData] = useState({
     name: baby.name || '',
     dateOfBirth: baby.dateOfBirth || '',
     gender: (baby.gender || 'other') as 'male' | 'female' | 'other',
-    weight: baby.weight || 0,
-    height: baby.height || 0,
     avatarUrl: baby.avatarUrl,
   });
 
@@ -53,8 +81,6 @@ export function BabyDetailView({
       name: baby.name || '',
       dateOfBirth: baby.dateOfBirth || '',
       gender: (baby.gender || 'other') as 'male' | 'female' | 'other',
-      weight: baby.weight || 0,
-      height: baby.height || 0,
       avatarUrl: baby.avatarUrl,
     });
   }, [baby]);
@@ -88,8 +114,6 @@ export function BabyDetailView({
       formData.name !== (baby.name || '') ||
       formData.dateOfBirth !== (baby.dateOfBirth || '') ||
       formData.gender !== (baby.gender || 'other') ||
-      formData.weight !== (baby.weight || 0) ||
-      formData.height !== (baby.height || 0) ||
       formData.avatarUrl !== baby.avatarUrl
     );
   }, [formData, baby]);
@@ -191,47 +215,95 @@ export function BabyDetailView({
           )}
         </div>
 
-        {/* Measurements */}
-        <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
-          <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-3 font-display uppercase tracking-wider">
-            Measurements
-          </label>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] text-[var(--text-muted)] mb-1">
-                Weight (kg)
-              </label>
-              <input
-                type="number"
-                name="weight"
-                value={formData.weight || ''}
-                onChange={handleChange}
-                step="0.1"
-                min="0"
-                placeholder="—"
-                disabled={!isOwner}
-                className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30 disabled:opacity-60"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] text-[var(--text-muted)] mb-1">
-                Height (cm)
-              </label>
-              <input
-                type="number"
-                name="height"
-                value={formData.height || ''}
-                onChange={handleChange}
-                step="0.1"
-                min="0"
-                placeholder="—"
-                disabled={!isOwner}
-                className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30 disabled:opacity-60"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Baby weight — compact: latest + Add + View all */}
+        <GrowthLogSection
+          titleKey="growth.babyWeight"
+          items={weightLogs.map((l) => ({ id: l.id, date: l.date, value: l.valueKg }))}
+          unitLabel={t('growth.kg')}
+          canEdit={canEditGrowth}
+          onAdd={() => {
+            setEditingWeightLog(null);
+            setGrowthSheet('weight');
+          }}
+          onEdit={(id) => {
+            const log = weightLogs.find((l) => l.id === id);
+            if (log) {
+              setEditingWeightLog(log);
+              setGrowthSheet('weight');
+            }
+          }}
+          onDelete={(id) => setGrowthDeleteConfirm({ type: 'weight', id })}
+        />
+
+        {/* Baby height — compact: latest + Add + View all */}
+        <GrowthLogSection
+          titleKey="growth.babyHeight"
+          items={heightLogs.map((l) => ({ id: l.id, date: l.date, value: l.valueCm }))}
+          unitLabel={t('growth.cm')}
+          canEdit={canEditGrowth}
+          onAdd={() => {
+            setEditingHeightLog(null);
+            setGrowthSheet('height');
+          }}
+          onEdit={(id) => {
+            const log = heightLogs.find((l) => l.id === id);
+            if (log) {
+              setEditingHeightLog(log);
+              setGrowthSheet('height');
+            }
+          }}
+          onDelete={(id) => setGrowthDeleteConfirm({ type: 'height', id })}
+        />
       </div>
+
+      {/* Growth log sheet (weight or height) */}
+      <GrowthLogSheet
+        isOpen={growthSheet !== null}
+        onClose={() => {
+          setGrowthSheet(null);
+          setEditingWeightLog(null);
+          setEditingHeightLog(null);
+        }}
+        mode={growthSheet === 'height' ? 'height' : 'weight'}
+        initialDate={editingWeightLog?.date ?? editingHeightLog?.date}
+        initialValue={editingWeightLog?.valueKg ?? editingHeightLog?.valueCm}
+        existingLogId={editingWeightLog?.id ?? editingHeightLog?.id ?? null}
+        defaultDate={getTodayDateStr()}
+        getWarning={growthSheet === 'weight' ? getWeightWarning : growthSheet === 'height' ? getHeightWarning : undefined}
+        onSave={async (date, value) => {
+          if (growthSheet === 'weight') {
+            if (editingWeightLog) {
+              await updateWeightLog(editingWeightLog.id, date, value);
+            } else {
+              await addWeightLog(baby.id, date, value);
+            }
+          } else if (growthSheet === 'height') {
+            if (editingHeightLog) {
+              await updateHeightLog(editingHeightLog.id, date, value);
+            } else {
+              await addHeightLog(baby.id, date, value);
+            }
+          }
+        }}
+      />
+
+      {/* Delete growth log confirmation */}
+      <ConfirmationModal
+        isOpen={growthDeleteConfirm !== null}
+        onConfirm={async () => {
+          if (growthDeleteConfirm) {
+            if (growthDeleteConfirm.type === 'weight') {
+              await deleteWeightLog(growthDeleteConfirm.id);
+            } else {
+              await deleteHeightLog(growthDeleteConfirm.id);
+            }
+            setGrowthDeleteConfirm(null);
+          }
+        }}
+        onCancel={() => setGrowthDeleteConfirm(null)}
+        title={t('growth.deleteConfirmTitle')}
+        description={t('growth.deleteConfirmDescription')}
+      />
 
       {/* Save button — only visible when form has unsaved changes */}
       {isOwner && hasChanges && (

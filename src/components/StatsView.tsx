@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import {
@@ -36,16 +37,41 @@ import {
   isSameDay,
   isWithinInterval,
 } from 'date-fns';
-import type { SleepEntry } from '../types';
+import type { SleepEntry, WeightLog, HeightLog } from '../types';
 import type { BabyProfile } from '../types';
 import { SleepReportView } from './SleepReportView';
 
 interface StatsViewProps {
   entries: SleepEntry[];
   profile?: BabyProfile | null;
+  weightLogs?: WeightLog[];
+  heightLogs?: HeightLog[];
 }
 
 const MAX_DAYS = 15;
+
+/** Adaptive Y-domain from data (avoid 0–max scale when data is e.g. 50–70 cm). */
+function adaptiveWeightDomain(values: number[]): [number, number] {
+  if (values.length === 0) return [0, 10];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 1);
+  const padding = range * 0.15;
+  const low = Math.floor((min - padding) * 2) / 2;
+  const high = Math.ceil((max + padding) * 2) / 2;
+  return [Math.max(0, low), high];
+}
+
+function adaptiveHeightDomain(values: number[]): [number, number] {
+  if (values.length === 0) return [0, 100];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 10);
+  const padding = range * 0.15;
+  const low = Math.floor((min - padding) / 5) * 5;
+  const high = Math.ceil((max + padding) / 5) * 5;
+  return [Math.max(0, low), high];
+}
 
 // Calculate duration in minutes
 const calculateDuration = (startTime: string, endTime: string | null): number => {
@@ -149,6 +175,25 @@ function BedTooltip({ active, payload, label }: TooltipProps) {
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-medium" style={{ color: 'var(--night-color)' }}>
         Bedtime: {formatWakeTime(payload[0].value)}
+      </p>
+    </div>
+  );
+}
+
+// Growth (weight/height) tooltip
+function GrowthTooltip({
+  active,
+  payload,
+  label,
+  unit,
+}: TooltipProps & { unit: string }) {
+  if (!active || !payload || !payload.length) return null;
+  const value = payload[0].value as number;
+  return (
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
+      <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="text-sm font-medium text-[var(--text-primary)]">
+        {typeof value === 'number' ? value.toFixed(1) : value} {unit}
       </p>
     </div>
   );
@@ -419,13 +464,24 @@ function DateRangePickerSheet({
   );
 }
 
-export function StatsView({ entries, profile = null }: StatsViewProps) {
+export type StatsSection = 'summary' | 'naps' | 'night' | 'growth';
+
+export function StatsView({ entries, profile = null, weightLogs = [], heightLogs = [] }: StatsViewProps) {
+  const { t } = useTranslation();
   // Date range state - default to last 7 days
   const today = new Date();
   const [endDate, setEndDate] = useState<Date>(today);
   const [startDate, setStartDate] = useState<Date>(subDays(today, 6));
   const [isRangePickerOpen, setIsRangePickerOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [statsSection, setStatsSection] = useState<StatsSection>('summary');
+  const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // Keep selected chip in view without scrolling to the end (center it when possible)
+  useEffect(() => {
+    const idx = (['summary', 'naps', 'night', 'growth'] as const).indexOf(statsSection);
+    chipRefs.current[idx]?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [statsSection]);
 
   const handleRangeChange = useCallback((start: Date, end: Date) => {
     setStartDate(startOfDay(start));
@@ -695,6 +751,15 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
   const hasData = entries.length > 0;
   const daysInRange = differenceInDays(endDate, startDate) + 1;
 
+  const weightDomain = useMemo(
+    () => adaptiveWeightDomain((weightLogs ?? []).map((l) => l.valueKg)),
+    [weightLogs]
+  );
+  const heightDomain = useMemo(
+    () => adaptiveHeightDomain((heightLogs ?? []).map((l) => l.valueCm)),
+    [heightLogs]
+  );
+
   // Generate insight based on data
   const insight = useMemo(() => {
     if (!hasData || averages.avgTotal === 0) return null;
@@ -791,6 +856,30 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
         maxDate={today}
       />
 
+      {/* Section chips (Napper-style): switch dataviz by category */}
+      {hasData && (
+        <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          {(['summary', 'naps', 'night', 'growth'] as const).map((section, idx) => (
+            <button
+              key={section}
+              ref={(el) => { chipRefs.current[idx] = el; }}
+              type="button"
+              onClick={() => setStatsSection(section)}
+              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-display font-medium transition-colors ${
+                statsSection === section
+                  ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
+                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border border-[var(--glass-border)]'
+              }`}
+            >
+              {section === 'summary' && t('stats.chipSummary')}
+              {section === 'naps' && t('stats.chipNaps')}
+              {section === 'night' && t('stats.chipNight')}
+              {section === 'growth' && t('stats.chipGrowth')}
+            </button>
+          ))}
+        </div>
+      )}
+
       {!hasData ? (
         <div className="rounded-3xl backdrop-blur-xl p-8 text-center" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
@@ -818,6 +907,9 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
         </div>
       ) : (
         <>
+          {/* Section: Sleep summary */}
+          {statsSection === 'summary' && (
+            <>
           {/* Summary Cards - Glassmorphism */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -1020,6 +1112,167 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
             </div>
           </div>
 
+          {/* Daily Schedule Gantt Chart - part of summary */}
+          {scheduleData && (
+            <div className="rounded-3xl backdrop-blur-xl p-4 mt-6 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Daily Schedule
+              </h3>
+
+              <div className="flex" role="img" aria-label="Daily schedule Gantt chart: wake-up, naps, and bedtime across days">
+                <div className="w-10 flex-shrink-0">
+                  <div className="h-5" />
+                  {scheduleData.days.map((day) => (
+                    <div key={day.day} className="h-7 flex items-center">
+                      <span className="text-[10px] text-[var(--text-muted)]">{day.day}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex-1 relative overflow-hidden">
+                  <div className="h-5 relative">
+                    {scheduleData.ticks.map((tick) => {
+                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
+                      return (
+                        <span
+                          key={tick}
+                          className="absolute text-[10px] text-[var(--text-muted)] -translate-x-1/2"
+                          style={{ left: `${pct}%` }}
+                        >
+                          {formatWakeTime(tick)}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div className="relative">
+                    {scheduleData.ticks.map((tick) => {
+                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
+                      return (
+                        <div
+                          key={tick}
+                          className="absolute top-0 bottom-0 w-px"
+                          style={{ left: `${pct}%`, background: 'var(--text-muted)', opacity: 0.1 }}
+                        />
+                      );
+                    })}
+                    {scheduleData.days.map((day) => (
+                      <div key={day.day} className="h-7 relative flex items-center">
+                        {day.events.map((event, i) => {
+                          if (event.type === 'wake') {
+                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            return (
+                              <div
+                                key={`wake-${i}`}
+                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--wake-color)' }}
+                              />
+                            );
+                          }
+                          if (event.type === 'bedtime') {
+                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            return (
+                              <div
+                                key={`bed-${i}`}
+                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--night-color)' }}
+                              />
+                            );
+                          }
+                          if (event.type === 'nap' && typeof event.endMin === 'number') {
+                            const leftPct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
+                            const widthPct = ((event.endMin - event.startMin) / scheduleData.range) * 100;
+                            const color = getNapColor(event.napIndex!);
+                            return (
+                              <div
+                                key={`nap-${i}`}
+                                className="absolute h-[7px] rounded-full"
+                                style={{ left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`, background: color }}
+                              />
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-wrap justify-center gap-4 mt-4">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
+                  <span className="text-[10px] text-[var(--text-muted)]">Wake Up</span>
+                </div>
+                {Array.from({ length: scheduleData.maxNapIndex }, (_, i) => (
+                  <div key={i} className="flex items-center gap-1.5">
+                    <div className="w-3 h-[7px] rounded-full" style={{ background: getNapColor(i + 1) }} />
+                    <span className="text-[10px] text-[var(--text-muted)]">Nap {i + 1}</span>
+                  </div>
+                ))}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--night-color)' }} />
+                  <span className="text-[10px] text-[var(--text-muted)]">Bedtime</span>
+                </div>
+              </div>
+            </div>
+          )}
+            </>
+          )}
+
+          {/* Section: Naps */}
+          {statsSection === 'naps' && (
+            <>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNapTime')}</p>
+                <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
+                  {formatHours(averages.avgNapDuration)}
+                </p>
+              </div>
+              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNapsPerDay')}</p>
+                <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
+                  {averages.avgNapCount.toFixed(1)}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                Daily Sleep
+              </h3>
+              <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
+                    <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(value) => `${Math.round(value / 60)}h`} />
+                    <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
+                    <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="nap" stackId="sleep" fill={napColor} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex justify-center gap-6 mt-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm" style={{ background: napColor }} />
+                  <span className="text-xs text-[var(--text-muted)]">Naps</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-sm" style={{ background: nightColor }} />
+                  <span className="text-xs text-[var(--text-muted)]">Night</span>
+                </div>
+              </div>
+            </div>
+            </>
+          )}
+
+          {/* Section: Night sleep */}
+          {statsSection === 'night' && (
+            <>
+            <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNightSleep')}</p>
+              <p className="text-2xl font-display font-bold text-[var(--night-color)]">
+                {formatHours(averages.avgNight)}
+              </p>
+            </div>
           {/* Woke Up Chart */}
           {wakeUpData && (
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -1135,122 +1388,144 @@ export function StatsView({ entries, profile = null }: StatsViewProps) {
               </p>
             </div>
           )}
+            </>
+          )}
 
-          {/* Daily Schedule Gantt Chart */}
-          {scheduleData && (
-            <div className="rounded-3xl backdrop-blur-xl p-4 mt-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
-                Daily Schedule
-              </h3>
-
-              <div className="flex" role="img" aria-label="Daily schedule Gantt chart: wake-up, naps, and bedtime across days">
-                {/* Date labels column */}
-                <div className="w-10 flex-shrink-0">
-                  {/* Spacer for time axis */}
-                  <div className="h-5" />
-                  {scheduleData.days.map((day) => (
-                    <div key={day.day} className="h-7 flex items-center">
-                      <span className="text-[10px] text-[var(--text-muted)]">{day.day}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Chart area */}
-                <div className="flex-1 relative overflow-hidden">
-                  {/* Time axis */}
-                  <div className="h-5 relative">
-                    {scheduleData.ticks.map((tick) => {
-                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
-                      return (
-                        <span
-                          key={tick}
-                          className="absolute text-[10px] text-[var(--text-muted)] -translate-x-1/2"
-                          style={{ left: `${pct}%` }}
-                        >
-                          {formatWakeTime(tick)}
-                        </span>
-                      );
-                    })}
-                  </div>
-
-                  {/* Rows with grid lines */}
-                  <div className="relative">
-                    {/* Grid lines */}
-                    {scheduleData.ticks.map((tick) => {
-                      const pct = ((tick - scheduleData.minTime) / scheduleData.range) * 100;
-                      return (
-                        <div
-                          key={tick}
-                          className="absolute top-0 bottom-0 w-px"
-                          style={{ left: `${pct}%`, background: 'var(--text-muted)', opacity: 0.1 }}
-                        />
-                      );
-                    })}
-
-                    {/* Day rows */}
-                    {scheduleData.days.map((day) => (
-                      <div key={day.day} className="h-7 relative flex items-center">
-                        {day.events.map((event, i) => {
-                          if (event.type === 'wake') {
-                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
-                            return (
-                              <div
-                                key={`wake-${i}`}
-                                className="absolute w-[7px] h-[7px] rounded-sm"
-                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--wake-color)' }}
-                              />
-                            );
-                          }
-                          if (event.type === 'bedtime') {
-                            const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
-                            return (
-                              <div
-                                key={`bed-${i}`}
-                                className="absolute w-[7px] h-[7px] rounded-sm"
-                                style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--night-color)' }}
-                              />
-                            );
-                          }
-                          if (event.type === 'nap' && typeof event.endMin === 'number') {
-                            const leftPct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
-                            const widthPct = ((event.endMin - event.startMin) / scheduleData.range) * 100;
-                            const color = getNapColor(event.napIndex!);
-                            return (
-                              <div
-                                key={`nap-${i}`}
-                                className="absolute h-[7px] rounded-full"
-                                style={{ left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`, background: color }}
-                              />
-                            );
-                          }
-                          return null;
-                        })}
+          {/* Section: Growth — weight & height charts */}
+          {statsSection === 'growth' && (
+            <div className="space-y-6">
+              {weightLogs.length > 0 || heightLogs.length > 0 ? (
+                <>
+                  {weightLogs.length > 0 && (
+                    <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                      <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                        {t('growth.weightOverTime')}
+                      </h3>
+                      <div className="h-40" role="img" aria-label="Weight over time">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={weightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueKg }))}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <defs>
+                              <linearGradient id="weightGradientChip" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
+                                <stop offset="95%" stopColor={napColor} stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                            <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                            <YAxis domain={weightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                            <Tooltip content={<GrowthTooltip unit="kg" />} />
+                            <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientChip)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Legend */}
-              <div className="flex flex-wrap justify-center gap-4 mt-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
-                  <span className="text-[10px] text-[var(--text-muted)]">Wake Up</span>
-                </div>
-                {Array.from({ length: scheduleData.maxNapIndex }, (_, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className="w-3 h-[7px] rounded-full" style={{ background: getNapColor(i + 1) }} />
-                    <span className="text-[10px] text-[var(--text-muted)]">Nap {i + 1}</span>
-                  </div>
-                ))}
-                <div className="flex items-center gap-1.5">
-                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--night-color)' }} />
-                  <span className="text-[10px] text-[var(--text-muted)]">Bedtime</span>
-                </div>
-              </div>
+                    </div>
+                  )}
+                  {heightLogs.length > 0 && (
+                    <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                      <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                        {t('growth.heightOverTime')}
+                      </h3>
+                      <div className="h-40" role="img" aria-label="Height over time">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={heightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueCm }))}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <defs>
+                              <linearGradient id="heightGradientChip" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
+                                <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                            <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                            <YAxis domain={heightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                            <Tooltip content={<GrowthTooltip unit="cm" />} />
+                            <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientChip)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-[var(--text-muted)] text-center py-8">
+                  {t('growth.noGrowthData')}
+                </p>
+              )}
             </div>
           )}
         </>
+      )}
+
+      {/* When no sleep data but we have growth data, show growth charts */}
+      {!hasData && (weightLogs.length > 0 || heightLogs.length > 0) && (
+        <div className="mt-6 space-y-6">
+          {weightLogs.length > 0 && (
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                {t('growth.weightOverTime')}
+              </h3>
+              <div className="h-40" role="img" aria-label="Weight over time">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={weightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueKg }))}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="weightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={napColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <YAxis domain={weightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                    <Tooltip content={<GrowthTooltip unit="kg" />} />
+                    <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientNoSleep)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+          {heightLogs.length > 0 && (
+            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                {t('growth.heightOverTime')}
+              </h3>
+              <div className="h-40" role="img" aria-label="Height over time">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={heightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueCm }))}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient id="heightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
+                        <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <YAxis domain={heightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                    <Tooltip content={<GrowthTooltip unit="cm" />} />
+                    <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientNoSleep)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hint when no sleep data and no growth data */}
+      {!hasData && weightLogs.length === 0 && heightLogs.length === 0 && (
+        <p className="text-sm text-[var(--text-muted)] text-center mt-4">
+          {t('growth.noGrowthData')}
+        </p>
       )}
     </div>
   );

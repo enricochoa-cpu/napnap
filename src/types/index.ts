@@ -3,8 +3,6 @@ export interface BabyProfile {
   name: string;
   dateOfBirth: string; // ISO date
   gender: 'male' | 'female' | 'other';
-  weight: number; // in kg
-  height: number; // in cm
   avatarUrl?: string; // Supabase Storage URL
 }
 
@@ -37,4 +35,18 @@ export interface BabyShare {
   // Populated from join with profiles
   babyName?: string;
   ownerName?: string;
+}
+
+export interface WeightLog {
+  id: string;
+  babyId: string;
+  date: string; // YYYY-MM-DD
+  valueKg: number;
+}
+
+export interface HeightLog {
+  id: string;
+  babyId: string;
+  date: string; // YYYY-MM-DD
+  valueCm: number;
 }

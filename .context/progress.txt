@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-20 — Spanish + English i18n: language selector in Settings, locale in profiles and localStorage, report/FAQs key-based. See logs/2026-02-20.md and plan spanish_+_english_i18n_8e8a9b45.plan.md.
+**Last updated:** 2026-02-22 — Baby weight/height timeline (growth logs, compact Baby Detail, Stats chips, duplicate fix, chip scroll, adaptive Y-axis). See logs/2026-02-22.md and lessons.md §15.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 
@@ -190,3 +190,16 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] StatsView: "Generate report (last 30 days)" button; showReport state; profile prop; Back to trends
 - [x] Baby age fix: calculateAge() "days" = days since last month anniversary (addMonths), not totalDays % 30 — lessons §13.1
 - [x] PRD, app_flow, lessons, logs, MEMORY, progress, CLAUDE updated
+
+## Baby weight/height timeline + Stats chips (2026-02-22) [COMPLETED]
+
+- [x] Migration: baby_weight_logs, baby_height_logs (RLS); drop profiles.baby_weight/baby_height
+- [x] Types: WeightLog, HeightLog; BabyProfile/DbProfile without weight/height
+- [x] useGrowthLogs: fetch, add (upsert), update, delete; getWeightWarning/getHeightWarning
+- [x] GrowthLogSheet, GrowthLogList; Baby Detail compact growth (latest + "View all (N)", expandable list)
+- [x] Remove single weight/height from UI and onboarding
+- [x] Stats: section chips (Summary, Naps, Night, Growth); content split by section; growth charts only in Growth (or no-sleep block)
+- [x] Fix: duplicate growth block removed (charts were in every section and twice in Growth)
+- [x] Fix: chip scroll-into-view so selected chip stays centered
+- [x] Fix: adaptive Y-domain for weight/height charts (data-driven min/max + padding)
+- [x] i18n (growth + stats chips); app_flow, lessons, MEMORY, log, progress updated

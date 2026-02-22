@@ -14,6 +14,7 @@ import { QuickActionSheet } from './components/QuickActionSheet';
 import { StatsView } from './components/StatsView';
 import { useBabyProfile } from './hooks/useBabyProfile';
 import { useSleepEntries } from './hooks/useSleepEntries';
+import { useGrowthLogs } from './hooks/useGrowthLogs';
 import { useBabyShares } from './hooks/useBabyShares';
 import { useAuth } from './hooks/useAuth';
 import { useDeleteAccount } from './hooks/useDeleteAccount';
@@ -70,8 +71,6 @@ function App() {
       name: draft.babyName,
       dateOfBirth: draft.babyDob,
       gender: 'other',
-      weight: 0,
-      height: 0,
       userName: draft.userName ?? '',
       userRole: draft.relationship ?? 'other',
     }).then((result) => {
@@ -102,6 +101,8 @@ function App() {
     entries,
     loading: entriesLoading,
   } = useSleepEntries({ babyId: activeBabyId });
+
+  const { weightLogs, heightLogs } = useGrowthLogs({ babyId: activeBabyId });
 
   // Refresh data when accepting an invitation
   const handleAcceptInvitation = async (shareId: string) => {
@@ -383,7 +384,12 @@ function App() {
 
   // Stats View
   const renderStatsView = () => (
-    <StatsView entries={entries} profile={activeBabyProfile || profile} />
+    <StatsView
+      entries={entries}
+      profile={activeBabyProfile || profile}
+      weightLogs={weightLogs}
+      heightLogs={heightLogs}
+    />
   );
 
   // Profile View

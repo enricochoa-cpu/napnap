@@ -146,7 +146,7 @@ Tab Bar
 | **Branching Options** | 1. Date range picker (single control opens calendar sheet for start+end), 2. Tab bar navigation |
 | **Escape Routes** | Tab bar → other views |
 
-**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), **"Generate report (last 30 days)"** button, 4 summary cards (avg total, avg naps/day, avg nap time, avg night), stacked bar chart (daily sleep), area chart (sleep trend). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet` — one calendar to pick start then end (range selection). **Report sub-view:** Tapping "Generate report (last 30 days)" opens `SleepReportView` (narrative report for the last 30 days of data only; Overview, Summary table, Bedtime & wake times, Patterns, What to try; icon bullets; "Back to trends" returns to charts).
+**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), **"Generate report (last 30 days)"** button. When there is sleep data, **section chips** (Sleep summary, Naps, Night sleep, Growth) switch the content below; selected chip scrolls into view (centered). **Summary:** 4 summary cards, report row, distribution pie, daily bar, trend area, daily schedule. **Naps:** Nap cards + daily bar. **Night:** Night card + woke up + bedtime charts. **Growth:** Weight over time and Height over time area charts only in this section (or in a dedicated block when there is no sleep data but there is growth data); Y-axis is adaptive to data range (e.g. 50–70 cm). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet`. **Report sub-view:** "Generate report (last 30 days)" opens `SleepReportView`; "Back to trends" returns to charts.
 
 ### 2.4 Profile (container)
 
@@ -195,14 +195,16 @@ Tab Bar
 | **Component** | `BabyDetailView` → `components/Profile/BabyDetailView.tsx` |
 | **Primary Goal** | Edit baby profile and manage sharing for a specific baby |
 | **Golden Path** | Edit fields → save changes |
-| **Branching Options** | 1. Edit profile fields (name, DOB, gender, weight, height), 2. Upload avatar, 3. ShareAccess section (invite, edit role, revoke — owners only), 4. Delete baby link (owners only) |
+| **Branching Options** | 1. Edit profile fields (name, DOB, gender, weight, height), 2. Upload avatar, 3. Baby weight / Baby height sections (add or edit log by date; delete with confirm — owners/caregivers only), 4. ShareAccess section (invite, edit role, revoke — owners only), 5. Delete baby link (owners only) |
 | **Escape Routes** | Back button → My Babies |
 
 **Sections:**
 1. Avatar + profile form (name, DOB, gender, measurements)
-2. ShareAccess component (owners only — invite caregivers, manage roles)
-3. Save button (only visible when form has changes)
-4. Delete baby link (owners only, at bottom)
+2. Baby weight — list of (date, kg) + Add; tap entry to edit; delete with confirmation. GrowthLogSheet for add/edit (date + value); warning if new value is lower than a later log (non-blocking).
+3. Baby height — list of (date, cm) + Add; same pattern as weight.
+4. ShareAccess component (owners only — invite caregivers, manage roles)
+5. Save button (only visible when form has changes)
+6. Delete baby link (owners only, at bottom)
 
 ### 2.4.3 Account Settings
 

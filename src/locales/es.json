@@ -176,6 +176,30 @@
     "noBabies": "Aún no hay bebés",
     "noBabiesSubtitle": "Añade tu primer bebé para empezar a registrar el sueño"
   },
+  "growth": {
+    "babyWeight": "Peso del bebé",
+    "babyHeight": "Altura del bebé",
+    "add": "Añadir",
+    "kg": "kg",
+    "cm": "cm",
+    "noEntries": "Aún no hay entradas",
+    "date": "Fecha",
+    "weightKg": "Peso (kg)",
+    "heightCm": "Altura (cm)",
+    "editWeight": "Editar peso",
+    "editHeight": "Editar altura",
+    "addWeight": "Añadir peso",
+    "addHeight": "Añadir altura",
+    "weightWarning": "Este valor es menor que una entrada posterior. Puedes guardar igualmente.",
+    "heightWarning": "Este valor es menor que una entrada posterior. Puedes guardar igualmente.",
+    "deleteConfirmTitle": "¿Eliminar esta entrada?",
+    "deleteConfirmDescription": "Se eliminará esta entrada de peso o altura.",
+    "weightOverTime": "Peso en el tiempo",
+    "heightOverTime": "Altura en el tiempo",
+    "noGrowthData": "Añade peso y altura en el perfil del bebé para ver el crecimiento aquí.",
+    "viewAllEntries": "Ver todos ({{count}})",
+    "showLess": "Ver menos"
+  },
   "babyEdit": {
     "editBaby": "Editar bebé",
     "addBaby": "Añadir bebé",
@@ -270,7 +294,11 @@
     "avgNapsPerDay": "Siestas/día media",
     "avgNapTime": "Duración media siesta",
     "avgNightSleep": "Sueño nocturno medio",
-    "backToTrends": "Volver a tendencias"
+    "backToTrends": "Volver a tendencias",
+    "chipSummary": "Resumen de sueño",
+    "chipNaps": "Siestas",
+    "chipNight": "Sueño nocturno",
+    "chipGrowth": "Crecimiento"
   },
   "report": {
     "title": "Informe de sueño",

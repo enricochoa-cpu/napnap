@@ -30,8 +30,6 @@ export function BabyEditSheet({
     name: '',
     dateOfBirth: '',
     gender: 'other' as 'male' | 'female' | 'other',
-    weight: 0,
-    height: 0,
     avatarUrl: undefined as string | undefined,
   });
 
@@ -42,8 +40,6 @@ export function BabyEditSheet({
         name: baby.name || '',
         dateOfBirth: baby.dateOfBirth || '',
         gender: baby.gender || 'other',
-        weight: baby.weight || 0,
-        height: baby.height || 0,
         avatarUrl: baby.avatarUrl,
       });
     } else if (isOpen && isNewBaby) {
@@ -51,8 +47,6 @@ export function BabyEditSheet({
         name: '',
         dateOfBirth: '',
         gender: 'other',
-        weight: 0,
-        height: 0,
         avatarUrl: undefined,
       });
     }
@@ -218,44 +212,6 @@ export function BabyEditSheet({
                   </select>
                 </div>
 
-                {/* Measurements */}
-                <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
-                  <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-3 font-display uppercase tracking-wider">
-                    Measurements
-                  </label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] text-[var(--text-muted)] mb-1">
-                        Weight (kg)
-                      </label>
-                      <input
-                        type="number"
-                        name="weight"
-                        value={formData.weight || ''}
-                        onChange={handleChange}
-                        step="0.1"
-                        min="0"
-                        placeholder="—"
-                        className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] text-[var(--text-muted)] mb-1">
-                        Height (cm)
-                      </label>
-                      <input
-                        type="number"
-                        name="height"
-                        value={formData.height || ''}
-                        onChange={handleChange}
-                        step="0.1"
-                        min="0"
-                        placeholder="—"
-                        className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 placeholder:text-[var(--text-muted)]/30"
-                      />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Action Buttons */}

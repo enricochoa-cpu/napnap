@@ -72,8 +72,6 @@ export function useBabyProfile() {
           name: data.baby_name || '',
           dateOfBirth: data.baby_date_of_birth || '',
           gender: data.baby_gender || 'other',
-          weight: data.baby_weight || 0,
-          height: data.baby_height || 0,
           avatarUrl: data.baby_avatar_url || undefined,
         };
         setProfile(ownProfile);
@@ -95,8 +93,6 @@ export function useBabyProfile() {
               baby_name,
               baby_date_of_birth,
               baby_gender,
-              baby_weight,
-              baby_height,
               baby_avatar_url,
               user_name
             )
@@ -115,8 +111,6 @@ export function useBabyProfile() {
               baby_name: string | null;
               baby_date_of_birth: string | null;
               baby_gender: 'male' | 'female' | 'other' | null;
-              baby_weight: number | null;
-              baby_height: number | null;
               baby_avatar_url: string | null;
               user_name: string | null;
             } | null;
@@ -127,8 +121,6 @@ export function useBabyProfile() {
                 name: p.baby_name || '',
                 dateOfBirth: p.baby_date_of_birth || '',
                 gender: p.baby_gender || 'other',
-                weight: p.baby_weight || 0,
-                height: p.baby_height || 0,
                 avatarUrl: p.baby_avatar_url || undefined,
                 isOwner: false,
                 ownerName: p.user_name || undefined,
@@ -188,8 +180,6 @@ export function useBabyProfile() {
         baby_name: data.name,
         baby_date_of_birth: data.dateOfBirth || null,
         baby_gender: data.gender,
-        baby_weight: data.weight || null,
-        baby_height: data.height || null,
         baby_avatar_url: data.avatarUrl || null,
         user_name: data.userName || null,
         user_role: data.userRole || null,
@@ -208,8 +198,6 @@ export function useBabyProfile() {
         name: data.name,
         dateOfBirth: data.dateOfBirth,
         gender: data.gender,
-        weight: data.weight,
-        height: data.height,
         avatarUrl: data.avatarUrl,
       };
       setProfile(newProfile);
@@ -250,8 +238,6 @@ export function useBabyProfile() {
       if (data.name !== undefined) updateData.baby_name = data.name;
       if (data.dateOfBirth !== undefined) updateData.baby_date_of_birth = data.dateOfBirth || null;
       if (data.gender !== undefined) updateData.baby_gender = data.gender;
-      if (data.weight !== undefined) updateData.baby_weight = data.weight || null;
-      if (data.height !== undefined) updateData.baby_height = data.height || null;
       if (data.avatarUrl !== undefined) updateData.baby_avatar_url = data.avatarUrl || null;
       if (data.userName !== undefined) updateData.user_name = data.userName || null;
       if (data.userRole !== undefined) updateData.user_role = data.userRole || null;
@@ -268,7 +254,7 @@ export function useBabyProfile() {
       }
 
       // Update baby profile state
-      if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.weight !== undefined || data.height !== undefined || data.avatarUrl !== undefined) {
+      if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.avatarUrl !== undefined) {
         setProfile((prev) => {
           if (!prev) return prev;
           const { userName: _un, userRole: _ur, ...babyData } = data;
@@ -348,8 +334,8 @@ export function useBabyProfile() {
           .insert({
             baby_date_of_birth: profile.dateOfBirth || null,
             baby_gender: profile.gender || null,
-            baby_weight: profile.weight ?? null,
-            baby_height: profile.height ?? null,
+            baby_weight: null,
+            baby_height: null,
           })
           .select('id')
           .single();

@@ -373,3 +373,28 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** Switching to the Profile tab before profile finished loading showed the full menu with empty `sharedProfiles` (e.g. empty My babies list), causing a flash of wrong or empty state.
 - **Root Cause:** ProfileSection did not receive or use profile loading state.
 - **Permanent Fix:** Pass `profileLoading` from App to ProfileSection. When `profileLoading` is true, render a lightweight skeleton (e.g. title placeholder + a few card-shaped placeholders with `animate-pulse`) instead of the full menu. When load completes, render the real content.
+
+---
+
+## 15. Stats View — Growth Charts & Chips
+
+### 15.1 Weight/Height Graphs in Every Section and Twice in Growth
+**Date:** 2026-02-22
+
+- **Problem:** Weight and height area charts appeared in every Stats section (Summary, Naps, Night) and twice when the Growth chip was selected.
+- **Root Cause:** Two separate render paths: (1) content inside `statsSection === 'growth'` (correct), and (2) a second block that rendered growth charts whenever `weightLogs.length > 0 || heightLogs.length > 0` with no check for `hasData` or section — so growth showed alongside sleep content and again in Growth.
+- **Permanent Fix:** Remove the duplicate block. Growth charts render only in: (a) `statsSection === 'growth'` when `hasData`, and (b) `!hasData && (weightLogs.length > 0 || heightLogs.length > 0)` (no-sleep fallback). **Pattern:** When adding section-scoped content (chips), ensure each block is guarded by the section state so content appears in exactly one place.
+
+### 15.2 Chip Row Scrolls to End When Selecting Growth
+**Date:** 2026-02-22
+
+- **Problem:** Tapping the "Growth" chip caused the horizontal chip row to scroll so Growth was at the far right, pushing other chips off-screen.
+- **Root Cause:** No scroll control; the container has `overflow-x-auto` and the selected chip was just focused/visible at the end of the list.
+- **Permanent Fix:** Add a ref array for each chip button. On `statsSection` change, call `chipRefs.current[idx].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })` so the **selected** chip is brought into view and centered when possible, without forcing the row to scroll to the last item.
+
+### 15.3 Growth Charts Y-Axis Always 0–Max (Poor Scale for Real Data)
+**Date:** 2026-02-22
+
+- **Problem:** Weight and height Recharts used default domain (0 to max), so e.g. 50–70 cm or 3–9 kg looked flat and wasted vertical space.
+- **Root Cause:** No `domain` prop on `YAxis`; Recharts defaults to full range from 0.
+- **Permanent Fix:** Add helpers `adaptiveWeightDomain(values)` and `adaptiveHeightDomain(values)`: compute min/max from data, add ~15% padding, round to sensible steps (weight: 0.5 kg, height: 5 cm), clamp lower bound at 0. Pass `domain={weightDomain}` / `domain={heightDomain}` (from `useMemo` on logs) to every weight/height `YAxis` in StatsView (Growth section + no-sleep block). **Pattern:** For growth or measurement charts, use data-driven Y domains so the curve uses the vertical space meaningfully.

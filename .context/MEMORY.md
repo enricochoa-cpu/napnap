@@ -98,6 +98,10 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 - **Temporal Validation**: bloquea duración 0, nap > 5h, night > 14h. Warn: nap > 4h, night > 13h, cross-midnight nap
 - Trash icon gris sutil, opacidad completa (era /60, ahora full)
 
+### Stats (Sleep Trends)
+- **Section chips:** When there is sleep data, horizontal chips (Sleep summary, Naps, Night sleep, Growth) switch the content below. Selected chip is scrolled into view (center) so tapping Growth doesn’t push the row to the end. Growth charts (weight/height over time) show only in the Growth section — or in a dedicated block when there is no sleep data but there is growth data.
+- **Adaptive Y-axis:** Weight and height area charts use data-driven domains (min/max + padding, rounded to 0.5 kg / 5 cm) so e.g. 50–70 cm or 3–9 kg uses vertical space well; see lessons.md §15.3.
+
 ### Sleep Report (Stats)
 - **Entry:** Stats tab → botón "Generate report (last 30 days)" (copy explícita: reporte cubre últimos 30 días).
 - **Alcance:** Reporte siempre sobre **últimos 30 días** de datos (independiente del date picker de Stats). Rationale: bebés varían mucho; padres necesitan una foto precisa y reciente.
@@ -141,7 +145,7 @@ Cambio automático basado en hora del día:
 |-----------|----------------|
 | `App.tsx` | Router, AnimatePresence transitions, collision detection |
 | `TodayView.tsx` | Smart dashboard, predictions, skeleton loading |
-| `StatsView.tsx` | Sleep statistics with Recharts (bar/area charts), single date range picker (one control opens DateRangePickerSheet for start+end) |
+| `StatsView.tsx` | Sleep statistics with Recharts; section chips (Summary, Naps, Night sleep, Growth) switch content; single date range picker; weight/height area charts in Growth section only (or no-sleep block) with adaptive Y-axis; chip scroll-into-view keeps selected chip centered |
 | `SleepEntrySheet.tsx` | Add/edit entries, temporal validation, dynamic labels, Framer Motion drag-to-dismiss |
 | `QuickActionSheet.tsx` | 3-column quick actions grid; bottom sheet with drag-to-dismiss |
 | `DayNavigator.tsx` | Napper-style week strip + calendar modal (date selection for History view) |
@@ -156,6 +160,7 @@ Cambio automático basado en hora del día:
 | `useSleepEntries` | CRUD entries, activeSleep, awakeMinutes |
 | `useBabyProfile` | Baby/user profiles, multi-baby switching, delete baby (anonymize then delete) |
 | `useBabyShares` | Sharing/invitations between caregivers |
+| `useGrowthLogs` | Weight/height timeline per baby (fetch, add, update, delete; warning when past value &lt; later value) |
 | `useCircadianTheme` | Time-based theme switching |
 | `useDeleteAccount` | Delete account: client deletes storage objects, invokes delete-account Edge Function with JWT, then signOut (ignore 403); redirects via onSignedOut |
 
@@ -224,6 +229,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-13 | Onboarding persistence: draft saved to sessionStorage on Account step; App applies draft after sign-up and calls createProfile so new users get baby + user profile on first login (see lessons.md §12.1) |
 | 2026-02-15 | Code audit applied: removed unused deps (Three.js stack), useLocalStorage.ts, BabyProfile.tsx; cleaned storage.ts (removeFromStorage, unused STORAGE_KEYS); consolidated SharedBabyProfile (single type from useBabyProfile); SleepEntrySheet uses dateUtils getNextDay/getPreviousDay; removed formatDisplayDate and generateId from dateUtils |
 | 2026-02-19 | Sleep Log: removed "+ Add Entry" button/dropdown; add entry is FAB-only from any tab. SleepList empty state copy points to "+ button below". |
+| 2026-02-22 | Baby weight/height timeline: baby_weight_logs + baby_height_logs (migration, RLS), useGrowthLogs, GrowthLogSheet/List; Baby Detail compact growth (latest + "View all (N)"); removed single weight/height from profiles (migration drop); Stats section chips (Summary, Naps, Night, Growth), duplicate growth block removed, chip scroll-into-view, adaptive Y-domain for weight/height charts. |
 
 ---
 

@@ -176,6 +176,30 @@
     "noBabies": "No babies yet",
     "noBabiesSubtitle": "Add your first baby to start tracking sleep"
   },
+  "growth": {
+    "babyWeight": "Baby weight",
+    "babyHeight": "Baby height",
+    "add": "Add",
+    "kg": "kg",
+    "cm": "cm",
+    "noEntries": "No entries yet",
+    "date": "Date",
+    "weightKg": "Weight (kg)",
+    "heightCm": "Height (cm)",
+    "editWeight": "Edit weight",
+    "editHeight": "Edit height",
+    "addWeight": "Add weight",
+    "addHeight": "Add height",
+    "weightWarning": "This value is lower than a later entry. You can still save.",
+    "heightWarning": "This value is lower than a later entry. You can still save.",
+    "deleteConfirmTitle": "Delete this log?",
+    "deleteConfirmDescription": "This weight or height entry will be removed.",
+    "weightOverTime": "Weight over time",
+    "heightOverTime": "Height over time",
+    "noGrowthData": "Add weight and height in your baby's profile to see growth here.",
+    "viewAllEntries": "View all ({{count}})",
+    "showLess": "Show less"
+  },
   "babyEdit": {
     "editBaby": "Edit baby",
     "addBaby": "Add a baby",
@@ -270,7 +294,11 @@
     "avgNapsPerDay": "Avg. naps/day",
     "avgNapTime": "Avg. nap time",
     "avgNightSleep": "Avg. night sleep",
-    "backToTrends": "Back to trends"
+    "backToTrends": "Back to trends",
+    "chipSummary": "Sleep summary",
+    "chipNaps": "Naps",
+    "chipNight": "Night sleep",
+    "chipGrowth": "Growth"
   },
   "report": {
     "title": "Sleep report",
