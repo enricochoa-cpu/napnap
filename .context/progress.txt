@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-23 — Age/config alignment, morning wake in simulation, learned nap duration, bedtime sleep-debt, overdue nap skip (60 min), UTC storage & DST-safe durations. See logs/2026-02-23.md and lessons.md §16.
+**Last updated:** 2026-02-23 — Age/config, nap learning, bedtime debt, overdue skip, UTC storage (see logs/2026-02-23.md). Stats: insight chip off, KPIs commented out, Average nap chart in Naps.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

@@ -180,6 +180,20 @@ function BedTooltip({ active, payload, label }: TooltipProps) {
   );
 }
 
+// Average nap duration tooltip (minutes per day)
+function AvgNapTooltip({ active, payload, label }: TooltipProps) {
+  if (!active || !payload || !payload.length) return null;
+  const mins = payload[0]?.value as number;
+  return (
+    <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
+      <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="text-sm font-medium" style={{ color: 'var(--nap-color)' }}>
+        Avg. nap: {formatHours(mins)}
+      </p>
+    </div>
+  );
+}
+
 // Growth (weight/height) tooltip
 function GrowthTooltip({
   active,
@@ -545,6 +559,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
     return { avgTotal, avgNapDuration, avgNight, avgNapCount };
   }, [rangeData]);
+  void averages; // kept for when KPIs/insight are uncommented
 
   // Sleep distribution (night vs day totals across range)
   const distributionData = useMemo(() => {
@@ -640,6 +655,16 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
     return { points, avg, domain: [minVal, maxVal] as [number, number] };
   }, [entries, startDate, endDate]);
+
+  // Per-day average nap duration (nap minutes / nap count for that day) for Naps section chart
+  const averageNapChartData = useMemo(() => {
+    return rangeData
+      .filter((d) => !d.isToday)
+      .map((d) => ({
+        day: d.day,
+        avgNapMinutes: d.napCount > 0 ? Math.round(d.nap / d.napCount) : 0,
+      }));
+  }, [rangeData]);
 
   // Schedule/Gantt data for daily schedule chart
   const scheduleData = useMemo(() => {
@@ -760,22 +785,15 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
     [heightLogs]
   );
 
-  // Generate insight based on data
-  const insight = useMemo(() => {
-    if (!hasData || averages.avgTotal === 0) return null;
-
-    const avgTotalHours = averages.avgTotal / 60;
-
-    if (avgTotalHours >= 14) {
-      return { text: 'Great sleep this period', color: 'var(--success-color)' };
-    } else if (avgTotalHours >= 12) {
-      return { text: 'Solid sleep patterns', color: 'var(--nap-color)' };
-    } else if (averages.avgNapCount >= 2) {
-      return { text: 'Good nap consistency', color: 'var(--nap-color)' };
-    } else {
-      return { text: 'Building patterns', color: 'var(--wake-color)' };
-    }
-  }, [hasData, averages]);
+  // Insight chip (Solid sleep patterns / Building patterns) — commented out; re-enable with the Insight Tag JSX below
+  // const insight = useMemo(() => {
+  //   if (!hasData || averages.avgTotal === 0) return null;
+  //   const avgTotalHours = averages.avgTotal / 60;
+  //   if (avgTotalHours >= 14) return { text: 'Great sleep this period', color: 'var(--success-color)' };
+  //   if (avgTotalHours >= 12) return { text: 'Solid sleep patterns', color: 'var(--nap-color)' };
+  //   if (averages.avgNapCount >= 2) return { text: 'Good nap consistency', color: 'var(--nap-color)' };
+  //   return { text: 'Building patterns', color: 'var(--wake-color)' };
+  // }, [hasData, averages]);
 
   if (showReport) {
     return (
@@ -799,8 +817,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
         </p>
       </div>
 
-      {/* Insight Tag */}
-      {insight && (
+      {/* Insight Tag — commented out: "Solid sleep patterns" chip was not useful (user feedback) */}
+      {/* {insight && (
         <div className="mb-4">
           <span
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full backdrop-blur-md text-xs font-display font-semibold"
@@ -812,7 +830,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             {insight.text}
           </span>
         </div>
-      )}
+      )} */}
 
       {/* Date range picker — single tappable control opens range sheet */}
       <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -910,8 +928,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {/* Section: Sleep summary */}
           {statsSection === 'summary' && (
             <>
-          {/* Summary Cards - Glassmorphism */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          {/* KPIs — commented out per user feedback (can restore if needed) */}
+          {/* <div className="grid grid-cols-2 gap-4 mb-6">
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">Avg. Total Sleep</p>
               <p className="text-2xl font-display font-bold text-[var(--text-primary)]">
@@ -936,7 +954,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 {averages.avgNapCount.toFixed(1)}
               </p>
             </div>
-          </div>
+          </div> */}
 
           {/* Sleep report row — below KPIs; single line to keep height minimal; premium-ready */}
           <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
@@ -1220,7 +1238,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {/* Section: Naps */}
           {statsSection === 'naps' && (
             <>
-            <div className="grid grid-cols-2 gap-4 mb-6">
+            {/* Naps KPIs — commented out per user feedback */}
+            {/* <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNapTime')}</p>
                 <p className="text-2xl font-display font-bold text-[var(--nap-color)]">
@@ -1233,7 +1252,25 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   {averages.avgNapCount.toFixed(1)}
                 </p>
               </div>
-            </div>
+            </div> */}
+            {averageNapChartData.length > 0 && (
+              <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
+                  Average nap
+                </h3>
+                <div className="h-40" role="img" aria-label="Average nap duration per day">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={averageNapChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                      <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
+                      <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(value) => `${Math.round(value / 60)}h`} />
+                      <Tooltip content={<AvgNapTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
+                      <Bar dataKey="avgNapMinutes" fill={napColor} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
             <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-4">
                 Daily Sleep
@@ -1267,12 +1304,13 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {/* Section: Night sleep */}
           {statsSection === 'night' && (
             <>
-            <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+            {/* Night KPI — commented out per user feedback */}
+            {/* <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNightSleep')}</p>
               <p className="text-2xl font-display font-bold text-[var(--night-color)]">
                 {formatHours(averages.avgNight)}
               </p>
-            </div>
+            </div> */}
           {/* Woke Up Chart */}
           {wakeUpData && (
             <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
