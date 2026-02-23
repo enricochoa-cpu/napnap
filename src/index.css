@@ -327,6 +327,14 @@ input, textarea {
   line-height: 1;
 }
 
+/* Compact hero on short viewports (e.g. iPhone with browser chrome) so
+   "Your Day" can show ~5 items (1 wake up, 3 naps, 1 bedtime) above the fold */
+@media (max-height: 700px) {
+  .hero-countdown {
+    font-size: 2.5rem;
+  }
+}
+
 .hero-secondary {
   font-family: var(--font-display);
   font-size: 1.0625rem;

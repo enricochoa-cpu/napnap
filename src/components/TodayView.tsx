@@ -537,7 +537,7 @@ export function TodayView({
   if (loading) {
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
-        <div className="pt-8 pb-6">
+        <div className="pt-4 pb-3 sm:pt-8 sm:pb-6">
           <SkeletonHero />
         </div>
 
@@ -556,16 +556,16 @@ export function TodayView({
   if (hasActiveNightFromYesterday && !hasTodayActivity) {
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
-        <div className="pt-6 pb-4">
+        <div className="pt-4 pb-3 sm:pt-6 sm:pb-4">
           {/* Hero: Predicted Wake-Up Time */}
           <div
-            className="rounded-3xl p-6 text-center"
+            className="rounded-3xl p-4 sm:p-6 text-center"
             style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}
           >
-            <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+            <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
               Expected Wake Up
             </p>
-            <h1 className="hero-countdown text-[var(--wake-color)] mb-3">
+            <h1 className="hero-countdown text-[var(--wake-color)] mb-2 sm:mb-3">
               {expectedWakeUp ? formatTime(expectedWakeUp) : '—'}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm">
@@ -639,17 +639,17 @@ export function TodayView({
   return (
     <div className="flex flex-col pb-40 px-6 fade-in">
       {/* ================================================================== */}
-      {/* HERO SECTION - Glassmorphism Card with Status Pill               */}
+      {/* HERO SECTION - Compact on small viewports so timeline fits ~5 items */}
       {/* ================================================================== */}
-      <div className="pt-6 pb-4">
-        <div className="rounded-3xl p-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
+      <div className="pt-4 pb-3 sm:pt-6 sm:pb-4">
+        <div className="rounded-3xl p-4 sm:p-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
           {activeSleep ? (
             // SLEEPING STATE
             <div className="text-center">
-              <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+              <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
                 {activeSleep.type === 'nap' ? 'Napping' : 'Night Sleep'}
               </p>
-              <h1 className="hero-countdown text-[var(--nap-color)] mb-3">
+              <h1 className="hero-countdown text-[var(--nap-color)] mb-2 sm:mb-3">
                 {formatDuration(currentSleepDuration)}
               </h1>
               {expectedWakeUp && (
@@ -666,7 +666,7 @@ export function TodayView({
                   {/* FOCAL POINT: Next Event Countdown */}
                   {nextEventCountdown.isNow ? (
                     <div>
-                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
                         It's Time
                       </p>
                       <h1 className={`hero-countdown animate-pulse-soft ${
@@ -677,10 +677,10 @@ export function TodayView({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
                         {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
                       </p>
-                      <h1 className={`hero-countdown mb-3 ${
+                      <h1 className={`hero-countdown mb-2 sm:mb-3 ${
                         nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
                       }`}>
                         {formatDuration(nextEventCountdown.minutes)}
@@ -698,7 +698,7 @@ export function TodayView({
               ) : (
                 // Fallback when no countdown available
                 <div>
-                  <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3">
+                  <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
                     Awake
                   </p>
                   <h1 className="hero-countdown text-[var(--wake-color)]">
@@ -714,8 +714,8 @@ export function TodayView({
       {/* ================================================================== */}
       {/* TIMELINE RIVER - Visual flow through the day                      */}
       {/* ================================================================== */}
-      <div className="mt-4">
-        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-4 px-1">
+      <div className="mt-3 sm:mt-4">
+        <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3 sm:mb-4 px-1">
           Your Day
         </h2>
 
