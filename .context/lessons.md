@@ -398,3 +398,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** Weight and height Recharts used default domain (0 to max), so e.g. 50–70 cm or 3–9 kg looked flat and wasted vertical space.
 - **Root Cause:** No `domain` prop on `YAxis`; Recharts defaults to full range from 0.
 - **Permanent Fix:** Add helpers `adaptiveWeightDomain(values)` and `adaptiveHeightDomain(values)`: compute min/max from data, add ~15% padding, round to sensible steps (weight: 0.5 kg, height: 5 cm), clamp lower bound at 0. Pass `domain={weightDomain}` / `domain={heightDomain}` (from `useMemo` on logs) to every weight/height `YAxis` in StatsView (Growth section + no-sleep block). **Pattern:** For growth or measurement charts, use data-driven Y domains so the curve uses the vertical space meaningfully.
+
+---
+
+## 16. Timezone and DST
+
+### 16.1 Store UTC, Compute Durations as Absolute Minutes
+**Date:** 2026-02-23
+
+- **Goal:** Handle DST changes and travel correctly: no double/missing hours, stable wake-window math.
+- **Approach:** (1) **Persistence:** Sleep entry `start_time` / `end_time` are stored in UTC (ISO with Z). In `useSleepEntries`, `toSupabaseTimestamp` uses `parseISO(datetime).toISOString()` so we always send UTC to Supabase. Entries in client state keep raw `startTime`/`endTime` from the DB (UTC ISO). (2) **Display:** `formatTime(entry.startTime)` and `extractTime` in SleepEntrySheet use `parseISO` then local formatting, so the user always sees local time. (3) **Durations and wake windows:** All logic uses `differenceInMinutes(parseISO(a), parseISO(b))` — i.e. difference between two instants — so wake windows and nap lengths are independent of clock changes. **Reusable rule:** Persist instants in UTC; use instant difference (minutes) for any duration or window; render in local for the current device.

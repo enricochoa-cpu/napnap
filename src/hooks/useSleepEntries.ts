@@ -1,27 +1,21 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { formatDate, calculateDuration } from '../utils/dateUtils';
-import { parseISO, formatISO } from 'date-fns';
+import { calculateDuration } from '../utils/dateUtils';
+import { parseISO, format } from 'date-fns';
 import type { SleepEntry } from '../types';
 
-// Convert local datetime-local string to ISO string for Supabase
-const toSupabaseTimestamp = (localDateTime: string): string => {
-  // datetime-local gives us "2024-01-20T15:30", we need to add timezone
-  const date = new Date(localDateTime);
-  return formatISO(date);
+/**
+ * Convert datetime string (local "YYYY-MM-DDTHH:mm" or ISO with Z) to UTC ISO for storage.
+ * Persisting in UTC avoids DST/travel issues; all duration math uses instant difference (minutes).
+ */
+const toSupabaseTimestamp = (datetime: string): string => {
+  return parseISO(datetime).toISOString();
 };
 
-// Convert Supabase UTC timestamp to local datetime-local format
-const fromSupabaseTimestamp = (utcTimestamp: string): string => {
-  const date = parseISO(utcTimestamp);
-  // Format as local datetime-local format (without timezone, but in local time)
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
+/**
+ * Entry startTime/endTime are stored as received from Supabase (UTC ISO).
+ * Use formatTime(entry.startTime) / parseISO for display (local) and duration (differenceInMinutes).
+ */
 
 interface UseSleepEntriesOptions {
   babyId: string | null;
@@ -63,9 +57,9 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       if (data) {
         const mappedEntries: SleepEntry[] = data.map((entry) => ({
           id: entry.id,
-          date: formatDate(fromSupabaseTimestamp(entry.start_time)),
-          startTime: fromSupabaseTimestamp(entry.start_time),
-          endTime: entry.end_time ? fromSupabaseTimestamp(entry.end_time) : null,
+          date: format(parseISO(entry.start_time), 'yyyy-MM-dd'),
+          startTime: entry.start_time,
+          endTime: entry.end_time ?? null,
           type: entry.type as 'nap' | 'night',
           notes: entry.notes || undefined,
         }));
@@ -110,9 +104,9 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
 
       const newEntry: SleepEntry = {
         id: inserted.id,
-        date: formatDate(data.startTime),
-        startTime: data.startTime,
-        endTime: data.endTime || null,
+        date: format(parseISO(inserted.start_time), 'yyyy-MM-dd'),
+        startTime: inserted.start_time,
+        endTime: inserted.end_time ?? null,
         type: inserted.type as 'nap' | 'night',
         notes: inserted.notes || undefined,
       };
@@ -147,9 +141,11 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
         prev.map((entry) => {
           if (entry.id !== id) return entry;
           const updated = { ...entry, ...data };
-          if (data.startTime) {
-            updated.date = formatDate(data.startTime);
+          if (data.startTime !== undefined) {
+            updated.startTime = toSupabaseTimestamp(data.startTime);
+            updated.date = format(parseISO(updated.startTime), 'yyyy-MM-dd');
           }
+          if (data.endTime !== undefined) updated.endTime = data.endTime ? toSupabaseTimestamp(data.endTime) : null;
           return updated;
         })
       );

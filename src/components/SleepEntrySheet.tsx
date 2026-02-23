@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-mo
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { formatDate, getNextDay, getPreviousDay } from '../utils/dateUtils';
+import { parseISO, format } from 'date-fns';
 import type { SleepEntry } from '../types';
 
 type SleepType = 'nap' | 'night';
@@ -67,10 +68,11 @@ const CloseIcon = () => (
 );
 
 // Helpers
+/** Extract local time HH:mm from an ISO datetime (UTC or with offset). Ensures form shows local time after DST/travel. */
 const extractTime = (datetime: string): string => {
   if (!datetime) return '';
-  const timePart = datetime.split('T')[1];
-  return timePart ? timePart.substring(0, 5) : '';
+  const d = parseISO(datetime);
+  return format(d, 'HH:mm');
 };
 
 const getCurrentTime = (): string => {

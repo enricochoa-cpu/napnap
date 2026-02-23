@@ -11,6 +11,8 @@ import {
   getRecommendedSchedule,
   calculateDynamicBedtime,
   extractWakeWindowsFromEntries,
+  extractNapDurationsFromEntries,
+  getLearnedNapDurationMinutes,
   getExpectedNightWakeTime,
   type NapIndex,
   type NapPrediction,
@@ -18,6 +20,9 @@ import {
 import type { SleepEntry, BabyProfile } from '../types';
 import { parseISO, differenceInMinutes, addMinutes, isToday, isBefore, isAfter } from 'date-fns';
 import { SkeletonTimeline, SkeletonHero } from './SkeletonTimelineCard';
+
+/** If first nap has been overdue longer than this, we skip showing "NAP NOW" and anchor on original time to avoid minute-by-minute drift */
+const OVERDUE_NAP_PERSISTENCE_MINUTES = 60;
 
 interface TodayViewProps {
   profile: BabyProfile | null;
@@ -47,11 +52,13 @@ function getMorningWakeUpEntry(entries: SleepEntry[]): SleepEntry | null {
   ) || null;
 }
 
-// Calculate expected wake-up time from active sleep (nap or night)
+// Calculate expected wake-up time from active sleep (nap or night).
+// For naps, optional overrideNapDurationMinutes uses learned duration when provided.
 function getExpectedWakeTime(
   activeSleep: SleepEntry,
   profile: BabyProfile | null,
-  entries: SleepEntry[] = []
+  entries: SleepEntry[] = [],
+  overrideNapDurationMinutes?: number
 ): Date | null {
   if (!activeSleep) return null;
 
@@ -65,10 +72,12 @@ function getExpectedWakeTime(
     return predictedWakeTime;
   }
 
-  // Nap: use age-based average duration
+  // Nap: use override (learned) or age-based default duration
   if (activeSleep.type === 'nap') {
     let avgNapMinutes = 60;
-    if (profile?.dateOfBirth) {
+    if (overrideNapDurationMinutes != null) {
+      avgNapMinutes = overrideNapDurationMinutes;
+    } else if (profile?.dateOfBirth) {
       const schedule = getRecommendedSchedule(profile.dateOfBirth);
       avgNapMinutes = schedule.numberOfNaps >= 3 ? 45 : 90;
     }
@@ -165,6 +174,18 @@ export function TodayView({
     );
   }, [entries]);
 
+  // Nap duration by position (first/second/third+) for 70/30 learning, like wake windows
+  const napDurationHistory = useMemo(() => {
+    return extractNapDurationsFromEntries(
+      entries.map((e) => ({
+        startTime: e.startTime,
+        endTime: e.endTime,
+        type: e.type,
+      })),
+      7
+    );
+  }, [entries]);
+
   // Predicted nap windows (using AAA Dynamic Prediction System)
   // Only show if morning wake up is logged - predictions don't make sense without it
   const predictedNapsWithMetadata = useMemo(() => {
@@ -185,9 +206,22 @@ export function TodayView({
     let activeNapExpectedDuration = 0;
     const hasActiveNap = activeSleep && activeSleep.type === 'nap';
 
-    if (hasActiveNap) {
-      activeNapExpectedEnd = getExpectedWakeTime(activeSleep, profile, entries);
-      activeNapExpectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
+    if (hasActiveNap && profile?.dateOfBirth) {
+      const activeNapIndex: NapIndex =
+        todayNaps.length === 0 ? 'first' : todayNaps.length === 1 ? 'second' : 'third_plus';
+      activeNapExpectedDuration = getLearnedNapDurationMinutes(
+        profile.dateOfBirth,
+        activeNapIndex,
+        napDurationHistory.byIndex[activeNapIndex],
+        napDurationHistory.todaysCountByIndex[activeNapIndex],
+        false
+      );
+      activeNapExpectedEnd = getExpectedWakeTime(
+        activeSleep,
+        profile,
+        entries,
+        activeNapExpectedDuration
+      );
 
       // Add active nap to completed naps data for simulation
       if (activeNapExpectedEnd) {
@@ -198,8 +232,12 @@ export function TodayView({
       }
     }
 
-    // calculateAllNapWindows now returns ONLY projected/future naps
-    const projectedWindows = calculateAllNapWindows(profile.dateOfBirth, completedNapsData);
+    // calculateAllNapWindows now returns ONLY projected/future naps; use real wake-up when available
+    const projectedWindows = calculateAllNapWindows(
+      profile.dateOfBirth,
+      completedNapsData,
+      morningWakeUp ?? undefined
+    );
 
     const wakeUpTime = morningWakeUp || new Date(
       now.getFullYear(),
@@ -240,6 +278,15 @@ export function TodayView({
         napIndex === 0 ? 'first' :
         napIndex === 1 ? 'second' : 'third_plus';
 
+      // Learned duration (70% config, 30% history) for anchor and display
+      const expectedDuration = getLearnedNapDurationMinutes(
+        profile.dateOfBirth,
+        napIndexType,
+        napDurationHistory.byIndex[napIndexType],
+        napDurationHistory.todaysCountByIndex[napIndexType],
+        windowInfo.isCatnap
+      );
+
       // Use new AAA Dynamic Prediction with metadata
       const napPrediction = calculateSuggestedNapTimeWithMetadata(
         profile.dateOfBirth,
@@ -262,40 +309,45 @@ export function TodayView({
         : now;
 
       if (napPrediction.predictedTime) {
+        const overdueMinutes = differenceInMinutes(now, napPrediction.predictedTime);
+
         // If prediction is in the future, show it normally
         if (isAfter(napPrediction.predictedTime, minPredictionTime)) {
           predictions.push({
             time: napPrediction.predictedTime,
             isCatnap: windowInfo.isCatnap,
-            expectedDuration: windowInfo.expectedDurationMinutes,
+            expectedDuration,
             prediction: napPrediction,
           });
-          lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+          lastEndTime = addMinutes(napPrediction.predictedTime, expectedDuration);
         }
-        // If prediction is in the past (overdue) and no active nap, show as "now"
-        // This ensures parents see the nap is needed and bedtime calculates correctly.
-        // isOverdue: timeline card will show original predictedTime for display; we keep time: now for anchor math.
+        // First nap overdue: show as "NAP NOW" only if overdue <= 1h; otherwise skip to avoid "stacking"
+        // (minute-by-minute drift when parent is late logging)
         else if (!hasActiveNap && predictions.length === 0) {
-          predictions.push({
-            time: now,
-            isCatnap: windowInfo.isCatnap,
-            expectedDuration: windowInfo.expectedDurationMinutes,
-            prediction: napPrediction,
-            isOverdue: true,
-          });
-          // For subsequent calculations, use now + expected duration as anchor
-          lastEndTime = addMinutes(now, windowInfo.expectedDurationMinutes);
+          if (overdueMinutes <= OVERDUE_NAP_PERSISTENCE_MINUTES) {
+            predictions.push({
+              time: now,
+              isCatnap: windowInfo.isCatnap,
+              expectedDuration,
+              prediction: napPrediction,
+              isOverdue: true,
+            });
+            lastEndTime = addMinutes(now, expectedDuration);
+          } else {
+            // Treat as skipped: anchor on original predicted end so rest of day stays stable
+            lastEndTime = addMinutes(napPrediction.predictedTime, expectedDuration);
+          }
         }
-        // If prediction is overdue but we already have future predictions, skip it
+        // Prediction overdue but we already have future predictions: skip it, use original end as anchor
         else {
-          lastEndTime = addMinutes(napPrediction.predictedTime, windowInfo.expectedDurationMinutes);
+          lastEndTime = addMinutes(napPrediction.predictedTime, expectedDuration);
         }
       }
-      lastNapDuration = windowInfo.expectedDurationMinutes;
+      lastNapDuration = expectedDuration;
     }
 
     return { predictions, calibrationInfo: firstPredictionCalibrationInfo };
-  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep, profile, entries.length, wakeWindowHistory]);
+  }, [profile?.dateOfBirth, morningWakeUp, todayNaps, now, activeSleep, profile, entries.length, wakeWindowHistory, napDurationHistory]);
 
   // Convenience accessor for predictions (backward compatible)
   const predictedNaps = predictedNapsWithMetadata.predictions;
@@ -322,15 +374,22 @@ export function TodayView({
       const lastPredicted = predictedNaps[predictedNaps.length - 1];
       anchorEndTime = addMinutes(lastPredicted.time, lastPredicted.expectedDuration);
     }
-    // 2. If no predicted naps but baby is currently napping, use expected wake time
-    else if (activeSleep && activeSleep.type === 'nap') {
-      const expectedWake = getExpectedWakeTime(activeSleep, profile);
+    // 2. If no predicted naps but baby is currently napping, use expected wake time (with learned duration)
+    else if (activeSleep && activeSleep.type === 'nap' && profile?.dateOfBirth) {
+      const activeNapIndex: NapIndex =
+        todayNaps.length === 0 ? 'first' : todayNaps.length === 1 ? 'second' : 'third_plus';
+      const learnedDuration = getLearnedNapDurationMinutes(
+        profile.dateOfBirth,
+        activeNapIndex,
+        napDurationHistory.byIndex[activeNapIndex],
+        napDurationHistory.todaysCountByIndex[activeNapIndex],
+        false
+      );
+      const expectedWake = getExpectedWakeTime(activeSleep, profile, entries, learnedDuration);
       if (expectedWake) {
         anchorEndTime = expectedWake;
-        // Add estimated remaining sleep to accumulated total
         const elapsedMinutes = calculateDuration(activeSleep.startTime, null);
-        const expectedDuration = schedule.numberOfNaps >= 3 ? 45 : 90;
-        const remainingSleep = Math.max(0, expectedDuration - elapsedMinutes);
+        const remainingSleep = Math.max(0, learnedDuration - elapsedMinutes);
         accumulatedSleepMinutes += remainingSleep;
       }
     }
@@ -358,7 +417,7 @@ export function TodayView({
       schedule.bedtimeWindow.latest.hour,
       schedule.bedtimeWindow.latest.minute
     );
-  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, predictedNaps, activeSleep, now]);
+  }, [profile?.dateOfBirth, todayNaps, totalDaytimeSleepMinutes, predictedNaps, activeSleep, now, napDurationHistory, entries]);
 
   // Determine if bedtime is the next event (no more naps predicted)
   const isBedtimeNext = useMemo(() => {
@@ -430,11 +489,23 @@ export function TodayView({
     return { type: 'nap' as const, isNow: false, minutes: minutesUntilNap };
   }, [profile?.dateOfBirth, lastCompletedSleep, activeSleep, todayNaps.length, now, isBedtimeNext, expectedBedtime]);
 
-  // Expected wake up time (if sleeping)
+  // Expected wake up time (if sleeping); use learned nap duration when active nap
   const expectedWakeUp = useMemo(() => {
     if (!activeSleep) return null;
+    if (activeSleep.type === 'nap' && profile?.dateOfBirth) {
+      const activeNapIndex: NapIndex =
+        todayNaps.length === 0 ? 'first' : todayNaps.length === 1 ? 'second' : 'third_plus';
+      const learned = getLearnedNapDurationMinutes(
+        profile.dateOfBirth,
+        activeNapIndex,
+        napDurationHistory.byIndex[activeNapIndex],
+        napDurationHistory.todaysCountByIndex[activeNapIndex],
+        false
+      );
+      return getExpectedWakeTime(activeSleep, profile, entries, learned);
+    }
     return getExpectedWakeTime(activeSleep, profile, entries);
-  }, [activeSleep, profile, entries]);
+  }, [activeSleep, profile, entries, todayNaps.length, napDurationHistory]);
 
   // Duration of current sleep
   const currentSleepDuration = useMemo(() => {

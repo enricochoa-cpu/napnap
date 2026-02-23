@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-22 — Baby weight/height timeline (growth logs, compact Baby Detail, Stats chips, duplicate fix, chip scroll, adaptive Y-axis). See logs/2026-02-22.md and lessons.md §15.
+**Last updated:** 2026-02-23 — Age/config alignment, morning wake in simulation, learned nap duration, bedtime sleep-debt, overdue nap skip (60 min), UTC storage & DST-safe durations. See logs/2026-02-23.md and lessons.md §16.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

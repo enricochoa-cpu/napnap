@@ -28,6 +28,10 @@ export function formatDateTime(date: Date | string): string {
   return format(d, "yyyy-MM-dd'T'HH:mm");
 }
 
+/**
+ * Duration in minutes between two instants. Uses absolute difference, so safe across
+ * DST and timezone changes. Entries are stored in UTC; parseISO handles both UTC (Z) and local.
+ */
 export function calculateDuration(startTime: string, endTime: string | null): number {
   if (!endTime) {
     return differenceInMinutes(new Date(), parseISO(startTime));
@@ -369,11 +373,16 @@ export const SLEEP_DEVELOPMENT_MAP: AgeSleepConfig[] = [
 
 /**
  * Get the sleep configuration for a baby's current age.
+ * Uses the same "days since last month anniversary" logic as calculateAge()
+ * so config buckets align with displayed age (see lessons.md §13.1).
  */
 export function getSleepConfigForAge(dateOfBirth: string): AgeSleepConfig {
   const dob = parseISO(dateOfBirth);
   const now = new Date();
-  const ageInMonths = differenceInMonths(now, dob) + (differenceInDays(now, dob) % 30) / 30;
+  const wholeMonths = differenceInMonths(now, dob);
+  const lastMonthAnniversary = addMonths(dob, wholeMonths);
+  const daysSinceAnniversary = differenceInDays(now, lastMonthAnniversary);
+  const ageInMonths = wholeMonths + daysSinceAnniversary / 30;
 
   // Find matching config
   for (const config of SLEEP_DEVELOPMENT_MAP) {
@@ -832,6 +841,115 @@ export function extractWakeWindowsFromEntries(
   return { wakeWindows, todaysCount };
 }
 
+/**
+ * Nap duration history by position (first, second, third_plus) for learning.
+ * Arrays are most recent first; todaysCountByIndex is how many of each are from today.
+ */
+export interface NapDurationHistory {
+  byIndex: {
+    first: number[];
+    second: number[];
+    third_plus: number[];
+  };
+  todaysCountByIndex: {
+    first: number;
+    second: number;
+    third_plus: number;
+  };
+}
+
+/**
+ * Extract nap durations from entries, grouped by nap position (first/second/third+ of the day).
+ * Used to learn typical nap length per position and blend with config (70/30) like wake windows.
+ *
+ * @param entries - Sleep entries with startTime, endTime, type
+ * @param maxDays - Maximum days of history (default 7)
+ */
+export function extractNapDurationsFromEntries(
+  entries: { startTime: string; endTime: string | null; type: 'nap' | 'night' }[],
+  maxDays: number = 7
+): NapDurationHistory {
+  const now = new Date();
+  const cutoffDate = subDays(startOfDay(now), maxDays);
+
+  const napsOnly = entries
+    .filter((e) => e.type === 'nap' && e.endTime != null && parseISO(e.startTime) >= cutoffDate)
+    .sort((a, b) => parseISO(a.startTime).getTime() - parseISO(b.startTime).getTime());
+
+  const byDay = new Map<string, { duration: number; date: Date }[]>();
+  for (const nap of napsOnly) {
+    const start = parseISO(nap.startTime);
+    const end = parseISO(nap.endTime!);
+    const dayKey = format(startOfDay(start), 'yyyy-MM-dd');
+    if (!byDay.has(dayKey)) byDay.set(dayKey, []);
+    byDay.get(dayKey)!.push({
+      duration: differenceInMinutes(end, start),
+      date: start,
+    });
+  }
+
+  const first: number[] = [];
+  const second: number[] = [];
+  const third_plus: number[] = [];
+  let todaysFirst = 0,
+    todaysSecond = 0,
+    todaysThirdPlus = 0;
+
+  const sortedDays = Array.from(byDay.entries()).sort(
+    (a, b) => parseISO(b[0]).getTime() - parseISO(a[0]).getTime()
+  );
+
+  for (const [dayKey, dayNaps] of sortedDays) {
+    const dayStart = parseISO(dayKey);
+    const isTodayDay = isToday(dayStart);
+    dayNaps.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    dayNaps.forEach((nap, idx) => {
+      if (idx === 0) {
+        first.push(nap.duration);
+        if (isTodayDay) todaysFirst++;
+      } else if (idx === 1) {
+        second.push(nap.duration);
+        if (isTodayDay) todaysSecond++;
+      } else {
+        third_plus.push(nap.duration);
+        if (isTodayDay) todaysThirdPlus++;
+      }
+    });
+  }
+
+  return {
+    byIndex: { first, second, third_plus },
+    todaysCountByIndex: { first: todaysFirst, second: todaysSecond, third_plus: todaysThirdPlus },
+  };
+}
+
+/**
+ * Expected nap duration for a given position: 70% config, 30% learned (weighted by recency).
+ * Same philosophy as wake window blending. Uses config standard or micro for catnaps.
+ */
+export function getLearnedNapDurationMinutes(
+  dateOfBirth: string,
+  _napIndex: NapIndex,
+  durations: number[],
+  todaysCount: number,
+  useMicro: boolean = false
+): number {
+  const config = getSleepConfigForAge(dateOfBirth);
+  const configMinutes = useMicro
+    ? config.napDurations.micro
+    : config.napDurations.standard;
+
+  if (durations.length === 0) return configMinutes;
+
+  const learned = calculateWeightedWakeWindowAverage(durations, todaysCount);
+  const blended = Math.round(configMinutes * 0.7 + learned * 0.3);
+  const maxMinutes = useMicro
+    ? config.napDurations.micro + 15
+    : config.napDurations.standard + 30;
+  return Math.max(config.napDurations.minimum, Math.min(maxMinutes, blended));
+}
+
 export function getRecommendedSchedule(dateOfBirth: string): DailySchedule {
   const config = getSleepConfigForAge(dateOfBirth);
   return {
@@ -1029,20 +1147,43 @@ export function simulateDay(
   };
 }
 
+/** Max minutes to shift bedtime earlier when baby has significant sleep debt */
+const BEDTIME_EARLIER_CAP_MINUTES = 20;
+/** Min daytime sleep deficit (minutes) before we suggest earlier bedtime */
+const SLEEP_DEBT_THRESHOLD_MINUTES = 30;
+
 /**
  * Calculate dynamic bedtime based on actual day's sleep.
- * Uses elastic formula: Last_nap_end + Final_wake_window
+ * Uses elastic formula: Last_nap_end + Final_wake_window, adjusted for sleep debt.
+ *
+ * If the baby has slept noticeably less than age-appropriate daytime sleep (debt >= 30 min),
+ * we shorten the final wake window by up to 20 minutes so bedtime is earlier and they
+ * can catch up. Excess daytime sleep does not shift bedtime (avoid overcorrecting).
  */
 export function calculateDynamicBedtime(
   dateOfBirth: string,
   lastNapEndTime: string,
-  _totalDaytimeSleepMinutes: number
+  totalDaytimeSleepMinutes: number
 ): Date {
   const config = getSleepConfigForAge(dateOfBirth);
   const lastNapEnd = parseISO(lastNapEndTime);
 
-  // Elastic bedtime: last nap end + final wake window
-  const bedtime = new Date(lastNapEnd.getTime() + config.wakeWindows.final * 60 * 1000);
+  const targetDaytimeSleepMinutes =
+    config.targetNaps * config.napDurations.standard;
+  const deficit = targetDaytimeSleepMinutes - totalDaytimeSleepMinutes;
+
+  let finalWindowMinutes = config.wakeWindows.final;
+  if (deficit >= SLEEP_DEBT_THRESHOLD_MINUTES) {
+    const shiftEarlier = Math.min(
+      BEDTIME_EARLIER_CAP_MINUTES,
+      Math.round(deficit / 2)
+    );
+    finalWindowMinutes = config.wakeWindows.final - shiftEarlier;
+  }
+
+  const bedtime = new Date(
+    lastNapEnd.getTime() + finalWindowMinutes * 60 * 1000
+  );
 
   return bedtime;
 }
@@ -1064,15 +1205,22 @@ export interface NapWindow {
 /**
  * Calculate all recommended nap windows for the day using full simulation.
  * This replaces the old algorithm that had arbitrary cutoffs.
+ *
+ * @param morningWakeUp - When provided, simulation starts from this time (real wake-up).
+ *   When omitted or null, uses config.defaultWakeTime (e.g. 7:00). Use real wake-up
+ *   when available so projected naps and bedtime align with the actual start of the day.
  */
 export function calculateAllNapWindows(
   dateOfBirth: string,
-  completedNaps: { endTime: string; durationMinutes: number }[] = []
+  completedNaps: { endTime: string; durationMinutes: number }[] = [],
+  morningWakeUp?: Date | null
 ): NapWindow[] {
   const config = getSleepConfigForAge(dateOfBirth);
 
-  // Convert completed naps to simulation format
-  const wakeTimeMinutes = config.defaultWakeTime.hour * 60 + config.defaultWakeTime.minute;
+  const wakeTimeMinutes =
+    morningWakeUp != null
+      ? morningWakeUp.getHours() * 60 + morningWakeUp.getMinutes()
+      : config.defaultWakeTime.hour * 60 + config.defaultWakeTime.minute;
 
   // Build completed naps in minutes format
   const completedInMinutes: { startMinutes: number; endMinutes: number }[] = [];
