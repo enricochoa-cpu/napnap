@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-24 — Stats Y-axis fix; onboarding “completed” flag (returning users → Login); ESSENTIAL-GAPS §6 prediction gaps + order (see logs/2026-02-24.md).
+**Last updated:** 2026-02-24 — Stats: Y-axis 4–6 ticks, day name above date (X-axis), CHART_MARGIN + tick offset for Napper-quality spacing; onboarding completed; ESSENTIAL-GAPS §6 (see logs/2026-02-24.md).
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

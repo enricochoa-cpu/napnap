@@ -39,7 +39,35 @@ import {
 } from 'date-fns';
 import type { SleepEntry, WeightLog, HeightLog } from '../types';
 import type { BabyProfile } from '../types';
+import { getDateFnsLocale } from '../utils/dateFnsLocale';
 import { SleepReportView } from './SleepReportView';
+
+/** X-axis tick: day name above date (Napper-style). Recharts passes payload as { value } or the value itself. */
+function DayDateTick(props: {
+  x?: number;
+  y?: number;
+  payload?: { value?: string } | string;
+  index?: number;
+  data?: Array<{ day: string; dayName?: string }>;
+}) {
+  const { x = 0, y = 0, payload, index = 0, data } = props;
+  const value = typeof payload === 'object' && payload?.value != null ? payload.value : (payload as string) ?? '';
+  const dayName = data?.[index]?.dayName ?? (data ? data.find((d) => d.day === value)?.dayName : undefined) ?? '';
+  // Slight offset so day/date block isn't flush against the chart (Napper-quality breathing room)
+  const firstLineOffset = 4;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text textAnchor="middle" fill="var(--text-muted)" fontSize={10}>
+        <tspan x={0} dy={firstLineOffset}>
+          {dayName}
+        </tspan>
+        <tspan x={0} dy={12}>
+          {value}
+        </tspan>
+      </text>
+    </g>
+  );
+}
 
 interface StatsViewProps {
   entries: SleepEntry[];
@@ -49,6 +77,9 @@ interface StatsViewProps {
 }
 
 const MAX_DAYS = 15;
+
+/** Chart margins: enough left/bottom so axis labels (0h, Wed) don't crowd the corner (Napper-quality spacing). */
+const CHART_MARGIN = { top: 10, right: 10, left: 24, bottom: 28 };
 
 /** Adaptive Y-domain from data (avoid 0–max scale when data is e.g. 50–70 cm). */
 function adaptiveWeightDomain(values: number[]): [number, number] {
@@ -73,17 +104,33 @@ function adaptiveHeightDomain(values: number[]): [number, number] {
   return [Math.max(0, low), high];
 }
 
-/** Y-axis domain and ticks for duration (minutes) charts so labels are distinct (0h, 30m, 1h, …). */
+/** Y-axis for duration (minutes): 4–6 ticks only, round steps (0h, 3h, 6h…). Data-viz rule: avoid clutter. */
+const DURATION_MAX_TICKS = 6;
+
 function durationAxisProps(values: number[]): { domain: [number, number]; ticks: number[] } {
   const max = values.length > 0 ? Math.max(...values, 60) : 60;
-  const top = Math.ceil(max / 30) * 30;
+  const top = Math.ceil(max / 60) * 60; // round up to full hour
   const domain: [number, number] = [0, top];
-  const ticks: number[] = [];
-  for (let t = 0; t <= top; t += 30) ticks.push(t);
+  // Step so we get at most DURATION_MAX_TICKS ticks; prefer 30min, 1h, 2h, 3h
+  let stepMinutes = 30;
+  if (top > 600) stepMinutes = 180;
+  else if (top > 300) stepMinutes = 120;
+  else if (top > 120) stepMinutes = 60;
+  const ticks: number[] = [0];
+  for (let t = stepMinutes; t < top; t += stepMinutes) ticks.push(t);
+  if (ticks[ticks.length - 1] !== top) ticks.push(top);
+  // Hard cap so we never render more than DURATION_MAX_TICKS
+  if (ticks.length > DURATION_MAX_TICKS) {
+    const step = Math.ceil(top / (DURATION_MAX_TICKS - 1) / 60) * 60;
+    const reduced: number[] = [0];
+    for (let t = step; t < top; t += step) reduced.push(t);
+    if (reduced[reduced.length - 1] !== top) reduced.push(top);
+    return { domain, ticks: reduced };
+  }
   return { domain, ticks };
 }
 
-/** Format duration (minutes) for Y-axis: 0h, 30m, 1h, 1h 30m, … to avoid duplicate labels. */
+/** Format duration (minutes) for Y-axis: 0h, 30m, 1h, 1h 30m, … */
 function formatDurationAxis(minutes: number): string {
   if (minutes === 0) return '0h';
   if (minutes < 60) return `${minutes}m`;
@@ -91,25 +138,53 @@ function formatDurationAxis(minutes: number): string {
   return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
 }
 
-/** Explicit ticks for weight (kg) so Y-axis shows readable steps (e.g. 3, 3.5, 4). */
+/** Y-axis ticks for time-of-day (minutes since midnight): 4–6 round clock times (e.g. 19:00, 19:30, 20:00). */
+const TIME_OF_DAY_MAX_TICKS = 6;
+
+function timeOfDayAxisTicks(domain: [number, number]): number[] {
+  const [minMins, maxMins] = domain;
+  const range = maxMins - minMins;
+  const step = range <= 90 ? 30 : range <= 180 ? 60 : 120; // 30min or 1h/2h
+  const start = Math.floor(minMins / 30) * 30;
+  const ticks: number[] = [];
+  for (let t = start; t <= maxMins + 1e-6 && ticks.length < TIME_OF_DAY_MAX_TICKS + 1; t += step) ticks.push(t);
+  if (ticks.length > 0 && ticks[ticks.length - 1] < maxMins) ticks.push(Math.ceil(maxMins / 30) * 30);
+  return ticks.length > 0 ? ticks : [minMins, maxMins];
+}
+
+const GROWTH_MAX_TICKS = 6;
+
+/** Weight Y-axis: 4–6 ticks, round steps; cap count to avoid clutter. */
 function weightAxisTicks(domain: [number, number]): number[] {
   const [low, high] = domain;
-  const range = high - low;
-  const step = range <= 1 ? 0.25 : range <= 3 ? 0.5 : 1;
+  const range = Math.max(high - low, 0.5);
+  let step = range <= 1 ? 0.25 : range <= 3 ? 0.5 : 1;
   const ticks: number[] = [];
-  const start = Math.ceil(low / step) * step;
+  const start = Math.floor(low / step) * step;
   for (let v = start; v <= high + 1e-6; v += step) ticks.push(Math.round(v * 100) / 100);
+  while (ticks.length > GROWTH_MAX_TICKS && step <= 10) {
+    step *= 2;
+    ticks.length = 0;
+    const s = Math.floor(low / step) * step;
+    for (let v = s; v <= high + 1e-6; v += step) ticks.push(Math.round(v * 100) / 100);
+  }
   return ticks.length > 0 ? ticks : [low, high];
 }
 
-/** Explicit ticks for height (cm) so Y-axis shows readable steps (e.g. 50, 55, 60). */
+/** Height Y-axis: 4–6 ticks, round steps (5 or 10 cm); cap count to avoid clutter. */
 function heightAxisTicks(domain: [number, number]): number[] {
   const [low, high] = domain;
-  const range = high - low;
-  const step = range <= 10 ? 2 : range <= 30 ? 5 : 10;
+  const range = Math.max(high - low, 5);
+  let step = range <= 10 ? 2 : range <= 30 ? 5 : 10;
   const ticks: number[] = [];
-  const start = Math.ceil(low / step) * step;
+  const start = Math.floor(low / step) * step;
   for (let v = start; v <= high + 1e-6; v += step) ticks.push(v);
+  while (ticks.length > GROWTH_MAX_TICKS && step <= 20) {
+    step = step <= 5 ? 10 : 20;
+    ticks.length = 0;
+    const s = Math.floor(low / step) * step;
+    for (let v = s; v <= high + 1e-6; v += step) ticks.push(v);
+  }
   return ticks.length > 0 ? ticks : [low, high];
 }
 
@@ -542,8 +617,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
     setEndDate(startOfDay(end));
   }, []);
 
-  // Calculate data for date range
+  // Calculate data for date range (dayName for X-axis: "Wed" / "mié." above date)
   const rangeData = useMemo(() => {
+    const locale = getDateFnsLocale();
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
     return days.map((date) => {
@@ -566,6 +642,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
       return {
         day: format(date, 'd/M'),
+        dayName: format(date, 'EEE', { locale }),
         fullDate: format(date, 'MMM d'),
         nap: napMinutes,
         night: nightMinutes,
@@ -627,7 +704,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
   const wakeUpData = useMemo(() => {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-    const points: { day: string; wakeMinutes: number }[] = [];
+    const points: { day: string; dayName: string; wakeMinutes: number }[] = [];
 
     for (const date of days) {
       if (isToday(date)) continue;
@@ -643,7 +720,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
       if (wakeEntry && wakeEntry.endTime) {
         const end = parseISO(wakeEntry.endTime);
         const minutesSinceMidnight = end.getHours() * 60 + end.getMinutes();
-        points.push({ day: format(date, 'd/M'), wakeMinutes: minutesSinceMidnight });
+        const locale = getDateFnsLocale();
+        points.push({
+          day: format(date, 'd/M'),
+          dayName: format(date, 'EEE', { locale }),
+          wakeMinutes: minutesSinceMidnight,
+        });
       }
     }
 
@@ -663,7 +745,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
   const bedtimeData = useMemo(() => {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
-    const points: { day: string; bedMinutes: number }[] = [];
+    const points: { day: string; dayName: string; bedMinutes: number }[] = [];
 
     for (const date of days) {
       if (isToday(date)) continue;
@@ -680,7 +762,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
       if (bedEntry) {
         const start = parseISO(bedEntry.startTime);
         const minutesSinceMidnight = start.getHours() * 60 + start.getMinutes();
-        points.push({ day: format(date, 'd/M'), bedMinutes: minutesSinceMidnight });
+        const locale = getDateFnsLocale();
+        points.push({
+          day: format(date, 'd/M'),
+          dayName: format(date, 'EEE', { locale }),
+          bedMinutes: minutesSinceMidnight,
+        });
       }
     }
 
@@ -702,6 +789,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
       .filter((d) => !d.isToday)
       .map((d) => ({
         day: d.day,
+        dayName: d.dayName,
         avgNapMinutes: d.napCount > 0 ? Math.round(d.nap / d.napCount) : 0,
       }));
   }, [rangeData]);
@@ -836,6 +924,31 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
   );
   const weightTicks = useMemo(() => weightAxisTicks(weightDomain), [weightDomain]);
   const heightTicks = useMemo(() => heightAxisTicks(heightDomain), [heightDomain]);
+  const locale = getDateFnsLocale();
+  const weightChartData = useMemo(
+    () =>
+      (weightLogs ?? []).map((l) => {
+        const d = parseISO(l.date);
+        return { day: format(d, 'd/M'), dayName: format(d, 'EEE', { locale }), value: l.valueKg };
+      }),
+    [weightLogs, locale]
+  );
+  const heightChartData = useMemo(
+    () =>
+      (heightLogs ?? []).map((l) => {
+        const d = parseISO(l.date);
+        return { day: format(d, 'd/M'), dayName: format(d, 'EEE', { locale }), value: l.valueCm };
+      }),
+    [heightLogs, locale]
+  );
+  const wakeUpTicks = useMemo(
+    () => (wakeUpData ? timeOfDayAxisTicks(wakeUpData.domain) : []),
+    [wakeUpData]
+  );
+  const bedtimeTicks = useMemo(
+    () => (bedtimeData ? timeOfDayAxisTicks(bedtimeData.domain) : []),
+    [bedtimeData]
+  );
 
   // Insight chip (Solid sleep patterns / Building patterns) — commented out; re-enable with the Insight Tag JSX below
   // const insight = useMemo(() => {
@@ -1087,7 +1200,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </h3>
             <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart: night sleep and nap time per day for the selected period">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={rangeData} margin={CHART_MARGIN}>
                   <CartesianGrid
                     strokeDasharray="3 3"
                     stroke={gridColor}
@@ -1096,7 +1209,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   />
                   <XAxis
                     dataKey="day"
-                    tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                    tick={<DayDateTick data={rangeData} />}
                     tickLine={false}
                     axisLine={false}
                     interval={daysInRange > 8 ? 1 : 0}
@@ -1134,7 +1247,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </h3>
             <div className="h-40" role="img" aria-label="Sleep trend area chart: night and nap sleep over time for the selected period">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <AreaChart data={rangeData} margin={CHART_MARGIN}>
                   <defs>
                     <linearGradient id="napGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
@@ -1153,7 +1266,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   />
                   <XAxis
                     dataKey="day"
-                    tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                    tick={<DayDateTick data={rangeData} />}
                     tickLine={false}
                     axisLine={false}
                     interval={daysInRange > 8 ? 1 : 0}
@@ -1316,9 +1429,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 </h3>
                 <div className="h-40" role="img" aria-label="Average nap duration per day">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={averageNapChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <BarChart data={averageNapChartData} margin={CHART_MARGIN}>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                      <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
+                      <XAxis dataKey="day" tick={<DayDateTick data={averageNapChartData} />} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
                       <YAxis domain={averageNapAxis.domain} ticks={averageNapAxis.ticks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                       <Tooltip content={<AvgNapTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                       <Bar dataKey="avgNapMinutes" fill={napColor} radius={[4, 4, 0, 0]} />
@@ -1333,9 +1446,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               </h3>
               <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <BarChart data={rangeData} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
+                    <XAxis dataKey="day" tick={<DayDateTick data={rangeData} />} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
                     <YAxis domain={dailySleepAxis.domain} ticks={dailySleepAxis.ticks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                     <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
@@ -1375,7 +1488,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               </h3>
               <div className="h-40" role="img" aria-label="Woke up time trend: morning wake-up time per day with average">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={wakeUpData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <AreaChart data={wakeUpData.points} margin={CHART_MARGIN}>
                     <defs>
                       <linearGradient id="wakeGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={wakeColor} stopOpacity={0.4} />
@@ -1390,13 +1503,14 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     />
                     <XAxis
                       dataKey="day"
-                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tick={<DayDateTick data={wakeUpData.points} />}
                       tickLine={false}
                       axisLine={false}
                       interval={wakeUpData.points.length > 8 ? 1 : 0}
                     />
                     <YAxis
                       domain={wakeUpData.domain}
+                      ticks={wakeUpTicks}
                       tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
@@ -1433,7 +1547,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               </h3>
               <div className="h-40" role="img" aria-label="Bedtime trend: bedtime per day with average">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={bedtimeData.points} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <AreaChart data={bedtimeData.points} margin={CHART_MARGIN}>
                     <defs>
                       <linearGradient id="bedGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
@@ -1448,13 +1562,14 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     />
                     <XAxis
                       dataKey="day"
-                      tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                      tick={<DayDateTick data={bedtimeData.points} />}
                       tickLine={false}
                       axisLine={false}
                       interval={bedtimeData.points.length > 8 ? 1 : 0}
                     />
                     <YAxis
                       domain={bedtimeData.domain}
+                      ticks={bedtimeTicks}
                       tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                       tickLine={false}
                       axisLine={false}
@@ -1498,8 +1613,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       <div className="h-40" role="img" aria-label="Weight over time">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
-                            data={weightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueKg }))}
-                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            data={weightChartData}
+                            margin={CHART_MARGIN}
                           >
                             <defs>
                               <linearGradient id="weightGradientChip" x1="0" y1="0" x2="0" y2="1">
@@ -1508,7 +1623,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                            <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                            <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} />
                             <YAxis domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                             <Tooltip content={<GrowthTooltip unit="kg" />} />
                             <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientChip)" />
@@ -1525,8 +1640,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       <div className="h-40" role="img" aria-label="Height over time">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
-                            data={heightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueCm }))}
-                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                            data={heightChartData}
+                            margin={CHART_MARGIN}
                           >
                             <defs>
                               <linearGradient id="heightGradientChip" x1="0" y1="0" x2="0" y2="1">
@@ -1535,7 +1650,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                               </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                            <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                            <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} />
                             <YAxis domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                             <Tooltip content={<GrowthTooltip unit="cm" />} />
                             <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientChip)" />
@@ -1566,8 +1681,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <div className="h-40" role="img" aria-label="Weight over time">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
-                    data={weightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueKg }))}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    data={weightChartData}
+                    margin={CHART_MARGIN}
                   >
                     <defs>
                       <linearGradient id="weightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
@@ -1576,7 +1691,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} />
                     <YAxis domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                     <Tooltip content={<GrowthTooltip unit="kg" />} />
                     <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientNoSleep)" />
@@ -1593,8 +1708,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <div className="h-40" role="img" aria-label="Height over time">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
-                    data={heightLogs.map((l) => ({ day: format(parseISO(l.date), 'd/M'), value: l.valueCm }))}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    data={heightChartData}
+                    margin={CHART_MARGIN}
                   >
                     <defs>
                       <linearGradient id="heightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
@@ -1603,7 +1718,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
+                    <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} />
                     <YAxis domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                     <Tooltip content={<GrowthTooltip unit="cm" />} />
                     <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientNoSleep)" />

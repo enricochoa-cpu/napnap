@@ -226,6 +226,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Recharts auto-generates Y-axis ticks from the data range. With a formatter like `Math.round(value/60)}h`, several different minute values (e.g. 30, 45, 60) round to the same label (1h). No explicit `domain` or `ticks` was set.
 - **Permanent Fix:** For duration (minutes) charts: compute explicit domain and ticks (e.g. 0–max rounded to 30 min, ticks every 30 min) and a formatter that yields distinct labels (0h, 30m, 1h, 1h 30m, …). For growth: keep adaptive domain; add explicit tick arrays (e.g. weight: 0.25/0.5/1 kg steps; height: 2/5/10 cm steps) so the Y-axis always shows readable, non-duplicate labels.
 
+### 7.3 Stats Y-axis Too Many Ticks (Clutter)
+**Date:** 2026-02-24
+
+- **Problem:** Duration and Sleep Trend charts showed a very large number of Y-axis labels (e.g. 0h, 30m, 1h, 1h 30m, 2h, … up to 14h), causing overlap, wrong visual order, and "30m" appearing in multiple places. Bedtime showed odd times (19:55, 20:20). Height chart had dense grid lines.
+- **Root Cause:** Data-viz rule violated: **use 4–7 ticks per axis**. We used a tick every 30 minutes (up to 28 ticks for 14h), so Recharts crammed them on the axis. Time-of-day charts had no explicit ticks, so Recharts chose uneven steps. Growth steps could yield too many ticks for narrow ranges.
+- **Permanent Fix:** (1) **Duration:** Cap at 6 ticks; choose step by range (30 min for &lt;2h, 1h for &lt;5h, 2h for &lt;10h, 3h for 14h) so labels are e.g. 0h, 3h, 6h, 9h, 12h, 14h. (2) **Bedtime / Woke Up:** Explicit ticks at round clock times (30 min or 1 h steps), max 6. (3) **Growth:** Cap at 6 ticks; if step yields more, increase step (e.g. double) until tick count ≤ 6.
+
 ---
 
 ## 8. UX / Modal Bugs
