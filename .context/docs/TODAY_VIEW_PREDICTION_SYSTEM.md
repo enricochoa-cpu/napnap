@@ -1,7 +1,7 @@
 # TodayView Prediction System - Complete Analysis
 
-**Last Updated:** 2026-02-23
-**Status:** Under active revision - recurring bugs identified
+**Last Updated:** 2026-02-24
+**Status:** Under active revision - recurring bugs identified; bedtime window constraint implemented (see below).
 
 ---
 
@@ -90,7 +90,10 @@ From `SLEEP_DEVELOPMENT_MAP` in dateUtils.ts:
 | 8-9          | 2           | 150m     | 180m   | 195m     |
 | 15-18        | 1           | 300m     | 300m   | 270m     |
 
-### 3. Short Nap Compensation
+### 3. Bedtime Window Constraint (2026-02-24)
+Projected bedtime must fall within the age-appropriate window `[config.bedtime.earliest, config.bedtime.latest]` (e.g. 18:30–19:30 for 8–9 mo). If the simulation would produce a bedtime **before** earliest (e.g. 16:30 after 2 naps for an 8‑month‑old who still needs a 3rd nap), `simulateDay()` adds one **rescue catnap** so that bedtime moves into the window. This applies only when target naps is 2 or 3 (transition ages); 1‑nap toddlers and 4+ nap newborns do not get an extra nap — instead, `calculateDynamicBedtime()` **floors** the returned time to `config.bedtime.earliest` when the computed bedtime is earlier. See `.context/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md` and lessons.md §1.7.
+
+### 4. Short Nap Compensation
 If a nap is shorter than expected, the next wake window is reduced:
 
 ```typescript

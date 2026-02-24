@@ -58,6 +58,7 @@ Las wake windows se expanden a lo largo del día:
 - **No es hora fija**: Es un rango óptimo recalculado tras cada evento
 - **Anclaje**: Se basa en `lastNapEndTime + finalWakeWindow`
 - **Early Bedtime Trigger**: Si sueño diurno acumulado < mínimo, adelanta al límite inferior del rango
+- **Bedtime window constraint (2026-02-24):** La hora de dormir proyectada nunca puede ser anterior a `config.bedtime.earliest` (p. ej. 18:30). Si el motor sale del bucle con 2–3 siestas y el bedtime quedaría antes de ese mínimo (ej. 16:30 en un 8‑mes que aún necesita 3ª siesta), `simulateDay()` añade una **rescue catnap** para que el bedtime caiga en [earliest, latest]. Para 1 siesta (toddler) no se añade 2ª siesta; `calculateDynamicBedtime()` hace **floor** al earliest. Ver lessons.md §1.7 y `.context/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
 
 ### Predicciones Durante Nap Activa
 Cuando hay una nap en curso:
@@ -230,6 +231,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-15 | Code audit applied: removed unused deps (Three.js stack), useLocalStorage.ts, BabyProfile.tsx; cleaned storage.ts (removeFromStorage, unused STORAGE_KEYS); consolidated SharedBabyProfile (single type from useBabyProfile); SleepEntrySheet uses dateUtils getNextDay/getPreviousDay; removed formatDisplayDate and generateId from dateUtils |
 | 2026-02-19 | Sleep Log: removed "+ Add Entry" button/dropdown; add entry is FAB-only from any tab. SleepList empty state copy points to "+ button below". |
 | 2026-02-22 | Baby weight/height timeline: baby_weight_logs + baby_height_logs (migration, RLS), useGrowthLogs, GrowthLogSheet/List; Baby Detail compact growth (latest + "View all (N)"); removed single weight/height from profiles (migration drop); Stats section chips (Summary, Naps, Night, Growth), duplicate growth block removed, chip scroll-into-view, adaptive Y-domain for weight/height charts. |
+| 2026-02-24 | Bedtime window constraint: simulateDay adds rescue catnap when projected bedtime &lt; config.bedtime.earliest (2–3 nap ages); calculateDynamicBedtime floors result to earliest. Fixes unrealistic 16:30 bedtime for 8‑mo still on 3 naps. See lessons.md §1.7, BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md. |
 
 ---
 

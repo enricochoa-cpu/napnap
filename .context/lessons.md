@@ -48,6 +48,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** For overdue predictions we push `time: now` so bedtime anchor and hero behaviour stay correct (lesson 1.4). The timeline card was displaying `napInfo.time` directly, so it showed "now" instead of the original suggested time.
 - **Permanent Fix:** Keep `time: now` for anchor/bedtime math. Add `isOverdue: true` when pushing the overdue prediction. In the timeline card render, use **display start** = `napInfo.prediction.predictedTime` when `napInfo.isOverdue` (and `napInfo.prediction.predictedTime` exists), otherwise `napInfo.time`. Compute displayed end from that start + expected duration. The card now shows the suggested window (e.g. 13:42 — 14:27) while the hero still shows "NAP NOW".
 
+### 1.7 Unrealistic Early Bedtime (e.g. 16:30 for 8‑month on 2 naps)
+**Date:** 2026-02-24
+
+- **Problem:** For an 8‑month‑old who still needs a 3rd nap, the system showed "Bedtime 16:30" after 2 completed naps (last nap end 13:35 + final wake window). Age config says targetNaps = 2, so the loop never tried a 3rd nap.
+- **Root Cause:** Simulation stopped at targetNaps and computed bedtime from last activity; no constraint that bedtime must fall within the age-appropriate window (e.g. 18:30–19:30). Single fixed nap count per age doesn't fit babies in transition (3→2 or 2→1).
+- **Permanent Fix:** (1) **simulateDay:** After the nap loop, if `bedtimeMinutes < config.bedtime.earliest` and we're at target 2–3 naps (transition), add one **rescue catnap** so bedtime moves into [earliest, latest]. (2) **calculateDynamicBedtime:** Floor the returned time to `config.bedtime.earliest` (same calendar day) when computed bedtime is earlier — covers 1‑nap toddlers where we don't add a 2nd nap. See `.context/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
+
 > **Pattern:** TodayView prediction bugs are the #1 recurring issue. They always involve **priority ordering** (which data source wins) or **filtering logic** (removing data that should be kept). Always check: does the bedtime anchor account for ALL future events?
 
 ---

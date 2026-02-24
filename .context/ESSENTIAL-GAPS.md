@@ -73,6 +73,8 @@
 
 Gaps i millores prioritzades del motor de predicció. Referència tècnica: `.context/docs/TODAY_VIEW_PREDICTION_SYSTEM.md` i `lessons.md` §1.
 
+**Implemented (2026-02-24):** Bedtime window constraint — if projected bedtime would be before `config.bedtime.earliest` (e.g. 16:30), simulation adds one rescue catnap for 2–3 nap ages so bedtime falls in [earliest, latest]; `calculateDynamicBedtime` floors result to earliest when we don't add a nap (e.g. 1‑nap toddler). See `lessons.md` §1.7 and `.context/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
+
 ### 6.1 Flexibilitat en el deute de son (bedtime)
 
 | Aspecte | Detall |

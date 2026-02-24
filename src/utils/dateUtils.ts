@@ -1128,12 +1128,44 @@ export function simulateDay(
 
   // ELASTIC BEDTIME: Always = last activity end + final wake window
   const finalWakeWindow = config.wakeWindows.final;
-  const bedtimeMinutes = currentMinutes + finalWakeWindow;
+  let bedtimeMinutes = currentMinutes + finalWakeWindow;
 
-  // Check bedtime quality
+  const earliestBedtimeMinutes = config.bedtime.earliest.hour * 60 + config.bedtime.earliest.minute;
   const idealBedtimeMinutes = config.bedtime.ideal.hour * 60 + config.bedtime.ideal.minute;
   const latestBedtimeMinutes = config.bedtime.latest.hour * 60 + config.bedtime.latest.minute;
 
+  // BEDTIME FLOOR: If we stopped at target naps but bedtime would be before earliest acceptable
+  // (e.g. 8-mo with 2 naps → 16:30), add one rescue catnap so bedtime falls in the valid window.
+  // Only when target is 2–3 naps (transition ages); don't add for 1-nap toddlers or 4+ nap newborns.
+  const shouldAddRescueNap =
+    bedtimeMinutes < earliestBedtimeMinutes &&
+    (napCount < config.targetNaps ||
+      (napCount === config.targetNaps && config.targetNaps >= 2 && config.targetNaps <= 3));
+
+  if (shouldAddRescueNap) {
+    const rescueWakeWindow = config.wakeWindows.mid;
+    const rescueNapStartMinutes = currentMinutes + rescueWakeWindow;
+    const isRescueCatnap = rescueNapStartMinutes >= CATNAP_CUTOFF_HOUR * 60;
+    const rescueNapDuration = config.napDurations.micro;
+    const rescueNapEndMinutes = rescueNapStartMinutes + rescueNapDuration;
+
+    projectedNaps.push({
+      startMinutes: rescueNapStartMinutes,
+      endMinutes: rescueNapEndMinutes,
+      durationMinutes: rescueNapDuration,
+      isMicroNap: true,
+      isCatnap: isRescueCatnap,
+      index: napCount,
+      wakeWindowBefore: rescueWakeWindow,
+    });
+    currentMinutes = rescueNapEndMinutes;
+    totalSleep += rescueNapDuration;
+    napCount++;
+    bedtimeMinutes = currentMinutes + finalWakeWindow;
+    appliedCompression = true;
+  }
+
+  // Check bedtime quality
   return {
     wakeTimeMinutes: morningWakeMinutes,
     projectedNaps,
@@ -1185,6 +1217,18 @@ export function calculateDynamicBedtime(
     lastNapEnd.getTime() + finalWindowMinutes * 60 * 1000
   );
 
+  // Never suggest a bedtime before the age-appropriate earliest (e.g. 18:30).
+  // When we didn't add a rescue nap (e.g. 1-nap toddler), floor to earliest.
+  const earliestToday = new Date(lastNapEnd);
+  earliestToday.setHours(
+    config.bedtime.earliest.hour,
+    config.bedtime.earliest.minute,
+    0,
+    0
+  );
+  if (bedtime.getTime() < earliestToday.getTime()) {
+    return earliestToday;
+  }
   return bedtime;
 }
 
