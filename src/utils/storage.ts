@@ -1,6 +1,8 @@
 export const STORAGE_KEYS = {
   /** Stored when user reaches Account step in onboarding; applied after sign-up to create profile. */
   ONBOARDING_DRAFT: 'baby-sleep-tracker-onboarding-draft',
+  /** Set when user has completed onboarding (profile created) so returning users skip Entry choice and go to Login. */
+  ONBOARDING_COMPLETED: 'baby-sleep-tracker-onboarding-completed',
   /** Which baby's sleep data is shown in Today / History / Stats (user can switch in My babies). */
   ACTIVE_BABY_ID: 'baby-sleep-tracker-active-baby-id',
   /** User's language preference (en/es) before profile loads; synced from profile when available. */

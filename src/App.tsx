@@ -27,6 +27,8 @@ import {
 import {
   getOnboardingDraftFromSession,
   removeOnboardingDraftFromSession,
+  setToStorage,
+  STORAGE_KEYS,
 } from './utils/storage';
 import { parseISO, isToday, addDays, format } from 'date-fns';
 import type { SleepEntry } from './types';
@@ -74,8 +76,10 @@ function App() {
       userName: draft.userName ?? '',
       userRole: draft.relationship ?? 'other',
     }).then((result) => {
-      if (result) removeOnboardingDraftFromSession();
-      else appliedOnboardingDraftRef.current = false; // Allow retry if create failed
+      if (result) {
+        removeOnboardingDraftFromSession();
+        setToStorage(STORAGE_KEYS.ONBOARDING_COMPLETED, true);
+      } else appliedOnboardingDraftRef.current = false; // Allow retry if create failed
     });
   }, [profileLoading, profile, createProfile]);
 

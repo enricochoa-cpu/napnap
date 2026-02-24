@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useApplyCircadianTheme } from '../../hooks/useCircadianTheme';
+import { getFromStorage, STORAGE_KEYS } from '../../utils/storage';
 import { EntryChoice } from '../Onboarding';
 import { OnboardingFlow } from '../Onboarding';
 import { LoginForm } from './LoginForm';
@@ -19,7 +20,10 @@ interface AuthGuardProps {
 export function AuthGuard({ children }: AuthGuardProps) {
   useApplyCircadianTheme(); // Apply morning/afternoon/night theme even when showing entry or onboarding
   const { isAuthenticated, loading, signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
-  const [entryChoice, setEntryChoice] = useState<EntryChoiceState>(null);
+  // Returning users (completed onboarding on this device) skip Entry choice and go straight to Login
+  const [entryChoice, setEntryChoice] = useState<EntryChoiceState>(() =>
+    getFromStorage(STORAGE_KEYS.ONBOARDING_COMPLETED, false) ? 'account' : null
+  );
   const [authView, setAuthView] = useState<AuthView>('login');
 
   // Show loading screen while checking auth status

@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-24 — Stats Y-axis: duration charts (0h, 30m, 1h…) and growth weight/height explicit ticks (see logs/2026-02-24.md).
+**Last updated:** 2026-02-24 — Stats Y-axis fix; onboarding “completed” flag (returning users → Login); ESSENTIAL-GAPS §6 prediction gaps + order (see logs/2026-02-24.md).
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 
@@ -181,7 +181,7 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Next button disabled until required field(s) completed per step (baby name, DOB, your name)
 - [x] Persist onboarding draft on Account step (sessionStorage) so it survives sign-up/Google redirect; App applies draft and calls createProfile when authenticated user has no profile (2026-02-13)
 - [ ] Optional: resume on return (refresh still loses draft — sessionStorage is tab-scoped)
-- [ ] "Has completed onboarding" flag (skip entry for returning users)
+- [x] "Has completed onboarding" flag (skip entry for returning users) — localStorage ONBOARDING_COMPLETED + AuthGuard default entryChoice to 'account' (2026-02-24)
 
 ## Sleep Report (2026-02-13) [COMPLETED]
 
