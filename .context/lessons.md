@@ -240,6 +240,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Data-viz rule violated: **use 4–7 ticks per axis**. We used a tick every 30 minutes (up to 28 ticks for 14h), so Recharts crammed them on the axis. Time-of-day charts had no explicit ticks, so Recharts chose uneven steps. Growth steps could yield too many ticks for narrow ranges.
 - **Permanent Fix:** (1) **Duration:** Cap at 6 ticks; choose step by range (30 min for &lt;2h, 1h for &lt;5h, 2h for &lt;10h, 3h for 14h) so labels are e.g. 0h, 3h, 6h, 9h, 12h, 14h. (2) **Bedtime / Woke Up:** Explicit ticks at round clock times (30 min or 1 h steps), max 6. (3) **Growth:** Cap at 6 ticks; if step yields more, increase step (e.g. double) until tick count ≤ 6.
 
+### 7.4 Line/Area Charts: X-axis Day Label Overlapping Y-axis Unit (kg / cm / time)
+**Date:** 2026-02-24
+
+- **Problem:** In Growth (Weight over time, Height over time) and Night (Woke up, Bedtime) area charts, the first X-axis label (e.g. "Mon 16/6") overlapped the lowest Y-axis label ("2 kg", "40 cm", or "07:00") at the bottom-left corner, making both hard to read.
+- **Root Cause:** `CHART_MARGIN_LONG_Y` (used for area charts with long Y labels) had left 72 and bottom 40. That left margin was too small for labels like "10 kg" or "70 cm", and the bottom margin was too small for the two-line day/date X tick, so they collided at the axes origin.
+- **Permanent Fix:** Increase `CHART_MARGIN_LONG_Y` to `left: 88, bottom: 48` so Y-axis labels have space and X-axis labels sit clearly below the plot. Bar charts keep using `CHART_MARGIN` (shorter Y labels) and are unaffected.
+
 ---
 
 ## 8. UX / Modal Bugs

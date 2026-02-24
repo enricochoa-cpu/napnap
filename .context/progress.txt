@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-24 — Stats: Y-axis 4–6 ticks, day name above date (X-axis), CHART_MARGIN + tick offset for Napper-quality spacing; onboarding completed; ESSENTIAL-GAPS §6 (see logs/2026-02-24.md).
+**Last updated:** 2026-02-24 — Stats: Napper-style centered header + subtitle, section titles/chart labels readability; Daytime sleep distribution donut (Naps); CHART_MARGIN_LONG_Y 88/48 to fix X/Y axis overlap on line charts (lessons §7.4); onboarding completed; ESSENTIAL-GAPS §6 (see logs/2026-02-24.md).
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

@@ -288,6 +288,8 @@
   },
   "stats": {
     "title": "Trends",
+    "subtitle": "View trends and stats on your baby's sleep patterns",
+    "days": "Days",
     "dateRange": "Date range",
     "generateReport": "Generate report (last 30 days)",
     "avgTotalSleep": "Avg. total sleep",
@@ -298,7 +300,13 @@
     "chipSummary": "Sleep summary",
     "chipNaps": "Naps",
     "chipNight": "Night sleep",
-    "chipGrowth": "Growth"
+    "chipGrowth": "Growth",
+    "daytimeSleepDistribution": "Daytime sleep distribution",
+    "total": "Total",
+    "napFirst": "First nap",
+    "napSecond": "Second nap",
+    "napThird": "Third nap",
+    "napOrdinal": "Nap {{n}}"
   },
   "report": {
     "title": "Sleep report",

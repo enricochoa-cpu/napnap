@@ -288,6 +288,8 @@
   },
   "stats": {
     "title": "Tendencias",
+    "subtitle": "Consulta tendencias y estadísticas sobre los patrones de sueño de tu bebé",
+    "days": "Días",
     "dateRange": "Rango de fechas",
     "generateReport": "Generar informe (últimos 30 días)",
     "avgTotalSleep": "Sueño total medio",
@@ -298,7 +300,13 @@
     "chipSummary": "Resumen de sueño",
     "chipNaps": "Siestas",
     "chipNight": "Sueño nocturno",
-    "chipGrowth": "Crecimiento"
+    "chipGrowth": "Crecimiento",
+    "daytimeSleepDistribution": "Distribución de sueño de día",
+    "total": "Total",
+    "napFirst": "Primera siesta",
+    "napSecond": "Segunda siesta",
+    "napThird": "Tercera siesta",
+    "napOrdinal": "Siesta {{n}}"
   },
   "report": {
     "title": "Informe de sueño",
