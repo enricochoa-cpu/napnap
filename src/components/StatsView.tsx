@@ -73,6 +73,46 @@ function adaptiveHeightDomain(values: number[]): [number, number] {
   return [Math.max(0, low), high];
 }
 
+/** Y-axis domain and ticks for duration (minutes) charts so labels are distinct (0h, 30m, 1h, …). */
+function durationAxisProps(values: number[]): { domain: [number, number]; ticks: number[] } {
+  const max = values.length > 0 ? Math.max(...values, 60) : 60;
+  const top = Math.ceil(max / 30) * 30;
+  const domain: [number, number] = [0, top];
+  const ticks: number[] = [];
+  for (let t = 0; t <= top; t += 30) ticks.push(t);
+  return { domain, ticks };
+}
+
+/** Format duration (minutes) for Y-axis: 0h, 30m, 1h, 1h 30m, … to avoid duplicate labels. */
+function formatDurationAxis(minutes: number): string {
+  if (minutes === 0) return '0h';
+  if (minutes < 60) return `${minutes}m`;
+  if (minutes % 60 === 0) return `${minutes / 60}h`;
+  return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
+}
+
+/** Explicit ticks for weight (kg) so Y-axis shows readable steps (e.g. 3, 3.5, 4). */
+function weightAxisTicks(domain: [number, number]): number[] {
+  const [low, high] = domain;
+  const range = high - low;
+  const step = range <= 1 ? 0.25 : range <= 3 ? 0.5 : 1;
+  const ticks: number[] = [];
+  const start = Math.ceil(low / step) * step;
+  for (let v = start; v <= high + 1e-6; v += step) ticks.push(Math.round(v * 100) / 100);
+  return ticks.length > 0 ? ticks : [low, high];
+}
+
+/** Explicit ticks for height (cm) so Y-axis shows readable steps (e.g. 50, 55, 60). */
+function heightAxisTicks(domain: [number, number]): number[] {
+  const [low, high] = domain;
+  const range = high - low;
+  const step = range <= 10 ? 2 : range <= 30 ? 5 : 10;
+  const ticks: number[] = [];
+  const start = Math.ceil(low / step) * step;
+  for (let v = start; v <= high + 1e-6; v += step) ticks.push(v);
+  return ticks.length > 0 ? ticks : [low, high];
+}
+
 // Calculate duration in minutes
 const calculateDuration = (startTime: string, endTime: string | null): number => {
   const start = new Date(startTime).getTime();
@@ -666,6 +706,16 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
       }));
   }, [rangeData]);
 
+  // Explicit Y domain/ticks for duration charts so labels don't duplicate (e.g. 0h, 30m, 1h)
+  const averageNapAxis = useMemo(
+    () => durationAxisProps(averageNapChartData.map((d) => d.avgNapMinutes)),
+    [averageNapChartData]
+  );
+  const dailySleepAxis = useMemo(
+    () => durationAxisProps(rangeData.map((d) => d.nap + d.night)),
+    [rangeData]
+  );
+
   // Schedule/Gantt data for daily schedule chart
   const scheduleData = useMemo(() => {
     const days = eachDayOfInterval({ start: startDate, end: endDate });
@@ -784,6 +834,8 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
     () => adaptiveHeightDomain((heightLogs ?? []).map((l) => l.valueCm)),
     [heightLogs]
   );
+  const weightTicks = useMemo(() => weightAxisTicks(weightDomain), [weightDomain]);
+  const heightTicks = useMemo(() => heightAxisTicks(heightDomain), [heightDomain]);
 
   // Insight chip (Solid sleep patterns / Building patterns) — commented out; re-enable with the Insight Tag JSX below
   // const insight = useMemo(() => {
@@ -1050,10 +1102,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     interval={daysInRange > 8 ? 1 : 0}
                   />
                   <YAxis
+                    domain={dailySleepAxis.domain}
+                    ticks={dailySleepAxis.ticks}
                     tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `${Math.round(value / 60)}h`}
+                    tickFormatter={formatDurationAxis}
                   />
                   <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                   <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
@@ -1105,10 +1159,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     interval={daysInRange > 8 ? 1 : 0}
                   />
                   <YAxis
+                    domain={dailySleepAxis.domain}
+                    ticks={dailySleepAxis.ticks}
                     tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `${Math.round(value / 60)}h`}
+                    tickFormatter={formatDurationAxis}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Area
@@ -1263,7 +1319,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     <BarChart data={averageNapChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                       <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
-                      <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(value) => `${Math.round(value / 60)}h`} />
+                      <YAxis domain={averageNapAxis.domain} ticks={averageNapAxis.ticks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                       <Tooltip content={<AvgNapTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                       <Bar dataKey="avgNapMinutes" fill={napColor} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -1280,7 +1336,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   <BarChart data={rangeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                     <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} />
-                    <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(value) => `${Math.round(value / 60)}h`} />
+                    <YAxis domain={dailySleepAxis.domain} ticks={dailySleepAxis.ticks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                     <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
                     <Bar dataKey="nap" stackId="sleep" fill={napColor} radius={[4, 4, 0, 0]} />
@@ -1453,7 +1509,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                             <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
-                            <YAxis domain={weightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                            <YAxis domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                             <Tooltip content={<GrowthTooltip unit="kg" />} />
                             <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientChip)" />
                           </AreaChart>
@@ -1480,7 +1536,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                             <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
-                            <YAxis domain={heightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                            <YAxis domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                             <Tooltip content={<GrowthTooltip unit="cm" />} />
                             <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientChip)" />
                           </AreaChart>
@@ -1521,7 +1577,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                     <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <YAxis domain={weightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                    <YAxis domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                     <Tooltip content={<GrowthTooltip unit="kg" />} />
                     <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientNoSleep)" />
                   </AreaChart>
@@ -1548,7 +1604,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                     <XAxis dataKey="day" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} />
-                    <YAxis domain={heightDomain} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                    <YAxis domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-muted)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                     <Tooltip content={<GrowthTooltip unit="cm" />} />
                     <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientNoSleep)" />
                   </AreaChart>

@@ -219,6 +219,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Today's incomplete data was included in the average calculation alongside fully completed days.
 - **Permanent Fix:** Exclude today from average calculations (flag `isToday` in `rangeData`). Today still appears on charts for visual continuity, but doesn't affect computed averages.
 
+### 7.2 Stats Y-axis Duplicate or Wrong Labels (Recharts)
+**Date:** 2026-02-24
+
+- **Problem:** Duration charts (Average nap, Daily Sleep) showed repeated Y-axis labels (e.g. 0h, 1h, 1h, 1h). Growth weight/height could show unclear or overlapping tick labels.
+- **Root Cause:** Recharts auto-generates Y-axis ticks from the data range. With a formatter like `Math.round(value/60)}h`, several different minute values (e.g. 30, 45, 60) round to the same label (1h). No explicit `domain` or `ticks` was set.
+- **Permanent Fix:** For duration (minutes) charts: compute explicit domain and ticks (e.g. 0–max rounded to 30 min, ticks every 30 min) and a formatter that yields distinct labels (0h, 30m, 1h, 1h 30m, …). For growth: keep adaptive domain; add explicit tick arrays (e.g. weight: 0.25/0.5/1 kg steps; height: 2/5/10 cm steps) so the Y-axis always shows readable, non-duplicate labels.
+
 ---
 
 ## 8. UX / Modal Bugs
