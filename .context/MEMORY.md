@@ -1,4 +1,4 @@
-# Napnap: Long-Term Memory & Project DNA
+# NapNap: Long-Term Memory & Project DNA
 
 ## 1. Core Philosophy: "The AAA Standard"
 
@@ -31,6 +31,7 @@
 - Uso de `dvh` (Dynamic Viewport Height) para evitar cortes con barras dinámicas de Safari/Chrome
 - `env(safe-area-inset-bottom)` para notch/home indicator
 - Touch targets mínimos: 56px (idealmente 60px)
+- **Nav bar estable:** Para que la barra flotante no "estire" al cambiar de tab (Home/Stats vs Profile/History), el viewport debe tener ancho estable: `html { overflow-y: scroll; }`, `body { overflow-x: hidden; }`, y en viewports ≥500px `.floating-nav-inner { width: 28rem; }`. Tabs con ancho fijo 56px y focus con box-shadow (no outline). Ver lessons.md §6.6.
 
 ### Performance Patterns
 - **Skeleton Screens**: `SkeletonTimelineCard` con altura exacta (48px) para evitar layout shift

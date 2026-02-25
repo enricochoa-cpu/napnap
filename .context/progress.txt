@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-24 — Stats: Napper-style centered header + subtitle, section titles/chart labels readability; Daytime sleep distribution donut (Naps); CHART_MARGIN_LONG_Y 88/48 to fix X/Y axis overlap on line charts (lessons §7.4); onboarding completed; ESSENTIAL-GAPS §6 (see logs/2026-02-24.md).
+**Last updated:** 2026-02-25 — Stats: edge-to-edge charts, one-point growth empty state, Y-axis visibility (§7.5). Floating nav bar: stable width when switching tabs — html overflow-y: scroll, body overflow-x: hidden, .floating-nav-inner width 28rem at 500px+ (§6.6). See logs/2026-02-25.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

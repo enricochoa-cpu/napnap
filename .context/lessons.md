@@ -215,6 +215,15 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 > **Rule of thumb:** For critical z-index stacking (modals over fixed nav), prefer inline `style={{ zIndex }}` over Tailwind classes when the competing element uses plain CSS.
 
+### 6.6 Floating Nav Bar Stretches When Switching Tabs (e.g. Profile → Stats, Sleep Log → Home)
+**Date:** 2026-02-25
+
+- **Problem:** The bottom nav bar appeared to stretch or shift when navigating to Home or to Stats (not when going to Profile or Sleep log). Layout felt unstable.
+- **Root Cause:** Viewport width changes when the vertical scrollbar appears or disappears. Profile and Sleep log are often tall (scrollable); Home and Stats can be shorter. When the scrollbar disappears, the layout gains width and the full-width nav bar (`left: 0; right: 0`) gets wider — perceived as "stretch."
+- **Permanent Fix:** (1) **Stable viewport width:** `html { overflow-y: scroll; }` so the vertical scrollbar (or its gutter) is always present and viewport width doesn't change. (2) **No horizontal scroll:** `body { overflow-x: hidden; }` so horizontal overflow never affects layout. (3) **Fallback for overlay scrollbars (e.g. macOS):** `@media (min-width: 500px) { .floating-nav-inner { width: 28rem; } }` so the nav bar has a fixed width on larger viewports regardless of scrollbar. (4) **Tab and icon stability:** `.nav-tab` uses `flex: 0 0 56px`, `width: 56px`, `padding: 0`, `outline: none`, and `:focus-visible` uses `box-shadow` (not outline) so tab size and icon swap (outline/solid) never cause layout shift.
+
+> **Rule of thumb:** For a full-width fixed nav, keep viewport width stable (overflow-y: scroll or fixed nav width at breakpoint) so the bar doesn't resize when content height (and scrollbar) changes per view.
+
 ---
 
 ## 7. Statistics Bugs

@@ -74,14 +74,14 @@
   --success-color: #7cb07e;
   --danger-color: #c47c7c;
 
-  /* Text colors - soft blue-gray for eye comfort at night */
-  --text-primary: #94A3B8;
-  --text-secondary: rgba(148, 163, 184, 0.75);
-  --text-muted: rgba(148, 163, 184, 0.45);
+  /* Text colors - Napper-style: bright white primary for readability, grey only for explanations */
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: rgba(148, 163, 184, 0.6);
   --text-on-accent: #1A1B2E;
 
-  /* Card title color - softer than primary */
-  --text-card-title: #B8C4D4;
+  /* Card title - same as primary for clear hierarchy */
+  --text-card-title: #F1F5F9;
 
   /* Shadows - night */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -99,6 +99,14 @@
   --glass-bg: rgba(37, 38, 61, 0.7);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-nav-bg: rgba(26, 27, 46, 0.85);
+
+  /* Primary/secondary buttons - green (sage/teal) to match login moon, distinct from Napper purple */
+  --btn-primary-bg: linear-gradient(180deg, #5B8A86 0%, #8AABA8 50%, #9DBAB7 100%);
+  --btn-primary-text: #1A1B2E;
+  --btn-primary-shadow: 0 4px 16px rgba(157, 186, 183, 0.35);
+  --btn-secondary-bg: #2D2E4A;
+  --btn-secondary-border: rgba(157, 186, 183, 0.5);
+  --btn-secondary-text: #F1F5F9;
 }
 
 /* ============================================================================
@@ -148,6 +156,14 @@
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
+
+  /* Primary/secondary buttons - teal green (matches nap accent) */
+  --btn-primary-bg: linear-gradient(180deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-shadow: 0 4px 16px rgba(13, 148, 136, 0.25);
+  --btn-secondary-bg: #FFFFFF;
+  --btn-secondary-border: rgba(13, 148, 136, 0.5);
+  --btn-secondary-text: #1E293B;
 }
 
 /* ============================================================================
@@ -197,6 +213,14 @@
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
+
+  /* Primary/secondary buttons - teal green (same as morning) */
+  --btn-primary-bg: linear-gradient(180deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
+  --btn-primary-text: #FFFFFF;
+  --btn-primary-shadow: 0 4px 16px rgba(13, 148, 136, 0.25);
+  --btn-secondary-bg: #FFFFFF;
+  --btn-secondary-border: rgba(13, 148, 136, 0.5);
+  --btn-secondary-text: #1E293B;
 }
 
 /* ============================================================================
@@ -223,12 +247,12 @@
   --success-color: #7cb07e;
   --danger-color: #c47c7c;
 
-  /* Text colors - soft blue-gray for eye comfort at night */
-  --text-primary: #94A3B8;
-  --text-secondary: rgba(148, 163, 184, 0.75);
-  --text-muted: rgba(148, 163, 184, 0.45);
+  /* Text colors - Napper-style: bright white primary, grey for explanations */
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: rgba(148, 163, 184, 0.6);
   --text-on-accent: #1A1B2E;
-  --text-card-title: #B8C4D4;
+  --text-card-title: #F1F5F9;
 
   /* Shadows - darker for night */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -246,6 +270,14 @@
   --glass-bg: rgba(37, 38, 61, 0.7);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-nav-bg: rgba(26, 27, 46, 0.85);
+
+  /* Primary/secondary buttons - green (same as default night) */
+  --btn-primary-bg: linear-gradient(180deg, #5B8A86 0%, #8AABA8 50%, #9DBAB7 100%);
+  --btn-primary-text: #1A1B2E;
+  --btn-primary-shadow: 0 4px 16px rgba(157, 186, 183, 0.35);
+  --btn-secondary-bg: #2D2E4A;
+  --btn-secondary-border: rgba(157, 186, 183, 0.5);
+  --btn-secondary-text: #F1F5F9;
 }
 
 /* ============================================================================
@@ -261,6 +293,8 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overscroll-behavior: none;
+  /* Keep vertical scrollbar space so viewport width stays constant when switching views (stops nav bar from stretching) */
+  overflow-y: scroll;
 }
 
 body {
@@ -280,6 +314,7 @@ body {
   overscroll-behavior: none;
   user-select: none;
   -webkit-user-select: none;
+  overflow-x: hidden; /* Prevent horizontal scroll from affecting nav width */
   /* Smooth circadian transition */
   transition: background-color var(--circadian-transition),
               color var(--circadian-transition);
@@ -546,6 +581,73 @@ input, textarea {
   box-shadow: 0 2px 8px rgba(196, 124, 124, 0.2);
 }
 
+/* Napper-style primary CTA: gradient, no colored glow (glow only on FAB) */
+.btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: var(--shadow-sm);
+  border: none;
+  transition: transform 0.15s var(--ease-spring),
+              box-shadow 0.2s var(--ease-smooth),
+              filter 0.2s var(--ease-smooth),
+              background var(--circadian-transition),
+              color var(--circadian-transition);
+}
+
+.btn-primary:active {
+  filter: brightness(0.92);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Napper-style secondary: dark fill + border (night) / light fill + border (morning) */
+.btn-secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
+  box-shadow: none;
+  transition: transform 0.15s var(--ease-spring),
+              filter 0.2s var(--ease-smooth),
+              background var(--circadian-transition),
+              color var(--circadian-transition),
+              border-color var(--circadian-transition);
+}
+
+.btn-secondary:active {
+  filter: brightness(0.95);
+}
+
+/* Skip = same as secondary, for semantics (e.g. "Skip for now", "Start new day") */
+.btn-skip {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--btn-secondary-border);
+  box-shadow: none;
+  transition: transform 0.15s var(--ease-spring),
+              filter 0.2s var(--ease-smooth),
+              background var(--circadian-transition),
+              color var(--circadian-transition),
+              border-color var(--circadian-transition);
+}
+
+.btn-skip:active {
+  filter: brightness(0.95);
+}
+
+/* Tertiary link: no pill, text only — use for "Already have an account? Sign in" style */
+.btn-link {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  min-height: 44px;
+}
+
+.btn-link:active {
+  opacity: 0.8;
+}
+
 /* ============================================================================
    INTERACTIVE ELEMENTS - Universal Touch Feedback
    ============================================================================ */
@@ -674,13 +776,21 @@ select {
   margin: 0 auto;
 }
 
-/* The nav bar - clean glass effect */
+/* From ~500px up, fix nav width so it never resizes when scrollbar appears/disappears (e.g. overlay scrollbars) */
+@media (min-width: 500px) {
+  .floating-nav-inner {
+    width: 28rem;
+  }
+}
+
+/* The nav bar - clean glass effect, fixed layout so it doesn't stretch on tap */
 .floating-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 64px;
   padding: 0 0.5rem;
+  min-width: 0;
   /* Use theme token so nav background adapts to circadian theme */
   background: var(--glass-nav-bg);
   backdrop-filter: blur(10px);
@@ -690,23 +800,40 @@ select {
   transition: background-color var(--circadian-transition);
 }
 
-/* Nav items - icon only, no labels */
+/* Nav items - fixed size so swapping outline/solid icons doesn't shift the bar */
 .nav-tab {
-  flex: 1;
+  flex: 0 0 56px;
+  width: 56px;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   height: 48px;
-  max-width: 56px;
   border-radius: 14px;
-  transition: transform 0.2s ease,
-              color 0.2s ease;
+  transition: color 0.2s ease;
   cursor: pointer;
   color: var(--text-muted);
+  border: none;
+  background: transparent;
+  padding: 0;
+  /* Prevent focus ring from affecting layout */
+  outline: none;
+}
+
+.nav-tab:focus-visible {
+  box-shadow: 0 0 0 2px var(--nap-color);
 }
 
 .nav-tab:active {
-  transform: scale(0.9);
+  transform: scale(0.94);
+  transition: transform 0.1s ease, color 0.2s ease;
+}
+
+/* Reserve fixed space for icons so outline/solid swap never shifts layout */
+.nav-tab svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 /* Active state - clean color change, no glow */
@@ -722,27 +849,30 @@ select {
   padding: 0 0.75rem;
 }
 
+/* Center FAB uses primary button style for consistency */
 .nav-action-btn {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #4F46E5;
-  color: white;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: none;
+  box-shadow: var(--btn-primary-shadow);
   transition: transform 0.2s ease,
-              background-color 0.2s ease;
+              filter 0.2s ease;
 }
 
 .nav-action-btn:hover {
-  background: #5B52F0;
+  filter: brightness(1.05);
 }
 
 .nav-action-btn:active {
   transform: scale(0.92);
+  filter: brightness(0.92);
 }
 
 /* Plus icon - thin stroke */
@@ -1271,7 +1401,7 @@ select {
 
 .theme-morning .nav-action-btn,
 .theme-afternoon .nav-action-btn {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--btn-primary-shadow);
 }
 
 /* ============================================================================
