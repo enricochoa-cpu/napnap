@@ -74,15 +74,23 @@ interface StatsViewProps {
   profile?: BabyProfile | null;
   weightLogs?: WeightLog[];
   heightLogs?: HeightLog[];
+  /** Optional: when provided, one-point growth state shows a plus button that calls this (e.g. navigate to Profile to add). */
+  onAddWeight?: () => void;
+  /** Optional: when provided, one-point growth state shows a plus button that calls this. */
+  onAddHeight?: () => void;
 }
 
 const MAX_DAYS = 15;
 
-/** Chart margins: minimal left so the plot starts near the card/title edge; enough for Y-axis labels (0h, 1h) + small buffer. */
-const CHART_MARGIN = { top: 10, right: 10, left: 32, bottom: 32 };
+/** Chart margins: left must fit Y-axis labels; -mx-4 on wrapper keeps chart feeling edge-to-edge. */
+const CHART_MARGIN = { top: 10, right: 10, left: 38, bottom: 32 };
 
-/** Same idea for time/weight/height charts: fit "08:30", "2 kg" etc. without wasting space to the left. */
-const CHART_MARGIN_LONG_Y = { top: 10, right: 10, left: 42, bottom: 48 };
+/** Time/weight/height: left margin for "08:30", "2 kg", "70 cm" labels. */
+const CHART_MARGIN_LONG_Y = { top: 10, right: 10, left: 46, bottom: 48 };
+
+/** Y-axis width: must be > 0 or Recharts does not render tick labels (duration: 0h, 1h 30m; long: time/kg/cm). */
+const Y_AXIS_WIDTH_SHORT = 36;
+const Y_AXIS_WIDTH_LONG = 44;
 
 /** Adaptive Y-domain from data (avoid 0–max scale when data is e.g. 50–70 cm). */
 function adaptiveWeightDomain(values: number[]): [number, number] {
@@ -327,6 +335,50 @@ function GrowthTooltip({
       <p className="text-sm font-medium text-[var(--text-primary)]">
         {typeof value === 'number' ? value.toFixed(1) : value} {unit}
       </p>
+    </div>
+  );
+}
+
+/** One-point growth state: ghost line + CTA + optional plus button so the chart area doesn't feel broken. */
+function GrowthOnePointEmptyState({
+  titleKey,
+  valueLabel,
+  addButtonLabel,
+  onAdd,
+  lineColor,
+}: {
+  titleKey: string;
+  valueLabel: string;
+  addButtonLabel: string;
+  onAdd?: () => void;
+  lineColor: string;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+      <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+        {t(titleKey)}
+      </h3>
+      <div className="h-40 -mx-4 flex flex-col items-center justify-center relative" aria-hidden="true">
+        {/* Ghost line: dashed horizontal at mid height to suggest "one point, add more for trend" */}
+        <div
+          className="absolute left-0 right-0 top-1/2 h-0 border-t border-dashed opacity-40"
+          style={{ borderColor: lineColor }}
+        />
+        <span className="text-sm font-display font-medium text-[var(--text-secondary)] mt-2">{valueLabel}</span>
+      </div>
+      <p className="text-center text-xs text-[var(--text-muted)] mt-2">{t('growth.addAnotherToSeeTrend')}</p>
+      {onAdd && (
+        <button
+          type="button"
+          onClick={onAdd}
+          className="mt-3 w-full py-2.5 rounded-xl font-display font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: lineColor }}
+        >
+          <span className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-current" aria-hidden="true">+</span>
+          {addButtonLabel}
+        </button>
+      )}
     </div>
   );
 }
@@ -597,7 +649,7 @@ function DateRangePickerSheet({
 
 export type StatsSection = 'summary' | 'naps' | 'night' | 'growth';
 
-export function StatsView({ entries, profile = null, weightLogs = [], heightLogs = [] }: StatsViewProps) {
+export function StatsView({ entries, profile = null, weightLogs = [], heightLogs = [], onAddWeight, onAddHeight }: StatsViewProps) {
   const { t } = useTranslation();
   // Date range state - default to last 7 days
   const today = new Date();
@@ -1238,7 +1290,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
               Daily Sleep
             </h3>
-            <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart: night sleep and nap time per day for the selected period">
+            <div className="h-48 -mx-4" role="img" aria-label="Daily sleep stacked bar chart: night sleep and nap time per day for the selected period">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rangeData} margin={CHART_MARGIN}>
                   <CartesianGrid
@@ -1256,7 +1308,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     padding={{ left: 0, right: 0 }}
                   />
                   <YAxis
-                    width={32}
+                    width={Y_AXIS_WIDTH_SHORT}
                     domain={dailySleepAxis.domain}
                     ticks={dailySleepAxis.ticks}
                     tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
@@ -1287,7 +1339,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
               Sleep Trend
             </h3>
-            <div className="h-40" role="img" aria-label="Sleep trend area chart: night and nap sleep over time for the selected period">
+            <div className="h-40 -mx-4" role="img" aria-label="Sleep trend area chart: night and nap sleep over time for the selected period">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={rangeData} margin={CHART_MARGIN}>
                   <defs>
@@ -1315,7 +1367,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     padding={{ left: 0, right: 0 }}
                   />
                   <YAxis
-                    width={32}
+                    width={Y_AXIS_WIDTH_SHORT}
                     domain={dailySleepAxis.domain}
                     ticks={dailySleepAxis.ticks}
                     tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
@@ -1328,14 +1380,14 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                     type="monotone"
                     dataKey="night"
                     stroke={nightColor}
-                    strokeWidth={2}
+                    strokeWidth={3}
                     fill="url(#nightGradient)"
                   />
                   <Area
                     type="monotone"
                     dataKey="nap"
                     stroke={napColor}
-                    strokeWidth={2}
+                    strokeWidth={3}
                     fill="url(#napGradient)"
                   />
                 </AreaChart>
@@ -1471,12 +1523,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                   Average nap
                 </h3>
-                <div className="h-40" role="img" aria-label="Average nap duration per day">
+                <div className="h-40 -mx-4" role="img" aria-label="Average nap duration per day">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={averageNapChartData} margin={CHART_MARGIN}>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                       <XAxis dataKey="day" tick={<DayDateTick data={averageNapChartData} />} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} padding={{ left: 0, right: 0 }} />
-                      <YAxis width={32} domain={averageNapAxis.domain} ticks={averageNapAxis.ticks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
+                      <YAxis width={Y_AXIS_WIDTH_SHORT} domain={averageNapAxis.domain} ticks={averageNapAxis.ticks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                       <Tooltip content={<AvgNapTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                       <Bar dataKey="avgNapMinutes" fill={napColor} radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -1538,12 +1590,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                 Daily Sleep
               </h3>
-              <div className="h-48" role="img" aria-label="Daily sleep stacked bar chart">
+              <div className="h-48 -mx-4" role="img" aria-label="Daily sleep stacked bar chart">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={rangeData} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                     <XAxis dataKey="day" tick={<DayDateTick data={rangeData} />} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} padding={{ left: 0, right: 0 }} />
-                    <YAxis width={32} domain={dailySleepAxis.domain} ticks={dailySleepAxis.ticks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
+                    <YAxis width={Y_AXIS_WIDTH_SHORT} domain={dailySleepAxis.domain} ticks={dailySleepAxis.ticks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
                     <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
                     <Bar dataKey="nap" stackId="sleep" fill={napColor} radius={[4, 4, 0, 0]} />
@@ -1580,7 +1632,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                 Woke Up
               </h3>
-              <div className="h-40" role="img" aria-label="Woke up time trend: morning wake-up time per day with average">
+              <div className="h-40 -mx-4" role="img" aria-label="Woke up time trend: morning wake-up time per day with average">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={wakeUpData.points} margin={CHART_MARGIN_LONG_Y}>
                     <defs>
@@ -1604,7 +1656,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       padding={{ left: 0, right: 0 }}
                     />
                     <YAxis
-                      width={42}
+                      width={Y_AXIS_WIDTH_LONG}
                       domain={wakeUpData.domain}
                       ticks={wakeUpTicks}
                       tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
@@ -1623,7 +1675,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       type="monotone"
                       dataKey="wakeMinutes"
                       stroke={wakeColor}
-                      strokeWidth={2}
+                      strokeWidth={3}
                       fill="url(#wakeGradient)"
                     />
                   </AreaChart>
@@ -1641,7 +1693,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                 Bedtime
               </h3>
-              <div className="h-40" role="img" aria-label="Bedtime trend: bedtime per day with average">
+              <div className="h-40 -mx-4" role="img" aria-label="Bedtime trend: bedtime per day with average">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bedtimeData.points} margin={CHART_MARGIN_LONG_Y}>
                     <defs>
@@ -1665,7 +1717,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       padding={{ left: 0, right: 0 }}
                     />
                     <YAxis
-                      width={42}
+                      width={Y_AXIS_WIDTH_LONG}
                       domain={bedtimeData.domain}
                       ticks={bedtimeTicks}
                       tick={{ fill: 'var(--text-secondary)', fontSize: 10 }}
@@ -1684,7 +1736,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       type="monotone"
                       dataKey="bedMinutes"
                       stroke={nightColor}
-                      strokeWidth={2}
+                      strokeWidth={3}
                       fill="url(#bedGradient)"
                     />
                   </AreaChart>
@@ -1704,58 +1756,78 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               {weightLogs.length > 0 || heightLogs.length > 0 ? (
                 <>
                   {weightLogs.length > 0 && (
-                    <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                      <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                        {t('growth.weightOverTime')}
-                      </h3>
-                      <div className="h-40" role="img" aria-label="Weight over time">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart
-                            data={weightChartData}
-                            margin={CHART_MARGIN_LONG_Y}
-                          >
-                            <defs>
-                              <linearGradient id="weightGradientChip" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
-                                <stop offset="95%" stopColor={napColor} stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                            <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                            <YAxis width={42} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
-                            <Tooltip content={<GrowthTooltip unit="kg" />} />
-                            <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientChip)" />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                    weightChartData.length >= 2 ? (
+                      <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                          {t('growth.weightOverTime')}
+                        </h3>
+                        <div className="h-40 -mx-4" role="img" aria-label="Weight over time">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={weightChartData}
+                              margin={CHART_MARGIN_LONG_Y}
+                            >
+                              <defs>
+                                <linearGradient id="weightGradientChip" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
+                                  <stop offset="95%" stopColor={napColor} stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                              <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                              <Tooltip content={<GrowthTooltip unit="kg" />} />
+                              <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={3} fill="url(#weightGradientChip)" />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <GrowthOnePointEmptyState
+                        titleKey="growth.weightOverTime"
+                        valueLabel={weightChartData[0] ? `${weightChartData[0].value} kg` : ''}
+                        addButtonLabel={t('growth.addWeight')}
+                        onAdd={onAddWeight}
+                        lineColor={napColor}
+                      />
+                    )
                   )}
                   {heightLogs.length > 0 && (
-                    <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                      <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                        {t('growth.heightOverTime')}
-                      </h3>
-                      <div className="h-40" role="img" aria-label="Height over time">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart
-                            data={heightChartData}
-                            margin={CHART_MARGIN_LONG_Y}
-                          >
-                            <defs>
-                              <linearGradient id="heightGradientChip" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
-                                <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                            <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                            <YAxis width={42} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
-                            <Tooltip content={<GrowthTooltip unit="cm" />} />
-                            <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientChip)" />
-                          </AreaChart>
-                        </ResponsiveContainer>
+                    heightChartData.length >= 2 ? (
+                      <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                          {t('growth.heightOverTime')}
+                        </h3>
+                        <div className="h-40 -mx-4" role="img" aria-label="Height over time">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={heightChartData}
+                              margin={CHART_MARGIN_LONG_Y}
+                            >
+                              <defs>
+                                <linearGradient id="heightGradientChip" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
+                                  <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                              <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                              <Tooltip content={<GrowthTooltip unit="cm" />} />
+                              <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={3} fill="url(#heightGradientChip)" />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <GrowthOnePointEmptyState
+                        titleKey="growth.heightOverTime"
+                        valueLabel={heightChartData[0] ? `${heightChartData[0].value} cm` : ''}
+                        addButtonLabel={t('growth.addHeight')}
+                        onAdd={onAddHeight}
+                        lineColor={nightColor}
+                      />
+                    )
                   )}
                 </>
               ) : (
@@ -1768,62 +1840,82 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
         </>
       )}
 
-      {/* When no sleep data but we have growth data, show growth charts */}
+      {/* When no sleep data but we have growth data, show growth charts or one-point empty state */}
       {!hasData && (weightLogs.length > 0 || heightLogs.length > 0) && (
         <div className="mt-6 space-y-6">
           {weightLogs.length > 0 && (
-            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                {t('growth.weightOverTime')}
-              </h3>
-              <div className="h-40" role="img" aria-label="Weight over time">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={weightChartData}
-                    margin={CHART_MARGIN_LONG_Y}
-                  >
-                    <defs>
-                      <linearGradient id="weightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={napColor} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                    <YAxis width={42} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
-                    <Tooltip content={<GrowthTooltip unit="kg" />} />
-                    <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={2} fill="url(#weightGradientNoSleep)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+            weightChartData.length >= 2 ? (
+              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                  {t('growth.weightOverTime')}
+                </h3>
+                <div className="h-40 -mx-4" role="img" aria-label="Weight over time">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={weightChartData}
+                      margin={CHART_MARGIN_LONG_Y}
+                    >
+                      <defs>
+                        <linearGradient id="weightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={napColor} stopOpacity={0.4} />
+                          <stop offset="95%" stopColor={napColor} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                      <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                      <Tooltip content={<GrowthTooltip unit="kg" />} />
+                      <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={3} fill="url(#weightGradientNoSleep)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+            ) : (
+              <GrowthOnePointEmptyState
+                titleKey="growth.weightOverTime"
+                valueLabel={weightChartData[0] ? `${weightChartData[0].value} kg` : ''}
+                addButtonLabel={t('growth.addWeight')}
+                onAdd={onAddWeight}
+                lineColor={napColor}
+              />
+            )
           )}
           {heightLogs.length > 0 && (
-            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                {t('growth.heightOverTime')}
-              </h3>
-              <div className="h-40" role="img" aria-label="Height over time">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={heightChartData}
-                    margin={CHART_MARGIN_LONG_Y}
-                  >
-                    <defs>
-                      <linearGradient id="heightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
-                        <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
-                    <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                    <YAxis width={42} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
-                    <Tooltip content={<GrowthTooltip unit="cm" />} />
-                    <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={2} fill="url(#heightGradientNoSleep)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+            heightChartData.length >= 2 ? (
+              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                  {t('growth.heightOverTime')}
+                </h3>
+                <div className="h-40 -mx-4" role="img" aria-label="Height over time">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={heightChartData}
+                      margin={CHART_MARGIN_LONG_Y}
+                    >
+                      <defs>
+                        <linearGradient id="heightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
+                          <stop offset="95%" stopColor={nightColor} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                      <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                      <Tooltip content={<GrowthTooltip unit="cm" />} />
+                      <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={3} fill="url(#heightGradientNoSleep)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-            </div>
+            ) : (
+              <GrowthOnePointEmptyState
+                titleKey="growth.heightOverTime"
+                valueLabel={heightChartData[0] ? `${heightChartData[0].value} cm` : ''}
+                addButtonLabel={t('growth.addHeight')}
+                onAdd={onAddHeight}
+                lineColor={nightColor}
+              />
+            )
           )}
         </div>
       )}

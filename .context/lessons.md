@@ -247,6 +247,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** `CHART_MARGIN_LONG_Y` (used for area charts with long Y labels) had left 72 and bottom 40. That left margin was too small for labels like "10 kg" or "70 cm", and the bottom margin was too small for the two-line day/date X tick, so they collided at the axes origin.
 - **Permanent Fix:** Increase `CHART_MARGIN_LONG_Y` to `left: 88, bottom: 48` so Y-axis labels have space and X-axis labels sit clearly below the plot. Bar charts keep using `CHART_MARGIN` (shorter Y labels) and are unaffected.
 
+### 7.5 Recharts YAxis width={0} Hides All Tick Labels
+**Date:** 2026-02-25
+
+- **Problem:** After setting `YAxis width={0}` to reduce “right-shift” and make charts feel edge-to-edge, **no Y-axis labels were visible** on any stats chart (Daily Sleep, Average Nap, Woke up, Bedtime, Weight, Height). Grid lines appeared but values (0h, 08:30, 2 kg, etc.) were missing.
+- **Root Cause:** In Recharts, `YAxis`’s `width` is the space reserved for the axis. When `width={0}`, the axis does not reserve space and **tick labels are not rendered** (or are clipped to zero width).
+- **Permanent Fix:** Use explicit widths > 0: e.g. `Y_AXIS_WIDTH_SHORT` (36) for duration charts, `Y_AXIS_WIDTH_LONG` (44) for time/weight/height. Keep edge-to-edge feel via chart wrapper `-mx-4` and moderate `margin.left` (38 / 46), not by zeroing YAxis width.
+
 ---
 
 ## 8. UX / Modal Bugs

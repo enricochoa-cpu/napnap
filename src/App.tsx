@@ -386,13 +386,15 @@ function App() {
     </div>
   );
 
-  // Stats View
+  // Stats View — onAddWeight/onAddHeight send user to Profile to add growth data (one-point empty state)
   const renderStatsView = () => (
     <StatsView
       entries={entries}
       profile={activeBabyProfile || profile}
       weightLogs={weightLogs}
       heightLogs={heightLogs}
+      onAddWeight={() => handleViewChange('profile')}
+      onAddHeight={() => handleViewChange('profile')}
     />
   );
 

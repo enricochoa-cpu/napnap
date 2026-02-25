@@ -113,14 +113,16 @@ Recharts draws the Y-axis labels **inside** the chart’s left margin (the `marg
 
 All tooltips are **custom React components** passed as `content={<... />}`. They receive Recharts’ `active`, `payload`, `label` and render a small card (e.g. `bg-[var(--bg-elevated)]`, rounded border). We do not use Recharts’ default tooltip. Bar charts often add `cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }}` for the hover highlight.
 
-### 2.8 Margin Constants and Where They Apply
+### 2.8 Margin Constants and Where They Apply (current implementation)
 
 | Constant | Value | Used by |
 |----------|--------|---------|
-| **CHART_MARGIN** | `{ top: 10, right: 10, left: 24, bottom: 28 }` | All BarCharts (Daily Sleep, Average nap); Sleep Trend AreaChart |
-| **CHART_MARGIN_LONG_Y** | `{ top: 10, right: 10, left: 88, bottom: 48 }` | Woke Up, Bedtime, Weight, Height AreaCharts |
+| **CHART_MARGIN** | `{ top: 10, right: 10, left: 38, bottom: 32 }` | All BarCharts (Daily Sleep, Average nap); Sleep Trend AreaChart |
+| **CHART_MARGIN_LONG_Y** | `{ top: 10, right: 10, left: 46, bottom: 48 }` | Woke Up, Bedtime, Weight, Height AreaCharts |
+| **Y_AXIS_WIDTH_SHORT** | 36 | Duration Y-axes (0h, 1h 30m) |
+| **Y_AXIS_WIDTH_LONG** | 44 | Time/weight/height Y-axes (08:30, 2 kg, 70 cm) |
 
-PieChart does not use margins. The left margin is the main lever for avoiding Y/X overlay and for how far right the plot starts.
+Chart wrapper divs use `-mx-4` so the chart bleeds into the card padding (edge-to-edge feel). **Recharts YAxis `width` must be > 0 or tick labels are not rendered** (see lessons.md §7.5). PieChart does not use margins.
 
 ### 2.9 Summary: Recharts Usage at a Glance
 
@@ -163,3 +165,13 @@ PieChart does not use margins. The left margin is the main lever for avoiding Y/
 3. **Scope:** Only `StatsView.tsx` chart layout; no changes to sections, copy, donuts, or Gantt.
 
 Implementation checklist: update the two margin constants; add `padding` to every XAxis in Daily Sleep (×2), Sleep Trend, Average nap, Woke Up, Bedtime, Weight (×2), Height (×2); then verify in the app (no overlay, plot closer to left, last tick visible).
+
+---
+
+## 6. Implemented (2026-02-25)
+
+- **Margins:** CHART_MARGIN left 38, bottom 32; CHART_MARGIN_LONG_Y left 46, bottom 48. Y-axis width constants (36 / 44) so labels always render.
+- **Edge-to-edge:** All chart wrapper divs use `-mx-4`; XAxis already has `padding={{ left: 0, right: 0 }}` where needed.
+- **Premium look:** All Area charts use `strokeWidth={3}` and `type="monotone"`.
+- **One-point growth:** When weight/height has only one data point, show `GrowthOnePointEmptyState` (ghost dashed line + value + “Add another to see your trend” + optional plus button). App passes `onAddWeight` / `onAddHeight` to navigate to Profile.
+- **YAxis width:** Never set `width={0}` — Recharts does not render tick labels when width is 0 (lesson §7.5).

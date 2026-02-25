@@ -197,6 +197,7 @@
     "weightOverTime": "Peso en el tiempo",
     "heightOverTime": "Altura en el tiempo",
     "noGrowthData": "Añade peso y altura en el perfil del bebé para ver el crecimiento aquí.",
+    "addAnotherToSeeTrend": "Añade otro para ver la tendencia",
     "viewAllEntries": "Ver todos ({{count}})",
     "showLess": "Ver menos"
   },
