@@ -82,11 +82,11 @@ interface StatsViewProps {
 
 const MAX_DAYS = 15;
 
-/** Chart margins: left must fit Y-axis labels; -mx-4 on wrapper keeps chart feeling edge-to-edge. */
-const CHART_MARGIN = { top: 10, right: 10, left: 38, bottom: 32 };
+/** Chart margins: left fits Y-axis labels; right matches left for balanced horizontal padding. */
+const CHART_MARGIN = { top: 10, right: 38, left: 38, bottom: 32 };
 
-/** Time/weight/height: left margin for "08:30", "2 kg", "70 cm" labels. */
-const CHART_MARGIN_LONG_Y = { top: 10, right: 10, left: 46, bottom: 48 };
+/** Time/weight/height: left fits "08:30", "2 kg", "70 cm" labels; right matches left. */
+const CHART_MARGIN_LONG_Y = { top: 10, right: 46, left: 46, bottom: 48 };
 
 /** Y-axis width: must be > 0 or Recharts does not render tick labels (duration: 0h, 1h 30m; long: time/kg/cm). */
 const Y_AXIS_WIDTH_SHORT = 36;

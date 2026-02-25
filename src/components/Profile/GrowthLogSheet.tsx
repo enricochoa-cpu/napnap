@@ -40,7 +40,8 @@ export function GrowthLogSheet({
   const [date, setDate] = useState(defaultDate);
   const [value, setValue] = useState<number>(existingLogId != null && initialValue != null ? initialValue : 0);
   const [isSaving, setIsSaving] = useState(false);
-  const warning = getWarning?.(date, value) ?? null;
+  // Only show "below later entry" warning when user has entered a value; avoid showing it for default 0 (empty state)
+  const warning = value > 0 ? (getWarning?.(date, value) ?? null) : null;
 
   useEffect(() => {
     if (isOpen) {
