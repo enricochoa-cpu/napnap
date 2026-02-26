@@ -179,7 +179,7 @@ export function ShareAccess({
             <button
               type="submit"
               disabled={isInviting || !email.trim()}
-              className="btn btn-nap px-5 disabled:opacity-50"
+              className="btn btn-primary px-5 disabled:opacity-50"
             >
               {isInviting ? 'Sending...' : 'Invite'}
             </button>
@@ -395,7 +395,7 @@ export function ShareAccess({
                   <button
                     onClick={handleSaveRole}
                     disabled={isUpdating}
-                    className="w-full btn btn-nap py-3.5 disabled:opacity-50"
+                    className="w-full btn btn-primary py-3.5 disabled:opacity-50"
                   >
                     {isUpdating ? 'Saving...' : 'Save Changes'}
                   </button>

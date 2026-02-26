@@ -69,7 +69,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
           </p>
           <button
             onClick={onSwitchToLogin}
-            className="btn btn-ghost w-full"
+            className="btn btn-secondary w-full"
           >
             {t('auth.backToSignIn')}
           </button>
@@ -95,8 +95,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
         <div className="card p-6 w-full max-w-sm mx-auto">
-          {/* Privacy consent required for both Google and email sign-up */}
-          <div className="space-y-3">
+          {/* Privacy consent: separate block with clear gap above Google button so it doesn't overlap */}
+          <div className="mb-5">
             <label className="flex items-start gap-3 cursor-pointer group">
               <input
                 type="checkbox"
@@ -179,7 +179,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
             <button
               type="submit"
               disabled={loading || !agreedToPrivacy}
-              className="btn btn-nap w-full min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}
             </button>
@@ -239,7 +239,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               <button
                 type="button"
                 onClick={() => setShowPrivacyModal(false)}
-                className="btn btn-night w-full min-h-[48px]"
+                className="btn btn-primary w-full min-h-[48px]"
               >
                 {t('common.close')}
               </button>

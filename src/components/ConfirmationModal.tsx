@@ -75,14 +75,13 @@ export function ConfirmationModal({
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
+            className="btn btn-secondary flex-1"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-3 rounded-xl text-white font-display font-semibold"
-            style={{ backgroundColor: confirmBg }}
+            className={`btn flex-1 ${confirmVariant === 'danger' ? 'btn-danger' : 'btn-primary'}`}
           >
             {confirmLabel}
           </button>

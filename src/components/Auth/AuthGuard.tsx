@@ -54,6 +54,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         signIn={signIn}
         signInWithGoogle={signInWithGoogle}
         resetPassword={resetPassword}
+        onBackFromWelcome={() => setEntryChoice(null)}
       />
     );
   }

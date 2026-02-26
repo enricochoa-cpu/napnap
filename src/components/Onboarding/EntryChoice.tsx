@@ -12,9 +12,9 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
   const { t } = useTranslation();
   return (
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4 safe-pad-top safe-pad-bottom">
-      {/* 1. App name at top (Napper: "napper" → we use "napnap") */}
+      {/* 1. App name at top (Napper-style: "NapNap") */}
       <h1 className="text-display-lg text-[var(--text-primary)] font-display mb-8">
-        napnap
+        NapNap
       </h1>
 
       {/* 2. Moon icon */}
@@ -33,7 +33,7 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
       </div>
 
       {/* 3. Short sentence (Napper: "The fastest way to a happy sleeping baby") */}
-      <p className="text-[var(--text-secondary)] font-body text-center text-lg max-w-[280px] mb-10">
+      <p className="text-[var(--text-primary)] font-body text-center text-lg max-w-[280px] mb-10">
         {t('entry.tagline')}
       </p>
 
@@ -42,14 +42,14 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
         <button
           type="button"
           onClick={onNew}
-          className="btn btn-night w-full min-h-[56px]"
+          className="btn btn-primary w-full min-h-[56px]"
         >
           {t('entry.getStarted')}
         </button>
         <button
           type="button"
           onClick={onHaveAccount}
-          className="btn btn-ghost w-full min-h-[56px] border border-[var(--night-color)]"
+          className="btn btn-secondary w-full min-h-[56px]"
         >
           {t('entry.haveAccount')}
         </button>

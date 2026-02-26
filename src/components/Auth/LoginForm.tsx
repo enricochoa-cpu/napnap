@@ -99,7 +99,7 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-nap w-full min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>

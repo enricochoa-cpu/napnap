@@ -121,17 +121,13 @@ export function MissingBedtimeModal({
         <div className="flex flex-col gap-3">
           <button
             onClick={handleLogBedtime}
-            className="btn w-full py-4 rounded-2xl font-display font-semibold text-base"
-            style={{
-              backgroundColor: 'var(--night-color)',
-              color: 'white',
-            }}
+            className="btn btn-primary w-full py-4 rounded-2xl font-display font-semibold text-base"
           >
             {t('missingBedtime.logBedtime')}
           </button>
           <button
             onClick={onSkip}
-            className="btn btn-ghost w-full py-4 rounded-2xl font-display font-semibold text-base"
+            className="btn btn-skip w-full py-4 rounded-2xl font-display font-semibold text-base"
           >
             {t('missingBedtime.startNewDay')}
           </button>

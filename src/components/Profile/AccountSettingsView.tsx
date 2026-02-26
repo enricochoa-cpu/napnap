@@ -185,7 +185,7 @@ export function AccountSettingsView({
             </div>
 
             <div className="flex gap-3 pt-2">
-              <button type="submit" className="btn btn-nap flex-1">
+              <button type="submit" className="btn btn-primary flex-1">
                 {t('profile.saveChanges')}
               </button>
               <button
@@ -197,7 +197,7 @@ export function AccountSettingsView({
                   });
                   setIsEditingProfile(false);
                 }}
-                className="btn btn-ghost"
+                className="btn btn-secondary"
               >
                 {t('common.cancel')}
               </button>

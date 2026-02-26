@@ -90,9 +90,6 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
               <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
             )}
           </p>
-          <p className="text-[11px] text-[var(--text-muted)]/50 mt-1 font-display">
-            {baby.isOwner ? 'Tap to edit' : 'Tap to view'}
-          </p>
         </div>
       </button>
 

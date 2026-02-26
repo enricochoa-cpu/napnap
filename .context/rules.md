@@ -86,7 +86,7 @@ If truly environment-specific, document why a test isn't feasible.
 
 ## 6. Memory Protocol
 
-**Eres el guardián de la memoria de Napnap.**
+**Eres el guardián de la memoria de NapNap.**
 
 ### Auto-Log (End of Session)
 Al finalizar una sesión de trabajo o hito importante, genera automáticamente:

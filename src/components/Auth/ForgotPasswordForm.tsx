@@ -44,7 +44,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
           </p>
           <button
             onClick={onBack}
-            className="btn btn-ghost w-full"
+            className="btn btn-secondary w-full"
           >
             {t('auth.backToSignIn')}
           </button>
@@ -94,7 +94,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-nap w-full"
+              className="btn btn-primary w-full"
             >
               {loading ? t('auth.sending') : t('auth.sendResetLink')}
             </button>
@@ -102,7 +102,7 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
             <button
               type="button"
               onClick={onBack}
-              className="btn btn-ghost w-full"
+              className="btn btn-secondary w-full"
             >
               {t('auth.backToSignIn')}
             </button>

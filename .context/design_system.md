@@ -56,11 +56,11 @@ All tokens below shift per-theme. Components consume `var(--token)` and never ha
 
 | Token | Night | Morning / Afternoon | Usage |
 |-------|-------|---------------------|-------|
-| `--text-primary` | `#94A3B8` | `#1E293B` | Body text |
-| `--text-secondary` | `rgba(148,163,184, 0.75)` | `rgba(30,41,59, 0.7)` | Supporting text |
-| `--text-muted` | `rgba(148,163,184, 0.45)` | `rgba(30,41,59, 0.45)` | Labels, hints |
+| `--text-primary` | `#F1F5F9` (soft white) | `#1E293B` | Body text, headings — Napper-style readability |
+| `--text-secondary` | `#94A3B8` | `rgba(30,41,59, 0.7)` | Supporting / explanatory text only |
+| `--text-muted` | `rgba(148,163,184, 0.6)` | `rgba(30,41,59, 0.45)` | Labels, hints |
 | `--text-on-accent` | `#1A1B2E` | `#FFFFFF` | Text on filled accent buttons |
-| `--text-card-title` | `#B8C4D4` | `#1E293B` | Card headings |
+| `--text-card-title` | `#F1F5F9` | `#1E293B` | Card headings |
 
 ### Glass / Overlay
 
@@ -220,18 +220,33 @@ In practice, Tailwind utility classes (`p-4`, `gap-3`, `mb-6`) are used more oft
 | `.card-ghost-nap` | Transparent nap tint, dashed nap border |
 | `.card-ghost-night` | Transparent night tint, dashed night border |
 
+### Button tokens (Napper-style, theme-aware)
+
+| Token | Night | Morning / Afternoon |
+|-------|-------|---------------------|
+| `--btn-primary-bg` | Gradient light → dark purple | Gradient indigo |
+| `--btn-primary-text` | `#1A1B2E` | `#FFFFFF` |
+| `--btn-primary-shadow` | purple glow | purple shadow |
+| `--btn-secondary-bg` | `#2D2E4A` | `#FFFFFF` |
+| `--btn-secondary-border` | `rgba(165,180,252,0.5)` | `rgba(99,102,241,0.5)` |
+| `--btn-secondary-text` | `#F1F5F9` | `#1E293B` |
+
 ### Buttons
 
-| Class | Fill | Text | Shadow |
-|-------|------|------|--------|
-| `.btn` | (base) | — | — |
-| `.btn-nap` | `--nap-color` | `--bg-deep` | nap glow |
-| `.btn-night` | `--night-color` | white | night glow |
-| `.btn-wake` | `--wake-color` | `--bg-deep` | wake glow |
-| `.btn-ghost` | `white/5` | `--text-secondary` | — |
-| `.btn-danger` | `--danger-color` | white | danger glow |
+| Class | Fill | Text | Use |
+|-------|------|------|-----|
+| `.btn` | (base) | — | Base pill, 56px min height |
+| `.btn-primary` | `--btn-primary-bg` | `--btn-primary-text` | Main CTA (Get started, Next, Sign in, Save, etc.) |
+| `.btn-secondary` | `--btn-secondary-bg` | `--btn-secondary-text` | Cancel, Back, alternative action |
+| `.btn-skip` | same as secondary | same | Skip for now, Start new day |
+| `.btn-link` | transparent | `--text-primary` | Text-only link style |
+| `.btn-nap` | `--nap-color` | `--bg-deep` | Semantic nap (e.g. QuickActionSheet) |
+| `.btn-night` | `--night-color` | white | Semantic night |
+| `.btn-wake` | `--wake-color` | `--bg-deep` | Semantic wake |
+| `.btn-ghost` | `white/5` | `--text-secondary` | Unselected option cards |
+| `.btn-danger` | `--danger-color` | white | Destructive (Overwrite, Delete) |
 
-All buttons: `active:scale(0.95)`, `--radius-full`, min `56px` touch target.
+All buttons: `active:scale(0.95)`, `--radius-full`, min `56px` touch target. Primary/secondary/skip transition with `--circadian-transition` when theme changes.
 Premium gallery cards add `active:brightness-[1.12]` for immediate pressed-state feedback alongside scale.
 
 ### Week Strip / Calendar (DayNavigator)

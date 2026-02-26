@@ -106,7 +106,7 @@ export function ActivityCollisionModal({
         <div className="flex gap-3">
           <button
             onClick={onCancel}
-            className="btn btn-ghost flex-1"
+            className="btn btn-secondary flex-1"
           >
             Cancel
           </button>
