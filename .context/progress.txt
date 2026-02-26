@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-25 — Stats: edge-to-edge charts, one-point growth empty state, Y-axis visibility (§7.5). Floating nav bar: stable width when switching tabs — html overflow-y: scroll, body overflow-x: hidden, .floating-nav-inner width 28rem at 500px+ (§6.6). See logs/2026-02-25.md.
+**Last updated:** 2026-02-26 — Go-live Section 3 (Security): function search_path migration (20260226000000), RLS anonymized tables service-role-only (20260226000001), client anonymization removed from single-baby delete; leaked password N/A (Pro only). See logs/2026-02-26.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

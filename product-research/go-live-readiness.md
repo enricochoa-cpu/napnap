@@ -48,30 +48,41 @@ This document lists what is missing and what is already in place to take the app
 
 ### 3.1 Leaked password protection
 
-- **Status:** Disabled in Supabase. Advisor recommends enabling HaveIBeenPwned check.
-- **Needed:** Enable in Supabase Dashboard: Authentication → Settings → Password Protection (or equivalent). No code change.
+- **Status:** **N/A (nice to have).** Feature requires Supabase Pro plan; not enabled on free tier.
+- **Needed:** None for go-live. If you upgrade to Pro later: Auth → Providers → Email → "Prevent the use of leaked passwords".
+
+**How to enable (exact path, Pro plan only):**
+
+1. Open your [Supabase Dashboard](https://supabase.com/dashboard) and select your project.
+2. In the left sidebar go to **Authentication** (person icon).
+3. Open **Providers** (or **Auth** → **Providers**).
+4. Click **Email**.
+5. In the **Email** provider settings you’ll see **Password strength** options. Enable **"Prevent the use of leaked passwords"** (HaveIBeenPwned check).
+6. Optionally set minimum length and required character types, then save.
+
+*Note: Leaked password protection is available on the **Pro plan** and above. If you don’t see the option, your project may be on the free tier; check Project Settings → Billing.*
 
 **Questions for you:**
 
-- Q11. Confirm you want leaked password protection enabled. (Recommended: yes.)
+- Q11. **Answer:** Nice to have; not available on current plan (Pro only). Enable if we upgrade to Pro.
 
 ### 3.2 Function search_path
 
-- **Status:** Two functions have mutable search_path: `link_pending_invitations`, `link_my_pending_invitations`. Security linter warns.
-- **Needed:** New migration that sets explicit `search_path` (e.g. `public`) on both functions. See [Supabase linter 0011](https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable).
+- **Status:** **Fixed.** Migration `20260226000000_function_search_path.sql` sets `search_path = public` on `link_my_pending_invitations` (the only such function in this repo). If your DB also has `link_pending_invitations`, run in SQL Editor: `ALTER FUNCTION public.link_pending_invitations() SET search_path = public;`
+- **Needed:** ~~New migration…~~ Done.
 
 **Questions for you:**
 
-- Q12. No choice needed; fix is standard. Note: apply migration after answering Q11.
+- Q12. No choice needed; fix is standard. Migration applied.
 
 ### 3.3 RLS on anonymized tables
 
-- **Status:** INSERT policies on `anonymized_baby_profiles` and `anonymized_sleep_entries` allow any authenticated user (WITH CHECK true). Only the delete-account Edge Function should insert in practice.
-- **Needed:** Either: (a) restrict INSERT to a dedicated role/service used only by the Edge Function, or (b) remove client-visible INSERT and document that only the backend anonymizes. If you keep “any authenticated can insert,” document why (e.g. “intentional for future self-service export”).
+- **Status:** **Fixed.** Only the delete-account Edge Function (service role) can insert. Client INSERT/SELECT policies removed; single-baby delete no longer writes to anonymized tables (only full account delete anonymizes via Edge Function).
+- **Needed:** ~~Either (a)…~~ Done. Market standard: only backend writes to anonymized/analytics tables. If you keep “any authenticated can insert,” document why (e.g. “intentional for future self-service export”).
 
 **Questions for you:**
 
-- Q13. Should only the delete-account Edge Function be able to insert into anonymized_* tables? (Recommended: yes; then we tighten RLS or use a service role only.)
+- Q13. Should only the delete-account Edge Function be able to insert into anonymized_* tables? **Answer:** Yes. Implemented: RLS allows only service role; client-side anonymization removed from single-baby delete.
 
 ---
 
@@ -152,9 +163,9 @@ Use this table to track status and your answers (ordered by priority: 1 = highes
 | 1 (highest) | Legal | Terms of Service | **Done** | In-app view + sign-up consent; operator = individual, not medical advice. |
 | 1 | Legal | Privacy: data controller, retention, last updated | **Done** | Controller = operator; retention as in §2.2; last updated in view. |
 | 1 | Legal | Sign-up consent (ToS + Privacy) | **Done** | “I agree to the Terms of Service and Privacy Policy” with links to both. |
-| 2 | Security | Leaked password protection | Disabled | Q11 |
-| 2 | Security | Function search_path | To fix | Q12 |
-| 2 | Security | RLS anonymized tables | To review | Q13 |
+| 2 | Security | Leaked password protection | N/A (Pro only) | Nice to have; enable if upgrade to Pro. |
+| 2 | Security | Function search_path | **Done** | Migration 20260226000000 applied. |
+| 2 | Security | RLS anonymized tables | **Done** | Service role only; migration 20260226000001. |
 | 3 | Deployment | Production URL, APP_URL | Unset | Q14–Q15 |
 | 3 | Deployment | OAuth redirect URLs | To add | Q14/Q16 |
 | 4 | Privacy | Policy: Sentry / cookies | Missing | Q7–Q8 |
@@ -167,7 +178,7 @@ Use this table to track status and your answers (ordered by priority: 1 = highes
 ## 8. Next steps (after you answer)
 
 1. **Legal:** ~~Add ToS…~~ Done. Optional: add Sentry/cookies to Privacy Policy (Q7–Q8).
-2. **Security:** Enable leaked password protection; apply migration for function search_path; tighten or document RLS for anonymized tables (per Q13).
+2. **Security:** ~~Leaked password~~ N/A (Pro only, nice to have); ~~function search_path~~ Done; ~~RLS anonymized tables~~ Done.
 3. **Deployment:** Set production URL, APP_URL, and OAuth redirects (Google + Supabase).
 4. **Privacy:** Add policy section for Sentry/cookies (Q7–Q8); optional consent notice (Q10).
 5. **Branding:** Update index.html title and meta description (Q17–Q18).

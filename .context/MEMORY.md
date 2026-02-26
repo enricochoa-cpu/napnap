@@ -160,7 +160,7 @@ Cambio automático basado en hora del día:
 | Hook | Purpose |
 |------|---------|
 | `useSleepEntries` | CRUD entries, activeSleep, awakeMinutes |
-| `useBabyProfile` | Baby/user profiles, multi-baby switching, delete baby (anonymize then delete) |
+| `useBabyProfile` | Baby/user profiles, multi-baby switching, delete baby (no client anonymization; only full account delete anonymizes via Edge Function) |
 | `useBabyShares` | Sharing/invitations between caregivers |
 | `useGrowthLogs` | Weight/height timeline per baby (fetch, add, update, delete; warning when past value &lt; later value) |
 | `useCircadianTheme` | Time-based theme switching |
@@ -233,6 +233,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-19 | Sleep Log: removed "+ Add Entry" button/dropdown; add entry is FAB-only from any tab. SleepList empty state copy points to "+ button below". |
 | 2026-02-22 | Baby weight/height timeline: baby_weight_logs + baby_height_logs (migration, RLS), useGrowthLogs, GrowthLogSheet/List; Baby Detail compact growth (latest + "View all (N)"); removed single weight/height from profiles (migration drop); Stats section chips (Summary, Naps, Night, Growth), duplicate growth block removed, chip scroll-into-view, adaptive Y-domain for weight/height charts. |
 | 2026-02-24 | Bedtime window constraint: simulateDay adds rescue catnap when projected bedtime &lt; config.bedtime.earliest (2–3 nap ages); calculateDynamicBedtime floors result to earliest. Fixes unrealistic 16:30 bedtime for 8‑mo still on 3 naps. See lessons.md §1.7, BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md. |
+| 2026-02-26 | Go-live Section 3 (Security): function search_path migration; RLS anonymized_* tables service-role-only; client anonymization removed from single-baby delete; leaked password N/A (Pro only). See logs/2026-02-26.md. |
 
 ---
 
