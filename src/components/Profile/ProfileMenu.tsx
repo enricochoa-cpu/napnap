@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { BabyShare, UserProfile } from '../../types';
 
-export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy';
+export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy' | 'terms';
 
 interface ProfileMenuProps {
   pendingInvitations: BabyShare[];

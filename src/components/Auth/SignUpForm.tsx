@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TERMS_SECTION_KEYS } from '../../constants/termsOfService';
 import { AuthDivider } from './AuthDivider';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
@@ -19,8 +20,9 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [agreedToTermsAndPrivacy, setAgreedToTermsAndPrivacy] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +38,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
       return;
     }
 
-    if (!agreedToPrivacy) {
-      setError(t('auth.agreePrivacyRequired'));
+    if (!agreedToTermsAndPrivacy) {
+      setError(t('auth.agreeTermsAndPrivacyRequired'));
       return;
     }
 
@@ -95,19 +97,27 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
         <div className="card p-6 w-full max-w-sm mx-auto">
-          {/* Privacy consent: separate block with clear gap above Google button so it doesn't overlap */}
+          {/* Consent: Terms of Service + Privacy Policy (both required) */}
           <div className="mb-5">
             <label className="flex items-start gap-3 cursor-pointer group">
               <input
                 type="checkbox"
-                checked={agreedToPrivacy}
-                onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+                checked={agreedToTermsAndPrivacy}
+                onChange={(e) => setAgreedToTermsAndPrivacy(e.target.checked)}
                 disabled={loading}
                 className="mt-1 w-4 h-4 rounded border-[var(--text-muted)] bg-[var(--bg-soft)] text-[var(--nap-color)] focus:ring-[var(--nap-color)]"
-                aria-describedby="privacy-desc"
+                aria-describedby="consent-desc"
               />
-              <span id="privacy-desc" className="text-sm text-[var(--text-secondary)] font-display">
-                {t('auth.agreePrivacy')}{' '}
+              <span id="consent-desc" className="text-sm text-[var(--text-secondary)] font-display">
+                {t('auth.agreeTermsAndPrivacy')}{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowTermsModal(true)}
+                  className="text-[var(--nap-color)] font-medium underline underline-offset-2"
+                >
+                  {t('auth.termsOfService')}
+                </button>
+                {' '}{t('auth.and')}{' '}
                 <button
                   type="button"
                   onClick={() => setShowPrivacyModal(true)}
@@ -119,7 +129,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
             </label>
           </div>
 
-          <GoogleSignInButton onSignIn={onGoogleSignIn} disabled={!agreedToPrivacy} />
+          <GoogleSignInButton onSignIn={onGoogleSignIn} disabled={!agreedToTermsAndPrivacy} />
 
           <AuthDivider />
 
@@ -178,7 +188,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
             <button
               type="submit"
-              disabled={loading || !agreedToPrivacy}
+              disabled={loading || !agreedToTermsAndPrivacy}
               className="btn btn-primary w-full min-h-[56px]"
             >
               {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}
@@ -200,6 +210,53 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         <div className="safe-pad-bottom min-h-[2rem]" />
       </div>
+
+      {/* Terms of Service modal for sign-up consent */}
+      {showTermsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="terms-modal-title"
+        >
+          <div className="bg-[var(--bg-card)] border border-[var(--glass-border)] rounded-2xl shadow-xl max-h-[85vh] w-full max-w-md flex flex-col overflow-hidden">
+            <div className="p-4 border-b border-[var(--text-muted)]/20 flex items-center justify-between flex-shrink-0">
+              <h2 id="terms-modal-title" className="text-lg font-display font-semibold text-[var(--text-primary)]">
+                {t('auth.termsModalTitle')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(false)}
+                className="p-2 rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-primary)]"
+                aria-label={t('auth.closeAria')}
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4 space-y-4">
+              {TERMS_SECTION_KEYS.map((key) => (
+                <div key={key}>
+                  <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-1">
+                    {t(`terms.${key}`)}
+                  </h3>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{t(`terms.${key}Body`)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 border-t border-[var(--text-muted)]/20 flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(false)}
+                className="btn btn-primary w-full min-h-[48px]"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Privacy Policy modal for sign-up consent */}
       {showPrivacyModal && (

@@ -10,6 +10,7 @@ import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
 import { SupportView } from './SupportView';
 import { PrivacyPolicyView } from './PrivacyPolicyView';
+import { TermsOfServiceView } from './TermsOfServiceView';
 
 interface ProfileSectionProps {
   profile: BabyProfile | null;
@@ -124,6 +125,11 @@ export function ProfileSection({
   };
 
   const handleBackFromPrivacy = () => {
+    direction.current = -1;
+    setCurrentView(previousView.current);
+  };
+
+  const handleBackFromTerms = () => {
     direction.current = -1;
     setCurrentView(previousView.current);
   };
@@ -310,6 +316,20 @@ export function ProfileSection({
             transition={slideTransition}
           >
             <PrivacyPolicyView onBack={handleBackFromPrivacy} />
+          </motion.div>
+        )}
+
+        {currentView === 'terms' && (
+          <motion.div
+            key="terms"
+            custom={direction.current}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={slideTransition}
+          >
+            <TermsOfServiceView onBack={handleBackFromTerms} />
           </motion.div>
         )}
       </AnimatePresence>

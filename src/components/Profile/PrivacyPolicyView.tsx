@@ -1,4 +1,5 @@
 import { PRIVACY_POLICY_SECTIONS } from '../../constants/privacyPolicy';
+import { PRIVACY_POLICY_LAST_UPDATED } from '../../constants/legal';
 import { SubViewHeader } from './SubViewHeader';
 
 interface PrivacyPolicyViewProps {
@@ -26,6 +27,10 @@ export function PrivacyPolicyView({ onBack }: PrivacyPolicyViewProps) {
           </div>
         ))}
       </div>
+
+      <p className="text-xs text-[var(--text-muted)] text-center">
+        Last updated: {PRIVACY_POLICY_LAST_UPDATED}
+      </p>
     </div>
   );
 }

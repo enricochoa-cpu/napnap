@@ -49,6 +49,13 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
         />
         <ListRow
           icon={<HelpIcon />}
+          title="Terms of Service"
+          subtitle="Rules for using NapNap"
+          onClick={() => onNavigate('terms')}
+          iconColorClass="bg-[var(--text-muted)]/20 text-[var(--text-muted)]"
+        />
+        <ListRow
+          icon={<HelpIcon />}
           title="Privacy policy"
           subtitle="How we use and protect your data"
           onClick={() => onNavigate('privacy')}
