@@ -1,14 +1,13 @@
 import { useTranslation } from 'react-i18next';
-import type { BabyShare, UserProfile } from '../../types';
+import type { UserProfile } from '../../types';
 
 export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy' | 'terms';
 
 interface ProfileMenuProps {
-  pendingInvitations: BabyShare[];
   onNavigate: (view: ProfileView) => void;
-  onAcceptInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
-  onDeclineInvitation: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   userProfile?: UserProfile | null;
+  /** When true, show a pending-task indicator on the My Babies row (e.g. invite to review). */
+  hasPendingInvite?: boolean;
 }
 
 // Icons
@@ -73,11 +72,9 @@ export function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightE
 
 
 export function ProfileMenu({
-  pendingInvitations,
   onNavigate,
-  onAcceptInvitation,
-  onDeclineInvitation,
   userProfile,
+  hasPendingInvite = false,
 }: ProfileMenuProps) {
   const { t } = useTranslation();
   const hour = new Date().getHours();
@@ -100,44 +97,6 @@ export function ProfileMenu({
         <p className="text-[var(--text-muted)] text-sm">{encouragement}</p>
       </div>
 
-      {/* Pending Invitations */}
-      {pendingInvitations.length > 0 && (
-        <div className="rounded-2xl bg-gradient-to-br from-[var(--nap-color)]/15 to-[var(--nap-color)]/5 p-4 border border-[var(--nap-color)]/20 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <h3 className="text-sm font-display font-bold text-[var(--text-primary)] mb-3">
-            {pendingInvitations.length === 1 ? t('profile.newInvitation') : t('profile.invitations', { count: pendingInvitations.length })}
-          </h3>
-          <div className="space-y-2">
-            {pendingInvitations.map((invitation) => (
-              <div
-                key={invitation.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-card)]/80 backdrop-blur-sm"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-display font-semibold text-[var(--text-primary)] text-sm truncate">
-                    {invitation.babyName || t('common.baby')}
-                  </p>
-                  <p className="text-xs text-[var(--text-muted)]">{t('profile.from')} {invitation.ownerName || t('profile.parent')}</p>
-                </div>
-                <div className="flex gap-2 ml-3">
-                  <button
-                    onClick={() => onAcceptInvitation(invitation.id)}
-                    className="px-3 py-1.5 rounded-lg bg-[var(--nap-color)] text-[var(--bg-deep)] text-sm font-display font-semibold"
-                  >
-                    {t('profile.accept')}
-                  </button>
-                  <button
-                    onClick={() => onDeclineInvitation(invitation.id)}
-                    className="px-3 py-1.5 rounded-lg bg-[var(--bg-soft)] text-[var(--text-muted)] text-sm font-display"
-                  >
-                    {t('profile.decline')}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Navigation List */}
       <div className="space-y-3">
         <ListRow
@@ -145,6 +104,14 @@ export function ProfileMenu({
           title={t('profile.myBabies')}
           onClick={() => onNavigate('my-babies')}
           iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
+          rightElement={
+            hasPendingInvite ? (
+              <span className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[var(--wake-color)] border border-[var(--bg-deep)] flex-shrink-0" aria-hidden />
+                <ChevronRightIcon />
+              </span>
+            ) : undefined
+          }
         />
         <ListRow
           icon={<SettingsIcon />}

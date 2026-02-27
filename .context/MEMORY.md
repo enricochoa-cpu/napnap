@@ -185,6 +185,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 ├── frontend_guidelines.md # Component patterns, styling approach, state management
 ├── app_flow.md        # Every screen mapped with primary goal, golden path, escape routes
 ├── prd.md             # Product requirements (north star, user persona, constraints)
+├── brand_guidelines.md # NapNap brand identity, tone, and visual guardrails
 ├── tech_stack.md      # Languages, frameworks, deployment details
 ├── lessons.md         # Past bugs and decisions (Problem → Root Cause → Fix)
 ├── progress.txt       # Project progress tracking

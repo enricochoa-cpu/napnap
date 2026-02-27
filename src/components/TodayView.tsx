@@ -36,6 +36,10 @@ interface TodayViewProps {
   /** When true, show "add a baby" CTA in empty state instead of "tap + to add activity" */
   hasNoBaby?: boolean;
   onAddBabyClick?: () => void;
+  /** When true (and hasNoBaby), show invite-focused empty state instead of plain add-baby copy. */
+  hasPendingInvite?: boolean;
+  /** Optional handler for the invite CTA (e.g. navigate to Profile to review invites). */
+  onPendingInviteClick?: () => void;
 }
 
 // Get today's completed naps
@@ -130,6 +134,8 @@ export function TodayView({
   loading = false,
   hasNoBaby = false,
   onAddBabyClick,
+  hasPendingInvite = false,
+  onPendingInviteClick,
 }: TodayViewProps) {
   const { t } = useTranslation();
   // Force re-render every minute for live countdowns
@@ -604,6 +610,15 @@ export function TodayView({
 
   // Empty state - no activity today
   if (!hasTodayActivity) {
+    const showInviteEmpty = hasNoBaby && hasPendingInvite;
+    const primaryCtaHandler =
+      hasNoBaby && showInviteEmpty
+        ? onPendingInviteClick
+        : hasNoBaby
+        ? onAddBabyClick
+        : undefined;
+    const primaryCtaLabel = showInviteEmpty ? 'Review invite' : 'Add your baby';
+
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
         <div className="pt-10 pb-6">
@@ -612,22 +627,34 @@ export function TodayView({
               <MoonIcon className="w-8 h-8 text-[var(--text-muted)]" />
             </div>
             <h1 className="text-xl font-display font-bold text-[var(--text-primary)] mb-2">
-              {hasNoBaby ? t('today.addABabySubtitle') : t('today.goodMorning')}
+              {hasNoBaby
+                ? showInviteEmpty
+                  ? 'You have a baby invite'
+                  : t('today.addABabySubtitle')
+                : t('today.goodMorning')}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed mb-6">
-              {hasNoBaby
-                ? 'Log sleep for your little one by adding their profile first. Then you can track naps and bedtime.'
-                : 'This space is still empty. Tap the '}
-              {!hasNoBaby && <span className="text-[var(--nap-color)]">+</span>}
-              {!hasNoBaby && ' button to add your first activity for today.'}
+              {hasNoBaby ? (
+                showInviteEmpty ? (
+                  'You have been invited to care for a baby. Accept the invite to start logging sleep and see predictions.'
+                ) : (
+                  'Log sleep for your little one by adding their profile first. Then you can track naps and bedtime.'
+                )
+              ) : (
+                <>
+                  {'This space is still empty. Tap the '}
+                  <span className="text-[var(--nap-color)]">+</span>
+                  {' button to add your first activity for today.'}
+                </>
+              )}
             </p>
-            {hasNoBaby && onAddBabyClick && (
+            {hasNoBaby && primaryCtaHandler && (
               <button
-                onClick={onAddBabyClick}
+                onClick={primaryCtaHandler}
                 className="px-6 py-3 rounded-2xl font-display font-semibold text-[var(--bg-deep)] transition-transform active:scale-[0.98]"
                 style={{ background: 'var(--nap-color)' }}
               >
-                Add your baby
+                {primaryCtaLabel}
               </button>
             )}
           </div>
@@ -642,7 +669,7 @@ export function TodayView({
       {/* HERO SECTION - Compact on small viewports so timeline fits ~5 items */}
       {/* ================================================================== */}
       <div className="pt-4 pb-3 sm:pt-6 sm:pb-4">
-        <div className="rounded-3xl p-4 sm:p-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}>
+        <div className="rounded-2xl p-4 sm:p-6" style={{ background: 'var(--bg-card)', boxShadow: 'var(--shadow-md)' }}>
           {activeSleep ? (
             // SLEEPING STATE
             <div className="text-center">

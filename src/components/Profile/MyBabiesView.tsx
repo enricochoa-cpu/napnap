@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
 import type { SharedBabyProfile } from '../../hooks/useBabyProfile';
@@ -23,6 +24,10 @@ interface MyBabiesViewProps {
   onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
   onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   inviterName?: string;
+  /** Pending baby invites — shown as cards in My Babies (same structure as baby cards, with Accept/Decline). */
+  pendingInvitations?: BabyShare[];
+  onAcceptInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onDeclineInvitation?: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   /** When true, open the add-baby sheet on mount (e.g. navigated from FAB with no baby) */
   openAddSheetOnMount?: boolean;
   onOpenAddSheetHandled?: () => void;
@@ -41,6 +46,97 @@ const PlusIcon = () => (
   </svg>
 );
 
+// Invite card — same visual structure as BabyProfileCard, with Accept / Decline instead of Select
+interface InviteCardProps {
+  invitation: BabyShare;
+  onAccept: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  onDecline: (shareId: string) => Promise<{ success: boolean; error?: string }>;
+  fromLabel: string;
+}
+
+function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardProps) {
+  const [busy, setBusy] = useState(false);
+  const handleAccept = async () => {
+    setBusy(true);
+    try {
+      await onAccept(invitation.id);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const handleDecline = async () => {
+    setBusy(true);
+    try {
+      await onDecline(invitation.id);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const babyName = invitation.babyName || 'Baby';
+  const initial = babyName.charAt(0).toUpperCase();
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="w-full flex items-center gap-4 p-5 rounded-3xl backdrop-blur-xl transition-all duration-200"
+      style={{
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        boxShadow: 'var(--shadow-md)',
+      }}
+    >
+      <div className="flex-1 flex items-center gap-4 min-w-0">
+        <div className="flex-shrink-0">
+          {invitation.babyAvatarUrl ? (
+            <BabyAvatarPicker
+              avatarUrl={invitation.babyAvatarUrl}
+              babyName={babyName}
+              size="md"
+              editable={false}
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center text-[var(--nap-color)] text-2xl font-display font-semibold">
+              {initial}
+            </div>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-display font-semibold text-[var(--text-primary)] text-lg truncate">
+            {babyName}
+          </p>
+          <p className="text-sm font-light text-[var(--text-muted)] mt-0.5">
+            {fromLabel} {invitation.ownerName || 'parent'}
+          </p>
+        </div>
+      </div>
+      <div className="flex-shrink-0 flex gap-2">
+        <button
+          type="button"
+          onClick={handleAccept}
+          disabled={busy}
+          className="px-4 py-2 rounded-full text-xs font-display font-semibold min-w-[72px] touch-manipulation transition-colors active:scale-95 disabled:opacity-60"
+          style={{ background: 'var(--nap-color)', color: 'var(--bg-deep)', border: 'none' }}
+        >
+          Accept
+        </button>
+        <button
+          type="button"
+          onClick={handleDecline}
+          disabled={busy}
+          className="px-4 py-2 rounded-full text-xs font-display font-semibold min-w-[72px] touch-manipulation transition-colors active:scale-95 border disabled:opacity-60"
+          style={{ background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--glass-border)' }}
+        >
+          Decline
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 // Premium Baby Profile Card - Single edit trigger (the whole card for owned babies)
 interface BabyProfileCardProps {
   baby: SharedBabyProfile;
@@ -51,19 +147,21 @@ interface BabyProfileCardProps {
 
 function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardProps) {
   const cardStyle = {
-    background: isActive ? 'color-mix(in srgb, var(--nap-color) 12%, var(--glass-bg))' : 'var(--glass-bg)',
-    border: isActive ? '1px solid color-mix(in srgb, var(--nap-color) 40%, transparent)' : '1px solid var(--glass-border)',
+    background: 'var(--glass-bg)',
+    border: isActive ? '1px solid var(--nap-color)' : '1px solid var(--glass-border)',
     boxShadow: 'var(--shadow-md)',
   };
 
   return (
     <motion.div
+      // Use a very soft opacity-only fade so cards don't "bounce"
+      // when the view mounts or when the active baby changes.
       layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="w-full flex items-center gap-4 p-5 rounded-[40px] backdrop-blur-xl transition-all duration-200"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18, ease: 'easeOut' }}
+      className="w-full flex items-center gap-4 p-5 rounded-3xl backdrop-blur-xl transition-all duration-200"
       style={cardStyle}
     >
       {/* Main area: tap opens detail (edit or view) */}
@@ -100,20 +198,17 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
           e.stopPropagation();
           onSelect();
         }}
-        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center min-w-[44px] min-h-[44px] touch-manipulation transition-colors hover:bg-[var(--text-muted)]/10 active:scale-95"
-        title={isActive ? 'Selected for sleep logs' : 'Use this baby for sleep logs'}
+        className="flex-shrink-0 px-4 py-2 rounded-full min-w-[72px] touch-manipulation transition-colors active:scale-95 border text-xs font-display font-semibold"
+        title={isActive ? 'Selected baby for sleep logs' : 'Select this baby for sleep logs'}
         aria-pressed={isActive}
-        aria-label={isActive ? 'Selected for sleep logs' : 'Use this baby for sleep logs'}
+        aria-label={isActive ? 'Selected baby for sleep logs' : 'Select this baby for sleep logs'}
+        style={
+          isActive
+            ? { background: 'var(--nap-color)', color: 'var(--bg-deep)', borderColor: 'transparent' }
+            : { background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--glass-border)' }
+        }
       >
-        {isActive ? (
-          <div className="w-8 h-8 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <span className="text-[var(--nap-color)]">
-              <CheckIcon />
-            </span>
-          </div>
-        ) : (
-          <div className="w-8 h-8 rounded-full border-2 border-[var(--text-muted)]/40" aria-hidden />
-        )}
+        {isActive ? 'Selected' : 'Select'}
       </button>
     </motion.div>
   );
@@ -151,11 +246,16 @@ export function MyBabiesView({
   onUploadAvatar,
   onBack,
   onNavigateToBabyDetail,
+  pendingInvitations = [],
+  onAcceptInvitation,
+  onDeclineInvitation,
   openAddSheetOnMount = false,
   onOpenAddSheetHandled,
 }: MyBabiesViewProps) {
+  const { t } = useTranslation();
   const hasAnyBabies = sharedProfiles.length > 0;
   const hasMultipleBabies = sharedProfiles.length > 1;
+  const hasPendingInvites = pendingInvitations.length > 0;
 
   // Sheet state — only used for adding new babies; user opens via empty state / Add card
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -181,16 +281,35 @@ export function MyBabiesView({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <SubViewHeader
-        title="My babies"
+        title="Baby profiles"
         subtitle={
-          hasMultipleBabies
-            ? 'Tap the circle to choose whose sleep logs you see'
-            : 'Manage your little ones'
+          hasPendingInvites
+            ? (hasAnyBabies ? 'Review invites and manage babies' : 'You have an invite — accept to start logging sleep')
+            : hasMultipleBabies
+            ? 'Select which baby you want to see sleep logs for'
+            : 'Edit your baby’s information'
         }
         onBack={onBack}
       />
+
+      {/* Pending invites — same card structure as babies, with Accept/Decline */}
+      {hasPendingInvites && onAcceptInvitation && onDeclineInvitation && (
+        <AnimatePresence mode="popLayout">
+          <motion.div layout className="space-y-4">
+            {pendingInvitations.map((invitation) => (
+              <InviteCard
+                key={invitation.id}
+                invitation={invitation}
+                onAccept={onAcceptInvitation}
+                onDecline={onDeclineInvitation}
+                fromLabel={t('profile.from')}
+              />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       {/* Baby Gallery - Clean floating cards */}
       <AnimatePresence mode="popLayout">

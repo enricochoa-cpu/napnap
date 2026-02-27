@@ -12,15 +12,15 @@ interface SubViewHeaderProps {
 
 export function SubViewHeader({ title, subtitle, onBack }: SubViewHeaderProps) {
   return (
-    <div className="flex items-center gap-4">
+    <div className="relative flex items-center justify-center">
       <button
         onClick={onBack}
-        className="w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+        className="absolute left-0 w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
         aria-label="Go back"
       >
         <BackIcon />
       </button>
-      <div>
+      <div className="text-center">
         <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
           {title}
         </h1>

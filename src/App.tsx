@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import type { SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { SleepList } from './components/SleepList';
@@ -34,6 +35,26 @@ import { parseISO, isToday, addDays, format } from 'date-fns';
 import type { SleepEntry } from './types';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
+
+/** Shown in header avatar when there is no baby/user name (empty state) instead of "?". */
+function PersonIcon({ className, ...props }: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <circle cx="12" cy="8" r="3" />
+      <path d="M5 20v-2a5 5 0 0 1 14 0v2" />
+    </svg>
+  );
+}
 
 function App() {
   const { signOut } = useAuth();
@@ -108,6 +129,8 @@ function App() {
 
   const { weightLogs, heightLogs } = useGrowthLogs({ babyId: activeBabyId });
 
+  const hasPendingBabyInvite = pendingInvitations.length > 0;
+
   // Refresh data when accepting an invitation
   const handleAcceptInvitation = async (shareId: string) => {
     const result = await acceptInvitation(shareId);
@@ -148,6 +171,7 @@ function App() {
   const [entrySheetError, setEntrySheetError] = useState<string | null>(null);
   const [logWakeUpMode, setLogWakeUpMode] = useState(false);
   const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
+  const [profileInitialView, setProfileInitialView] = useState<'menu' | 'my-babies'>('menu');
 
   const hasAnyBaby = sharedProfiles.length > 0;
 
@@ -424,8 +448,19 @@ function App() {
       requestOpenAddBaby={requestOpenAddBaby}
       onClearRequestOpenAddBaby={() => setRequestOpenAddBaby(false)}
       profileLoading={profileLoading}
+      initialView={profileInitialView}
     />
   );
+
+  const activeDisplayBaby = activeBabyProfile || profile;
+  const headerAvatarLetter =
+    activeDisplayBaby?.name?.charAt(0).toUpperCase() ||
+    userProfile?.userName?.charAt(0).toUpperCase() ||
+    null;
+  const headerAvatarUrl = activeDisplayBaby?.avatarUrl;
+  const headerAvatarAriaLabel = hasPendingBabyInvite
+    ? 'My babies, you have a baby invite waiting'
+    : 'My babies';
 
   return (
     <MotionConfig reducedMotion="user">
@@ -435,6 +470,55 @@ function App() {
 
       {/* Main Content with Slide Transitions */}
       <main className="max-w-lg mx-auto relative z-0 overflow-hidden">
+        {/* Header avatar – shown only on Today and Sleep Log views */}
+        {(currentView === 'home' || currentView === 'history') && (
+          <div className="px-6 pt-6 w-fit">
+            <button
+              type="button"
+              onClick={() => {
+                setProfileInitialView('my-babies');
+                handleViewChange('profile');
+              }}
+              className="relative flex items-center justify-center rounded-full w-11 h-11 min-w-[44px] min-h-[44px] flex-shrink-0"
+              aria-label={headerAvatarAriaLabel}
+              style={{
+                // Transparent interior with a single nap-colored ring so the photo
+                // appears directly inside the green circle with no extra borders.
+                background: 'transparent',
+                boxShadow: '0 0 0 2px var(--nap-color)',
+              }}
+            >
+              {/* Inner circle: image (or fallback) as background, then overlay, then initial on top */}
+              <span className="absolute inset-[2px] rounded-full overflow-hidden bg-[var(--bg-deep)]">
+                {headerAvatarUrl ? (
+                  <>
+                    <img
+                      src={headerAvatarUrl}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover opacity-55"
+                      aria-hidden="true"
+                    />
+                    <span className="absolute inset-0 bg-[var(--bg-deep)]/60" aria-hidden="true" />
+                  </>
+                ) : (
+                  <span className="absolute inset-0 bg-[var(--nap-color)]/20" aria-hidden="true" />
+                )}
+                {/* Initial or person icon when no name — avoids showing "?" in empty state */}
+                <span className="absolute inset-0 flex items-center justify-center text-base font-display font-semibold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.7)]">
+                  {headerAvatarLetter ? (
+                    headerAvatarLetter
+                  ) : (
+                    <PersonIcon className="w-5 h-5 opacity-90" aria-hidden />
+                  )}
+                </span>
+              </span>
+              {hasPendingBabyInvite && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--wake-color)] border border-[var(--bg-deep)]" />
+              )}
+            </button>
+          </div>
+        )}
+
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={currentView}
@@ -459,6 +543,11 @@ function App() {
                 totalEntries={entries.length}
                 hasNoBaby={!profileLoading && !hasAnyBaby}
                 onAddBabyClick={goToAddBaby}
+                hasPendingInvite={!profileLoading && !hasAnyBaby && hasPendingBabyInvite}
+                onPendingInviteClick={() => {
+                  setProfileInitialView('menu');
+                  handleViewChange('profile');
+                }}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
@@ -539,20 +628,28 @@ function App() {
 
             {/* My Profile — same person icon: outline (inactive) / solid (active), Heroicons User */}
             <button
-              onClick={() => handleViewChange('profile')}
+              onClick={() => {
+                setProfileInitialView('menu');
+                handleViewChange('profile');
+              }}
               className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}
               aria-label={t('nav.profile')}
             >
-              {currentView === 'profile' ? (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
-                </svg>
-              ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M20 21a8 8 0 1 0-16 0" />
-                </svg>
-              )}
+              <div className="relative inline-flex items-center justify-center">
+                {currentView === 'profile' ? (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                    <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M20 21a8 8 0 1 0-16 0" />
+                  </svg>
+                )}
+                {hasPendingBabyInvite && (
+                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[var(--wake-color)] border border-[var(--bg-deep)]" />
+                )}
+              </div>
             </button>
           </div>
         </div>

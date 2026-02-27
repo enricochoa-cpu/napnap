@@ -39,6 +39,8 @@ interface ProfileSectionProps {
   onClearRequestOpenAddBaby?: () => void;
   /** When true, show loading skeleton instead of profile content (avoids empty My babies flash) */
   profileLoading?: boolean;
+  /** Optional initial sub-view when opening the Profile section (e.g. directly to My babies) */
+  initialView?: ProfileView;
 }
 
 export function ProfileSection({
@@ -65,8 +67,9 @@ export function ProfileSection({
   requestOpenAddBaby = false,
   onClearRequestOpenAddBaby,
   profileLoading = false,
+  initialView = 'menu',
 }: ProfileSectionProps) {
-  const [currentView, setCurrentView] = useState<ProfileView>('menu');
+  const [currentView, setCurrentView] = useState<ProfileView>(initialView);
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
   const previousView = useRef<ProfileView>('menu');
   const direction = useRef(1); // 1 = forward (drill in), -1 = backward (go back)
@@ -134,6 +137,13 @@ export function ProfileSection({
     setCurrentView(previousView.current);
   };
 
+  // When the parent component requests a specific initial view (e.g. open directly on My babies
+  // from the header avatar), sync the internal view state. This keeps the Profile section
+  // navigation self-contained while still allowing high-level entry points to choose where to land.
+  useEffect(() => {
+    setCurrentView(initialView);
+  }, [initialView]);
+
   const slideVariants = {
     initial: (d: number) => ({ x: d * 60, opacity: 0 }),
     animate: { x: 0, opacity: 1 },
@@ -170,11 +180,9 @@ export function ProfileSection({
             transition={slideTransition}
           >
             <ProfileMenu
-              pendingInvitations={pendingInvitations}
               onNavigate={handleNavigate}
-              onAcceptInvitation={onAcceptInvitation}
-              onDeclineInvitation={onDeclineInvitation}
               userProfile={userProfile}
+              hasPendingInvite={pendingInvitations.length > 0}
             />
           </motion.div>
         )}
@@ -204,6 +212,9 @@ export function ProfileSection({
               onUpdateRole={onUpdateRole}
               onRevokeAccess={onRevokeAccess}
               inviterName={userProfile?.userName || userProfile?.email}
+              pendingInvitations={pendingInvitations}
+              onAcceptInvitation={onAcceptInvitation}
+              onDeclineInvitation={onDeclineInvitation}
               openAddSheetOnMount={requestOpenAddBaby}
               onOpenAddSheetHandled={onClearRequestOpenAddBaby}
             />

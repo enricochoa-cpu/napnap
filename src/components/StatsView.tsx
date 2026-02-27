@@ -1064,12 +1064,12 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
   return (
     <div className="pb-32 px-6 fade-in">
-      {/* Centered page header (Napper-style): clear title + description for easy scanning */}
+      {/* Centered page header — same style as My Babies / Settings / Support (SubViewHeader) */}
       <header className="pt-8 pb-2 text-center">
-        <h1 className="text-display-md font-display font-bold text-[var(--text-primary)] tracking-tight">
+        <h1 className="text-2xl font-display font-bold text-[var(--text-primary)]">
           {t('stats.title')}
         </h1>
-        <p className="mt-2 text-sm text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
+        <p className="text-sm text-[var(--text-muted)]">
           {t('stats.subtitle')}
         </p>
       </header>

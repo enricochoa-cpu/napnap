@@ -35,6 +35,8 @@ export interface BabyShare {
   // Populated from join with profiles
   babyName?: string;
   ownerName?: string;
+  /** Baby avatar URL (owner's profile) — for invite cards */
+  babyAvatarUrl?: string;
 }
 
 export interface WeightLog {

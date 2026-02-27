@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-26 — Go-live Section 3 (Security): function search_path migration (20260226000000), RLS anonymized tables service-role-only (20260226000001), client anonymization removed from single-baby delete; leaked password N/A (Pro only). See logs/2026-02-26.md.
+**Last updated:** 2026-02-27 — Pending-invite UX: header avatar (Today/History only) with nap ring + dot; invites moved to My Babies (invite cards with baby avatar, Accept/Decline); Profile menu My Babies row shows pending dot; Today empty state "You have a baby invite" + Review invite; SubViewHeader centered; Stats/Profile headers consistent. See logs/2026-02-27.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 
