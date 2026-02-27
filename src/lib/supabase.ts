@@ -17,6 +17,7 @@ export interface DbProfile {
   baby_gender: 'male' | 'female' | 'other' | null;
   baby_avatar_url: string | null;
   created_at: string;
+  /** App locale: valid values are 'en', 'es', 'ca'; column is string for flexibility. */
   locale: string | null;
 }
 

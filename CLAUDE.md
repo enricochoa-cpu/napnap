@@ -89,7 +89,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `BabyEditSheet`: Bottom sheet for editing baby profiles (framer-motion, drag-to-dismiss)
 - `BabyAvatarPicker`: Reusable avatar component with client-side image compression (resizes to 400x400, JPEG 80%)
 - `AccountSettingsView`: User settings, sign out card, and delete account link
-- `SupportView`/`FAQsView`/`ContactView`: Help and support
+- `SupportView`/`FAQsView`/`ContactView`: Help and support; all use i18n (en/es/ca). SupportView menu items and PrivacyPolicyView header translated; BedtimeEntry card shows "Night sleep" (not "Add bedtime") for existing entries.
 
 **Auth Components** (`src/components/Auth/`):
 - `AuthGuard`: Shows entry choice first ("Get started" / "I have an account"); then OnboardingFlow or Login. Protects routes requiring authentication.

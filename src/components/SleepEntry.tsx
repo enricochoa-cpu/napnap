@@ -65,10 +65,10 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
           </svg>
         </div>
 
-        {/* Content */}
+        {/* Content: show "Night sleep" (not "Add bedtime") since this card is for an existing entry; "Add bedtime" is only for the sheet when creating a new one */}
         <div className="flex-1 min-w-0">
           <p className="font-display font-bold text-[var(--text-primary)]">
-            {t('sleepEntrySheet.addBedtime')}
+            {t('sleepEntry.nightSleep')}
           </p>
           {isActive && (
             <p className="text-sm text-[var(--success-color)] font-medium">

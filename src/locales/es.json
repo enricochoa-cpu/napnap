@@ -182,9 +182,13 @@
     "language": "Idioma",
     "languageSubtitle": "Idioma de la app",
     "english": "English",
-    "spanish": "Español"
+    "spanish": "Español",
+    "catalan": "Català"
   },
   "privacy": {
+    "viewTitle": "Política de privacidad",
+    "viewSubtitle": "Cómo usamos y protegemos tus datos",
+    "lastUpdated": "Última actualización",
     "whatWeCollect": "Qué recogemos",
     "whatWeCollectBody": "Recogemos la información que nos das al usar NapNap: tu correo y datos de cuenta, el perfil de tu bebé (nombre, fecha de nacimiento, peso y altura opcionales) y los datos de sueño que registras (siestas y noches).",
     "howWeUse": "Cómo lo usamos",
@@ -199,8 +203,16 @@
     "subtitle": "Recursos y soporte",
     "faqs": "Preguntas frecuentes",
     "faqsSubtitle": "Términos y respuestas de NapNap",
+    "faqsMenuSubtitle": "Preguntas comunes respondidas",
     "contact": "Contacto",
-    "contactSubtitle": "Escríbenos"
+    "contactSubtitle": "Escríbenos",
+    "contactMenuSubtitle": "Contacta con nosotros",
+    "termsMenuTitle": "Términos del servicio",
+    "termsMenuSubtitle": "Normas de uso de NapNap",
+    "privacyMenuTitle": "Política de privacidad",
+    "privacyMenuSubtitle": "Cómo usamos y protegemos tus datos",
+    "quickTipTitle": "Consejo rápido",
+    "quickTipBody": "Consulta primero las preguntas frecuentes para términos y base científica de NapNap. También puedes leer aquí nuestra Política de privacidad. Si necesitas más ayuda, estamos a un mensaje."
   },
   "myBabies": {
     "title": "Mis bebés",

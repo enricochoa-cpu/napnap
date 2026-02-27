@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { ListRow, type ProfileView } from './ProfileMenu';
 import { SubViewHeader } from './SubViewHeader';
 
@@ -27,37 +28,39 @@ const HeartIcon = () => (
 );
 
 export function SupportView({ onBack, onNavigate }: SupportViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6">
-      <SubViewHeader title="Support" subtitle="NapNap help and privacy" onBack={onBack} />
+      <SubViewHeader title={t('support.title')} subtitle={t('support.subtitle')} onBack={onBack} />
 
       {/* Support Options */}
       <div className="space-y-4">
         <ListRow
           icon={<HelpIcon />}
-          title="FAQs"
-          subtitle="Common questions answered"
+          title={t('support.faqs')}
+          subtitle={t('support.faqsMenuSubtitle')}
           onClick={() => onNavigate('faqs')}
           iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
         />
         <ListRow
           icon={<MessageIcon />}
-          title="Contact Us"
-          subtitle="Get in touch with our team"
+          title={t('support.contact')}
+          subtitle={t('support.contactMenuSubtitle')}
           onClick={() => onNavigate('contact')}
           iconColorClass="bg-[var(--wake-color)]/20 text-[var(--wake-color)]"
         />
         <ListRow
           icon={<HelpIcon />}
-          title="Terms of Service"
-          subtitle="Rules for using NapNap"
+          title={t('support.termsMenuTitle')}
+          subtitle={t('support.termsMenuSubtitle')}
           onClick={() => onNavigate('terms')}
           iconColorClass="bg-[var(--text-muted)]/20 text-[var(--text-muted)]"
         />
         <ListRow
           icon={<HelpIcon />}
-          title="Privacy policy"
-          subtitle="How we use and protect your data"
+          title={t('support.privacyMenuTitle')}
+          subtitle={t('support.privacyMenuSubtitle')}
           onClick={() => onNavigate('privacy')}
           iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
         />
@@ -71,10 +74,10 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
           </div>
           <div>
             <p className="font-display font-semibold text-[var(--text-primary)] text-sm mb-1">
-              Quick tip
+              {t('support.quickTipTitle')}
             </p>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-              Check our FAQs first for key terms and science behind NapNap. You can also read our Privacy Policy here. If you need more help, we&apos;re just a message away.
+              {t('support.quickTipBody')}
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-02-27 — Pending-invite UX: header avatar (Today/History only) with nap ring + dot; invites moved to My Babies (invite cards with baby avatar, Accept/Decline); Profile menu My Babies row shows pending dot; Today empty state "You have a baby invite" + Review invite; SubViewHeader centered; Stats/Profile headers consistent. See logs/2026-02-27.md.
+**Last updated:** 2026-02-27 — Support + nested pages (FAQs, Contact, Terms, Privacy) fully i18n (en/es/ca); bedtime card in Sleep Log shows "Night sleep" not "Add bedtime"; History view header and empty-state button translated. See logs/2026-02-27.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { PRIVACY_POLICY_SECTIONS } from '../../constants/privacyPolicy';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../../constants/legal';
 import { SubViewHeader } from './SubViewHeader';
@@ -7,11 +8,13 @@ interface PrivacyPolicyViewProps {
 }
 
 export function PrivacyPolicyView({ onBack }: PrivacyPolicyViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-6 pb-12">
       <SubViewHeader
-        title="Privacy policy"
-        subtitle="How we use and protect your data"
+        title={t('privacy.viewTitle')}
+        subtitle={t('privacy.viewSubtitle')}
         onBack={onBack}
       />
 
@@ -29,7 +32,7 @@ export function PrivacyPolicyView({ onBack }: PrivacyPolicyViewProps) {
       </div>
 
       <p className="text-xs text-[var(--text-muted)] text-center">
-        Last updated: {PRIVACY_POLICY_LAST_UPDATED}
+        {t('privacy.lastUpdated')}: {PRIVACY_POLICY_LAST_UPDATED}
       </p>
     </div>
   );

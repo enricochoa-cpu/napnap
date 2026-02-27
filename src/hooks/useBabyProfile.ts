@@ -53,11 +53,15 @@ export function useBabyProfile() {
       let ownProfile: BabyProfile | null = null;
 
       // Apply DB locale to i18n and localStorage so UI language matches (and persists before next profile load).
-      // If user just set Spanish in Settings but a refetch returns stale 'en', don't overwrite — avoids
+      // If user just set a non-English language in Settings but a refetch returns stale 'en', don't overwrite — avoids
       // Today screen flipping back to English when navigating away from Profile (e.g. after accept-invite refetch).
-      const serverLocale = (data?.locale === 'es' ? 'es' : 'en') as 'en' | 'es';
-      const currentLng = (i18n.language === 'es' ? 'es' : 'en') as 'en' | 'es';
-      const locale = (serverLocale === 'en' && currentLng === 'es') ? 'es' : serverLocale;
+      const supported = ['en', 'es', 'ca'] as const;
+      type Locale = (typeof supported)[number];
+      const toLocale = (v: string | null | undefined): Locale =>
+        (v === 'es' || v === 'ca' ? v : 'en');
+      const serverLocale = toLocale(data?.locale ?? null);
+      const currentLng = toLocale(i18n.language?.split('-')[0] ?? 'en');
+      const locale = (serverLocale === 'en' && currentLng !== 'en') ? currentLng : serverLocale;
       i18n.changeLanguage(locale);
       setToStorage(STORAGE_KEYS.LOCALE, locale);
 
@@ -232,7 +236,7 @@ export function useBabyProfile() {
 
       // Apply locale change optimistically so the language selector updates immediately even if DB fails (e.g. migration not run)
       if (data.locale !== undefined) {
-        const locale = data.locale === 'es' ? 'es' : 'en';
+        const locale = (data.locale === 'es' || data.locale === 'ca') ? data.locale : 'en';
         i18n.changeLanguage(locale);
         setToStorage(STORAGE_KEYS.LOCALE, locale);
         setUserProfile((prev) => (prev ? { ...prev, locale } : prev));

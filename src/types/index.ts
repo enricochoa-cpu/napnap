@@ -11,7 +11,7 @@ export interface UserProfile {
   userName: string;
   userRole: 'dad' | 'mum' | 'other';
   /** Preferred app language; synced to DB and applied to i18n. */
-  locale?: 'en' | 'es';
+  locale?: 'en' | 'es' | 'ca';
 }
 
 export interface SleepEntry {

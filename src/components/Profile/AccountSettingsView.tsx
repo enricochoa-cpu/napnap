@@ -86,7 +86,7 @@ export function AccountSettingsView({
     }
   };
 
-  const currentLocale = userProfile?.locale === 'es' ? 'es' : 'en';
+  const currentLocale = (userProfile?.locale === 'es' || userProfile?.locale === 'ca') ? userProfile.locale : 'en';
 
   return (
     <div className="space-y-6">
@@ -98,11 +98,11 @@ export function AccountSettingsView({
           {t('profile.language')}
         </h3>
         <p className="text-sm text-[var(--text-secondary)] mb-4">{t('profile.languageSubtitle')}</p>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
             onClick={() => currentLocale !== 'en' && onUpdateUser({ locale: 'en' })}
-            className={`flex-1 py-3 rounded-xl font-display font-medium transition-all ${
+            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
               currentLocale === 'en'
                 ? 'bg-[var(--night-color)] text-white'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
@@ -113,13 +113,24 @@ export function AccountSettingsView({
           <button
             type="button"
             onClick={() => currentLocale !== 'es' && onUpdateUser({ locale: 'es' })}
-            className={`flex-1 py-3 rounded-xl font-display font-medium transition-all ${
+            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
               currentLocale === 'es'
                 ? 'bg-[var(--night-color)] text-white'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
             }`}
           >
             {t('profile.spanish')}
+          </button>
+          <button
+            type="button"
+            onClick={() => currentLocale !== 'ca' && onUpdateUser({ locale: 'ca' })}
+            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
+              currentLocale === 'ca'
+                ? 'bg-[var(--night-color)] text-white'
+                : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
+            }`}
+          >
+            {t('profile.catalan')}
           </button>
         </div>
       </div>

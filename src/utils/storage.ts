@@ -5,7 +5,7 @@ export const STORAGE_KEYS = {
   ONBOARDING_COMPLETED: 'baby-sleep-tracker-onboarding-completed',
   /** Which baby's sleep data is shown in Today / History / Stats (user can switch in My babies). */
   ACTIVE_BABY_ID: 'baby-sleep-tracker-active-baby-id',
-  /** User's language preference (en/es) before profile loads; synced from profile when available. */
+  /** User's language preference (en/es/ca) before profile loads; synced from profile when available. */
   LOCALE: 'baby-sleep-tracker-locale',
 } as const;
 

@@ -390,13 +390,13 @@ function App() {
       </div>
 
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-display-sm text-[var(--text-card-title)]">Sleep Log</h2>
+        <h2 className="text-display-sm text-[var(--text-card-title)]">{t('history.sleepLog')}</h2>
         {!profileLoading && !hasAnyBaby && (
           <button
             onClick={goToAddBaby}
             className="text-[var(--nap-color)] font-display font-semibold text-sm"
           >
-            Add a baby to log sleep
+            {t('nav.addBabyToStart')}
           </button>
         )}
       </div>
