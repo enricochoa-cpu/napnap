@@ -235,6 +235,8 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-22 | Baby weight/height timeline: baby_weight_logs + baby_height_logs (migration, RLS), useGrowthLogs, GrowthLogSheet/List; Baby Detail compact growth (latest + "View all (N)"); removed single weight/height from profiles (migration drop); Stats section chips (Summary, Naps, Night, Growth), duplicate growth block removed, chip scroll-into-view, adaptive Y-domain for weight/height charts. |
 | 2026-02-24 | Bedtime window constraint: simulateDay adds rescue catnap when projected bedtime &lt; config.bedtime.earliest (2–3 nap ages); calculateDynamicBedtime floors result to earliest. Fixes unrealistic 16:30 bedtime for 8‑mo still on 3 naps. See lessons.md §1.7, BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md. |
 | 2026-02-26 | Go-live Section 3 (Security): function search_path migration; RLS anonymized_* tables service-role-only; client anonymization removed from single-baby delete; leaked password N/A (Pro only). See logs/2026-02-26.md. |
+| 2026-02-27 | Pending-invite UX: header avatar (Today/History only) with nap ring + dot; invites in My Babies (invite cards, Accept/Decline); Profile menu My Babies row pending dot; Today empty state "You have a baby invite" + Review invite. SubViewHeader centered; Stats/Profile headers consistent. See logs/2026-02-27.md. |
+| 2026-02-27 | Production deployed to napnap.vercel.app; Google OAuth redirect configured; i18n: hardcoded strings extracted to en/es locales (TodayView, DayNavigator, SleepEntry, SleepList, StatsView, useBabyProfile). |
 
 ---
 
