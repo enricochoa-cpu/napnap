@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { AuthDivider } from './AuthDivider';
+import { Logo } from '../Logo';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
@@ -36,10 +37,8 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top">
         {/* Logo + short info (Napper-style) */}
         <div className="text-center pt-2 pb-6">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--nap-color)]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
+          <div className="mx-auto mb-4 flex justify-center">
+            <Logo size={64} />
           </div>
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.welcomeBack')}</h1>
           <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.signInSubtitle')}</p>

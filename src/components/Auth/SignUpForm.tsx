@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TERMS_SECTION_KEYS } from '../../constants/termsOfService';
 import { AuthDivider } from './AuthDivider';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { Logo } from '../Logo';
 
 const PRIVACY_SECTION_KEYS = ['whatWeCollect', 'howWeUse', 'accountDeletion', 'contact'] as const;
 
@@ -86,10 +87,8 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top">
         {/* Logo + short info (Napper-style: clear top section) */}
         <div className="text-center pt-2 pb-6">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--nap-color)]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
+          <div className="mx-auto mb-4 flex justify-center">
+            <Logo size={64} />
           </div>
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.createAccount')}</h1>
           <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.createAccountSubtitle')}</p>
@@ -97,38 +96,6 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
         <div className="card p-6 w-full max-w-sm mx-auto">
-          {/* Consent: Terms of Service + Privacy Policy (both required) */}
-          <div className="mb-5">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={agreedToTermsAndPrivacy}
-                onChange={(e) => setAgreedToTermsAndPrivacy(e.target.checked)}
-                disabled={loading}
-                className="mt-1 w-4 h-4 rounded border-[var(--text-muted)] bg-[var(--bg-soft)] text-[var(--nap-color)] focus:ring-[var(--nap-color)]"
-                aria-describedby="consent-desc"
-              />
-              <span id="consent-desc" className="text-sm text-[var(--text-secondary)] font-display">
-                {t('auth.agreeTermsAndPrivacy')}{' '}
-                <button
-                  type="button"
-                  onClick={() => setShowTermsModal(true)}
-                  className="text-[var(--nap-color)] font-medium underline underline-offset-2"
-                >
-                  {t('auth.termsOfService')}
-                </button>
-                {' '}{t('auth.and')}{' '}
-                <button
-                  type="button"
-                  onClick={() => setShowPrivacyModal(true)}
-                  className="text-[var(--nap-color)] font-medium underline underline-offset-2"
-                >
-                  {t('auth.privacyPolicy')}
-                </button>
-              </span>
-            </label>
-          </div>
-
           <GoogleSignInButton onSignIn={onGoogleSignIn} disabled={!agreedToTermsAndPrivacy} />
 
           <AuthDivider />
@@ -184,6 +151,38 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
                 className="input"
                 disabled={loading}
               />
+            </div>
+
+            {/* Consent directly above CTA: market-standard placement so agreement is tied to the action */}
+            <div className="pt-1">
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={agreedToTermsAndPrivacy}
+                  onChange={(e) => setAgreedToTermsAndPrivacy(e.target.checked)}
+                  disabled={loading}
+                  className="mt-1 w-4 h-4 rounded border-[var(--text-muted)] bg-[var(--bg-soft)] text-[var(--nap-color)] focus:ring-[var(--nap-color)]"
+                  aria-describedby="consent-desc"
+                />
+                <span id="consent-desc" className="text-sm text-[var(--text-secondary)] font-display">
+                  {t('auth.agreeTermsAndPrivacy')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowTermsModal(true)}
+                    className="text-[var(--nap-color)] font-medium underline underline-offset-2"
+                  >
+                    {t('auth.termsOfService')}
+                  </button>
+                  {' '}{t('auth.and')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowPrivacyModal(true)}
+                    className="text-[var(--nap-color)] font-medium underline underline-offset-2"
+                  >
+                    {t('auth.privacyPolicy')}
+                  </button>
+                </span>
+              </label>
             </div>
 
             <button
