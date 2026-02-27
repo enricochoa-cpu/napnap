@@ -48,6 +48,51 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${mins}m`;
 }
 
+/** Returns numeric age parts for i18n-friendly formatting (e.g. "3 months, 2 days"). */
+export function getAgeParts(dateOfBirth: string): { years?: number; months?: number; days?: number } {
+  const dob = parseISO(dateOfBirth);
+  const now = new Date();
+
+  const years = differenceInYears(now, dob);
+  if (years >= 1) {
+    const months = differenceInMonths(now, dob) % 12;
+    return { years, months: months > 0 ? months : undefined };
+  }
+
+  const months = differenceInMonths(now, dob);
+  if (months >= 1) {
+    const lastMonthAnniversary = addMonths(dob, months);
+    const days = differenceInDays(now, lastMonthAnniversary);
+    return { months, days: days > 0 ? days : undefined };
+  }
+
+  const days = differenceInDays(now, dob);
+  return { days };
+}
+
+/** Builds a localized age string using i18n t (e.g. "3 months, 2 days" / "3 meses, 2 días"). */
+export function formatAge(
+  t: (key: string, options?: { count?: number }) => string,
+  dateOfBirth: string
+): string {
+  const parts = getAgeParts(dateOfBirth);
+  const segs: string[] = [];
+  if (parts.years !== undefined) {
+    segs.push(`${parts.years} ${t(parts.years === 1 ? 'age.year' : 'age.years')}`);
+    if (parts.months !== undefined) {
+      segs.push(`${parts.months} ${t(parts.months === 1 ? 'age.month' : 'age.months')}`);
+    }
+  } else if (parts.months !== undefined) {
+    segs.push(`${parts.months} ${t(parts.months === 1 ? 'age.month' : 'age.months')}`);
+    if (parts.days !== undefined) {
+      segs.push(`${parts.days} ${t(parts.days === 1 ? 'age.day' : 'age.days')}`);
+    }
+  } else if (parts.days !== undefined) {
+    segs.push(`${parts.days} ${t(parts.days === 1 ? 'age.day' : 'age.days')}`);
+  }
+  return segs.join(', ');
+}
+
 export function calculateAge(dateOfBirth: string): string {
   const dob = parseISO(dateOfBirth);
   const now = new Date();

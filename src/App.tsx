@@ -23,7 +23,7 @@ import { useApplyCircadianTheme } from './hooks/useCircadianTheme';
 import {
   formatDate,
   formatDateTime,
-  calculateAge,
+  formatAge,
 } from './utils/dateUtils';
 import {
   getOnboardingDraftFromSession,
@@ -239,11 +239,11 @@ function App() {
   // Dates that have at least one sleep entry (for calendar dots)
   const datesWithEntries = useMemo(() => new Set(entries.map(e => e.date)), [entries]);
 
-  // Baby age string for display in DayNavigator
+  // Baby age string for display in DayNavigator (localized)
   const babyAge = useMemo(() => {
     const p = activeBabyProfile || profile;
-    return p?.dateOfBirth ? calculateAge(p.dateOfBirth) : '';
-  }, [activeBabyProfile, profile]);
+    return p?.dateOfBirth ? formatAge(t, p.dateOfBirth) : '';
+  }, [activeBabyProfile, profile, t]);
 
   // Check for collision with existing entries
   const checkCollision = (startTime: string, endTime: string | null): SleepEntry | null => {

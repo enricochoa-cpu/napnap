@@ -1,10 +1,14 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { formatDate, getNextDay, getPreviousDay } from '../utils/dateUtils';
+import { getDateFnsLocale } from '../utils/dateFnsLocale';
 import { parseISO, format } from 'date-fns';
 import type { SleepEntry } from '../types';
+
+type TFunction = (key: string, options?: Record<string, string | number>) => string;
 
 type SleepType = 'nap' | 'night';
 
@@ -147,13 +151,19 @@ const formatDurationLong = (startTime: string, endTime: string | null): string =
   return `${raw} long`;
 };
 
-// Label under end time: today = "Xh Y min ago", yesterday = "Yesterday", older = "Feb 10"
-const getRelativeDateLabel = (dateStr: string, endTime: string | null, now: Date, isActiveEntry: boolean): string => {
-  if (!endTime) return isActiveEntry ? 'Sleeping...' : '—';
-  if (isToday(dateStr)) return getRelativeAgo(endTime, dateStr, now) || '';
-  if (isYesterday(dateStr)) return 'Yesterday';
-  const date = new Date(dateStr + 'T12:00:00');
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+// Label under end time: today = "Xh Y min ago", yesterday = "Yesterday", older = "Feb 10" (localized)
+const getRelativeDateLabel = (
+  t: TFunction,
+  dateStr: string,
+  endTime: string | null,
+  now: Date,
+  isActiveEntry: boolean
+): string => {
+  if (!endTime) return isActiveEntry ? t('sleepEntrySheet.sleeping') : '—';
+  if (isToday(dateStr)) return getRelativeAgo(t, endTime, dateStr, now) || '';
+  if (isYesterday(dateStr)) return t('time.yesterday');
+  const date = parseISO(dateStr + 'T12:00:00');
+  return format(date, 'MMM d', { locale: getDateFnsLocale() });
 };
 
 // Compute duration in minutes (for validation)
@@ -167,25 +177,24 @@ const computeDurationMinutes = (start: string, end: string): number => {
   return endMins - startMins;
 };
 
-// Compute relative "ago" label for end time
-const getRelativeAgo = (timeStr: string, dateStr: string, now: Date): string => {
+// Compute relative "ago" label for end time (localized)
+const getRelativeAgo = (t: TFunction, timeStr: string, dateStr: string, now: Date): string => {
   if (!timeStr) return '';
   const [h, m] = timeStr.split(':').map(Number);
   const target = new Date(dateStr + 'T00:00:00');
   target.setHours(h, m, 0, 0);
-  // If end time is before start (cross-midnight), it's next day
   const diffMs = now.getTime() - target.getTime();
   if (diffMs < 0) return '';
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffMins < 1) return t('time.justNow');
+  if (diffMins < 60) return t('time.minAgo', { count: diffMins });
   const diffHours = Math.floor(diffMins / 60);
   const remainingMins = diffMins % 60;
   if (diffHours < 24) {
-    if (remainingMins === 0) return `${diffHours}h ago`;
-    return `${diffHours}h ${remainingMins} min ago`;
+    if (remainingMins === 0) return t('time.hoursAgo', { count: diffHours });
+    return t('time.hoursMinsAgo', { hours: diffHours, minutes: remainingMins });
   }
-  return `${Math.floor(diffHours / 24)}d ago`;
+  return t('time.daysAgo', { count: Math.floor(diffHours / 24) });
 };
 
 /**
@@ -209,6 +218,7 @@ export function SleepEntrySheet({
   saveError = null,
   defaultEndTimeToNow = false,
 }: SleepEntrySheetProps) {
+  const { t } = useTranslation();
   const isEditing = !!entry;
   const sleepType: SleepType = entry?.type || initialType;
 
@@ -261,8 +271,8 @@ export function SleepEntrySheet({
   // Duration under start time: "29min long"; relative date under end time: "2h ago" | "Yesterday" | "Feb 10"
   const durationLabel = useMemo(() => formatDurationLong(startTime, endTime), [startTime, endTime]);
   const relativeDateLabel = useMemo(
-    () => getRelativeDateLabel(selectedDate, endTime, now, isActiveEntry),
-    [selectedDate, endTime, now, isActiveEntry]
+    () => getRelativeDateLabel(t, selectedDate, endTime, now, isActiveEntry),
+    [t, selectedDate, endTime, now, isActiveEntry]
   );
 
   // Icon state: Play (new, no end), Stop (active + no changes = end sleep), Check (save edits)
@@ -532,7 +542,7 @@ export function SleepEntrySheet({
                 {/* Hint for crossing midnight (suppress when validation error shown) */}
                 {!validation.error && !validation.warning && endTime && isTimeBefore(endTime, startTime) && (
                   <p className="text-xs text-[var(--text-muted)] text-center mt-3">
-                    {sleepType === 'nap' ? 'Ends next day' : 'Wake up is next day'}
+                    {sleepType === 'nap' ? t('sleepEntrySheet.endsNextDay') : t('sleepEntrySheet.wakeUpNextDay')}
                   </p>
                 )}
               </div>

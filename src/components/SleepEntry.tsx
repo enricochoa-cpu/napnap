@@ -2,11 +2,6 @@ import type { SleepEntry as SleepEntryType } from '../types';
 import { useTranslation } from 'react-i18next';
 import { formatTime, calculateDuration, formatDuration } from '../utils/dateUtils';
 
-// Get nap ordinal label in English
-function getNapOrdinal(num: number): string {
-  const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth'];
-  return ordinals[num - 1] || `${num}th`;
-}
 
 // Shared props for action buttons
 interface EntryActionsProps {
@@ -77,7 +72,7 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
           </p>
           {isActive && (
             <p className="text-sm text-[var(--success-color)] font-medium">
-              Sleeping...
+              {t('sleepEntry.sleeping')}
             </p>
           )}
         </div>
@@ -103,8 +98,17 @@ interface NapEntryProps {
 }
 
 export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps) {
+  const { t } = useTranslation();
   const isActive = entry.endTime === null;
   const duration = calculateDuration(entry.startTime, entry.endTime);
+  const napLabel =
+    napNumber === 1
+      ? t('stats.napFirst')
+      : napNumber === 2
+        ? t('stats.napSecond')
+        : napNumber === 3
+          ? t('stats.napThird')
+          : t('stats.napOrdinal', { n: napNumber });
 
   return (
     <div
@@ -130,11 +134,11 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
         {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="font-display font-bold text-[var(--text-primary)]">
-            {getNapOrdinal(napNumber)} nap
+            {napLabel}
           </p>
           <p className="text-sm text-[var(--text-secondary)]">
             {formatDuration(duration)}
-            {isActive && <span className="text-[var(--success-color)] font-medium"> (ongoing)</span>}
+            {isActive && <span className="text-[var(--success-color)] font-medium"> {t('sleepEntry.ongoing')}</span>}
           </p>
         </div>
 
@@ -217,6 +221,7 @@ interface NightSleepSummaryProps {
 }
 
 export function NightSleepSummary({ durationMinutes }: NightSleepSummaryProps) {
+  const { t } = useTranslation();
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
   const durationText = `${hours}h ${minutes.toString().padStart(2, '0')}m`;
@@ -229,7 +234,7 @@ export function NightSleepSummary({ durationMinutes }: NightSleepSummaryProps) {
       </svg>
 
       <span className="text-sm text-[var(--text-secondary)] font-medium">
-        Night sleep {durationText}
+        {t('sleepEntry.nightSleep')} {durationText}
       </span>
     </div>
   );

@@ -207,7 +207,8 @@
     "subtitle": "Switch or add a baby",
     "addBaby": "Add a baby",
     "noBabies": "No babies yet",
-    "noBabiesSubtitle": "Add your first baby to start tracking sleep"
+    "noBabiesSubtitle": "Add your first baby to start tracking sleep",
+    "ageUnknown": "Age unknown"
   },
   "growth": {
     "babyWeight": "Baby weight",
@@ -255,7 +256,10 @@
     "viewer": "Viewer",
     "caregiver": "Caregiver",
     "invite": "Invite",
-    "noShares": "Not shared yet"
+    "noShares": "Not shared yet",
+    "ageOld": "{{age}} old",
+    "editProfile": "Edit profile",
+    "viewProfile": "View profile"
   },
   "shareAccess": {
     "title": "Share access",
@@ -274,7 +278,10 @@
     "dailySummary": "Daily summary",
     "totalSleep": "Total sleep",
     "naps": "Naps",
-    "night": "Night"
+    "night": "Night",
+    "napCount_one": "{{count}} nap",
+    "napCount_other": "{{count}} naps",
+    "avgWake": "avg wake"
   },
   "dayNavigator": {
     "today": "Today",
@@ -303,7 +310,10 @@
     "notes": "Notes",
     "notesPlaceholder": "Add a note...",
     "deleteEntry": "Delete entry",
-    "deleteConfirm": "Delete this sleep entry?"
+    "deleteConfirm": "Delete this sleep entry?",
+    "sleeping": "Sleeping...",
+    "ongoing": "(ongoing)",
+    "nightSleep": "Night sleep"
   },
   "sleepEntrySheet": {
     "addNap": "Add nap",
@@ -313,7 +323,10 @@
     "startTime": "Start time",
     "endTime": "End time",
     "save": "Save",
-    "delete": "Delete"
+    "delete": "Delete",
+    "sleeping": "Sleeping...",
+    "endsNextDay": "Ends next day",
+    "wakeUpNextDay": "Wake up is next day"
   },
   "wakeUpSheet": {
     "title": "Wake up",
@@ -490,6 +503,18 @@
     "today": "Today",
     "minutesAgo": "{{count}} min ago",
     "hoursAgo": "{{count}}h ago",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "justNow": "just now",
+    "minAgo": "{{count}} min ago",
+    "hoursMinsAgo": "{{hours}}h {{minutes}} min ago",
+    "daysAgo": "{{count}}d ago"
+  },
+  "age": {
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "day": "day",
+    "days": "days"
   }
 }

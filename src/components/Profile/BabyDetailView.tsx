@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BabyProfile, BabyShare, WeightLog, HeightLog } from '../../types';
-import { calculateAge } from '../../utils/dateUtils';
+import { formatAge } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ShareAccess } from '../ShareAccess';
@@ -131,13 +131,18 @@ export function BabyDetailView({
     }
   };
 
-  const age = baby.dateOfBirth ? calculateAge(baby.dateOfBirth) : '';
+  const age = baby.dateOfBirth ? formatAge(t, baby.dateOfBirth) : '';
+  const subtitle = age
+    ? t('babyDetail.ageOld', { age })
+    : isOwner
+      ? t('babyDetail.editProfile')
+      : t('babyDetail.viewProfile');
 
   return (
     <div className="space-y-6">
       <SubViewHeader
-        title={baby.name || 'Baby'}
-        subtitle={age ? `${age} old` : isOwner ? 'Edit profile' : 'View profile'}
+        title={baby.name || t('common.baby')}
+        subtitle={subtitle}
         onBack={onBack}
       />
 

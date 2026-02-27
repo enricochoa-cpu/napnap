@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { startOfDay, subDays } from 'date-fns';
 import type { SleepEntry } from '../types';
 import type { BabyProfile } from '../types';
+import { formatAge } from '../utils/dateUtils';
 import {
   getReportData,
   formatMinutesToHours,
@@ -91,12 +92,13 @@ export function SleepReportView({
 
   const overviewCopy = useMemo(() => {
     const name = data.babyName;
-    if (!data.ageLabel) {
+    const ageLabel = profile?.dateOfBirth ? formatAge(t, profile.dateOfBirth) : '';
+    if (!ageLabel) {
       return t('report.overviewNoAge', { name });
     }
     const pronoun = profile?.gender === 'male' ? t('report.pronounHe') : profile?.gender === 'female' ? t('report.pronounShe') : t('report.pronounThey');
-    return t('report.overviewWithAge', { name, pronoun, ageLabel: data.ageLabel });
-  }, [data.babyName, data.ageLabel, profile?.gender, t]);
+    return t('report.overviewWithAge', { name, pronoun, ageLabel });
+  }, [data.babyName, profile?.dateOfBirth, profile?.gender, t]);
 
   return (
     <div className="pb-32 px-6 fade-in">

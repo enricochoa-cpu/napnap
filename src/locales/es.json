@@ -207,7 +207,8 @@
     "subtitle": "Cambiar o añadir bebé",
     "addBaby": "Añadir bebé",
     "noBabies": "Aún no hay bebés",
-    "noBabiesSubtitle": "Añade tu primer bebé para empezar a registrar el sueño"
+    "noBabiesSubtitle": "Añade tu primer bebé para empezar a registrar el sueño",
+    "ageUnknown": "Edad desconocida"
   },
   "growth": {
     "babyWeight": "Peso del bebé",
@@ -255,7 +256,10 @@
     "viewer": "Lector",
     "caregiver": "Cuidador",
     "invite": "Invitar",
-    "noShares": "Aún no compartido"
+    "noShares": "Aún no compartido",
+    "ageOld": "{{age}}",
+    "editProfile": "Editar perfil",
+    "viewProfile": "Ver perfil"
   },
   "shareAccess": {
     "title": "Compartir acceso",
@@ -274,7 +278,10 @@
     "dailySummary": "Resumen del día",
     "totalSleep": "Sueño total",
     "naps": "Siestas",
-    "night": "Noche"
+    "night": "Noche",
+    "napCount_one": "{{count}} siesta",
+    "napCount_other": "{{count}} siestas",
+    "avgWake": "vigilia media"
   },
   "dayNavigator": {
     "today": "Hoy",
@@ -303,7 +310,10 @@
     "notes": "Notas",
     "notesPlaceholder": "Añadir nota...",
     "deleteEntry": "Eliminar registro",
-    "deleteConfirm": "¿Eliminar este registro de sueño?"
+    "deleteConfirm": "¿Eliminar este registro de sueño?",
+    "sleeping": "Durmiendo...",
+    "ongoing": "(en curso)",
+    "nightSleep": "Sueño nocturno"
   },
   "sleepEntrySheet": {
     "addNap": "Añadir siesta",
@@ -313,7 +323,10 @@
     "startTime": "Hora de inicio",
     "endTime": "Hora de fin",
     "save": "Guardar",
-    "delete": "Eliminar"
+    "delete": "Eliminar",
+    "sleeping": "Durmiendo...",
+    "endsNextDay": "Termina al día siguiente",
+    "wakeUpNextDay": "El despertar es al día siguiente"
   },
   "wakeUpSheet": {
     "title": "Despertar",
@@ -490,6 +503,18 @@
     "today": "Hoy",
     "minutesAgo": "hace {{count}} min",
     "hoursAgo": "hace {{count}}h",
-    "yesterday": "Ayer"
+    "yesterday": "Ayer",
+    "justNow": "ahora mismo",
+    "minAgo": "hace {{count}} min",
+    "hoursMinsAgo": "hace {{hours}}h {{minutes}} min",
+    "daysAgo": "hace {{count}} días"
+  },
+  "age": {
+    "year": "año",
+    "years": "años",
+    "month": "mes",
+    "months": "meses",
+    "day": "día",
+    "days": "días"
   }
 }

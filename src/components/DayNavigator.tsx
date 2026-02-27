@@ -15,6 +15,7 @@ import {
   isToday as isDateToday,
 } from 'date-fns';
 import { formatDate } from '../utils/dateUtils';
+import { getDateFnsLocale } from '../utils/dateFnsLocale';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface DayNavigatorProps {
@@ -215,6 +216,7 @@ function CalendarModal({
 
   const dialogRef = useFocusTrap(isOpen, onClose);
   const { t } = useTranslation();
+  const locale = getDateFnsLocale();
 
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
@@ -274,8 +276,8 @@ function CalendarModal({
                 >
                   <ChevronLeft />
                 </button>
-                <span className="font-display font-semibold text-[var(--text-primary)] text-lg">
-                  {format(calendarMonth, 'MMMM yyyy')}
+                <span className="font-display font-semibold text-[var(--text-primary)] text-lg capitalize">
+                  {format(calendarMonth, 'MMMM yyyy', { locale })}
                 </span>
                 <button
                   onClick={() => setCalendarMonth(prev => addMonths(prev, 1))}
@@ -307,7 +309,7 @@ function CalendarModal({
                     <button
                       key={i}
                       onClick={() => handleSelectDay(date)}
-                      aria-label={t('dayNavigator.ariaDay', { date: format(date, 'EEEE, MMMM d, yyyy') })}
+                      aria-label={t('dayNavigator.ariaDay', { date: format(date, 'EEEE, MMMM d, yyyy', { locale })})}
                       className={`flex flex-col items-center justify-center py-1 rounded-xl min-h-[44px] transition-all ${
                         !isCurrentMonth ? 'opacity-20' : ''
                       }`}
@@ -363,7 +365,8 @@ export function DayNavigator({ selectedDate, onDateChange, babyAge, datesWithEnt
   const selectedParsed = parseISO(selectedDate);
   const isToday = isDateToday(selectedParsed);
 
-  const dateLabel = isToday ? t('dayNavigator.today') : format(selectedParsed, 'MMMM d');
+  const locale = getDateFnsLocale();
+  const dateLabel = isToday ? t('dayNavigator.today') : format(selectedParsed, 'MMMM d', { locale });
 
   return (
     <>

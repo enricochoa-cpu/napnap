@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { formatDuration } from '../utils/dateUtils';
 
 interface DailySummaryProps {
@@ -12,10 +13,12 @@ interface DailySummaryProps {
 }
 
 export function DailySummary({ summary }: DailySummaryProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="card p-5">
       <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] mb-4 text-center">
-        Daily Summary
+        {t('history.dailySummary')}
       </h3>
       <div className="grid grid-cols-4 gap-3">
         {/* Nap Time — use nap-color for nap-related items */}
@@ -29,7 +32,7 @@ export function DailySummary({ summary }: DailySummaryProps) {
             {formatDuration(summary.totalNapMinutes)}
           </div>
           <div className="stat-label text-xs">
-            {summary.napCount} nap{summary.napCount !== 1 ? 's' : ''}
+            {t('history.napCount', { count: summary.napCount })}
           </div>
         </div>
 
@@ -44,7 +47,7 @@ export function DailySummary({ summary }: DailySummaryProps) {
             {formatDuration(summary.totalNightMinutes)}
           </div>
           <div className="stat-label text-xs">
-            night
+            {t('history.night')}
           </div>
         </div>
 
@@ -59,7 +62,7 @@ export function DailySummary({ summary }: DailySummaryProps) {
             {formatDuration(summary.totalSleepMinutes)}
           </div>
           <div className="stat-label text-xs">
-            total
+            {t('stats.total')}
           </div>
         </div>
 
@@ -76,7 +79,7 @@ export function DailySummary({ summary }: DailySummaryProps) {
               : '--'}
           </div>
           <div className="stat-label text-xs">
-            avg wake
+            {t('history.avgWake')}
           </div>
         </div>
       </div>

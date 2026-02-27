@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile as BabyProfileType, UserProfile, BabyShare } from '../../types';
 import type { SharedBabyProfile } from '../../hooks/useBabyProfile';
-import { calculateAge } from '../../utils/dateUtils';
+import { formatAge } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { BabyEditSheet } from './BabyEditSheet';
 import { SubViewHeader } from './SubViewHeader';
@@ -140,6 +140,7 @@ interface BabyProfileCardProps {
 }
 
 function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardProps) {
+  const { t } = useTranslation();
   const cardStyle = {
     background: 'var(--glass-bg)',
     border: isActive ? '1px solid var(--nap-color)' : '1px solid var(--glass-border)',
@@ -177,7 +178,7 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
             {baby.name || 'Unnamed baby'}
           </p>
           <p className="text-sm font-light text-[var(--text-muted)] mt-0.5">
-            {baby.dateOfBirth ? calculateAge(baby.dateOfBirth) : 'Age unknown'}
+            {baby.dateOfBirth ? formatAge(t, baby.dateOfBirth) : t('myBabies.ageUnknown')}
             {!baby.isOwner && (
               <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
             )}
