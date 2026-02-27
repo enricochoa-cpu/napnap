@@ -18,6 +18,11 @@ export const PRIVACY_POLICY_SECTIONS = [
     body: 'We use this data to run the app, show you sleep predictions and history, and improve our product. We do not sell your data.',
   },
   {
+    title: 'Cookies and similar technologies',
+    body:
+      "NapNap uses only the minimum cookies and similar technologies needed to run the app securely. When you sign in, our backend provider Supabase stores authentication information in your browser so you can stay logged in and we can protect your account. If you choose to sign in with Google, Google may use its own cookies to authenticate you, under Google's own privacy policy. We do not use advertising cookies, marketing pixels, or analytics tools that track you across other apps or websites.",
+  },
+  {
     title: 'Retention',
     body: 'We keep your account and sleep data for as long as your account is active. After you delete your account, we remove all personal data. The only data we may retain is anonymized sleep and growth-related statistics (e.g. sleep durations, age ranges)—no names, no identifiers, no profile pictures or other information that could identify you or your child. We keep this solely to improve NapNap and for research (e.g. understanding sleep patterns); it cannot be linked back to you.',
   },
@@ -27,7 +32,8 @@ export const PRIVACY_POLICY_SECTIONS = [
   },
   {
     title: 'Data about minors',
-    body: "By providing your baby's data in the App, you confirm that you are the parent or legal guardian and have authority to provide that data on their behalf.",
+    body:
+      "NapNap is designed to be used by adults (parents or legal guardians). By providing your baby's data in the app, you confirm that you are the parent or legal guardian and have authority to provide that data on their behalf, in line with applicable EU data protection laws.",
   },
   {
     title: 'Contact',

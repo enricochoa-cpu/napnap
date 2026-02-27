@@ -203,3 +203,9 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] Fix: chip scroll-into-view so selected chip stays centered
 - [x] Fix: adaptive Y-domain for weight/height charts (data-driven min/max + padding)
 - [x] i18n (growth + stats chips); app_flow, lessons, MEMORY, log, progress updated
+
+
+## Deployment & OAuth (2026-02-27) [COMPLETED]
+
+- [x] Production URL https://napnap.vercel.app deployed on Vercel; APP_URL Edge Function secret and Supabase/Vercel env vars configured.
+- [x] Google OAuth redirect configured in Google Cloud + Supabase URL Configuration; sign-in flow from https://napnap.vercel.app/ tested successfully.

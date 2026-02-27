@@ -91,20 +91,51 @@ This document lists what is missing and what is already in place to take the app
 ### 4.1 Production URL and env
 
 - **Status:** Edge Function `send-invitation-email` uses `APP_URL` (fallback localhost). OAuth redirects must include production URL.
-- **Needed:** Deploy frontend to a stable production URL. Set Supabase Edge Function secret `APP_URL` to that URL. Add the same URL to Google Cloud Console and Supabase Auth redirect URLs.
+- **Needed:** ~~Deploy frontend to a stable production URL. Set Supabase Edge Function secret `APP_URL` to that URL. Add the same URL to Google Cloud Console and Supabase Auth redirect URLs.~~ **Done:** Frontend deployed to `https://napnap.vercel.app`, `APP_URL` and Supabase/Vercel env vars set and working.
 
 **Questions for you:**
 
-- Q14. What is (or will be) the production URL? (e.g. https://napnap.app or https://babysleeptracker.app)
-- Q15. Where will you host the frontend? (Vercel, Netlify, Cloudflare Pages, etc.) — so we can note any env or redirect quirks.
+- **Q14.** What is (or will be) the production URL?  
+  **Answer:** **https://napnap.vercel.app/** — Vercel’s free `*.vercel.app` URL is stable and fine for production; no custom domain or extra cost required.
+- **Q15.** Where will you host the frontend?  
+  **Answer:** **Vercel** (https://napnap.vercel.app/). Tech stack doc doesn’t name the host; deployment is Vercel.
+
+**What you still need to do (env):**
+
+1. In Supabase Dashboard → **Project Settings** → **Edge Functions** → **Secrets**, set `APP_URL` = `https://napnap.vercel.app` (no trailing slash is fine; the Edge Function uses it as base for links).
+2. In Vercel: ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are set in the project’s Environment Variables so the production build has the correct Supabase client config.
 
 ### 4.2 OAuth redirect URLs
 
-- **Needed:** In Google Cloud Console (OAuth client): add production redirect URI (e.g. `https://<project>.supabase.co/auth/v1/callback` if that’s what Supabase uses). In Supabase Dashboard (Auth → URL Configuration): add production site URL and redirect URLs (e.g. `https://yourdomain.com`, `https://yourdomain.com/`).
+- **Status:** Configured and tested. Google sign-in from `https://napnap.vercel.app/` returns to the app without OAuth errors.
+- **Needed:** Add production URL in **Google Cloud Console** (OAuth client) and in **Supabase** (Auth → URL Configuration). Follow the steps below.
+
+**How to configure (step-by-step):**
+
+**A. Google Cloud Console**
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/) and select the project that has your OAuth client (the one used for "Continue with Google").
+2. Go to **APIs & Services** → **Credentials**.
+3. Click your **OAuth 2.0 Client ID** (type: Web application).
+4. Under **Authorized redirect URIs**, add exactly:  
+   `https://<YOUR_SUPABASE_PROJECT_REF>.supabase.co/auth/v1/callback`  
+   Replace `<YOUR_SUPABASE_PROJECT_REF>` with your Supabase project ref (from `VITE_SUPABASE_URL`: e.g. if the URL is `https://abcdefghij.supabase.co`, the ref is `abcdefghij`).
+5. Click **Save**. Keep any existing redirect URI you use for local dev (same pattern; Supabase uses one callback URL; "where to send the user after login" is set in Supabase).
+
+**B. Supabase Dashboard**
+
+1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project.
+2. Go to **Authentication** → **URL Configuration**.
+3. Set **Site URL** to: `https://napnap.vercel.app`
+4. Under **Redirect URLs**, add (if not already present):  
+   `https://napnap.vercel.app`  
+   `https://napnap.vercel.app/`  
+   Keep `http://localhost:5173` (and `http://localhost:5173/` if you use it) for local development.
+5. Save. After this, Google sign-in from production will redirect back to https://napnap.vercel.app.
 
 **Questions for you:**
 
-- Q16. Same as Q14; no extra question if Q14 is answered.
+- **Q16.** Same as Q14; no extra question. Production URL = https://napnap.vercel.app/
 
 ---
 
@@ -112,18 +143,20 @@ This document lists what is missing and what is already in place to take the app
 
 ### 5.1 Third-party tools and cookies
 
-- **Status:** Sentry is used with `sendDefaultPii: true` ([src/main.tsx](src/main.tsx)). Privacy Policy does not yet mention error reporting or cookies/similar tech.
-- **Needed:** Add a short “Cookies and similar technologies” or “Error reporting” section to the Privacy Policy: what Sentry collects, that it’s for stability, and that you don’t sell data. Optionally set `sendDefaultPii: false` if you prefer not to send PII to Sentry.
+- **Status:** Sentry is used with `sendDefaultPii: true` ([src/main.tsx](src/main.tsx)). Privacy Policy has a new “Cookies and similar technologies” section describing essential Supabase auth storage and optional Google sign-in cookies; Sentry/error reporting is still not described explicitly.
+- **Needed:** Add a short “Error reporting” paragraph to the Privacy Policy explaining that Sentry is used for stability, what it may collect, and that you don’t sell data. Optionally set `sendDefaultPii: false` if you prefer not to send PII to Sentry; policy must match that choice.
 
 **Questions for you:**
 
-- Q7. Keep `sendDefaultPii: true` (easier debugging) or set to `false` (stricter privacy)? Policy must reflect the choice.
-- Q8. Do you plan to add analytics or marketing cookies later? If yes, we’ll need a cookie/consent banner and policy update; if no, we only document Sentry.
+- Q7. Keep `sendDefaultPii: true` (easier debugging) or set to `false` (stricter privacy)? Policy must reflect the choice.  
+  **Answer:** Not decided yet. For now, keep the current Sentry configuration and revisit when you work on the dedicated “Error reporting” section.
+- Q8. Do you plan to add analytics or marketing cookies later? If yes, we’ll need a cookie/consent banner and policy update; if no, we only document Sentry.  
+  **Answer:** No. The app is for a close community and you don’t plan to add analytics or marketing cookies. If this ever changes, you will add a consent banner and update the Privacy Policy.
 
 ### 5.2 Data about minors
 
-- **Status:** **Done.** One sentence added to Privacy Policy: “By providing your baby’s data in the App, you confirm that you are the parent or legal guardian and have authority to provide that data on their behalf.”
-- **Needed:** ~~One sentence…~~ Implemented.
+- **Status:** **Done.** Privacy Policy now says that NapNap is designed to be used by adults (parents or legal guardians), and that by providing baby data in the app the user confirms they are the parent or legal guardian and have authority to provide that data, in line with EU data protection laws.
+- **Needed:** ~~One sentence…~~ Implemented with EU-friendly wording.
 
 **Questions for you:**
 
@@ -131,8 +164,8 @@ This document lists what is missing and what is already in place to take the app
 
 ### 5.3 Cookie / consent banner
 
-- **Status:** No banner. For Sentry-only, disclosure in the policy is often enough; strict GDPR may prefer a brief notice.
-- **Needed (optional):** A one-time or dismissible line: “We use essential and error-reporting tools to run the app; see Privacy Policy.” Only required if you want extra transparency or target strict jurisdictions.
+- **Status:** No banner. For now you only use essential Supabase auth storage and optional Google sign-in cookies, with no analytics or marketing cookies.
+- **Needed (optional):** Keep relying on Privacy Policy disclosure only. If you later add analytics or marketing cookies, you will add a consent banner for EU/EEA users and update the policy accordingly.
 
 **Questions for you:**
 
@@ -144,13 +177,17 @@ This document lists what is missing and what is already in place to take the app
 
 ### 6.1 index.html
 
-- **Status:** `<title>` is “baby-sleep-tracker”. App is branded “NapNap” in UI.
-- **Needed:** Set `<title>` to product name + short tagline. Optionally add `<meta name="description" content="...">` for sharing and search.
+- **Status:** **Done.** `<title>` now uses the product name and tagline, and `meta description` is set.
+- **Needed:** ~~Set `<title>` to product name + short tagline. Optionally add `<meta name="description" content="...">` for sharing and search.~~ Implemented in `index.html` as:  
+  - `<title>NapNap – Baby sleep, simplified</title>`  
+  - `<meta name="description" content="NapNap is a gentle baby sleep tracker that predicts naps and bedtimes, so exhausted parents can stop guessing and follow a calm, science-inspired plan.">`
 
 **Questions for you:**
 
-- Q17. Exact public app name: “NapNap” or something else (e.g. “NapNap – Baby Sleep Tracker”)?
-- Q18. One-sentence meta description for social/search (e.g. “Calm, simple baby sleep tracking for 0–18 months.”)?
+- **Q17.** Exact public app name: “NapNap” or something else (e.g. “NapNap – Baby Sleep Tracker”)?  
+  **Answer:** **NapNap.** In the page title we use “NapNap – Baby sleep, simplified”.
+- **Q18.** One-sentence meta description for social/search (e.g. “Calm, simple baby sleep tracking for 0–18 months.”)?  
+  **Answer:** “NapNap is a gentle baby sleep tracker that predicts naps and bedtimes, so exhausted parents can stop guessing and follow a calm, science-inspired plan.”
 
 ---
 
@@ -166,12 +203,12 @@ Use this table to track status and your answers (ordered by priority: 1 = highes
 | 2 | Security | Leaked password protection | N/A (Pro only) | Nice to have; enable if upgrade to Pro. |
 | 2 | Security | Function search_path | **Done** | Migration 20260226000000 applied. |
 | 2 | Security | RLS anonymized tables | **Done** | Service role only; migration 20260226000001. |
-| 3 | Deployment | Production URL, APP_URL | Unset | Q14–Q15 |
-| 3 | Deployment | OAuth redirect URLs | To add | Q14/Q16 |
-| 4 | Privacy | Policy: Sentry / cookies | Missing | Q7–Q8 |
+| 3 | Deployment | Production URL, APP_URL | **Done** | Deployed to https://napnap.vercel.app (Vercel); APP_URL + Supabase/Vercel env configured. |
+| 3 | Deployment | OAuth redirect URLs | **Done** | Configured in Google Cloud Console + Supabase; Google sign-in from https://napnap.vercel.app/ tested. |
+| 4 | Privacy | Policy: Sentry / cookies | Partially done | Cookies/essential storage covered; Sentry/error reporting still to document. |
 | 4 | Privacy | Policy: minors / guardian | **Done** | Sentence added. |
 | 4 | Privacy | Cookie/consent notice | Optional | Q10 |
-| 5 (lowest) | Branding | index.html title + meta | Wrong / missing | Q17–Q18 |
+| 5 (lowest) | Branding | index.html title + meta | **Done** | Title set to “NapNap – Baby sleep, simplified”; meta description added. |
 
 ---
 
@@ -179,7 +216,7 @@ Use this table to track status and your answers (ordered by priority: 1 = highes
 
 1. **Legal:** ~~Add ToS…~~ Done. Optional: add Sentry/cookies to Privacy Policy (Q7–Q8).
 2. **Security:** ~~Leaked password~~ N/A (Pro only, nice to have); ~~function search_path~~ Done; ~~RLS anonymized tables~~ Done.
-3. **Deployment:** Set production URL, APP_URL, and OAuth redirects (Google + Supabase).
+3. **Deployment:** ~~Set production URL, APP_URL, and OAuth redirects (Google + Supabase).~~ Done.
 4. **Privacy:** Add policy section for Sentry/cookies (Q7–Q8); optional consent notice (Q10).
 5. **Branding:** Update index.html title and meta description (Q17–Q18).
 6. **Optional:** Add simple cookie/error-reporting notice (Q10).
