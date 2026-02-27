@@ -1,4 +1,5 @@
 import type { SleepEntry as SleepEntryType } from '../types';
+import { useTranslation } from 'react-i18next';
 import { formatTime, calculateDuration, formatDuration } from '../utils/dateUtils';
 
 // Get nap ordinal label in English
@@ -26,7 +27,7 @@ function EntryActions({ entry, onEndSleep }: EntryActionsProps) {
         onEndSleep(entry.id);
       }}
       className="p-3 rounded-full bg-[var(--wake-color)]/15 text-[var(--wake-color)] active:scale-90 transition-transform"
-      title="Wake up"
+      title={undefined}
     >
       <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -43,6 +44,7 @@ interface BedtimeEntryProps {
 }
 
 export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
+  const { t } = useTranslation();
   const isActive = entry.endTime === null;
 
   return (
@@ -71,7 +73,7 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="font-display font-bold text-[var(--text-primary)]">
-            Bedtime
+            {t('sleepEntrySheet.addBedtime')}
           </p>
           {isActive && (
             <p className="text-sm text-[var(--success-color)] font-medium">
@@ -155,6 +157,7 @@ interface WakeUpEntryProps {
 }
 
 export function WakeUpEntry({ time }: WakeUpEntryProps) {
+  const { t } = useTranslation();
   return (
     <div className="card-wake">
       <div className="flex items-center gap-4 p-5">
@@ -168,7 +171,7 @@ export function WakeUpEntry({ time }: WakeUpEntryProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="font-display font-bold text-[var(--text-primary)]">
-            Wake up
+          {t('sleepEntry.wakeUp')}
           </p>
         </div>
 
@@ -187,6 +190,7 @@ interface WakeWindowSeparatorProps {
 }
 
 export function WakeWindowSeparator({ durationMinutes }: WakeWindowSeparatorProps) {
+  const { t } = useTranslation();
   const hours = Math.floor(durationMinutes / 60);
   const minutes = durationMinutes % 60;
   const durationText = hours > 0
@@ -201,7 +205,7 @@ export function WakeWindowSeparator({ durationMinutes }: WakeWindowSeparatorProp
       </svg>
 
       <span className="text-sm text-[var(--text-muted)] font-medium">
-        Awake {durationText}
+        {t('today.awakeFor')} {durationText}
       </span>
     </div>
   );

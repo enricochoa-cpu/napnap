@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SleepEntry } from '../types';
 import {
   BedtimeEntry,
@@ -37,6 +38,7 @@ function calculateMinutesBetween(start: string, end: string): number {
 }
 
 export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSleep }: SleepListProps) {
+  const { t } = useTranslation();
   // Build the complete timeline with all items
   const timelineItems = useMemo(() => {
     const items: TimelineItem[] = [];
@@ -199,8 +201,12 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSlee
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
           </svg>
         </div>
-        <p className="text-[var(--text-secondary)] font-display">No sleep entries for this day</p>
-        <p className="text-[var(--text-muted)] text-sm mt-1">Use the + button below to log past sleep</p>
+        <p className="text-[var(--text-secondary)] font-display">
+          {t('history.noEntries')}
+        </p>
+        <p className="text-[var(--text-muted)] text-sm mt-1">
+          {t('history.emptyCta')}
+        </p>
       </div>
     );
   }

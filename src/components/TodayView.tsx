@@ -617,7 +617,7 @@ export function TodayView({
         : hasNoBaby
         ? onAddBabyClick
         : undefined;
-    const primaryCtaLabel = showInviteEmpty ? 'Review invite' : 'Add your baby';
+    const primaryCtaLabel = showInviteEmpty ? t('today.reviewInvite') : t('today.addABaby');
 
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
@@ -629,23 +629,19 @@ export function TodayView({
             <h1 className="text-xl font-display font-bold text-[var(--text-primary)] mb-2">
               {hasNoBaby
                 ? showInviteEmpty
-                  ? 'You have a baby invite'
+                  ? t('today.youHaveBabyInvite')
                   : t('today.addABabySubtitle')
                 : t('today.goodMorning')}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed mb-6">
               {hasNoBaby ? (
                 showInviteEmpty ? (
-                  'You have been invited to care for a baby. Accept the invite to start logging sleep and see predictions.'
+                  t('today.inviteEmptyBody')
                 ) : (
-                  'Log sleep for your little one by adding their profile first. Then you can track naps and bedtime.'
+                  t('today.addBabyEmptyBody')
                 )
               ) : (
-                <>
-                  {'This space is still empty. Tap the '}
-                  <span className="text-[var(--nap-color)]">+</span>
-                  {' button to add your first activity for today.'}
-                </>
+                t('today.emptyStateTapButton')
               )}
             </p>
             {hasNoBaby && primaryCtaHandler && (
@@ -674,14 +670,14 @@ export function TodayView({
             // SLEEPING STATE
             <div className="text-center">
               <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
-                {activeSleep.type === 'nap' ? 'Napping' : 'Night Sleep'}
+                {activeSleep.type === 'nap' ? t('today.napping') : t('today.nightSleep')}
               </p>
               <h1 className="hero-countdown text-[var(--nap-color)] mb-2 sm:mb-3">
                 {formatDuration(currentSleepDuration)}
               </h1>
               {expectedWakeUp && (
                 <p className="text-[var(--text-secondary)] font-display text-sm">
-                  Expected wake at <span className={`font-semibold ${activeSleep.type === 'night' ? 'text-[var(--wake-color)]' : 'text-[var(--text-primary)]'}`}>{formatTime(expectedWakeUp)}</span>
+                  {t('today.expectedWakeAt')} <span className={`font-semibold ${activeSleep.type === 'night' ? 'text-[var(--wake-color)]' : 'text-[var(--text-primary)]'}`}>{formatTime(expectedWakeUp)}</span>
                 </p>
               )}
             </div>
@@ -694,18 +690,18 @@ export function TodayView({
                   {nextEventCountdown.isNow ? (
                     <div>
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
-                        It's Time
+                        {t('today.itsTime')}
                       </p>
                       <h1 className={`hero-countdown animate-pulse-soft ${
                         nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
                       }`}>
-                        {nextEventCountdown.type === 'bedtime' ? 'BEDTIME' : 'NAP NOW'}
+                        {nextEventCountdown.type === 'bedtime' ? t('today.bedtimeNow') : t('today.napNow')}
                       </h1>
                     </div>
                   ) : (
                     <div>
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
-                        {nextEventCountdown.type === 'bedtime' ? 'Bedtime In' : 'Next Nap In'}
+                        {nextEventCountdown.type === 'bedtime' ? t('today.bedtimeIn') : t('today.nextNapIn')}
                       </p>
                       <h1 className={`hero-countdown mb-2 sm:mb-3 ${
                         nextEventCountdown.type === 'bedtime' ? 'text-[var(--night-color)]' : 'text-[var(--nap-color)]'
@@ -716,7 +712,7 @@ export function TodayView({
                   )}
                   {/* SECONDARY: Awake time (smaller, muted) */}
                   <p className="text-[var(--text-muted)] font-display text-sm mt-1">
-                    Awake for{' '}
+                    {t('today.awakeFor')}{' '}
                     <span className="text-[var(--wake-color)] font-medium">
                       {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
                     </span>
@@ -726,7 +722,7 @@ export function TodayView({
                 // Fallback when no countdown available
                 <div>
                   <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
-                    Awake
+                    {t('today.awake')}
                   </p>
                   <h1 className="hero-countdown text-[var(--wake-color)]">
                     {awakeMinutes !== null ? formatDuration(awakeMinutes) : '—'}
@@ -743,7 +739,7 @@ export function TodayView({
       {/* ================================================================== */}
       <div className="mt-3 sm:mt-4">
         <h2 className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-3 sm:mb-4 px-1">
-          Your Day
+          {t('today.yourDay')}
         </h2>
 
         {/* Timeline with vertical connector - NEWEST FIRST (last to old) */}
@@ -773,7 +769,7 @@ export function TodayView({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                      Night Sleep
+                      {t('today.nightSleep')}
                     </p>
                     <p className="text-white font-display font-semibold text-base">
                       {formatTime(activeSleep.startTime)} — ...
@@ -795,10 +791,10 @@ export function TodayView({
                   <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--night-color)]/40 text-[var(--night-color)]/70 z-10">
                     <MoonIcon className="w-5 h-5" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                      Bedtime
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
+                        {t('today.bedtime')}
+                      </p>
                     <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
                       {formatTime(displayBedtime)}
                     </p>
@@ -830,7 +826,7 @@ export function TodayView({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                        {napInfo.isCatnap ? 'Short Nap' : `Nap ${napNumber}`}
+                        {napInfo.isCatnap ? t('today.shortNap') : t('today.napOrdinal', { n: napNumber })}
                       </p>
                       <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
                         {formatTime(displayStart)} — {formatTime(expectedEnd)}
@@ -854,7 +850,7 @@ export function TodayView({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                      Napping Now
+                      {t('today.nappingNow')}
                     </p>
                     <p className="text-white font-display font-semibold text-base">
                       {formatTime(activeSleep.startTime)} — ...
@@ -885,7 +881,7 @@ export function TodayView({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white/70 font-display text-xs uppercase tracking-wider">
-                      Nap {todayNaps.length - index}
+                      {t('today.napOrdinal', { n: todayNaps.length - index })}
                     </p>
                     <p className="text-white font-display font-semibold text-base">
                       {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
@@ -914,7 +910,7 @@ export function TodayView({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider">
-                      Morning Wake Up
+                      {t('today.morningWakeUp')}
                     </p>
                     <p className="text-[var(--text-primary)] font-display font-semibold text-base">
                       {formatTime(morningWakeUp)}

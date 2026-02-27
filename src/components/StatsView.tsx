@@ -1174,10 +1174,10 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </svg>
           </div>
           <h3 className="text-lg font-display font-semibold text-[var(--text-primary)] mb-2">
-            No data yet
+            {t('stats.noDataTitle')}
           </h3>
           <p className="text-[var(--text-muted)] text-sm">
-            Start tracking sleep to see your stats here
+            {t('stats.noDataBody')}
           </p>
         </div>
       ) : (
@@ -1218,7 +1218,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             <button
               type="button"
               onClick={() => setShowReport(true)}
-              aria-label="View sleep report for last 30 days"
+              aria-label={t('stats.ariaReportButton')}
               className="w-full flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)] focus-visible:ring-inset rounded-xl"
             >
               <span className="text-[var(--night-color)] flex-shrink-0" aria-hidden="true">
@@ -1231,7 +1231,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 </svg>
               </span>
               <span className="flex-1 min-w-0 text-sm font-display font-semibold text-[var(--text-primary)]">
-                Sleep report <span className="text-[var(--text-muted)] font-normal">· Last 30 days</span>
+                {t('report.title')} <span className="text-[var(--text-muted)] font-normal">· {t('report.subtitle')}</span>
               </span>
               <span className="text-[var(--text-muted)] flex-shrink-0" aria-hidden="true">
                 <ChevronRightIcon />
@@ -1243,9 +1243,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {distributionData && (
             <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                Total Sleep Distribution
+                {t('stats.daytimeSleepDistribution')}
               </h3>
-              <div className="flex justify-center" role="img" aria-label="Total sleep distribution: proportion of night sleep versus nap sleep for the selected period">
+              <div className="flex justify-center" role="img" aria-label={t('stats.ariaDistribution')}>
                 <div className="relative" style={{ width: 180, height: 180 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -1268,18 +1268,22 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   {/* Center label */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-2xl font-display font-bold text-[var(--text-primary)]">100%</span>
-                    <span className="text-xs text-[var(--text-muted)]">Total</span>
+                    <span className="text-xs text-[var(--text-muted)]">{t('stats.total')}</span>
                   </div>
                 </div>
               </div>
               <div className="flex justify-center gap-6 mt-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: nightColor }} />
-                  <span className="text-xs text-[var(--text-muted)]">Night: {distributionData.nightPct}%</span>
+                  <span className="text-xs text-[var(--text-muted)]">
+                    {t('today.night')}: {distributionData.nightPct}%
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: napColor }} />
-                  <span className="text-xs text-[var(--text-muted)]">Day: {distributionData.napPct}%</span>
+                  <span className="text-xs text-[var(--text-muted)]">
+                    {t('today.nap')}: {distributionData.napPct}%
+                  </span>
                 </div>
               </div>
             </div>
@@ -1288,9 +1292,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {/* Daily Bar Chart - Glassmorphism */}
           <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-              Daily Sleep
+              {t('stats.dailySleep')}
             </h3>
-            <div className="h-48 -mx-4" role="img" aria-label="Daily sleep stacked bar chart: night sleep and nap time per day for the selected period">
+            <div className="h-48 -mx-4" role="img" aria-label={t('stats.ariaDailySleep')}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={rangeData} margin={CHART_MARGIN}>
                   <CartesianGrid
@@ -1325,11 +1329,11 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             <div className="flex justify-center gap-6 mt-3">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm" style={{ background: napColor }} />
-                <span className="text-xs text-[var(--text-muted)]">Naps</span>
+                <span className="text-xs text-[var(--text-muted)]">{t('history.naps')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm" style={{ background: nightColor }} />
-                <span className="text-xs text-[var(--text-muted)]">Night</span>
+                <span className="text-xs text-[var(--text-muted)]">{t('history.night')}</span>
               </div>
             </div>
           </div>
@@ -1337,9 +1341,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {/* Sleep Trend Area Chart - Glassmorphism */}
           <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-              Sleep Trend
+              {t('stats.sleepTrend')}
             </h3>
-            <div className="h-40 -mx-4" role="img" aria-label="Sleep trend area chart: night and nap sleep over time for the selected period">
+            <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaSleepTrend')}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={rangeData} margin={CHART_MARGIN}>
                   <defs>
@@ -1399,10 +1403,10 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           {scheduleData && (
             <div className="rounded-3xl backdrop-blur-xl p-4 mt-6 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                Daily Schedule
+                {t('stats.dailySchedule')}
               </h3>
 
-              <div className="flex" role="img" aria-label="Daily schedule Gantt chart: wake-up, naps, and bedtime across days">
+              <div className="flex" role="img" aria-label={t('stats.ariaDailySchedule')}>
                 <div className="w-10 flex-shrink-0">
                   <div className="h-5" />
                   {scheduleData.days.map((day) => (
@@ -1588,9 +1592,9 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
             <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                Daily Sleep
+                {t('stats.dailySleep')}
               </h3>
-              <div className="h-48 -mx-4" role="img" aria-label="Daily sleep stacked bar chart">
+              <div className="h-48 -mx-4" role="img" aria-label={t('stats.ariaDailySleep')}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={rangeData} margin={CHART_MARGIN}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />

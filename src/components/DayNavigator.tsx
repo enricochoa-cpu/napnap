@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import {
   format,
@@ -213,6 +214,7 @@ function CalendarModal({
   };
 
   const dialogRef = useFocusTrap(isOpen, onClose);
+  const { t } = useTranslation();
 
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
@@ -245,7 +247,7 @@ function CalendarModal({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Calendar"
+            aria-label={t('dayNavigator.calendar')}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -268,7 +270,7 @@ function CalendarModal({
                 <button
                   onClick={() => setCalendarMonth(prev => subMonths(prev, 1))}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
-                  aria-label="Previous month"
+                  aria-label={t('dayNavigator.prevMonth')}
                 >
                   <ChevronLeft />
                 </button>
@@ -278,7 +280,7 @@ function CalendarModal({
                 <button
                   onClick={() => setCalendarMonth(prev => addMonths(prev, 1))}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
-                  aria-label="Next month"
+                  aria-label={t('dayNavigator.nextMonth')}
                 >
                   <ChevronRight />
                 </button>
@@ -286,9 +288,9 @@ function CalendarModal({
 
               {/* Day-of-week headers */}
               <div className="grid grid-cols-7 px-4 mb-2">
-                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-                  <div key={d} className="text-center text-xs font-medium text-[var(--text-muted)]">
-                    {d}
+                {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((key) => (
+                  <div key={key} className="text-center text-xs font-medium text-[var(--text-muted)]">
+                    {t(`dayNavigator.weekdaysShort.${key}`)}
                   </div>
                 ))}
               </div>
@@ -305,7 +307,7 @@ function CalendarModal({
                     <button
                       key={i}
                       onClick={() => handleSelectDay(date)}
-                      aria-label={format(date, 'EEEE, MMMM d, yyyy')}
+                      aria-label={t('dayNavigator.ariaDay', { date: format(date, 'EEEE, MMMM d, yyyy') })}
                       className={`flex flex-col items-center justify-center py-1 rounded-xl min-h-[44px] transition-all ${
                         !isCurrentMonth ? 'opacity-20' : ''
                       }`}
@@ -336,13 +338,13 @@ function CalendarModal({
                   onClick={handleBackToToday}
                   className="w-full py-3 rounded-2xl font-display font-semibold text-sm bg-[var(--nap-color)] text-[var(--text-on-accent)] active:scale-[0.97] transition-transform"
                 >
-                  Back to today
+                  {t('dayNavigator.backToToday')}
                 </button>
                 <button
                   onClick={onClose}
                   className="py-2 font-display font-medium text-sm text-[var(--text-muted)]"
                 >
-                  Close
+                  {t('common.close')}
                 </button>
               </div>
             </div>
@@ -356,11 +358,12 @@ function CalendarModal({
 // ── Main Component ─────────────────────────────────────
 
 export function DayNavigator({ selectedDate, onDateChange, babyAge, datesWithEntries }: DayNavigatorProps) {
+  const { t } = useTranslation();
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const selectedParsed = parseISO(selectedDate);
   const isToday = isDateToday(selectedParsed);
 
-  const dateLabel = isToday ? 'Today' : format(selectedParsed, 'MMMM d');
+  const dateLabel = isToday ? t('dayNavigator.today') : format(selectedParsed, 'MMMM d');
 
   return (
     <>
@@ -368,7 +371,7 @@ export function DayNavigator({ selectedDate, onDateChange, babyAge, datesWithEnt
         {/* Tappable date header — opens calendar */}
         <button
           onClick={() => setIsCalendarOpen(true)}
-          aria-label="Open calendar"
+          aria-label={t('dayNavigator.openCalendar')}
           className="flex items-center gap-1.5 active:opacity-70 transition-opacity"
         >
           <span className="font-display font-semibold text-lg text-[var(--text-primary)]">

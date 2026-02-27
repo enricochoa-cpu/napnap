@@ -52,8 +52,12 @@ export function useBabyProfile() {
 
       let ownProfile: BabyProfile | null = null;
 
-      // Apply DB locale to i18n and localStorage so UI language matches (and persists before next profile load)
-      const locale = (data?.locale === 'es' ? 'es' : 'en') as 'en' | 'es';
+      // Apply DB locale to i18n and localStorage so UI language matches (and persists before next profile load).
+      // If user just set Spanish in Settings but a refetch returns stale 'en', don't overwrite — avoids
+      // Today screen flipping back to English when navigating away from Profile (e.g. after accept-invite refetch).
+      const serverLocale = (data?.locale === 'es' ? 'es' : 'en') as 'en' | 'es';
+      const currentLng = (i18n.language === 'es' ? 'es' : 'en') as 'en' | 'es';
+      const locale = (serverLocale === 'en' && currentLng === 'es') ? 'es' : serverLocale;
       i18n.changeLanguage(locale);
       setToStorage(STORAGE_KEYS.LOCALE, locale);
 
