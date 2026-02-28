@@ -440,6 +440,7 @@ function DateRangePickerSheet({
   maxDays: number;
   maxDate: Date;
 }) {
+  const { t } = useTranslation();
   const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(startDate));
   // Temporary range while user is selecting (start + end); applying commits to parent
   const [tempStart, setTempStart] = useState<Date>(startDate);
@@ -544,7 +545,7 @@ function DateRangePickerSheet({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Pick date range"
+            aria-label={t('stats.ariaPickDateRange')}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -565,7 +566,7 @@ function DateRangePickerSheet({
                   type="button"
                   onClick={() => setCalendarMonth((prev) => subMonths(prev, 1))}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
-                  aria-label="Previous month"
+                  aria-label={t('stats.ariaPrevMonth')}
                 >
                   <ChevronLeftIcon />
                 </button>
@@ -576,7 +577,7 @@ function DateRangePickerSheet({
                   type="button"
                   onClick={() => setCalendarMonth((prev) => addMonths(prev, 1))}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)] transition-all"
-                  aria-label="Next month"
+                  aria-label={t('stats.ariaNextMonth')}
                 >
                   <ChevronRightIcon />
                 </button>
@@ -1094,7 +1095,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
         <button
           type="button"
           onClick={() => setIsRangePickerOpen(true)}
-          aria-label="Change date range"
+          aria-label={t('stats.ariaChangeDateRange')}
           className="w-full flex items-center gap-3 text-left"
         >
           <span className="text-[var(--text-muted)] flex-shrink-0">
@@ -1527,7 +1528,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                   Average nap
                 </h3>
-                <div className="h-40 -mx-4" role="img" aria-label="Average nap duration per day">
+                <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaNapDurationPerDay')}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={averageNapChartData} margin={CHART_MARGIN}>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
@@ -1636,7 +1637,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                 Woke Up
               </h3>
-              <div className="h-40 -mx-4" role="img" aria-label="Woke up time trend: morning wake-up time per day with average">
+              <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWokeUpTrend')}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={wakeUpData.points} margin={CHART_MARGIN_LONG_Y}>
                     <defs>
@@ -1697,7 +1698,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                 Bedtime
               </h3>
-              <div className="h-40 -mx-4" role="img" aria-label="Bedtime trend: bedtime per day with average">
+              <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaBedtimeTrend')}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bedtimeData.points} margin={CHART_MARGIN_LONG_Y}>
                     <defs>
@@ -1765,7 +1766,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                         <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                           {t('growth.weightOverTime')}
                         </h3>
-                        <div className="h-40 -mx-4" role="img" aria-label="Weight over time">
+                        <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWeightOverTime')}>
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={weightChartData}
@@ -1802,7 +1803,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                         <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                           {t('growth.heightOverTime')}
                         </h3>
-                        <div className="h-40 -mx-4" role="img" aria-label="Height over time">
+                        <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaHeightOverTime')}>
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={heightChartData}
@@ -1853,7 +1854,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                   {t('growth.weightOverTime')}
                 </h3>
-                <div className="h-40 -mx-4" role="img" aria-label="Weight over time">
+                <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWeightOverTime')}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={weightChartData}
@@ -1890,7 +1891,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
                   {t('growth.heightOverTime')}
                 </h3>
-                <div className="h-40 -mx-4" role="img" aria-label="Height over time">
+                <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaHeightOverTime')}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={heightChartData}

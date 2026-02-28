@@ -49,6 +49,7 @@ interface InviteCardProps {
 }
 
 function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardProps) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const handleAccept = async () => {
     setBusy(true);
@@ -66,7 +67,7 @@ function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardPr
       setBusy(false);
     }
   };
-  const babyName = invitation.babyName || 'Baby';
+  const babyName = invitation.babyName || t('common.baby');
   const initial = babyName.charAt(0).toUpperCase();
 
   return (
@@ -103,7 +104,7 @@ function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardPr
             {babyName}
           </p>
           <p className="text-sm font-light text-[var(--text-muted)] mt-0.5">
-            {fromLabel} {invitation.ownerName || 'parent'}
+            {fromLabel} {invitation.ownerName || t('profile.parent')}
           </p>
         </div>
       </div>
@@ -115,7 +116,7 @@ function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardPr
           className="px-4 py-2 rounded-full text-xs font-display font-semibold min-w-[72px] touch-manipulation transition-colors active:scale-95 disabled:opacity-60"
           style={{ background: 'var(--nap-color)', color: 'var(--bg-deep)', border: 'none' }}
         >
-          Accept
+          {t('profile.accept')}
         </button>
         <button
           type="button"
@@ -124,7 +125,7 @@ function InviteCard({ invitation, onAccept, onDecline, fromLabel }: InviteCardPr
           className="px-4 py-2 rounded-full text-xs font-display font-semibold min-w-[72px] touch-manipulation transition-colors active:scale-95 border disabled:opacity-60"
           style={{ background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--glass-border)' }}
         >
-          Decline
+          {t('profile.decline')}
         </button>
       </div>
     </motion.div>
@@ -175,12 +176,12 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
         </div>
         <div className="flex-1 min-w-0">
           <p className="font-display font-semibold text-[var(--text-primary)] text-lg truncate">
-            {baby.name || 'Unnamed baby'}
+            {baby.name || t('common.baby')}
           </p>
           <p className="text-sm font-light text-[var(--text-muted)] mt-0.5">
             {baby.dateOfBirth ? formatAge(t, baby.dateOfBirth) : t('myBabies.ageUnknown')}
             {!baby.isOwner && (
-              <span className="ml-2 opacity-70">· Shared by {baby.ownerName || 'parent'}</span>
+              <span className="ml-2 opacity-70">· {t('myBabies.sharedBy')} {baby.ownerName || t('profile.parent')}</span>
             )}
           </p>
         </div>
@@ -194,16 +195,16 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
           onSelect();
         }}
         className="flex-shrink-0 px-4 py-2 rounded-full min-w-[72px] touch-manipulation transition-colors active:scale-95 border text-xs font-display font-semibold"
-        title={isActive ? 'Selected baby for sleep logs' : 'Select this baby for sleep logs'}
+        title={isActive ? t('myBabies.selectedAria') : t('myBabies.selectAria')}
         aria-pressed={isActive}
-        aria-label={isActive ? 'Selected baby for sleep logs' : 'Select this baby for sleep logs'}
+        aria-label={isActive ? t('myBabies.selectedAria') : t('myBabies.selectAria')}
         style={
           isActive
             ? { background: 'var(--nap-color)', color: 'var(--bg-deep)', borderColor: 'transparent' }
             : { background: 'transparent', color: 'var(--text-muted)', borderColor: 'var(--glass-border)' }
         }
       >
-        {isActive ? 'Selected' : 'Select'}
+        {isActive ? t('myBabies.selected') : t('myBabies.select')}
       </button>
     </motion.div>
   );
@@ -211,6 +212,7 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
 
 // Ghost Card for Add Baby
 function AddBabyGhostCard({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation();
   return (
     <motion.button
       layout
@@ -226,7 +228,7 @@ function AddBabyGhostCard({ onClick }: { onClick: () => void }) {
         <PlusIcon />
       </div>
       <p className="font-display font-medium text-[var(--text-muted)]">
-        Add your baby
+        {t('myBabies.addYourBaby')}
       </p>
     </motion.button>
   );
@@ -278,13 +280,13 @@ export function MyBabiesView({
   return (
     <div className="space-y-8">
       <SubViewHeader
-        title="Baby profiles"
+        title={t('myBabies.pageTitle')}
         subtitle={
           hasPendingInvites
-            ? (hasAnyBabies ? 'Review invites and manage babies' : 'You have an invite — accept to start logging sleep')
+            ? (hasAnyBabies ? t('myBabies.reviewInvites') : t('myBabies.inviteCta'))
             : hasMultipleBabies
-            ? 'Select which baby you want to see sleep logs for'
-            : 'Edit your baby’s information'
+            ? t('myBabies.selectWhichBaby')
+            : t('myBabies.editBabyInfo')
         }
         onBack={onBack}
       />

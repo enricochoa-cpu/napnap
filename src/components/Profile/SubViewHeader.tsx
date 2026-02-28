@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+
 const BackIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="15 18 9 12 15 6" />
@@ -11,12 +13,13 @@ interface SubViewHeaderProps {
 }
 
 export function SubViewHeader({ title, subtitle, onBack }: SubViewHeaderProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative flex items-center justify-center">
       <button
         onClick={onBack}
         className="absolute left-0 w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
-        aria-label="Go back"
+        aria-label={t('common.ariaGoBack')}
       >
         <BackIcon />
       </button>

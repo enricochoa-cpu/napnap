@@ -282,38 +282,38 @@ export function SleepEntrySheet({
     return 'check';
   }, [isEditing, endTime, isActiveEntry, hasChanges]);
 
-  // Temporal validation
-  const validation = useMemo((): { isValid: boolean; warning: string | null; error: string | null } => {
+  // Temporal validation — returns i18n keys for error/warning so component can translate
+  const validation = useMemo((): { isValid: boolean; warningKey: string | null; errorKey: string | null } => {
     // "Log wake up" flow requires end time (bedtime + wake-up)
     if (defaultEndTimeToNow && !endTime) {
-      return { isValid: false, warning: null, error: 'Please set wake-up time' };
+      return { isValid: false, warningKey: null, errorKey: 'wakeUpSheet.pleaseSetWakeUpTime' };
     }
     // No end time = no validation needed (ongoing entry), unless we require it above
-    if (!endTime) return { isValid: true, warning: null, error: null };
+    if (!endTime) return { isValid: true, warningKey: null, errorKey: null };
 
     const mins = computeDurationMinutes(startTime, endTime);
     const crossesMidnight = isTimeBefore(endTime, startTime);
 
     // Zero duration
     if (mins === 0 || mins === 24 * 60) {
-      return { isValid: false, warning: null, error: 'Start and end times are the same' };
+      return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.sameStartEnd' };
     }
 
     if (sleepType === 'nap') {
       // Nap > 5h → block
-      if (mins > 5 * 60) return { isValid: false, warning: null, error: 'Nap duration exceeds 5 hours' };
+      if (mins > 5 * 60) return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.napExceeds5h' };
       // Nap > 4h → warn
-      if (mins > 4 * 60) return { isValid: true, warning: 'Unusually long nap', error: null };
+      if (mins > 4 * 60) return { isValid: true, warningKey: 'sleepEntrySheet.unusuallyLongNap', errorKey: null };
       // Cross-midnight nap → warn but allow
-      if (crossesMidnight) return { isValid: true, warning: 'This nap crosses midnight', error: null };
+      if (crossesMidnight) return { isValid: true, warningKey: 'sleepEntrySheet.napCrossesMidnight', errorKey: null };
     } else {
       // Night > 14h → block
-      if (mins > 14 * 60) return { isValid: false, warning: null, error: 'Night sleep exceeds 14 hours' };
+      if (mins > 14 * 60) return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.nightExceeds14h' };
       // Night > 13h → warn
-      if (mins > 13 * 60) return { isValid: true, warning: 'Unusually long night sleep', error: null };
+      if (mins > 13 * 60) return { isValid: true, warningKey: 'sleepEntrySheet.unusuallyLongNight', errorKey: null };
     }
 
-    return { isValid: true, warning: null, error: null };
+    return { isValid: true, warningKey: null, errorKey: null };
   }, [startTime, endTime, sleepType, defaultEndTimeToNow]);
 
   const handleSave = async () => {
@@ -384,7 +384,7 @@ export function SleepEntrySheet({
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const themeBg = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
-  const typeLabel = sleepType === 'nap' ? 'Nap' : 'Night Sleep';
+  const typeLabel = sleepType === 'nap' ? t('sleepEntry.nap') : t('sleepEntry.nightSleep');
 
   const dialogRef = useFocusTrap(isOpen, onClose);
 
@@ -421,7 +421,7 @@ export function SleepEntrySheet({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label={isEditing ? 'Edit sleep entry' : `Log ${typeLabel.toLowerCase()}`}
+            aria-label={isEditing ? t('sleepEntrySheet.ariaEditEntry') : (sleepType === 'nap' ? t('sleepEntrySheet.ariaLogNap') : t('sleepEntrySheet.ariaLogNightSleep'))}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -450,7 +450,7 @@ export function SleepEntrySheet({
                     onClick={handleDelete}
                     className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
                     style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
-                    aria-label="Delete"
+                    aria-label={t('common.ariaDelete')}
                   >
                     <TrashIcon />
                   </button>
@@ -463,7 +463,7 @@ export function SleepEntrySheet({
                   onClick={onClose}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
-                  aria-label="Close"
+                  aria-label={t('common.ariaClose')}
                 >
                   <CloseIcon />
                 </button>
@@ -498,7 +498,7 @@ export function SleepEntrySheet({
                     type="time"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
-                    aria-label="Start time"
+                    aria-label={t('sleepEntrySheet.startTime')}
                     className="text-center font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
                     style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch' }}
                   />
@@ -507,8 +507,8 @@ export function SleepEntrySheet({
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    placeholder="--:--"
-                    aria-label="End time"
+                    placeholder={t('sleepEntrySheet.timePlaceholder')}
+                    aria-label={t('sleepEntrySheet.endTime')}
                     className="text-center font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
                     style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch', color: endTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
                   />
@@ -528,19 +528,19 @@ export function SleepEntrySheet({
                 </div>
 
                 {/* Validation messages */}
-                {validation.error && (
+                {validation.errorKey && (
                   <p className="text-xs text-center mt-3" style={{ color: 'var(--danger-color)' }}>
-                    {validation.error}
+                    {t(validation.errorKey)}
                   </p>
                 )}
-                {validation.warning && !validation.error && (
+                {validation.warningKey && !validation.errorKey && (
                   <p className="text-xs text-center mt-3" style={{ color: 'var(--wake-color)' }}>
-                    {validation.warning}
+                    {t(validation.warningKey)}
                   </p>
                 )}
 
                 {/* Hint for crossing midnight (suppress when validation error shown) */}
-                {!validation.error && !validation.warning && endTime && isTimeBefore(endTime, startTime) && (
+                {!validation.errorKey && !validation.warningKey && endTime && isTimeBefore(endTime, startTime) && (
                   <p className="text-xs text-[var(--text-muted)] text-center mt-3">
                     {sleepType === 'nap' ? t('sleepEntrySheet.endsNextDay') : t('sleepEntrySheet.wakeUpNextDay')}
                   </p>
@@ -569,7 +569,7 @@ export function SleepEntrySheet({
                     backgroundColor: (validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving) ? themeBg : 'var(--text-muted)',
                     color: sleepType === 'night' ? 'var(--text-on-accent)' : 'var(--bg-deep)',
                   }}
-                  aria-label={isSaving ? 'Saving…' : 'Save'}
+                  aria-label={isSaving ? t('common.saving') : t('sleepEntrySheet.save')}
                   aria-busy={isSaving}
                 >
                   {isSaving ? (
@@ -589,8 +589,8 @@ export function SleepEntrySheet({
       isOpen={showDeleteConfirm}
       onConfirm={handleConfirmDelete}
       onCancel={() => setShowDeleteConfirm(false)}
-      title="Delete entry?"
-      description="This sleep entry will be permanently removed."
+      title={t('sleepEntrySheet.deleteEntryTitle')}
+      description={t('sleepEntrySheet.deleteEntryDescription')}
     />
     </>
   );

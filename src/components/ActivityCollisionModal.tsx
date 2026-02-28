@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { SleepEntry } from '../types';
 import { formatTime } from '../utils/dateUtils';
 import { format, parseISO } from 'date-fns';
@@ -21,6 +22,7 @@ export function ActivityCollisionModal({
   onReplace,
   onCancel,
 }: ActivityCollisionModalProps) {
+  const { t } = useTranslation();
   const titleId = useId();
   const dialogRef = useFocusTrap(true, onCancel);
 
@@ -54,20 +56,20 @@ export function ActivityCollisionModal({
         </div>
 
         {/* Title */}
-        <h2 id={titleId} className="text-display-sm text-center mb-2">Activity Collision</h2>
+        <h2 id={titleId} className="text-display-sm text-center mb-2">{t('collision.activityCollision')}</h2>
 
         {/* Description */}
         <p className="text-[var(--text-secondary)] text-center mb-6">
-          This time overlaps with an existing{' '}
+          {t('collision.thisTimeOverlaps')}{' '}
           <span className={existingEntry.type === 'nap' ? 'text-[var(--nap-color)]' : 'text-[var(--night-color)]'}>
-            {existingEntry.type === 'nap' ? 'nap' : 'night sleep'}
+            {existingEntry.type === 'nap' ? t('sleepEntry.nap').toLowerCase() : t('sleepEntry.nightSleep').toLowerCase()}
           </span>{' '}
-          from{' '}
+          {t('collision.from')}{' '}
           <span className="text-[var(--text-primary)] font-medium">
             {formatEntryDate(existingEntry.startTime)}
           </span>
           {!existingEntry.endTime && (
-            <span className="text-[var(--success-color)]"> (still ongoing)</span>
+            <span className="text-[var(--success-color)]"> {t('collision.stillOngoing')}</span>
           )}
         </p>
 
@@ -95,8 +97,8 @@ export function ActivityCollisionModal({
                 {existingEntry.endTime && ` → ${formatTime(existingEntry.endTime)}`}
               </p>
               <p className="text-sm text-[var(--text-muted)]">
-                {existingEntry.type === 'nap' ? 'Nap' : 'Night sleep'}
-                {!existingEntry.endTime && ' · Still ongoing'}
+                {existingEntry.type === 'nap' ? t('sleepEntry.nap') : t('sleepEntry.nightSleep')}
+                {!existingEntry.endTime && ` ${t('collision.stillOngoingShort')}`}
               </p>
             </div>
           </div>
@@ -108,13 +110,13 @@ export function ActivityCollisionModal({
             onClick={onCancel}
             className="btn btn-secondary flex-1"
           >
-            Cancel
+            {t('collision.cancel')}
           </button>
           <button
             onClick={onReplace}
             className="btn btn-danger flex-1"
           >
-            Replace Entry
+            {t('collision.replaceEntry')}
           </button>
         </div>
       </div>

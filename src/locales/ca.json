@@ -1,6 +1,6 @@
 {
   "common": {
-    "baby": "Bebè",
+    "baby": "Nadó",
     "next": "Següent",
     "back": "Enrere",
     "cancel": "Cancel·lar",
@@ -11,10 +11,16 @@
     "name": "Nom",
     "email": "Correu electrònic",
     "password": "Contrasenya",
-    "loading": "Carregant..."
+    "loading": "Carregant...",
+    "saving": "Desant…",
+    "ariaGoBack": "Tornar",
+    "ariaDelete": "Eliminar",
+    "ariaClose": "Tancar",
+    "ariaChangePhoto": "Canviar foto de perfil",
+    "tryAgain": "Tornar a provar"
   },
   "entry": {
-    "tagline": "Guia tranquil·la per al son del teu bebè",
+    "tagline": "Guia tranquil·la per al son del teu nadó",
     "getStarted": "Començar",
     "haveAccount": "Ja tinc compte"
   },
@@ -33,7 +39,7 @@
     "noAccount": "No tens compte?",
     "signUp": "Registrar-se",
     "createAccount": "Crear compte",
-    "createAccountSubtitle": "Comença a registrar el son del teu bebè",
+    "createAccountSubtitle": "Comença a registrar el son del teu nadó",
     "agreePrivacy": "Accepto la",
     "agreeTermsAndPrivacy": "Accepto els",
     "termsOfService": "Termes del servei",
@@ -62,16 +68,16 @@
   },
   "onboarding": {
     "hiThere": "Hola",
-    "intro": "Uns detalls ràpids per suggerir-te quan ha de dormir el teu bebè. Sense complicacions.",
+    "intro": "Uns detalls ràpids per suggerir-te quan ha de dormir el teu nadó. Sense complicacions.",
     "welcomeCard1Title": "Suggeriments personalitzats",
-    "welcomeCard1Subtitle": "Ens adaptem a l'edat i al patró de son del teu bebè.",
+    "welcomeCard1Subtitle": "Ens adaptem a l'edat i al patró de son del teu nadó.",
     "welcomeCard2Title": "Tot el son en un sol lloc",
     "welcomeCard2Subtitle": "Registra migdiades i nits sense complicacions.",
     "welcomeCard3Title": "Pensat per a tu",
     "welcomeCard3Subtitle": "Passos clars, sense aclaparar.",
-    "babyNameQuestion": "Com es diu el teu bebè?",
+    "babyNameQuestion": "Com es diu el teu nadó?",
     "babyNameWhy": "El fem servir per personalitzar suggeriments i etiquetes.",
-    "babyDobQuestion": "Quan va néixer el teu bebè?",
+    "babyDobQuestion": "Quan va néixer el teu nadó?",
     "babyDobHint": "El necessitem per als suggeriments de son.",
     "babyDobWhy": "L'edat ens ajuda a suggerir les finestres de vetlla i el nombre de migdiades.",
     "yourNameQuestion": "Com et dius?",
@@ -87,10 +93,10 @@
     "goodAfternoon": "Bona tarda",
     "goodEvening": "Bona nit",
     "tapToAdd": "Toca + per afegir activitat",
-    "addABaby": "Afegir un bebè",
+    "addABaby": "Afegir un nadó",
     "addABabySubtitle": "Crea un perfil per veure prediccions",
     "noWakeUpYet": "Registra l'hora de despertar per veure prediccions",
-    "noWakeUpYetSubtitle": "Toca + i tria Despertar quan el teu bebè es llevi",
+    "noWakeUpYetSubtitle": "Toca + i tria Despertar quan el teu nadó es llevi",
     "nextNap": "Propera migdiada",
     "around": "al voltant de",
     "now": "ara",
@@ -104,8 +110,8 @@
     "calibration": "Aprenent el teu patró",
     "predictions": "Prediccions",
     "reviewInvite": "Revisar invitació",
-    "youHaveBabyInvite": "Tens una invitació de bebè",
-    "inviteEmptyBody": "T'han convidat a cuidar un bebè. Accepta la invitació per començar a registrar el son i veure prediccions.",
+    "youHaveBabyInvite": "Tens una invitació de nadó",
+    "inviteEmptyBody": "T'han convidat a cuidar un nadó. Accepta la invitació per començar a registrar el son i veure prediccions.",
     "addBabyEmptyBody": "Registra el son del teu petit afegint primer el seu perfil. Després podràs seguir migdiades i hora de dormir.",
     "emptyStateTapButton": "Aquest espai encara està buit. Toca el botó + per afegir la primera activitat d'avui.",
     "napping": "Migdiada",
@@ -136,7 +142,7 @@
     "stats": "Estadístiques",
     "profile": "Perfil",
     "logSleep": "Registrar son",
-    "addBabyToStart": "Afegeix un bebè per començar"
+    "addBabyToStart": "Afegeix un nadó per començar"
   },
   "profile": {
     "greetingMorning": "Bon dia",
@@ -153,7 +159,7 @@
     "parent": "pare/mare",
     "accept": "Acceptar",
     "decline": "Rebutjar",
-    "myBabies": "Els meus bebès",
+    "myBabies": "Els meus nadons",
     "settings": "Configuració",
     "support": "Ajuda",
     "accountSettings": "Configuració del compte",
@@ -176,7 +182,7 @@
     "signOutConfirmBody": "Sempre pots tornar a iniciar sessió amb el teu correu i contrasenya.",
     "deleteConfirmTitle": "Eliminar compte?",
     "deleteConfirmBody1": "Eliminarem permanentment el teu compte, el teu perfil i totes les dades vinculades (noms, fotos i registres de son).",
-    "deleteConfirmBody2": "Podem conservar només dades de son i creixement anonimitzades (sense noms, sense fotos, sense identificadors) per millorar el producte i la recerca. No conservem fotos de perfil ni cap altra informació que pugui identificar-te a tu o al teu bebè.",
+    "deleteConfirmBody2": "Podem conservar només dades de son i creixement anonimitzades (sense noms, sense fotos, sense identificadors) per millorar el producte i la recerca. No conservem fotos de perfil ni cap altra informació que pugui identificar-te a tu o al teu nadó.",
     "deleteConfirmBody3": "Es tancarà la sessió de seguida i no podràs recuperar el compte.",
     "deleting": "Eliminant…",
     "language": "Idioma",
@@ -190,11 +196,11 @@
     "viewSubtitle": "Com fem servir i protegim les teves dades",
     "lastUpdated": "Última actualització",
     "whatWeCollect": "Què recollim",
-    "whatWeCollectBody": "Recollim la informació que ens dones en usar NapNap: el teu correu i dades del compte, el perfil del teu bebè (nom, data de naixement, pes i alçada opcionals) i les dades de son que registres (migdiades i nits).",
+    "whatWeCollectBody": "Recollim la informació que ens dones en usar NapNap: el teu correu i dades del compte, el perfil del teu nadó (nom, data de naixement, pes i alçada opcionals) i les dades de son que registres (migdiades i nits).",
     "howWeUse": "Com ho fem servir",
     "howWeUseBody": "Fem servir aquestes dades per fer funcionar l'app, mostrar-te prediccions i historial de son i millorar el nostre producte. No venem les teves dades.",
     "accountDeletion": "Eliminació del compte",
-    "accountDeletionBody": "Quan elimines el compte, eliminem de forma permanent el teu correu, nom(s), fotos de perfil i totes les dades vinculades. No conservem res que identifiqui tu o el teu bebè. Les úniques dades que podem conservar són dades de son i creixement anonimitzades (sense noms ni identificadors), per millorar el nostre producte i la recerca. No conservem fotos de perfil ni cap altra informació personal després de l'eliminació.",
+    "accountDeletionBody": "Quan elimines el compte, eliminem de forma permanent el teu correu, nom(s), fotos de perfil i totes les dades vinculades. No conservem res que identifiqui tu o el teu nadó. Les úniques dades que podem conservar són dades de son i creixement anonimitzades (sense noms ni identificadors), per millorar el nostre producte i la recerca. No conservem fotos de perfil ni cap altra informació personal després de l'eliminació.",
     "contact": "Contacte",
     "contactBody": "Per preguntes sobre les teves dades o aquesta política, fes servir l'opció Contacte a Ajuda."
   },
@@ -215,16 +221,27 @@
     "quickTipBody": "Consulta primer les preguntes freqüents per als termes i la base de NapNap. També pots llegir la nostra Política de privacitat aquí. Si necessites més ajuda, som a un missatge."
   },
   "myBabies": {
-    "title": "Els meus bebès",
-    "subtitle": "Canviar o afegir bebè",
-    "addBaby": "Afegir bebè",
-    "noBabies": "Encara no hi ha bebès",
-    "noBabiesSubtitle": "Afegeix el teu primer bebè per començar a registrar el son",
+    "title": "Els meus nadons",
+    "pageTitle": "Perfils de nadons",
+    "subtitle": "Canviar o afegir nadó",
+    "addBaby": "Afegir nadó",
+    "addYourBaby": "Afegir el teu nadó",
+    "sharedBy": "Compartit per",
+    "select": "Seleccionar",
+    "selected": "Seleccionat",
+    "selectAria": "Seleccionar aquest nadó per al registre de son",
+    "selectedAria": "Bebè seleccionat per al registre de son",
+    "reviewInvites": "Revisar invitacions i gestionar nadons",
+    "inviteCta": "Tens una invitació — accepta per començar a registrar el son",
+    "selectWhichBaby": "Tria quin nadó vols veure al registre de son",
+    "editBabyInfo": "Edita les dades del teu nadó",
+    "noBabies": "Encara no hi ha nadons",
+    "noBabiesSubtitle": "Afegeix el teu primer nadó per començar a registrar el son",
     "ageUnknown": "Edat desconeguda"
   },
   "growth": {
-    "babyWeight": "Pes del bebè",
-    "babyHeight": "Alçada del bebè",
+    "babyWeight": "Pes del nadó",
+    "babyHeight": "Alçada del nadó",
     "add": "Afegir",
     "kg": "kg",
     "cm": "cm",
@@ -242,26 +259,31 @@
     "deleteConfirmDescription": "S'eliminarà aquesta entrada de pes o alçada.",
     "weightOverTime": "Pes al llarg del temps",
     "heightOverTime": "Alçada al llarg del temps",
-    "noGrowthData": "Afegeix pes i alçada al perfil del bebè per veure el creixement aquí.",
+    "noGrowthData": "Afegeix pes i alçada al perfil del nadó per veure el creixement aquí.",
     "addAnotherToSeeTrend": "Afegeix un altre per veure la tendència",
     "viewAllEntries": "Veure tots ({{count}})",
     "showLess": "Veure menys"
   },
   "babyEdit": {
-    "editBaby": "Editar bebè",
-    "addBaby": "Afegir bebè",
-    "babyName": "Nom del bebè",
+    "editBaby": "Editar nadó",
+    "addBaby": "Afegir nadó",
+    "babyName": "Nom del nadó",
     "dateOfBirth": "Data de naixement",
     "gender": "Gènere",
-    "male": "Mascle",
-    "female": "Femella",
-    "other": "Altre",
+    "male": "Nen",
+    "female": "Nena",
+    "other": "No especificat",
     "weight": "Pes (kg)",
     "height": "Alçada (cm)",
     "avatar": "Foto",
     "changePhoto": "Canviar foto",
-    "deleteBaby": "Eliminar bebè",
-    "deleteBabyConfirm": "Treure aquest bebè del teu compte? S'eliminaran les dades de son."
+    "tapPhotoToChange": "Toca la foto per canviar-la",
+    "deleteBaby": "Eliminar nadó",
+    "deleteBabyConfirm": "Treure aquest nadó del teu compte? S'eliminaran les dades de son.",
+    "deleteProfileConfirmTitle": "Eliminar perfil del nadó?",
+    "deleteProfileConfirmDescription": "El perfil de {{name}} i tots els registres de son associats s'eliminaran permanentment.",
+    "ariaAddBaby": "Afegir nadó",
+    "ariaEditProfile": "Editar perfil del nadó"
   },
   "babyDetail": {
     "sharedWith": "Compartit amb",
@@ -271,16 +293,38 @@
     "noShares": "Encara no compartit",
     "ageOld": "{{age}}",
     "editProfile": "Editar perfil",
-    "viewProfile": "Veure perfil"
+    "viewProfile": "Veure perfil",
+    "nameBirthdayRequired": "El nom i la data de naixement són obligatoris"
   },
   "shareAccess": {
     "title": "Compartir accés",
-    "invitePlaceholder": "Correu electrònic",
-    "inviteButton": "Enviar invitació",
+    "sectionSubtitle": "Deixa que la teva parella o cuidador t'ajudi a registrar el son del teu nadó",
+    "pendingInvitationsTitle": "Invitacions pendents",
+    "pendingInvitationsIntro": "T'han convidat a ajudar a registrar el son d'aquests nadons",
+    "from": "de",
+    "someone": "Algú",
+    "invitePlaceholder": "Introdueix el correu electrònic",
+    "inviteButton": "Convidar",
+    "sending": "Enviant...",
     "roleCaregiver": "Cuidador",
     "roleViewer": "Lector",
+    "caregiverDesc": "Pot afegir i editar registres",
+    "viewerDesc": "Només pot veure registres",
+    "peopleWithAccess": "Persones amb accés",
+    "pendingInvitations": "Invitacions pendents",
+    "waitingForResponse": "Esperant resposta...",
+    "noOneElseHasAccess": "Ningú més té accés encara",
+    "editAccess": "Editar accés",
+    "permissionLevel": "Nivell de permís",
+    "removeAccess": "Treure accés",
     "remove": "Treure",
-    "editRole": "Editar rol"
+    "editRole": "Editar rol",
+    "invitationSent": "Invitació enviada correctament",
+    "failedSendInvite": "Error en enviar la invitació",
+    "failedRevoke": "Error en revocar l'accés",
+    "failedUpdateRole": "Error en actualitzar el rol",
+    "failedAccept": "Error en acceptar la invitació",
+    "failedDecline": "Error en rebutjar la invitació"
   },
   "history": {
     "sleepLog": "Registre de son",
@@ -338,13 +382,30 @@
     "delete": "Eliminar",
     "sleeping": "Dormint...",
     "endsNextDay": "Acaba l'endemà",
-    "wakeUpNextDay": "El despertar és l'endemà"
+    "wakeUpNextDay": "El despertar és l'endemà",
+    "sameStartEnd": "L'hora d'inici i fi són iguals",
+    "unusuallyLongNap": "Migdiada inusualment llarga",
+    "napCrossesMidnight": "Aquesta migdiada passa de mitjanit",
+    "unusuallyLongNight": "Son nocturn inusualment llarg",
+    "ariaEditEntry": "Editar registre de son",
+    "ariaLogNap": "Registrar migdiada",
+    "ariaLogNightSleep": "Registrar son nocturn",
+    "deleteEntryTitle": "Eliminar registre?",
+    "deleteEntryDescription": "Aquest registre de son s'eliminarà permanentment.",
+    "timePlaceholder": "--:--",
+    "napExceeds5h": "La migdiada supera les 5 hores",
+    "nightExceeds14h": "El son nocturn supera les 14 hores"
   },
   "wakeUpSheet": {
     "title": "Despertar",
-    "subtitle": "El bebè s'ha despertat",
+    "subtitle": "El nadó s'ha despertat",
     "confirm": "Confirmar despertar",
-    "delete": "Eliminar nit"
+    "delete": "Eliminar nit",
+    "ariaLogWakeUp": "Registrar hora de despertar",
+    "ariaHours": "Hores",
+    "ariaMinutes": "Minuts",
+    "deleteEntryTitle": "Eliminar registre?",
+    "pleaseSetWakeUpTime": "Indica l'hora de despertar"
   },
   "missingBedtime": {
     "title": "Registrar l'hora de dormir d'ahir nit?",
@@ -356,13 +417,19 @@
   },
   "collision": {
     "title": "Son solapat",
+    "activityCollision": "Activitat solapada",
     "body": "Aquest registre es solapa amb un existent. Vols reemplaçar l'existent o cancel·lar?",
+    "thisTimeOverlaps": "Aquesta hora es solapa amb una",
+    "from": "del",
+    "stillOngoing": "(encara en curs)",
+    "stillOngoingShort": "· Encara en curs",
+    "replaceEntry": "Reemplaçar registre",
     "replace": "Reemplaçar",
     "cancel": "Cancel·lar"
   },
   "stats": {
     "title": "Tendències",
-    "subtitle": "Consulta tendències i estadístiques sobre els patrons de son del teu bebè",
+    "subtitle": "Consulta tendències i estadístiques sobre els patrons de son del teu nadó",
     "days": "Dies",
     "dateRange": "Interval de dates",
     "generateReport": "Generar informe (últims 30 dies)",
@@ -390,7 +457,16 @@
     "napFirst": "Primera migdiada",
     "napSecond": "Segona migdiada",
     "napThird": "Tercera migdiada",
-    "napOrdinal": "Migdiada {{n}}"
+    "napOrdinal": "Migdiada {{n}}",
+    "ariaPickDateRange": "Triar interval de dates",
+    "ariaPrevMonth": "Mes anterior",
+    "ariaNextMonth": "Mes següent",
+    "ariaChangeDateRange": "Canviar interval de dates",
+    "ariaNapDurationPerDay": "Durada mitjana de migdiada per dia",
+    "ariaWokeUpTrend": "Tendència de despertar: hora de despertar per dia amb mitjana",
+    "ariaBedtimeTrend": "Tendència d'hora de dormir: hora de dormir per dia amb mitjana",
+    "ariaWeightOverTime": "Pes al llarg del temps",
+    "ariaHeightOverTime": "Alçada al llarg del temps"
   },
   "report": {
     "title": "Informe de son",
@@ -417,12 +493,12 @@
       "T6": "Aquesta setmana el son ha estat una mica menor; dies puntuals són normals. Mantenir una hora de dormir estable ajuda.",
       "T7": "Bona consistència en aquest període. Mantenir la mateixa finestra d'hora de dormir ajudarà l'algoritme a seguir en sintonia.",
       "T8": "Per l'edat de {{babyName}}, finestres de vetlla d'uns {{avgWakeWindow}} estan en un rang típic — les sugerències de migdiada de l'app s'ajusten a això.",
-      "T9": "La majoria de bebès d'aquesta edat van bé amb 2–3 migdiades. Si veus molta resistència a l'hora de la migdiada, un petit canvi d'horari pot ajudar — les sugerències de l'app s'adapten segons registris.",
+      "T9": "La majoria de nadons d'aquesta edat van bé amb 2–3 migdiades. Si veus molta resistència a l'hora de la migdiada, un petit canvi d'horari pot ajudar — les sugerències de l'app s'adapten segons registris.",
       "T10": "Una breu rutina abans de dormir (llum tènue, els mateixos passos cada nit) pot ajudar {{babyName}} a reconèixer l'hora de dormir."
     },
     "bedtimeCopyVaried": "L'hora de dormir varia cada dia — és normal mentre aprenem.",
     "bedtimeCopyRange": "La majoria de nits poses {{babyName}} a dormir entre {{min}} i {{max}}.",
-    "wakeUpCopyMissing": "Registrar quan es desperta el teu bebè ajuda a que l'informe i les prediccions siguin precises.",
+    "wakeUpCopyMissing": "Registrar quan es desperta el teu nadó ajuda a que l'informe i les prediccions siguin precises.",
     "wakeUpCopyVariable": "L'hora de despertar varia — és normal. Una hora de dormir estable ajuda a que el patró s'assenti.",
     "wakeUpCopyRange": "Solia despertar entre {{min}} i {{max}}.",
     "patternMoreSleep": "Aquesta setmana {{babyName}} ha dormit una mica més en total que la setmana passada.",
@@ -434,43 +510,43 @@
   "faq": {
     "about": {
       "question": "Què és NapNap?",
-      "answer": "**NapNap** és un registre de son per a bebès (0–18 mesos) que t'ajuda a anotar migdiades i son nocturn i a obtenir suggeriments senzills segons l'edat sobre quan pot necessitar dormir el teu bebè.\n\nEns centrem en **substituir decisions**: en lloc de mostrar moltes dades per analitzar, suggerim coses com \"Propera migdiada cap a les 13:42\" o \"Hora de dormir cap a les 19:30\" perquè tinguis un següent pas clar. L'app està pensada per a ús nocturn i amb una mà, amb un to tranquil i no crític."
+      "answer": "**NapNap** és un registre de son per a nadons (0–18 mesos) que t'ajuda a anotar migdiades i son nocturn i a obtenir suggeriments senzills segons l'edat sobre quan pot necessitar dormir el teu nadó.\n\nEns centrem en **substituir decisions**: en lloc de mostrar moltes dades per analitzar, suggerim coses com \"Propera migdiada cap a les 13:42\" o \"Hora de dormir cap a les 19:30\" perquè tinguis un següent pas clar. L'app està pensada per a ús nocturn i amb una mà, amb un to tranquil i no crític."
     },
     "1": {
       "question": "Què és una finestra de vetlla?",
-      "answer": "Una **finestra de vetlla** és el temps que el teu bebè pot estar despert còmodament entre períodes de son.\n\nVarien amb l'edat:\n- **0-4 setmanes**: 45-60 min\n- **4-12 setmanes**: 60-90 min\n- **3-4 mesos**: 75-120 min\n- **5-7 mesos**: 2-3 h\n- **8-12 mesos**: 2,5-4 h\n- **12-18 mesos**: 4-6 h\n\nObservar les senyals de son del teu bebè dins d'aquestes finestres ajuda a evitar la fatiga excessiva. NapNap fa servir finestres de vetlla per edat per suggerir quan oferir la propera migdiada o l'hora de dormir."
+      "answer": "Una **finestra de vetlla** és el temps que el teu nadó pot estar despert còmodament entre períodes de son.\n\nVarien amb l'edat:\n- **0-4 setmanes**: 45-60 min\n- **4-12 setmanes**: 60-90 min\n- **3-4 mesos**: 75-120 min\n- **5-7 mesos**: 2-3 h\n- **8-12 mesos**: 2,5-4 h\n- **12-18 mesos**: 4-6 h\n\nObservar les senyals de son del teu nadó dins d'aquestes finestres ajuda a evitar la fatiga excessiva. NapNap fa servir finestres de vetlla per edat per suggerir quan oferir la propera migdiada o l'hora de dormir."
     },
     "2": {
       "question": "Què és una micromigdiada i m'haig de preocupar?",
-      "answer": "Una **micromigdiada** (o \"migdiada curta\") és un son breu de només 20-30 minuts, normalment un cicle de son.\n\n**Per què passa:**\n- El bebè es desperta entre cicles i encara no enllaça cicles\n- Poc o molt cansat a l'hora de la migdiada\n- Entorn (massa llum, soroll)\n\n**És normal?**\nSí. Les micromigdiades són molt freqüents, sobretot abans dels 5-6 mesos. Molts bebès consoliden migdiades cap als 6 mesos.\n\n**Consells:**\n- Respecta finestres de vetlla adequades\n- Crea un entorn fosc i tranquil\n- Mantén una rutina constant"
+      "answer": "Una **micromigdiada** (o \"migdiada curta\") és un son breu de només 20-30 minuts, normalment un cicle de son.\n\n**Per què passa:**\n- El nadó es desperta entre cicles i encara no enllaça cicles\n- Poc o molt cansat a l'hora de la migdiada\n- Entorn (massa llum, soroll)\n\n**És normal?**\nSí. Les micromigdiades són molt freqüents, sobretot abans dels 5-6 mesos. Molts nadons consoliden migdiades cap als 6 mesos.\n\n**Consells:**\n- Respecta finestres de vetlla adequades\n- Crea un entorn fosc i tranquil\n- Mantén una rutina constant"
     },
     "3": {
       "question": "Què és una regressió de son?",
-      "answer": "Una **regressió de son** és un període en què un bebè que dormia bé de cop té dificultat per adormir-se, es desperta sovint o fa migdiades més curtes.\n\n**Edats típiques:**\n- **4 mesos**: El son canvia de forma permanent\n- **8-10 mesos**: Ansietat de separació, gatejar, posar-se dret\n- **12 mesos**: Caminar, passar a una migdiada\n- **18 mesos**: Independència, explosió del llenguatge\n\n**Quant temps duren?**\nSolen ser 2-6 setmanes si mantens un enfocament constant.\n\n**Què ajuda:**\n- Mantenir rutines constants\n- Oferir més consol sense crear noves associacions\n- Ajustar finestres de vetlla si cal\n- Paciència — és temporal!"
+      "answer": "Una **regressió de son** és un període en què un nadó que dormia bé de cop té dificultat per adormir-se, es desperta sovint o fa migdiades més curtes.\n\n**Edats típiques:**\n- **4 mesos**: El son canvia de forma permanent\n- **8-10 mesos**: Ansietat de separació, gatejar, posar-se dret\n- **12 mesos**: Caminar, passar a una migdiada\n- **18 mesos**: Independència, explosió del llenguatge\n\n**Quant temps duren?**\nSolen ser 2-6 setmanes si mantens un enfocament constant.\n\n**Què ajuda:**\n- Mantenir rutines constants\n- Oferir més consol sense crear noves associacions\n- Ajustar finestres de vetlla si cal\n- Paciència — és temporal!"
     },
     "4": {
-      "question": "Com sé si el meu bebè està massa cansat?",
-      "answer": "Un **bebè massa cansat** ha estat despert massa temps i el seu cos produeix cortisol (hormona de l'estrès), cosa que *dificulta* adormir-se i seguir dormint.\n\n**Senyals:**\n- Fregar-se els ulls, tocar-se les orelles\n- Badalls excessius\n- Irritabilitat\n- Arquejar l'esquena, rigidesa\n- Hiperactivitat\n- Lluitar contra el son\n\n**Prevenció:**\n- Coneix les finestres de vetlla per a la seva edat\n- Observa senyals primerenques de son\n- Comença la rutina de migdiada *abans* que sembli cansat\n\n**Recuperació:**\nUna hora de dormir més primerenca (fins i tot 30-60 min) pot trencar el cicle de cansament."
+      "question": "Com sé si el meu nadó està massa cansat?",
+      "answer": "Un **nadó massa cansat** ha estat despert massa temps i el seu cos produeix cortisol (hormona de l'estrès), cosa que *dificulta* adormir-se i seguir dormint.\n\n**Senyals:**\n- Fregar-se els ulls, tocar-se les orelles\n- Badalls excessius\n- Irritabilitat\n- Arquejar l'esquena, rigidesa\n- Hiperactivitat\n- Lluitar contra el son\n\n**Prevenció:**\n- Coneix les finestres de vetlla per a la seva edat\n- Observa senyals primerenques de son\n- Comença la rutina de migdiada *abans* que sembli cansat\n\n**Recuperació:**\nUna hora de dormir més primerenca (fins i tot 30-60 min) pot trencar el cicle de cansament."
     },
     "5": {
       "question": "Què són les senyals de son?",
-      "answer": "Les **senyals de son** són indicis que el teu bebè s'està cansant i es prepara per dormir.\n\n**Senyals primerenques** (ideal per començar la rutina):\n- Mirar al buit\n- Menys activitat, moviments més calmats\n- Menys interès en joguines o persones\n- Lleuger envermelliment d'ulls\n\n**Senyals tardanes** (pot ser que ja estigui massa cansat):\n- Fregar-se els ulls\n- Badalls\n- Tocar-se l'orella o el cabell\n- Irritabilitat\n\n**Molt tardanes:**\n- Plorar\n- Arquejar l'esquena\n- Hiperactivitat\n- Difícil de calmar\n\n**Consell:** Intenta captar les senyals primerenques. Si esperes al badall i a fregar-se els ulls, pot ser que ja hagis passat la finestra òptima."
+      "answer": "Les **senyals de son** són indicis que el teu nadó s'està cansant i es prepara per dormir.\n\n**Senyals primerenques** (ideal per començar la rutina):\n- Mirar al buit\n- Menys activitat, moviments més calmats\n- Menys interès en joguines o persones\n- Lleuger envermelliment d'ulls\n\n**Senyals tardanes** (pot ser que ja estigui massa cansat):\n- Fregar-se els ulls\n- Badalls\n- Tocar-se l'orella o el cabell\n- Irritabilitat\n\n**Molt tardanes:**\n- Plorar\n- Arquejar l'esquena\n- Hiperactivitat\n- Difícil de calmar\n\n**Consell:** Intenta captar les senyals primerenques. Si esperes al badall i a fregar-se els ulls, pot ser que ja hagis passat la finestra òptima."
     },
     "6": {
       "question": "És normal que dormi més de nit que en migdiades?",
-      "answer": "**Sí!** El son nocturn i el diürn es desenvolupen de forma diferent.\n\n**Per què les nits són més llargues:**\n- La melatonina es produeix a la foscor\n- El ritme circadiari afavoreix trams més llargs de nit\n- La pressió de son s'acumula durant el dia\n\n**Patrons típics:**\n- **Nounats**: Poden confondre dia i nit al principi\n- **2-3 mesos**: El tram més llarg comença a ser de nit (4-6 h)\n- **4-6 mesos**: El son nocturn es consolida (8-12 h amb takes)\n- **6+ mesos**: Molts bebès dormen 10-12 h per la nit\n\n**Les migdiades són més curtes** perquè la pressió de son diürna és menor i la llum i el soroll afecten diferent.\n\nNo et preocupis si les migdiades són de 30-45 min i les nits molt més llargues — és biològicament normal."
+      "answer": "**Sí!** El son nocturn i el diürn es desenvolupen de forma diferent.\n\n**Per què les nits són més llargues:**\n- La melatonina es produeix a la foscor\n- El ritme circadiari afavoreix trams més llargs de nit\n- La pressió de son s'acumula durant el dia\n\n**Patrons típics:**\n- **Nounats**: Poden confondre dia i nit al principi\n- **2-3 mesos**: El tram més llarg comença a ser de nit (4-6 h)\n- **4-6 mesos**: El son nocturn es consolida (8-12 h amb takes)\n- **6+ mesos**: Molts nadons dormen 10-12 h per la nit\n\n**Les migdiades són més curtes** perquè la pressió de son diürna és menor i la llum i el soroll afecten diferent.\n\nNo et preocupis si les migdiades són de 30-45 min i les nits molt més llargues — és biològicament normal."
     },
     "7": {
       "question": "Què són el ritme circadiari i la pressió de son?",
-      "answer": "El **ritme circadiari** és el rellotge intern del teu bebè. Ajuda a alinear el son amb el dia i la nit (més melatonina amb foscor, més despert amb llum). Els primers mesos, els bebès desenvolupen un tram més llarg de nit en part per això.\n\nLa **pressió de son** (drive homeostàtic) és la necessitat de dormir que augmenta com més temps es passa despert. Les sugerències de NapNap fan servir ambdues: finestres de vetlla (pressió de son) i l'hora del dia (ritme circadiari) per suggerir migdiades i una hora de dormir raonable."
+      "answer": "El **ritme circadiari** és el rellotge intern del teu nadó. Ajuda a alinear el son amb el dia i la nit (més melatonina amb foscor, més despert amb llum). Els primers mesos, els nadons desenvolupen un tram més llarg de nit en part per això.\n\nLa **pressió de son** (drive homeostàtic) és la necessitat de dormir que augmenta com més temps es passa despert. Les sugerències de NapNap fan servir ambdues: finestres de vetlla (pressió de son) i l'hora del dia (ritme circadiari) per suggerir migdiades i una hora de dormir raonable."
     },
     "8": {
       "question": "Què és un cicle de son?",
-      "answer": "Un **cicle de son** és un bloc de son lleuger i profund (i a vegades un breu despertar) abans de passar al següent. En bebès, un cicle sol ser d'uns 30–45 minuts.\n\nMoltes migdiades curtes són un cicle: el bebè es desperta entre cicles i encara no enllaça diversos. Per això pots veure migdiades de 30 min a NapNap — són normals. Amb l'edat, les migdiades solen allargar-se en consolidar cicles."
+      "answer": "Un **cicle de son** és un bloc de son lleuger i profund (i a vegades un breu despertar) abans de passar al següent. En nadons, un cicle sol ser d'uns 30–45 minuts.\n\nMoltes migdiades curtes són un cicle: el nadó es desperta entre cicles i encara no enllaça diversos. Per això pots veure migdiades de 30 min a NapNap — són normals. Amb l'edat, les migdiades solen allargar-se en consolidar cicles."
     },
     "science": {
       "question": "D'on surt la base de NapNap?",
-      "answer": "Les sugerències de NapNap es basen en guies i recerca àmpliament usades sobre son infantil:\n\n- **Finestres de vetlla i nombre de migdiades per edat**: Alineades amb rangs basats en evidència de recursos pediàtrics (p. ex. [National Sleep Foundation](https://www.sleepfoundation.org/baby-sleep), [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/default.aspx)) i pràctica clínica habitual per a 0–18 mesos.\n- **Desenvolupament circadiari**: L'ús de l'hora de despertar i l'hora del dia per a l'hora de dormir segueix el coneixement establert sobre com es desenvolupa el ritme circadiari al primer any.\n- **Compensació de migdiada curta**: Ajustar la següent finestra de vetlla després d'una migdiada curta reflecteix que menys son diürn augmenta abans la pressió de son; és un enfocament pràctic usat en molts recursos per a pares.\n\nNapNap és una eina de suport, no un substitut del consell professional. Si et preocupa el son o la salut del teu bebè, consulta amb el teu pediatre o un assessor de son qualificat."
+      "answer": "Les sugerències de NapNap es basen en guies i recerca àmpliament usades sobre son infantil:\n\n- **Finestres de vetlla i nombre de migdiades per edat**: Alineades amb rangs basats en evidència de recursos pediàtrics (p. ex. [National Sleep Foundation](https://www.sleepfoundation.org/baby-sleep), [AAP](https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/default.aspx)) i pràctica clínica habitual per a 0–18 mesos.\n- **Desenvolupament circadiari**: L'ús de l'hora de despertar i l'hora del dia per a l'hora de dormir segueix el coneixement establert sobre com es desenvolupa el ritme circadiari al primer any.\n- **Compensació de migdiada curta**: Ajustar la següent finestra de vetlla després d'una migdiada curta reflecteix que menys son diürn augmenta abans la pressió de son; és un enfocament pràctic usat en molts recursos per a pares.\n\nNapNap és una eina de suport, no un substitut del consell professional. Si et preocupa el son o la salut del teu nadó, consulta amb el teu pediatre o un assessor de son qualificat."
     }
   },
   "terms": {
@@ -481,7 +557,7 @@
     "operator": "Responsable del servei",
     "operatorBody": "NapNap està operada per una persona física (el \"responsable\"). L'App és gratuïta i no està gestionada per una empresa. Per a contacte legal i suport, veure la secció Contacte més avall.",
     "notMedicalAdvice": "No és assessorament mèdic ni professional",
-    "notMedicalAdviceBody": "L'App i tot el seu contingut (incloent-hi sugerències de son, prediccions i informació sobre el son infantil) són només informatius. No constitueixen assessorament mèdic, sanitari ni professional. Consulta sempre un professional de la salut qualificat (p. ex. el teu pediatra) sobre el son o la salut del teu bebè. No retardis ni ignoris un consell professional per allò que aparegui a l'App.",
+    "notMedicalAdviceBody": "L'App i tot el seu contingut (incloent-hi sugerències de son, prediccions i informació sobre el son infantil) són només informatius. No constitueixen assessorament mèdic, sanitari ni professional. Consulta sempre un professional de la salut qualificat (p. ex. el teu pediatra) sobre el son o la salut del teu nadó. No retardis ni ignoris un consell professional per allò que aparegui a l'App.",
     "acceptableUse": "Ús acceptable",
     "acceptableUseBody": "Et compromets a fer servir l'App només de forma lícita. No la facis servir per perjudicar altres, incomplir la llei, vulnerar drets, distribuir programari maliciós o extreure o fer servir indebidament dades. No pots fer enginyeria inversa ni intentar extreure el codi font de l'App llevat que la llei imperativa ho permeti.",
     "accountAndTermination": "Compte i resolució",

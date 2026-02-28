@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyProfile } from '../../types';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
@@ -24,6 +25,7 @@ export function BabyEditSheet({
   onDeleteBaby,
   isNewBaby = false,
 }: BabyEditSheetProps) {
+  const { t } = useTranslation();
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formData, setFormData] = useState({
@@ -118,7 +120,7 @@ export function BabyEditSheet({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label={isNewBaby ? 'Add baby' : 'Edit baby profile'}
+            aria-label={isNewBaby ? t('babyEdit.ariaAddBaby') : t('babyEdit.ariaEditProfile')}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -157,7 +159,7 @@ export function BabyEditSheet({
                 </motion.div>
                 {onUploadAvatar && (
                   <p className="text-xs text-[var(--text-muted)] mt-3">
-                    Tap photo to change
+                    {t('babyEdit.tapPhotoToChange')}
                   </p>
                 )}
               </div>
@@ -168,14 +170,14 @@ export function BabyEditSheet({
                 <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4 space-y-4">
                   <div>
                     <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
-                      Name
+                      {t('common.name')}
                     </label>
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Baby's name"
+                      placeholder={t('babyEdit.babyName')}
                       className="w-full bg-transparent border-none text-[var(--text-primary)] text-lg font-display font-medium placeholder:text-[var(--text-muted)]/40 focus:outline-none focus:ring-0"
                       autoFocus
                     />
@@ -183,7 +185,7 @@ export function BabyEditSheet({
 
                   <div className="border-t border-[var(--text-muted)]/15 pt-4">
                     <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
-                      Birthday
+                      {t('babyEdit.dateOfBirth')}
                     </label>
                     <input
                       type="date"
@@ -198,7 +200,7 @@ export function BabyEditSheet({
                 {/* Gender */}
                 <div className="rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] p-4">
                   <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
-                    Gender
+                    {t('babyEdit.gender')}
                   </label>
                   <select
                     name="gender"
@@ -206,9 +208,9 @@ export function BabyEditSheet({
                     onChange={handleChange}
                     className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
                   >
-                    <option value="male">Boy</option>
-                    <option value="female">Girl</option>
-                    <option value="other">Not specified</option>
+                    <option value="male">{t('babyEdit.male')}</option>
+                    <option value="female">{t('babyEdit.female')}</option>
+                    <option value="other">{t('babyEdit.other')}</option>
                   </select>
                 </div>
 
@@ -226,7 +228,7 @@ export function BabyEditSheet({
                       : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
                   }`}
                 >
-                  {isNewBaby ? 'Add Baby' : 'Save Changes'}
+                  {isNewBaby ? t('babyEdit.addBaby') : t('profile.saveChanges')}
                 </button>
 
                 {/* Cancel Link */}
@@ -234,7 +236,7 @@ export function BabyEditSheet({
                   onClick={onClose}
                   className="w-full py-2 text-[var(--text-muted)] font-display font-medium text-sm hover:text-[var(--text-primary)] transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
               </div>
 
@@ -245,7 +247,7 @@ export function BabyEditSheet({
                     onClick={() => setShowDeleteConfirm(true)}
                     className="w-full text-center text-xs text-[var(--danger-color)]/60 hover:text-[var(--danger-color)] transition-colors font-display"
                   >
-                    Delete baby profile
+                    {t('babyEdit.deleteBaby')}
                   </button>
                 </div>
               )}
@@ -265,8 +267,8 @@ export function BabyEditSheet({
         }
       }}
       onCancel={() => setShowDeleteConfirm(false)}
-      title="Delete baby profile?"
-      description={`${baby?.name || 'This baby'}'s profile and all associated sleep entries will be permanently removed.`}
+      title={t('babyEdit.deleteProfileConfirmTitle')}
+      description={t('babyEdit.deleteProfileConfirmDescription', { name: baby?.name || t('common.baby') })}
     />
     </>
   );

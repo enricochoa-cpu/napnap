@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyShare } from '../types';
 
@@ -27,6 +28,7 @@ export function ShareAccess({
   inviterName,
   babyName,
 }: ShareAccessProps) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<ShareRole>('caregiver');
   const [isInviting, setIsInviting] = useState(false);
@@ -55,10 +57,10 @@ export function ShareAccess({
     if (result.success) {
       setEmail('');
       setRole('caregiver');
-      setSuccess('Invitation sent successfully');
+      setSuccess(t('shareAccess.invitationSent'));
       setTimeout(() => setSuccess(null), 3000);
     } else {
-      setError(result.error || 'Failed to send invitation');
+      setError(result.error || t('shareAccess.failedSendInvite'));
     }
 
     setIsInviting(false);
@@ -68,7 +70,7 @@ export function ShareAccess({
     setIsUpdating(true);
     const result = await onRevokeAccess(shareId);
     if (!result.success) {
-      setError(result.error || 'Failed to revoke access');
+      setError(result.error || t('shareAccess.failedRevoke'));
     }
     setSelectedShare(null);
     setIsUpdating(false);
@@ -83,7 +85,7 @@ export function ShareAccess({
     setIsUpdating(true);
     const result = await onUpdateRole(selectedShare.id, editingRole);
     if (!result.success) {
-      setError(result.error || 'Failed to update role');
+      setError(result.error || t('shareAccess.failedUpdateRole'));
     }
     setSelectedShare(null);
     setIsUpdating(false);
@@ -92,14 +94,14 @@ export function ShareAccess({
   const handleAccept = async (shareId: string) => {
     const result = await onAcceptInvitation(shareId);
     if (!result.success) {
-      setError(result.error || 'Failed to accept invitation');
+      setError(result.error || t('shareAccess.failedAccept'));
     }
   };
 
   const handleDecline = async (shareId: string) => {
     const result = await onDeclineInvitation(shareId);
     if (!result.success) {
-      setError(result.error || 'Failed to decline invitation');
+      setError(result.error || t('shareAccess.failedDecline'));
     }
   };
 
@@ -117,10 +119,10 @@ export function ShareAccess({
       {pendingInvitations.length > 0 && (
         <div className="card p-6">
           <h3 className="text-lg font-display font-bold text-[var(--text-primary)] mb-4">
-            Pending Invitations
+            {t('shareAccess.pendingInvitationsTitle')}
           </h3>
           <p className="text-sm text-[var(--text-secondary)] mb-4">
-            You've been invited to help track these babies
+            {t('shareAccess.pendingInvitationsIntro')}
           </p>
           <div className="space-y-3">
             {pendingInvitations.map((invitation) => (
@@ -130,10 +132,10 @@ export function ShareAccess({
               >
                 <div>
                   <p className="font-display font-semibold text-[var(--text-primary)]">
-                    {invitation.babyName || 'Baby'}
+                    {invitation.babyName || t('common.baby')}
                   </p>
                   <p className="text-xs text-[var(--text-muted)]">
-                    from {invitation.ownerName || 'Someone'}
+                    {t('shareAccess.from')} {invitation.ownerName || t('shareAccess.someone')}
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -141,13 +143,13 @@ export function ShareAccess({
                     onClick={() => handleAccept(invitation.id)}
                     className="px-3 py-1.5 rounded-lg bg-[var(--nap-color)] text-[var(--bg-deep)] text-sm font-display font-semibold"
                   >
-                    Accept
+                    {t('profile.accept')}
                   </button>
                   <button
                     onClick={() => handleDecline(invitation.id)}
                     className="px-3 py-1.5 rounded-lg bg-[var(--bg-card)] text-[var(--text-muted)] text-sm font-display"
                   >
-                    Decline
+                    {t('profile.decline')}
                   </button>
                 </div>
               </div>
@@ -159,10 +161,10 @@ export function ShareAccess({
       {/* Share Access Section */}
       <div className="card p-6">
         <h3 className="text-lg font-display font-bold text-[var(--text-primary)] mb-2">
-          Share Access
+          {t('shareAccess.title')}
         </h3>
         <p className="text-sm text-[var(--text-secondary)] mb-5">
-          Let a partner or caregiver help track your baby's sleep
+          {t('shareAccess.sectionSubtitle')}
         </p>
 
         {/* Invite Form */}
@@ -172,7 +174,7 @@ export function ShareAccess({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter email address"
+              placeholder={t('shareAccess.invitePlaceholder')}
               className="input flex-1"
               disabled={isInviting}
             />
@@ -181,7 +183,7 @@ export function ShareAccess({
               disabled={isInviting || !email.trim()}
               className="btn btn-primary px-5 disabled:opacity-50"
             >
-              {isInviting ? 'Sending...' : 'Invite'}
+              {isInviting ? t('shareAccess.sending') : t('shareAccess.inviteButton')}
             </button>
           </div>
 
@@ -196,8 +198,8 @@ export function ShareAccess({
                   : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
               }`}
             >
-              <div className="font-semibold">Caregiver</div>
-              <div className="text-xs opacity-70 mt-0.5">Can add and edit entries</div>
+              <div className="font-semibold">{t('shareAccess.roleCaregiver')}</div>
+              <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.caregiverDesc')}</div>
             </button>
             <button
               type="button"
@@ -208,8 +210,8 @@ export function ShareAccess({
                   : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
               }`}
             >
-              <div className="font-semibold">Viewer</div>
-              <div className="text-xs opacity-70 mt-0.5">Can only view entries</div>
+              <div className="font-semibold">{t('shareAccess.roleViewer')}</div>
+              <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.viewerDesc')}</div>
             </button>
           </div>
 
@@ -225,7 +227,7 @@ export function ShareAccess({
         {acceptedShares.length > 0 && (
           <div className="mb-4">
             <h4 className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-3">
-              People with access
+              {t('shareAccess.peopleWithAccess')}
             </h4>
             <div className="space-y-2">
               {acceptedShares.map((share) => (
@@ -243,8 +245,8 @@ export function ShareAccess({
                     <p className="text-sm font-display text-[var(--text-primary)] truncate">
                       {share.sharedWithEmail}
                     </p>
-                    <p className="text-xs text-[var(--text-muted)] capitalize">
-                      {share.role}
+                    <p className="text-xs text-[var(--text-muted)]">
+                      {share.role === 'caregiver' ? t('shareAccess.roleCaregiver') : t('shareAccess.roleViewer')}
                     </p>
                   </div>
                   <svg className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -260,7 +262,7 @@ export function ShareAccess({
         {pendingShares.length > 0 && (
           <div>
             <h4 className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-3">
-              Pending invitations
+              {t('shareAccess.pendingInvitations')}
             </h4>
             <div className="space-y-2">
               {pendingShares.map((share) => (
@@ -279,7 +281,7 @@ export function ShareAccess({
                         {share.sharedWithEmail}
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
-                        Waiting for response...
+                        {t('shareAccess.waitingForResponse')}
                       </p>
                     </div>
                   </div>
@@ -287,7 +289,7 @@ export function ShareAccess({
                     onClick={() => handleRevoke(share.id)}
                     className="text-xs text-[var(--danger-color)] font-display px-3 py-1.5"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               ))}
@@ -297,7 +299,7 @@ export function ShareAccess({
 
         {acceptedShares.length === 0 && pendingShares.length === 0 && (
           <p className="text-sm text-[var(--text-muted)] text-center py-4">
-            No one else has access yet
+            {t('shareAccess.noOneElseHasAccess')}
           </p>
         )}
       </div>
@@ -347,7 +349,7 @@ export function ShareAccess({
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-display font-bold text-[var(--text-primary)]">
-                      Edit Access
+                      {t('shareAccess.editAccess')}
                     </h3>
                     <p className="text-sm text-[var(--text-muted)] truncate">
                       {selectedShare.sharedWithEmail}
@@ -358,7 +360,7 @@ export function ShareAccess({
                 {/* Role Selector */}
                 <div className="mb-6">
                   <label className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-3 block">
-                    Permission level
+                    {t('shareAccess.permissionLevel')}
                   </label>
                   <div className="flex gap-2">
                     <button
@@ -371,8 +373,8 @@ export function ShareAccess({
                           : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
                       }`}
                     >
-                      <div className="font-semibold">Caregiver</div>
-                      <div className="text-xs opacity-70 mt-0.5">Can add and edit entries</div>
+                      <div className="font-semibold">{t('shareAccess.roleCaregiver')}</div>
+                      <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.caregiverDesc')}</div>
                     </button>
                     <button
                       type="button"
@@ -384,8 +386,8 @@ export function ShareAccess({
                           : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
                       }`}
                     >
-                      <div className="font-semibold">Viewer</div>
-                      <div className="text-xs opacity-70 mt-0.5">Can only view entries</div>
+                      <div className="font-semibold">{t('shareAccess.roleViewer')}</div>
+                      <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.viewerDesc')}</div>
                     </button>
                   </div>
                 </div>
@@ -397,7 +399,7 @@ export function ShareAccess({
                     disabled={isUpdating}
                     className="w-full btn btn-primary py-3.5 disabled:opacity-50"
                   >
-                    {isUpdating ? 'Saving...' : 'Save Changes'}
+                    {isUpdating ? t('common.saving') : t('profile.saveChanges')}
                   </button>
 
                   <button
@@ -405,7 +407,7 @@ export function ShareAccess({
                     disabled={isUpdating}
                     className="w-full py-3.5 rounded-xl text-[var(--danger-color)] font-display font-semibold bg-[var(--danger-color)]/10 hover:bg-[var(--danger-color)]/20 transition-colors disabled:opacity-50"
                   >
-                    Remove Access
+                    {t('shareAccess.removeAccess')}
                   </button>
 
                   <button
@@ -413,7 +415,7 @@ export function ShareAccess({
                     disabled={isUpdating}
                     className="w-full py-3 text-[var(--text-muted)] font-display text-sm"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </div>

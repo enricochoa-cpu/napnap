@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const UPLOAD_TIMEOUT_MS = 30_000;
 
@@ -118,6 +119,7 @@ export function BabyAvatarPicker({
   onUpload,
   uploading = false,
 }: BabyAvatarPickerProps) {
+  const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -214,7 +216,7 @@ export function BabyAvatarPicker({
           onClick={handleClick}
           disabled={uploading}
           className={avatarClassName}
-          aria-label="Change profile picture"
+          aria-label={t('common.ariaChangePhoto')}
           aria-describedby={uploadError ? 'avatar-upload-error' : undefined}
         >
           {avatarContent}
@@ -234,7 +236,7 @@ export function BabyAvatarPicker({
             onClick={handleClick}
             className="text-xs font-display font-semibold text-[var(--nap-color)] hover:underline"
           >
-            Try again
+            {t('common.tryAgain')}
           </button>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
@@ -78,6 +79,7 @@ function toTimeString(date: Date): string {
 const ICON_CIRCLE_STYLE = { background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' };
 
 export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: WakeUpSheetProps) {
+  const { t } = useTranslation();
   const [timeValue, setTimeValue] = useState('');
   const [relativeLabel, setRelativeLabel] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -187,7 +189,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Log wake up time"
+            aria-label={t('wakeUpSheet.ariaLogWakeUp')}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -212,7 +214,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     onClick={handleDelete}
                     className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
                     style={ICON_CIRCLE_STYLE}
-                    aria-label="Delete"
+                    aria-label={t('common.ariaDelete')}
                   >
                     <TrashIcon />
                   </button>
@@ -223,7 +225,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                   onClick={onClose}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   style={ICON_CIRCLE_STYLE}
-                  aria-label="Close"
+                  aria-label={t('common.ariaClose')}
                 >
                   <CloseIcon />
                 </button>
@@ -248,7 +250,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                   className="text-lg font-display font-semibold mb-6"
                   style={{ color: 'var(--wake-color)' }}
                 >
-                  Wake Up
+                  {t('wakeUpSheet.title')}
                 </h2>
 
                 {/* Editable time — two plain inputs for perfect centering */}
@@ -257,7 +259,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     type="text"
                     inputMode="numeric"
                     maxLength={2}
-                    aria-label="Hours"
+                    aria-label={t('wakeUpSheet.ariaHours')}
                     value={timeValue.split(':')[0] ?? ''}
                     onChange={(e) => {
                       const v = e.target.value.replace(/\D/g, '').slice(0, 2);
@@ -277,7 +279,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     type="text"
                     inputMode="numeric"
                     maxLength={2}
-                    aria-label="Minutes"
+                    aria-label={t('wakeUpSheet.ariaMinutes')}
                     value={timeValue.split(':')[1] ?? ''}
                     onChange={(e) => {
                       const v = e.target.value.replace(/\D/g, '').slice(0, 2);
@@ -368,8 +370,8 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
       isOpen={showDeleteConfirm}
       onConfirm={handleConfirmDelete}
       onCancel={() => setShowDeleteConfirm(false)}
-      title="Delete entry?"
-      description="This sleep entry will be permanently removed."
+      title={t('wakeUpSheet.deleteEntryTitle')}
+      description={t('sleepEntrySheet.deleteEntryDescription')}
     />
     </>
   );
