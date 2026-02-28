@@ -283,7 +283,9 @@
     "deleteProfileConfirmTitle": "Delete baby profile?",
     "deleteProfileConfirmDescription": "{{name}}'s profile and all associated sleep entries will be permanently removed.",
     "ariaAddBaby": "Add baby",
-    "ariaEditProfile": "Edit baby profile"
+    "ariaEditProfile": "Edit baby profile",
+    "dobInvalid": "Please enter a valid date of birth (e.g. year 1900–{{year}}).",
+    "dobFuture": "Date of birth cannot be in the future."
   },
   "babyDetail": {
     "sharedWith": "Shared with",

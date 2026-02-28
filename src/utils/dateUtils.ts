@@ -10,8 +10,53 @@ import {
   subDays,
   startOfDay,
   isToday,
+  isAfter,
   addMinutes as fnsAddMinutes,
 } from 'date-fns';
+
+/** Min/max year for baby DOB to reject typos like 20225 or 1800. */
+const DOB_YEAR_MIN = 1900;
+const DOB_YEAR_MAX = new Date().getFullYear();
+
+/**
+ * Validates date of birth for baby profile: must be a valid date, not in the future, and year in sane range.
+ * Use this before allowing save so illogical dates (e.g. 02/07/20225) are rejected.
+ */
+export function validateDateOfBirth(dateStr: string): { valid: boolean; errorKey: string | null } {
+  const trimmed = dateStr?.trim() ?? '';
+  if (trimmed === '') {
+    return { valid: false, errorKey: null };
+  }
+  // Must look like YYYY-MM-DD (type="date" gives this; manual paste might not)
+  const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
+  if (!isoMatch) {
+    return { valid: false, errorKey: 'babyEdit.dobInvalid' };
+  }
+  const [, y, m, d] = isoMatch;
+  const year = parseInt(y!, 10);
+  const month = parseInt(m!, 10);
+  const day = parseInt(d!, 10);
+  if (year < DOB_YEAR_MIN || year > DOB_YEAR_MAX) {
+    return { valid: false, errorKey: 'babyEdit.dobInvalid' };
+  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) {
+    return { valid: false, errorKey: 'babyEdit.dobInvalid' };
+  }
+  let dob: Date;
+  try {
+    dob = parseISO(trimmed);
+  } catch {
+    return { valid: false, errorKey: 'babyEdit.dobInvalid' };
+  }
+  if (Number.isNaN(dob.getTime())) {
+    return { valid: false, errorKey: 'babyEdit.dobInvalid' };
+  }
+  const today = startOfDay(new Date());
+  if (isAfter(dob, today)) {
+    return { valid: false, errorKey: 'babyEdit.dobFuture' };
+  }
+  return { valid: true, errorKey: null };
+}
 
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? parseISO(date) : date;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BabyProfile, BabyShare, WeightLog, HeightLog } from '../../types';
-import { formatAge } from '../../utils/dateUtils';
+import { formatAge, validateDateOfBirth } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ShareAccess } from '../ShareAccess';
@@ -118,7 +118,11 @@ export function BabyDetailView({
     );
   }, [formData, baby]);
 
-  const isValid = formData.name.trim() !== '' && formData.dateOfBirth !== '';
+  const dobValidation = validateDateOfBirth(formData.dateOfBirth);
+  const isValid =
+    formData.name.trim() !== '' &&
+    formData.dateOfBirth.trim() !== '' &&
+    dobValidation.valid;
 
   const handleSave = async () => {
     if (!isValid) return;
@@ -212,7 +216,14 @@ export function BabyDetailView({
               onChange={handleChange}
               disabled={!isOwner}
               className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 disabled:opacity-60"
+              aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
+              aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-detail-dob-error' : undefined}
             />
+            {isOwner && formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
+              <p id="baby-detail-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5">
+                {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+              </p>
+            )}
           </div>
         </div>
 

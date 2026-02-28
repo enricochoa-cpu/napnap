@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyProfile } from '../../types';
+import { validateDateOfBirth } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -78,13 +79,17 @@ export function BabyEditSheet({
     }
   };
 
+  const dobValidation = validateDateOfBirth(formData.dateOfBirth);
+  const isValid =
+    formData.name.trim() !== '' &&
+    formData.dateOfBirth.trim() !== '' &&
+    dobValidation.valid;
+
   const handleSave = () => {
-    if (!formData.name || !formData.dateOfBirth) return;
+    if (!isValid) return;
     onSave(formData);
     onClose();
   };
-
-  const isValid = formData.name.trim() !== '' && formData.dateOfBirth !== '';
 
   const dialogRef = useFocusTrap(isOpen, onClose);
 
@@ -193,7 +198,14 @@ export function BabyEditSheet({
                       value={formData.dateOfBirth}
                       onChange={handleChange}
                       className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
+                      aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
+                      aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-edit-dob-error' : undefined}
                     />
+                    {formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
+                      <p id="baby-edit-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5">
+                        {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+                      </p>
+                    )}
                   </div>
                 </div>
 

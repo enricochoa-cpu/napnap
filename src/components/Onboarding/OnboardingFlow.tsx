@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDate, validateDateOfBirth } from '../../utils/dateUtils';
 import { setOnboardingDraftInSession } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
@@ -116,11 +116,12 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     );
   }
 
-  // Next is enabled only when the current step's required input is complete (no advancing with empty name/DOB)
+  const dobValidation = validateDateOfBirth(draft.babyDob);
+  // Next is enabled only when the current step's required input is complete (no advancing with empty or invalid DOB)
   const canProceed =
     step === STEP_WELCOME ||
     (step === STEP_BABY_NAME && draft.babyName.trim().length > 0) ||
-    (step === STEP_BABY_DOB && draft.babyDob.length > 0) ||
+    (step === STEP_BABY_DOB && draft.babyDob.trim().length > 0 && dobValidation.valid) ||
     (step === STEP_YOUR_NAME && draft.userName.trim().length > 0) ||
     step === STEP_YOUR_RELATIONSHIP;
 
@@ -257,7 +258,14 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               value={draft.babyDob}
               onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
               className="input"
+              aria-invalid={draft.babyDob.trim() !== '' && !dobValidation.valid}
+              aria-describedby={draft.babyDob.trim() !== '' && dobValidation.errorKey ? 'onboarding-dob-error' : undefined}
             />
+            {draft.babyDob.trim() !== '' && dobValidation.errorKey && (
+              <p id="onboarding-dob-error" className="text-xs text-[var(--danger-color)] mt-2 text-center">
+                {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+              </p>
+            )}
           </div>
           <div className="flex gap-3 mt-auto safe-pad-bottom">
             <button
