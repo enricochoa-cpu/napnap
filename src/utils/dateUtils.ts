@@ -8,26 +8,28 @@ import {
   addDays,
   addMonths,
   subDays,
+  subYears,
   startOfDay,
   isToday,
   isAfter,
+  isBefore,
   addMinutes as fnsAddMinutes,
 } from 'date-fns';
 
-/** Min/max year for baby DOB to reject typos like 20225 or 1800. */
+/** Min/max year for baby DOB to reject typos like 20225 or 222222. */
 const DOB_YEAR_MIN = 1900;
-const DOB_YEAR_MAX = new Date().getFullYear();
 
 /**
- * Validates date of birth for baby profile: must be a valid date, not in the future, and year in sane range.
- * Use this before allowing save so illogical dates (e.g. 02/07/20225) are rejected.
+ * Validates date of birth for baby profile:
+ * - Valid YYYY-MM-DD, sane year (1900–current year), not in the future (today OK), not more than 4 years in the past.
+ * Used before save and in useBabyProfile so invalid DOB never reaches the DB.
  */
 export function validateDateOfBirth(dateStr: string): { valid: boolean; errorKey: string | null } {
   const trimmed = dateStr?.trim() ?? '';
   if (trimmed === '') {
     return { valid: false, errorKey: null };
   }
-  // Must look like YYYY-MM-DD (type="date" gives this; manual paste might not)
+  // Require exactly YYYY-MM-DD (4-digit year) so 222222 or 20225 are rejected
   const isoMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
   if (!isoMatch) {
     return { valid: false, errorKey: 'babyEdit.dobInvalid' };
@@ -36,7 +38,8 @@ export function validateDateOfBirth(dateStr: string): { valid: boolean; errorKey
   const year = parseInt(y!, 10);
   const month = parseInt(m!, 10);
   const day = parseInt(d!, 10);
-  if (year < DOB_YEAR_MIN || year > DOB_YEAR_MAX) {
+  const currentYear = new Date().getFullYear();
+  if (year < DOB_YEAR_MIN || year > currentYear) {
     return { valid: false, errorKey: 'babyEdit.dobInvalid' };
   }
   if (month < 1 || month > 12 || day < 1 || day > 31) {
@@ -55,7 +58,22 @@ export function validateDateOfBirth(dateStr: string): { valid: boolean; errorKey
   if (isAfter(dob, today)) {
     return { valid: false, errorKey: 'babyEdit.dobFuture' };
   }
+  const minDob = startOfDay(subYears(today, 4));
+  if (isBefore(dob, minDob)) {
+    return { valid: false, errorKey: 'babyEdit.dobTooOld' };
+  }
   return { valid: true, errorKey: null };
+}
+
+/** Min/max values for type="date" inputs so the native picker only allows valid DOB range (last 4 years, today or earlier). */
+export function getDateOfBirthInputBounds(): { min: string; max: string } {
+  const now = new Date();
+  const today = startOfDay(now);
+  const minDate = subYears(today, 4);
+  return {
+    min: format(minDate, 'yyyy-MM-dd'),
+    max: format(today, 'yyyy-MM-dd'),
+  };
 }
 
 export function formatDate(date: Date | string): string {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { validateDateOfBirth } from '../utils/dateUtils';
 import { getFromStorage, setToStorage } from '../utils/storage';
 import { STORAGE_KEYS } from '../utils/storage';
 import i18n from '../i18n';
@@ -180,6 +181,7 @@ export function useBabyProfile() {
 
   const createProfile = useCallback(async (data: Omit<BabyProfile, 'id'> & Partial<Omit<UserProfile, 'email'>>) => {
     try {
+      if (data.dateOfBirth && !validateDateOfBirth(data.dateOfBirth).valid) return null;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
@@ -231,6 +233,7 @@ export function useBabyProfile() {
 
   const updateProfile = useCallback(async (data: Partial<Omit<BabyProfile, 'id'>> & Partial<Omit<UserProfile, 'email'>>) => {
     try {
+      if (data.dateOfBirth !== undefined && !validateDateOfBirth(data.dateOfBirth).valid) return;
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 

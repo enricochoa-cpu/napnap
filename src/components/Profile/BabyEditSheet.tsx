@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyProfile } from '../../types';
-import { validateDateOfBirth } from '../../utils/dateUtils';
+import { validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
@@ -87,6 +87,8 @@ export function BabyEditSheet({
 
   const handleSave = () => {
     if (!isValid) return;
+    const recheck = validateDateOfBirth(formData.dateOfBirth);
+    if (!recheck.valid) return;
     onSave(formData);
     onClose();
   };
@@ -197,13 +199,19 @@ export function BabyEditSheet({
                       name="dateOfBirth"
                       value={formData.dateOfBirth}
                       onChange={handleChange}
+                      min={getDateOfBirthInputBounds().min}
+                      max={getDateOfBirthInputBounds().max}
                       className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
                       aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
                       aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-edit-dob-error' : undefined}
                     />
                     {formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
-                      <p id="baby-edit-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5">
-                        {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+                      <p id="baby-edit-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5" role="alert">
+                        {dobValidation.errorKey === 'babyEdit.dobFuture'
+                          ? t('babyEdit.dobFuture')
+                          : dobValidation.errorKey === 'babyEdit.dobTooOld'
+                            ? t('babyEdit.dobTooOld')
+                            : t('babyEdit.dobInvalid')}
                       </p>
                     )}
                   </div>

@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { formatDate, validateDateOfBirth } from '../../utils/dateUtils';
+import { formatDate, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { setOnboardingDraftInSession } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
@@ -257,13 +257,19 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               type="date"
               value={draft.babyDob}
               onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
+              min={getDateOfBirthInputBounds().min}
+              max={getDateOfBirthInputBounds().max}
               className="input"
               aria-invalid={draft.babyDob.trim() !== '' && !dobValidation.valid}
               aria-describedby={draft.babyDob.trim() !== '' && dobValidation.errorKey ? 'onboarding-dob-error' : undefined}
             />
             {draft.babyDob.trim() !== '' && dobValidation.errorKey && (
-              <p id="onboarding-dob-error" className="text-xs text-[var(--danger-color)] mt-2 text-center">
-                {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+              <p id="onboarding-dob-error" className="text-xs text-[var(--danger-color)] mt-2 text-center" role="alert">
+                {dobValidation.errorKey === 'babyEdit.dobFuture'
+                  ? t('babyEdit.dobFuture')
+                  : dobValidation.errorKey === 'babyEdit.dobTooOld'
+                    ? t('babyEdit.dobTooOld')
+                    : t('babyEdit.dobInvalid')}
               </p>
             )}
           </div>

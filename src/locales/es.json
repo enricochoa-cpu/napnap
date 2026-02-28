@@ -284,8 +284,9 @@
     "deleteProfileConfirmDescription": "Se eliminará permanentemente el perfil de {{name}} y todos los registros de sueño asociados.",
     "ariaAddBaby": "Añadir bebé",
     "ariaEditProfile": "Editar perfil del bebé",
-    "dobInvalid": "Introduce una fecha de nacimiento válida (p. ej. año 1900–{{year}}).",
-    "dobFuture": "La fecha de nacimiento no puede ser futura."
+    "dobInvalid": "Introduce una fecha válida (hoy o anterior).",
+    "dobFuture": "La fecha de nacimiento no puede ser futura.",
+    "dobTooOld": "La fecha de nacimiento es demasiado antigua."
   },
   "babyDetail": {
     "sharedWith": "Compartido con",

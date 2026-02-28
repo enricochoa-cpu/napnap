@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BabyProfile, BabyShare, WeightLog, HeightLog } from '../../types';
-import { formatAge, validateDateOfBirth } from '../../utils/dateUtils';
+import { formatAge, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ShareAccess } from '../ShareAccess';
@@ -126,6 +126,8 @@ export function BabyDetailView({
 
   const handleSave = async () => {
     if (!isValid) return;
+    const recheck = validateDateOfBirth(formData.dateOfBirth);
+    if (!recheck.valid) return;
     if (isSaving) return;
     setIsSaving(true);
     try {
@@ -145,7 +147,8 @@ export function BabyDetailView({
   // When user taps back: save first if there are valid unsaved changes, then navigate.
   // This matches the expectation that "back" = done and keeps changes (many users never tap "Save").
   const handleBack = async () => {
-    if (isOwner && hasChanges && isValid && !isSaving) {
+    const dobOk = validateDateOfBirth(formData.dateOfBirth).valid;
+    if (isOwner && hasChanges && isValid && dobOk && !isSaving) {
       setIsSaving(true);
       try {
         await Promise.resolve(onUpdate(formData));
@@ -215,13 +218,19 @@ export function BabyDetailView({
               value={formData.dateOfBirth}
               onChange={handleChange}
               disabled={!isOwner}
+              min={getDateOfBirthInputBounds().min}
+              max={getDateOfBirthInputBounds().max}
               className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 disabled:opacity-60"
               aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
               aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-detail-dob-error' : undefined}
             />
             {isOwner && formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
-              <p id="baby-detail-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5">
-                {dobValidation.errorKey === 'babyEdit.dobFuture' ? t('babyEdit.dobFuture') : t('babyEdit.dobInvalid', { year: new Date().getFullYear() })}
+              <p id="baby-detail-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5" role="alert">
+                {dobValidation.errorKey === 'babyEdit.dobFuture'
+                  ? t('babyEdit.dobFuture')
+                  : dobValidation.errorKey === 'babyEdit.dobTooOld'
+                    ? t('babyEdit.dobTooOld')
+                    : t('babyEdit.dobInvalid')}
               </p>
             )}
           </div>

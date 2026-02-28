@@ -284,8 +284,9 @@
     "deleteProfileConfirmDescription": "{{name}}'s profile and all associated sleep entries will be permanently removed.",
     "ariaAddBaby": "Add baby",
     "ariaEditProfile": "Edit baby profile",
-    "dobInvalid": "Please enter a valid date of birth (e.g. year 1900–{{year}}).",
-    "dobFuture": "Date of birth cannot be in the future."
+    "dobInvalid": "Please enter a valid date (today or earlier).",
+    "dobFuture": "Date of birth cannot be in the future.",
+    "dobTooOld": "Date of birth is too far in the past."
   },
   "babyDetail": {
     "sharedWith": "Shared with",

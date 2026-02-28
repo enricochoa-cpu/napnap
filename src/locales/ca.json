@@ -284,8 +284,9 @@
     "deleteProfileConfirmDescription": "El perfil de {{name}} i tots els registres de son associats s'eliminaran permanentment.",
     "ariaAddBaby": "Afegir nadó",
     "ariaEditProfile": "Editar perfil del nadó",
-    "dobInvalid": "Introdueix una data de naixement vàlida (p. ex. any 1900–{{year}}).",
-    "dobFuture": "La data de naixement no pot ser futura."
+    "dobInvalid": "Introdueix una data vàlida (avui o anterior).",
+    "dobFuture": "La data de naixement no pot ser futura.",
+    "dobTooOld": "La data de naixement és massa antiga."
   },
   "babyDetail": {
     "sharedWith": "Compartit amb",
