@@ -58,3 +58,14 @@ export interface DbHeightLog {
   value_cm: number;
   created_at: string;
 }
+
+export interface DbMeasurementLog {
+  id: string;
+  baby_id: string;
+  date: string;
+  weight_kg: number | null;
+  height_cm: number | null;
+  head_cm: number | null;
+  notes: string | null;
+  created_at: string;
+}

@@ -275,6 +275,27 @@
     "viewAllEntries": "View all ({{count}})",
     "showLess": "Show less"
   },
+  "measures": {
+    "title": "Measures",
+    "subtitle": "Weight, height & head for {{name}}",
+    "empty": "No measurements yet",
+    "emptyHint": "Tap + to add a measurement",
+    "addMeasurement": "Add measurement",
+    "editMeasurement": "Edit measurement",
+    "weight": "Weight",
+    "height": "Height",
+    "head": "Head",
+    "weightKg": "Weight (kg)",
+    "heightCm": "Height (cm)",
+    "headCm": "Head circumference (cm)",
+    "notesOptional": "Notes (optional)",
+    "notesPlaceholder": "Add notes…",
+    "atLeastOneRequired": "Add at least one measurement (weight, height or head).",
+    "deleteMeasurement": "Delete measurement",
+    "deleteConfirmTitle": "Delete this measurement?",
+    "deleteConfirmDescription": "This log will be removed.",
+    "subtitleCount": "{{count}} measurement(s)"
+  },
   "babyEdit": {
     "editBaby": "Edit baby",
     "addBaby": "Add a baby",

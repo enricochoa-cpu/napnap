@@ -5,6 +5,7 @@ import './i18n'
 import './index.css'
 import App from './App.tsx'
 import { AuthGuard } from './components/Auth'
+import { NavHiddenWhenModalProvider } from './contexts/NavHiddenWhenModalContext'
 
 // Initialize Sentry for error tracking
 Sentry.init({
@@ -16,8 +17,10 @@ Sentry.init({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AuthGuard>
-      <App />
-    </AuthGuard>
+    <NavHiddenWhenModalProvider>
+      <AuthGuard>
+        <App />
+      </AuthGuard>
+    </NavHiddenWhenModalProvider>
   </StrictMode>,
 )

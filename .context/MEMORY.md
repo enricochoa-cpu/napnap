@@ -237,6 +237,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-26 | Go-live Section 3 (Security): function search_path migration; RLS anonymized_* tables service-role-only; client anonymization removed from single-baby delete; leaked password N/A (Pro only). See logs/2026-02-26.md. |
 | 2026-02-27 | Pending-invite UX: header avatar (Today/History only) with nap ring + dot; invites in My Babies (invite cards, Accept/Decline); Profile menu My Babies row pending dot; Today empty state "You have a baby invite" + Review invite. SubViewHeader centered; Stats/Profile headers consistent. See logs/2026-02-27.md. |
 | 2026-02-27 | Production deployed to napnap.vercel.app; Google OAuth redirect configured; i18n: hardcoded strings extracted to en/es locales (TodayView, DayNavigator, SleepEntry, SleepList, StatsView, useBabyProfile). |
+| 2026-03-01 | Measures section: baby_measurement_logs (weight, height, head; one row per baby+date); useGrowthLogs refactored to measurementLogs + derived weightLogs/heightLogs; MeasuresView + MeasureLogSheet; Baby Detail → single Measures row → Measures view; NavHiddenWhenModalContext hides nav when sheet open so Save button visible. |
 
 ---
 

@@ -52,3 +52,14 @@ export interface HeightLog {
   date: string; // YYYY-MM-DD
   valueCm: number;
 }
+
+/** One log per (baby, date); at least one of weightKg, heightCm, headCm present. */
+export interface MeasurementLog {
+  id: string;
+  babyId: string;
+  date: string; // YYYY-MM-DD
+  weightKg?: number | null;
+  heightCm?: number | null;
+  headCm?: number | null;
+  notes?: string | null;
+}

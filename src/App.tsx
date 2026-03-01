@@ -33,6 +33,7 @@ import {
 } from './utils/storage';
 import { parseISO, isToday, addDays, format } from 'date-fns';
 import type { SleepEntry } from './types';
+import { useNavHiddenWhenModal } from './contexts/NavHiddenWhenModalContext';
 
 type View = 'home' | 'history' | 'stats' | 'profile';
 
@@ -472,6 +473,8 @@ function App() {
     ? 'My babies, you have a baby invite waiting'
     : 'My babies';
 
+  const { isNavHidden } = useNavHiddenWhenModal();
+
   return (
     <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
@@ -574,7 +577,8 @@ function App() {
         </div>
       </main>
 
-      {/* Minimalist Floating Tab Bar */}
+      {/* Minimalist Floating Tab Bar — hidden when a modal/sheet is open so Save button is visible */}
+      {!isNavHidden && (
       <nav className="floating-nav">
         <div className="floating-nav-inner">
           <div className="floating-nav-bar">
@@ -672,6 +676,7 @@ function App() {
           </div>
         </div>
       </nav>
+      )}
 
       {/* Quick Action Sheet */}
       <QuickActionSheet

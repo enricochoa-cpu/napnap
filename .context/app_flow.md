@@ -195,16 +195,15 @@ Tab Bar
 | **Component** | `BabyDetailView` → `components/Profile/BabyDetailView.tsx` |
 | **Primary Goal** | Edit baby profile for a specific baby |
 | **Golden Path** | Edit fields → save changes |
-| **Branching Options** | 1. Edit profile fields (name, DOB, gender), 2. Upload avatar, 3. Baby weight / Baby height sections (add or edit log by date; delete with confirm — owners/caregivers only), 4. "Manage sharing" row → Share Access screen (owners only), 5. Delete baby link (owners only) |
+| **Branching Options** | 1. Edit profile fields (name, DOB, gender), 2. Upload avatar, 3. Measures row → Measures view (weight, height, head logs; add/edit/delete — owners/caregivers only), 4. "Manage sharing" row → Share Access screen (owners only), 5. Delete baby link (owners only) |
 | **Escape Routes** | Back button → My Babies |
 
 **Sections:**
 1. Avatar + profile form (name, DOB, gender)
-2. Baby weight — list of (date, kg) + Add; tap entry to edit; delete with confirmation. GrowthLogSheet for add/edit.
-3. Baby height — list of (date, cm) + Add; same pattern as weight.
-4. "Manage sharing" row (owners only) → navigates to Share Access screen
-5. Save button (only visible when form has changes)
-6. Delete baby link (owners only, at bottom)
+2. Measures — single row; tap opens Measures view (list by day: weight, height, head; + to add; edit icon opens MeasureLogSheet; delete in sheet header when editing).
+3. "Manage sharing" row (owners only) → navigates to Share Access screen
+4. Save button (only visible when form has changes)
+5. Delete baby link (owners only, at bottom)
 
 ### 2.4.2b Share Access
 

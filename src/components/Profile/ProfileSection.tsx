@@ -6,6 +6,7 @@ import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
 import { BabyDetailView } from './BabyDetailView';
 import { ShareAccessView } from './ShareAccessView';
+import { MeasuresView } from './MeasuresView';
 import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
@@ -126,6 +127,17 @@ export function ProfileSection({
   };
 
   const handleBackFromShareAccess = () => {
+    direction.current = -1;
+    setCurrentView('baby-detail');
+  };
+
+  const handleNavigateToMeasures = () => {
+    previousView.current = currentView;
+    direction.current = 1;
+    setCurrentView('measures');
+  };
+
+  const handleBackFromMeasures = () => {
     direction.current = -1;
     setCurrentView('baby-detail');
   };
@@ -275,6 +287,7 @@ export function ProfileSection({
                 onUploadAvatar={onUploadAvatar}
                 onDeleteBaby={selectedBaby.isOwner ? onDeleteBaby : undefined}
                 onOpenShareAccess={selectedBaby.isOwner ? handleNavigateToShareAccess : undefined}
+                onOpenMeasures={handleNavigateToMeasures}
               />
             </motion.div>
           );
@@ -301,6 +314,28 @@ export function ProfileSection({
                 onRevokeAccess={onRevokeAccess}
                 inviterName={userProfile?.userName || userProfile?.email}
                 onBack={handleBackFromShareAccess}
+              />
+            </motion.div>
+          );
+        })()}
+
+        {currentView === 'measures' && selectedBabyId && (() => {
+          const selectedBaby = sharedProfiles.find(b => b.id === selectedBabyId);
+          if (!selectedBaby) return null;
+          return (
+            <motion.div
+              key="measures"
+              custom={direction.current}
+              variants={slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={slideTransition}
+            >
+              <MeasuresView
+                baby={selectedBaby}
+                canEdit={selectedBaby.isOwner}
+                onBack={handleBackFromMeasures}
               />
             </motion.div>
           );

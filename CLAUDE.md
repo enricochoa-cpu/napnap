@@ -45,14 +45,14 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useSleepEntries` handles all sleep CRUD operations and provides computed values (active sleep, daily summaries)
 - `useBabyProfile` handles baby and user profile CRUD via Supabase (including `locale` for i18n; syncs to `i18n.changeLanguage` and localStorage)
 - `useBabyShares` handles multi-user sharing (invitations, access management)
-- `useGrowthLogs` handles weight/height timeline per baby (fetch, add, update, delete; past-value warning)
+- `useGrowthLogs` handles measurement logs per baby (weight, height, head; one row per date); returns measurementLogs plus derived weightLogs/heightLogs for Stats; add/update/delete; past-value warning
 - `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
 - `useFocusTrap` traps keyboard focus inside modals/sheets (Tab cycling, Escape key, focus save/restore)
 - `useDeleteAccount` handles account deletion (storage cleanup, invoke delete-account Edge Function with JWT, signOut + onSignedOut; see .context/lessons.md §5.2, 5.3)
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
-- `BabyProfile`: Baby info (name, DOB, gender, avatarUrl). Weight/height are timeline logs per baby (useGrowthLogs), not on profile.
+- `BabyProfile`: Baby info (name, DOB, gender, avatarUrl). Weight/height/head are timeline logs per baby (useGrowthLogs → Measures), not on profile.
 - `UserProfile`: User info (email, userName, userRole: dad/mum/other, locale: en|es for app language)
 - `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
 - `BabyShare`: Multi-user sharing (babyOwnerId, sharedWithEmail, status, role: caregiver/viewer). When populated from pending-invites query: babyName, ownerName, babyAvatarUrl for invite cards.
@@ -60,10 +60,11 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 ### Database Types (`src/lib/supabase.ts`)
 - `DbProfile`: Supabase profiles table schema
 - `DbSleepEntry`: Supabase sleep_entries table schema
+- `DbMeasurementLog`: baby_measurement_logs (weight_kg, height_cm, head_cm, notes; one row per baby+date)
 - `baby_shares` table: Multi-user sharing with invitation workflow
 
 ### Component Responsibilities
-- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar; add entry is FAB-only (no add-entry button on Sleep Log). **Header avatar** (top-left): shown only on **Today and Sleep Log (history)** views; Napper-style circle with baby photo (darkened) + initial, nap-color ring; tap opens Profile → My Babies. **Pending-invite dot** (wake-color) on avatar and on Profile tab when `pendingInvitations.length > 0`. Profile section accepts `initialView` so avatar can open directly on My Babies. **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30). Floating nav bar has stable width when switching tabs (html overflow-y: scroll, body overflow-x: hidden, fixed .floating-nav-inner width at 500px+; see lessons.md §6.6).
+- `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar; add entry is FAB-only (no add-entry button on Sleep Log). **Floating nav** is hidden when any modal/sheet registers via `useNavHiddenWhenModal()` (e.g. MeasureLogSheet) so primary actions stay visible. **Header avatar** (top-left): shown only on **Today and Sleep Log (history)** views; Napper-style circle with baby photo (darkened) + initial, nap-color ring; tap opens Profile → My Babies. **Pending-invite dot** (wake-color) on avatar and on Profile tab when `pendingInvitations.length > 0`. Profile section accepts `initialView` so avatar can open directly on My Babies. **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30). Floating nav bar has stable width when switching tabs (html overflow-y: scroll, body overflow-x: hidden, fixed .floating-nav-inner width at 500px+; see lessons.md §6.6).
 - `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. **Empty state:** when user has no baby and has pending invite, shows "You have a baby invite" + "Review invite" CTA (navigates to Profile menu). Hero card uses `var(--bg-card)` and no border (softer than bento). Uses compact horizontal card layout (~48px height) with timeline river for mobile. **Shows skeleton loading states** via `SkeletonTimelineCard` during data fetch. Predictions shown alongside active naps; bedtime updates in real-time based on active nap's expected wake time
 - `QuickActionSheet`: Napper-style bottom sheet with 3-column quick action grid (Wake Up, Nap, Bedtime). Uses framer-motion spring animations. Opens SleepEntrySheet with current time pre-loaded
 - `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
@@ -76,13 +77,15 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `ConfirmationModal`: Reusable themed confirmation dialog (`role="alertdialog"`, focus trap). Used by SleepEntrySheet, WakeUpSheet, BabyEditSheet for delete confirmations
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
 - `ShareAccess`: Invite caregivers with role selector (caregiver/viewer), manage sharing via bottom sheet (edit role, remove access)
+- `MeasuresView`: Full-screen Measures list (by day: weight, height, head); header + subtitle, + to add; empty state; uses MeasureLogSheet for add/edit (delete in sheet header). Reached from Baby Detail → Measures row.
+- `MeasureLogSheet`: Bottom sheet for add/edit measurement (date, weight, height, head, notes; at least one required). When open, nav is hidden via NavHiddenWhenModalContext so Save button is visible.
 - `SkyBackground`: Animated background atmosphere with inline NightSky (stars), MorningSky (sun), AfternoonSky (clouds)
 - `LoadingScreen`: Full-screen loading state with animated moon
 - `StatsView`: Sleep statistics dashboard with Recharts. **Header:** centered title + subtitle (same style as My Babies/Settings/Support). Section chips (Sleep summary, Naps, Night sleep, Growth) when hasData; date range picker (max 15 days); **"Generate report (last 30 days)"** (opens SleepReportView). Summary: cards, report row, distribution, daily bar, trend, schedule. Naps/Night: section-specific charts. Growth: weight/height area charts with adaptive Y-axis (data-driven domain). Chip scroll-into-view keeps selected chip centered. Uses CSS variables for theming
 - `SleepReportView`: Narrative sleep report for the **last 30 days** of data (capped; independent of Stats date picker). Sections: Overview (warm tone, no dates), Summary table, Bedtime & wake times, Patterns we're seeing, What to try. All bullet sections use icon bullets (moon, sun, pattern, check) and same line height. "Back to trends" returns to Stats charts. Data from `reportData.ts` (getReportData, tip pool per PRD Appendix A). Baby age via `calculateAge()` in dateUtils (see lessons.md §13.1 for days-calculation fix)
 
 **Profile Section** (`src/components/Profile/`):
-- `ProfileSection`: Container with navigation between profile views; accepts `initialView` so App can open directly on My Babies (e.g. from header avatar). Passes `pendingInvitations`, `onAcceptInvitation`, `onDeclineInvitation` to MyBabiesView; `hasPendingInvite` to ProfileMenu.
+- `ProfileSection`: Container with navigation between profile views; accepts `initialView` so App can open directly on My Babies (e.g. from header avatar). Views include menu, my-babies, baby-detail, measures, share-access, etc. Passes `pendingInvitations`, `onAcceptInvitation`, `onDeclineInvitation` to MyBabiesView; `hasPendingInvite` to ProfileMenu.
 - `SubViewHeader`: Centered title + subtitle (Napper-style); back arrow absolute left. Used by My Babies, Settings, Support, About, FAQs, Contact, Privacy, Terms, Baby detail.
 - `ProfileMenu`: Main menu with greeting (centered title + subtitle) and navigation list. **My Babies row** shows a warm dot when `hasPendingInvite` (pending invitation to review). No invite block on menu — invites live in My Babies.
 - `MyBabiesView`: **Invite cards first** (same card structure as baby cards): baby avatar (from owner profile when available), name, "From {owner}"; Accept / Decline buttons. Then **baby cards** with Select/Selected; `rounded-3xl`, glass bg, nap-color border only when selected. Title "Baby profiles"; subtitle reflects invites vs manage babies. Add-baby ghost card when user has no own profile.

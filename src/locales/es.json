@@ -275,6 +275,27 @@
     "viewAllEntries": "Ver todos ({{count}})",
     "showLess": "Ver menos"
   },
+  "measures": {
+    "title": "Medidas",
+    "subtitle": "Peso, talla y cabeza de {{name}}",
+    "empty": "Aún no hay mediciones",
+    "emptyHint": "Toca + para añadir una medición",
+    "addMeasurement": "Añadir medición",
+    "editMeasurement": "Editar medición",
+    "weight": "Peso",
+    "height": "Talla",
+    "head": "Cabeza",
+    "weightKg": "Peso (kg)",
+    "heightCm": "Talla (cm)",
+    "headCm": "Perímetro cefálico (cm)",
+    "notesOptional": "Notas (opcional)",
+    "notesPlaceholder": "Añadir notas…",
+    "atLeastOneRequired": "Añade al menos una medida (peso, talla o cabeza).",
+    "deleteMeasurement": "Eliminar medición",
+    "deleteConfirmTitle": "¿Eliminar esta medición?",
+    "deleteConfirmDescription": "Se eliminará este registro.",
+    "subtitleCount": "{{count}} medición(es)"
+  },
   "babyEdit": {
     "editBaby": "Editar bebé",
     "addBaby": "Añadir bebé",

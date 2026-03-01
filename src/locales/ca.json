@@ -275,6 +275,27 @@
     "viewAllEntries": "Veure tots ({{count}})",
     "showLess": "Veure menys"
   },
+  "measures": {
+    "title": "Mesures",
+    "subtitle": "Pes, alçada i cap de {{name}}",
+    "empty": "Encara no hi ha mesures",
+    "emptyHint": "Toca + per afegir una mesura",
+    "addMeasurement": "Afegir mesura",
+    "editMeasurement": "Editar mesura",
+    "weight": "Pes",
+    "height": "Alçada",
+    "head": "Cap",
+    "weightKg": "Pes (kg)",
+    "heightCm": "Alçada (cm)",
+    "headCm": "Perímetre cranial (cm)",
+    "notesOptional": "Notes (opcional)",
+    "notesPlaceholder": "Afegir notes…",
+    "atLeastOneRequired": "Afegeix almenys una mesura (pes, alçada o cap).",
+    "deleteMeasurement": "Eliminar mesura",
+    "deleteConfirmTitle": "Eliminar aquesta mesura?",
+    "deleteConfirmDescription": "S'eliminarà aquest registre.",
+    "subtitleCount": "{{count}} mesura(es)"
+  },
   "babyEdit": {
     "editBaby": "Editar nadó",
     "addBaby": "Afegir nadó",
