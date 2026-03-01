@@ -268,16 +268,16 @@ export function ShareAccess({
               {pendingShares.map((share) => (
                 <div
                   key={share.id}
-                  className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-soft)]"
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[var(--bg-soft)] min-w-0"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center flex-shrink-0">
                       <span className="text-sm font-display font-bold text-[var(--text-muted)]">
                         {share.sharedWithEmail.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div>
-                      <p className="text-sm font-display text-[var(--text-primary)]">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-display text-[var(--text-primary)] truncate">
                         {share.sharedWithEmail}
                       </p>
                       <p className="text-xs text-[var(--text-muted)]">
@@ -287,7 +287,7 @@ export function ShareAccess({
                   </div>
                   <button
                     onClick={() => handleRevoke(share.id)}
-                    className="text-xs text-[var(--danger-color)] font-display px-3 py-1.5"
+                    className="text-xs text-[var(--danger-color)] font-display px-3 py-1.5 flex-shrink-0 whitespace-nowrap"
                   >
                     {t('common.cancel')}
                   </button>
