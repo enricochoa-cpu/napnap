@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../types';
 
-export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'privacy' | 'terms';
+export type ProfileView = 'menu' | 'my-babies' | 'baby-detail' | 'faqs' | 'contact' | 'account-settings' | 'support' | 'about' | 'privacy' | 'terms';
 
 interface ProfileMenuProps {
   onNavigate: (view: ProfileView) => void;

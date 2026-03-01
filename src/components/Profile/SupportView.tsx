@@ -27,6 +27,14 @@ const HeartIcon = () => (
   </svg>
 );
 
+const InfoIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 16v-4" />
+    <path d="M12 8h.01" />
+  </svg>
+);
+
 export function SupportView({ onBack, onNavigate }: SupportViewProps) {
   const { t } = useTranslation();
 
@@ -36,6 +44,13 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
 
       {/* Support Options */}
       <div className="space-y-4">
+        <ListRow
+          icon={<InfoIcon />}
+          title={t('support.about')}
+          subtitle={t('support.aboutMenuSubtitle')}
+          onClick={() => onNavigate('about')}
+          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
+        />
         <ListRow
           icon={<HelpIcon />}
           title={t('support.faqs')}
@@ -49,20 +64,6 @@ export function SupportView({ onBack, onNavigate }: SupportViewProps) {
           subtitle={t('support.contactMenuSubtitle')}
           onClick={() => onNavigate('contact')}
           iconColorClass="bg-[var(--wake-color)]/20 text-[var(--wake-color)]"
-        />
-        <ListRow
-          icon={<HelpIcon />}
-          title={t('support.termsMenuTitle')}
-          subtitle={t('support.termsMenuSubtitle')}
-          onClick={() => onNavigate('terms')}
-          iconColorClass="bg-[var(--text-muted)]/20 text-[var(--text-muted)]"
-        />
-        <ListRow
-          icon={<HelpIcon />}
-          title={t('support.privacyMenuTitle')}
-          subtitle={t('support.privacyMenuSubtitle')}
-          onClick={() => onNavigate('privacy')}
-          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
         />
       </div>
 

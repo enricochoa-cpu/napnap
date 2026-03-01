@@ -207,6 +207,8 @@
   "support": {
     "title": "Ayuda",
     "subtitle": "Recursos y soporte",
+    "about": "Acerca de",
+    "aboutMenuSubtitle": "Versión y legal",
     "faqs": "Preguntas frecuentes",
     "faqsSubtitle": "Términos y respuestas de NapNap",
     "faqsMenuSubtitle": "Preguntas comunes respondidas",
@@ -219,6 +221,15 @@
     "privacyMenuSubtitle": "Cómo usamos y protegemos tus datos",
     "quickTipTitle": "Consejo rápido",
     "quickTipBody": "Consulta primero las preguntas frecuentes para términos y base científica de NapNap. También puedes leer aquí nuestra Política de privacidad. Si necesitas más ayuda, estamos a un mensaje."
+  },
+  "about": {
+    "title": "Acerca de",
+    "subtitle": "Info de la app y legal",
+    "appName": "NapNap",
+    "version": "Versión",
+    "legal": "Legal",
+    "termsOfService": "Términos del servicio",
+    "privacyPolicy": "Política de privacidad"
   },
   "myBabies": {
     "title": "Mis bebés",

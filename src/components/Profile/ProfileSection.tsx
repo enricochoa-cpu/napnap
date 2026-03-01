@@ -9,6 +9,7 @@ import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
 import { SupportView } from './SupportView';
+import { AboutView } from './AboutView';
 import { PrivacyPolicyView } from './PrivacyPolicyView';
 import { TermsOfServiceView } from './TermsOfServiceView';
 
@@ -125,6 +126,11 @@ export function ProfileSection({
     } else {
       setCurrentView('menu');
     }
+  };
+
+  const handleBackFromAbout = () => {
+    direction.current = -1;
+    setCurrentView('support');
   };
 
   const handleBackFromPrivacy = () => {
@@ -290,6 +296,20 @@ export function ProfileSection({
             transition={slideTransition}
           >
             <ContactView onBack={handleBackFromFaqsOrContact} />
+          </motion.div>
+        )}
+
+        {currentView === 'about' && (
+          <motion.div
+            key="about"
+            custom={direction.current}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={slideTransition}
+          >
+            <AboutView onBack={handleBackFromAbout} onNavigate={handleNavigate} />
           </motion.div>
         )}
 

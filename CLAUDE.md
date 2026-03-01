@@ -83,13 +83,13 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 
 **Profile Section** (`src/components/Profile/`):
 - `ProfileSection`: Container with navigation between profile views; accepts `initialView` so App can open directly on My Babies (e.g. from header avatar). Passes `pendingInvitations`, `onAcceptInvitation`, `onDeclineInvitation` to MyBabiesView; `hasPendingInvite` to ProfileMenu.
-- `SubViewHeader`: Centered title + subtitle (Napper-style); back arrow absolute left. Used by My Babies, Settings, Support, FAQs, Contact, Privacy, Terms, Baby detail.
+- `SubViewHeader`: Centered title + subtitle (Napper-style); back arrow absolute left. Used by My Babies, Settings, Support, About, FAQs, Contact, Privacy, Terms, Baby detail.
 - `ProfileMenu`: Main menu with greeting (centered title + subtitle) and navigation list. **My Babies row** shows a warm dot when `hasPendingInvite` (pending invitation to review). No invite block on menu — invites live in My Babies.
 - `MyBabiesView`: **Invite cards first** (same card structure as baby cards): baby avatar (from owner profile when available), name, "From {owner}"; Accept / Decline buttons. Then **baby cards** with Select/Selected; `rounded-3xl`, glass bg, nap-color border only when selected. Title "Baby profiles"; subtitle reflects invites vs manage babies. Add-baby ghost card when user has no own profile.
 - `BabyEditSheet`: Bottom sheet for editing baby profiles (framer-motion, drag-to-dismiss)
 - `BabyAvatarPicker`: Reusable avatar component with client-side image compression (resizes to 400x400, JPEG 80%)
 - `AccountSettingsView`: User settings, sign out card, and delete account link
-- `SupportView`/`FAQsView`/`ContactView`: Help and support; all use i18n (en/es/ca). SupportView menu items and PrivacyPolicyView header translated; BedtimeEntry card shows "Night sleep" (not "Add bedtime") for existing entries.
+- `SupportView`/`AboutView`/`FAQsView`/`ContactView`: Help and support; all use i18n (en/es/ca). Support shows About (app version + legal), FAQs, Contact; Terms and Privacy are reached via About. SupportView menu items and PrivacyPolicyView header translated; BedtimeEntry card shows "Night sleep" (not "Add bedtime") for existing entries.
 
 **Auth Components** (`src/components/Auth/`):
 - `AuthGuard`: Shows entry choice first ("Get started" / "I have an account"); then OnboardingFlow or Login. Protects routes requiring authentication.
