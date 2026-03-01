@@ -178,6 +178,8 @@ function App() {
   const [logWakeUpMode, setLogWakeUpMode] = useState(false);
   const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
   const [profileInitialView, setProfileInitialView] = useState<'menu' | 'my-babies'>('menu');
+  /** Incremented when user taps Profile tab so ProfileSection resets to menu (tap tab = go to Profile root). */
+  const [profileTabTapCount, setProfileTabTapCount] = useState(0);
 
   const hasAnyBaby = sharedProfiles.length > 0;
 
@@ -455,6 +457,7 @@ function App() {
       onClearRequestOpenAddBaby={() => setRequestOpenAddBaby(false)}
       profileLoading={profileLoading}
       initialView={profileInitialView}
+      resetToMenuTrigger={profileTabTapCount}
       onScrollToTop={scrollMainToTop}
     />
   );
@@ -640,10 +643,11 @@ function App() {
               )}
             </button>
 
-            {/* My Profile — same person icon: outline (inactive) / solid (active), Heroicons User */}
+            {/* My Profile — tap always goes to Profile tab and resets to menu (so one tap from Baby Detail = Account/Menu) */}
             <button
               onClick={() => {
                 setProfileInitialView('menu');
+                setProfileTabTapCount((c) => c + 1);
                 handleViewChange('profile');
               }}
               className={`nav-tab ${currentView === 'profile' ? 'nav-tab-active' : ''}`}

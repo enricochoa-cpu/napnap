@@ -185,7 +185,7 @@ Tab Bar
 | **Branching Options** | 1. Tap owned baby → Baby Detail (2.4.2a), 2. Tap shared baby → select as active, 3. "Add your baby" ghost card → BabyEditSheet (create, bottom sheet) |
 | **Escape Routes** | Back button → Profile Menu |
 
-**Note:** ShareAccess (sharing management) has been moved to the Baby Detail view. BabyEditSheet is now only used for the "Add Baby" ghost card flow.
+**Note:** Share Access (sharing management) is a dedicated full-screen view reached from Baby Detail. BabyEditSheet is only used for the "Add Baby" ghost card flow.
 
 ### 2.4.2a Baby Detail
 
@@ -193,18 +193,29 @@ Tab Bar
 |-------|-------|
 | **Path** | `ProfileSection.currentView === 'baby-detail'` |
 | **Component** | `BabyDetailView` → `components/Profile/BabyDetailView.tsx` |
-| **Primary Goal** | Edit baby profile and manage sharing for a specific baby |
+| **Primary Goal** | Edit baby profile for a specific baby |
 | **Golden Path** | Edit fields → save changes |
-| **Branching Options** | 1. Edit profile fields (name, DOB, gender, weight, height), 2. Upload avatar, 3. Baby weight / Baby height sections (add or edit log by date; delete with confirm — owners/caregivers only), 4. ShareAccess section (invite, edit role, revoke — owners only), 5. Delete baby link (owners only) |
+| **Branching Options** | 1. Edit profile fields (name, DOB, gender), 2. Upload avatar, 3. Baby weight / Baby height sections (add or edit log by date; delete with confirm — owners/caregivers only), 4. "Manage sharing" row → Share Access screen (owners only), 5. Delete baby link (owners only) |
 | **Escape Routes** | Back button → My Babies |
 
 **Sections:**
-1. Avatar + profile form (name, DOB, gender, measurements)
-2. Baby weight — list of (date, kg) + Add; tap entry to edit; delete with confirmation. GrowthLogSheet for add/edit (date + value); warning if new value is lower than a later log (non-blocking).
+1. Avatar + profile form (name, DOB, gender)
+2. Baby weight — list of (date, kg) + Add; tap entry to edit; delete with confirmation. GrowthLogSheet for add/edit.
 3. Baby height — list of (date, cm) + Add; same pattern as weight.
-4. ShareAccess component (owners only — invite caregivers, manage roles)
+4. "Manage sharing" row (owners only) → navigates to Share Access screen
 5. Save button (only visible when form has changes)
 6. Delete baby link (owners only, at bottom)
+
+### 2.4.2b Share Access
+
+| Field | Value |
+|-------|-------|
+| **Path** | `ProfileSection.currentView === 'share-access'` (from Baby Detail) |
+| **Component** | `ShareAccessView` → `components/Profile/ShareAccessView.tsx` (wraps `ShareAccess`) |
+| **Primary Goal** | Invite caregivers and manage roles for the selected baby |
+| **Golden Path** | Invite by email, or edit/revoke existing access |
+| **Branching Options** | Invite form (email + role), list of people with access (tap to edit role or remove), pending invites sent |
+| **Escape Routes** | Back button → Baby Detail |
 
 ### 2.4.3 Account Settings
 

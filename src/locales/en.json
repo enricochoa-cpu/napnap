@@ -308,10 +308,11 @@
     "ageOld": "{{age}} old",
     "editProfile": "Edit profile",
     "viewProfile": "View profile",
-    "nameBirthdayRequired": "Name and birthday are required"
+    "nameBirthdayRequired": "Name and birthday are required",
+    "manageSharing": "Share baby profile"
   },
   "shareAccess": {
-    "title": "Share access",
+    "title": "Share baby profile",
     "sectionSubtitle": "Let a partner or caregiver help track your baby's sleep",
     "pendingInvitationsTitle": "Pending invitations",
     "pendingInvitationsIntro": "You've been invited to help track these babies",

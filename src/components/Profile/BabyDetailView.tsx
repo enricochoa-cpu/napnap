@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BabyProfile, BabyShare, WeightLog, HeightLog } from '../../types';
+import type { BabyProfile, WeightLog, HeightLog } from '../../types';
 import { formatAge, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
-import { ShareAccess } from '../ShareAccess';
 import { ConfirmationModal } from '../ConfirmationModal';
 import { useGrowthLogs } from '../../hooks/useGrowthLogs';
 import { GrowthLogSheet } from './GrowthLogSheet';
@@ -19,13 +18,9 @@ interface BabyDetailViewProps {
   onUploadAvatar?: (file: File) => Promise<string | null>;
   /** When true, user can add/edit/delete weight and height logs (owner or caregiver). */
   canEditGrowth?: boolean;
-  // Sharing props (owners only)
-  myShares: BabyShare[];
-  onInvite: (email: string, role: 'caregiver' | 'viewer', inviterName?: string, babyName?: string) => Promise<{ success: boolean; error?: string }>;
-  onUpdateRole: (shareId: string, role: 'caregiver' | 'viewer') => Promise<{ success: boolean; error?: string }>;
-  onRevokeAccess: (shareId: string) => Promise<{ success: boolean; error?: string }>;
   onDeleteBaby?: () => Promise<void>;
-  inviterName?: string;
+  /** Opens the dedicated Share Access screen (owners only). When set, Baby Detail shows a "Manage sharing" row. */
+  onOpenShareAccess?: () => void;
 }
 
 function getTodayDateStr(): string {
@@ -39,12 +34,8 @@ export function BabyDetailView({
   onUpdate,
   onUploadAvatar,
   canEditGrowth = isOwner,
-  myShares,
-  onInvite,
-  onUpdateRole,
-  onRevokeAccess,
   onDeleteBaby,
-  inviterName,
+  onOpenShareAccess,
 }: BabyDetailViewProps) {
   const { t } = useTranslation();
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -380,19 +371,20 @@ export function BabyDetailView({
         </div>
       )}
 
-      {/* Section 2 — Sharing (owners only) */}
-      {isOwner && (
-        <ShareAccess
-          myShares={myShares}
-          pendingInvitations={[]}
-          onInvite={onInvite}
-          onUpdateRole={onUpdateRole}
-          onRevokeAccess={onRevokeAccess}
-          onAcceptInvitation={async () => ({ success: true })}
-          onDeclineInvitation={async () => ({ success: true })}
-          inviterName={inviterName}
-          babyName={formData.name}
-        />
+      {/* Section 2 — Sharing: link to dedicated Share Access screen (owners only) */}
+      {isOwner && onOpenShareAccess && (
+        <button
+          type="button"
+          onClick={onOpenShareAccess}
+          className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] hover:bg-[var(--bg-soft)]/90 active:scale-[0.99] transition-all text-left"
+        >
+          <span className="text-base font-display font-semibold text-[var(--text-primary)]">
+            {t('babyDetail.manageSharing')}
+          </span>
+          <svg className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+          </svg>
+        </button>
       )}
 
       {/* Delete baby — subtle at bottom (owners only) */}

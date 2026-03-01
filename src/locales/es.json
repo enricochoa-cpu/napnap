@@ -308,10 +308,11 @@
     "ageOld": "{{age}}",
     "editProfile": "Editar perfil",
     "viewProfile": "Ver perfil",
-    "nameBirthdayRequired": "El nombre y la fecha de nacimiento son obligatorios"
+    "nameBirthdayRequired": "El nombre y la fecha de nacimiento son obligatorios",
+    "manageSharing": "Compartir perfil del bebé"
   },
   "shareAccess": {
-    "title": "Compartir acceso",
+    "title": "Compartir perfil del bebé",
     "sectionSubtitle": "Deja que tu pareja o cuidador te ayude a registrar el sueño de tu bebé",
     "pendingInvitationsTitle": "Invitaciones pendientes",
     "pendingInvitationsIntro": "Te han invitado a ayudar a registrar el sueño de estos bebés",

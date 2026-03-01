@@ -5,6 +5,7 @@ import type { SharedBabyProfile } from '../../hooks/useBabyProfile';
 import { ProfileMenu, type ProfileView } from './ProfileMenu';
 import { MyBabiesView } from './MyBabiesView';
 import { BabyDetailView } from './BabyDetailView';
+import { ShareAccessView } from './ShareAccessView';
 import { FAQsView } from './FAQsView';
 import { ContactView } from './ContactView';
 import { AccountSettingsView } from './AccountSettingsView';
@@ -42,6 +43,8 @@ interface ProfileSectionProps {
   profileLoading?: boolean;
   /** Optional initial sub-view when opening the Profile section (e.g. directly to My babies) */
   initialView?: ProfileView;
+  /** Increment this when the user taps the Profile tab so we reset to menu (avoids having to tap back from Baby Detail, etc.) */
+  resetToMenuTrigger?: number;
   /** When the app uses an inner scroll container (e.g. for Chrome), call this to scroll it to top on sub-view change */
   onScrollToTop?: () => void;
 }
@@ -71,12 +74,21 @@ export function ProfileSection({
   onClearRequestOpenAddBaby,
   profileLoading = false,
   initialView = 'menu',
+  resetToMenuTrigger,
   onScrollToTop,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>(initialView);
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
   const previousView = useRef<ProfileView>('menu');
   const direction = useRef(1); // 1 = forward (drill in), -1 = backward (go back)
+
+  // When user taps the Profile tab from any sub-view (e.g. Baby Detail), reset to menu so they land on Profile root
+  useEffect(() => {
+    if (resetToMenuTrigger !== undefined && resetToMenuTrigger > 0) {
+      setCurrentView('menu');
+      setSelectedBabyId(null);
+    }
+  }, [resetToMenuTrigger]);
 
   // When app requests "open add baby" (e.g. FAB with no baby), go to My Babies; sheet opens in MyBabiesView
   useEffect(() => {
@@ -105,6 +117,17 @@ export function ProfileSection({
     direction.current = -1;
     setCurrentView('my-babies');
     setSelectedBabyId(null);
+  };
+
+  const handleNavigateToShareAccess = () => {
+    previousView.current = currentView;
+    direction.current = 1;
+    setCurrentView('share-access');
+  };
+
+  const handleBackFromShareAccess = () => {
+    direction.current = -1;
+    setCurrentView('baby-detail');
   };
 
   // Scroll to top when view changes (window + optional main scroll container used by App)
@@ -250,12 +273,34 @@ export function ProfileSection({
                 onBack={handleBackFromBabyDetail}
                 onUpdate={onUpdate}
                 onUploadAvatar={onUploadAvatar}
+                onDeleteBaby={selectedBaby.isOwner ? onDeleteBaby : undefined}
+                onOpenShareAccess={selectedBaby.isOwner ? handleNavigateToShareAccess : undefined}
+              />
+            </motion.div>
+          );
+        })()}
+
+        {currentView === 'share-access' && selectedBabyId && (() => {
+          const selectedBaby = sharedProfiles.find(b => b.id === selectedBabyId);
+          if (!selectedBaby?.isOwner) return null;
+          return (
+            <motion.div
+              key="share-access"
+              custom={direction.current}
+              variants={slideVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={slideTransition}
+            >
+              <ShareAccessView
+                baby={selectedBaby}
                 myShares={myShares}
                 onInvite={onInvite}
                 onUpdateRole={onUpdateRole}
                 onRevokeAccess={onRevokeAccess}
-                onDeleteBaby={selectedBaby.isOwner ? onDeleteBaby : undefined}
                 inviterName={userProfile?.userName || userProfile?.email}
+                onBack={handleBackFromShareAccess}
               />
             </motion.div>
           );

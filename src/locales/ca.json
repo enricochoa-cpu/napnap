@@ -308,10 +308,11 @@
     "ageOld": "{{age}}",
     "editProfile": "Editar perfil",
     "viewProfile": "Veure perfil",
-    "nameBirthdayRequired": "El nom i la data de naixement són obligatoris"
+    "nameBirthdayRequired": "El nom i la data de naixement són obligatoris",
+    "manageSharing": "Compartir perfil del nadó"
   },
   "shareAccess": {
-    "title": "Compartir accés",
+    "title": "Compartir perfil del nadó",
     "sectionSubtitle": "Deixa que la teva parella o cuidador t'ajudi a registrar el son del teu nadó",
     "pendingInvitationsTitle": "Invitacions pendents",
     "pendingInvitationsIntro": "T'han convidat a ajudar a registrar el son d'aquests nadons",
