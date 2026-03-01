@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import type { SVGProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
@@ -143,6 +143,10 @@ function App() {
   const [selectedDate, setSelectedDate] = useState(formatDate(new Date()));
   const [currentView, setCurrentView] = useState<View>('home');
   const previousView = useRef<View>('home');
+  const mainScrollRef = useRef<HTMLDivElement>(null);
+  const scrollMainToTop = useCallback(() => {
+    mainScrollRef.current?.scrollTo(0, 0);
+  }, []);
 
   // View order for slide direction
   const viewOrder: View[] = ['home', 'history', 'stats', 'profile'];
@@ -157,6 +161,8 @@ function App() {
   const handleViewChange = (newView: View) => {
     previousView.current = currentView;
     setCurrentView(newView);
+    // Scroll container is the inner main wrapper (not window) so reset its scroll on tab change
+    scrollMainToTop();
     window.scrollTo(0, 0);
   };
   const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
@@ -449,6 +455,7 @@ function App() {
       onClearRequestOpenAddBaby={() => setRequestOpenAddBaby(false)}
       profileLoading={profileLoading}
       initialView={profileInitialView}
+      onScrollToTop={scrollMainToTop}
     />
   );
 
@@ -469,7 +476,13 @@ function App() {
       <SkyBackground theme={theme} />
 
       {/* Main Content with Slide Transitions */}
-      <main className="max-w-lg mx-auto relative z-0 overflow-hidden">
+      <main className="max-w-lg mx-auto relative z-0">
+        {/* Inner scroll container: avoids Chrome bug where main+overflow + transformed child breaks document scroll. Scroll lives here so it works in all browsers. */}
+        <div
+          ref={mainScrollRef}
+          className="min-h-[100dvh] overflow-y-auto overflow-x-hidden"
+          style={{ height: '100dvh' }}
+        >
         {/* Header avatar – shown only on Today and Sleep Log views */}
         {(currentView === 'home' || currentView === 'history') && (
           <div className="px-6 pt-6 w-fit">
@@ -555,6 +568,7 @@ function App() {
             {currentView === 'profile' && renderProfileView()}
           </motion.div>
         </AnimatePresence>
+        </div>
       </main>
 
       {/* Minimalist Floating Tab Bar */}

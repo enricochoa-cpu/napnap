@@ -224,6 +224,15 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 > **Rule of thumb:** For a full-width fixed nav, keep viewport width stable (overflow-y: scroll or fixed nav width at breakpoint) so the bar doesn't resize when content height (and scrollbar) changes per view.
 
+### 6.7 Scroll Not Working on My Babies / Stats in Chrome (Desktop and Android)
+**Date:** 2026-03-01
+
+- **Problem:** On My Babies and Stats screens, vertical scroll did not work in Google Chrome (desktop and Android). Cursor browser and some others scrolled fine.
+- **Root Cause:** `<main>` had `overflow-hidden` (later tried `overflow-x-hidden`). In CSS, when you set `overflow-x: hidden`, the spec forces the computed `overflow-y` to `auto`, so the element becomes a scroll container. In Chrome, when that scroll container has a child with `transform` (Framer Motion slide animation), the parent's height can be miscalculated and the content is effectively clipped — the document never grows, so window scroll doesn't work.
+- **Permanent Fix:** Use an **explicit inner scroll container** inside `<main>`: a div with `ref`, `height: 100dvh`, `overflow-y: auto`, `overflow-x: hidden` wrapping the header and AnimatePresence content. Scroll now happens inside this div, so it works in Chrome (and all browsers) regardless of the transform/overflow bug. Reset its scroll on tab change via the ref in `handleViewChange`; pass `onScrollToTop` to ProfileSection so profile sub-view changes also reset the same container. Do not set overflow on `<main>` itself.
+
+> **Rule of thumb:** Avoid overflow on the direct parent of a transformed element if you rely on document/window scroll; use body (or an outer wrapper) for horizontal clipping instead.
+
 ---
 
 ## 7. Statistics Bugs

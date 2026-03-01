@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-03-01 — About section added under Support (app name, version from package.json, links to Terms/Privacy). Terms and Privacy removed from Support menu; only reachable via About. See logs/2026-03-01.md.
+**Last updated:** 2026-03-01 — Scroll fix for My Babies/Stats in Chrome: inner scroll container inside main (height 100dvh, overflow-y auto); scroll reset on tab change and profile sub-view. About section under Support (app version, Terms/Privacy via About). See logs/2026-03-01.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

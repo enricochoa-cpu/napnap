@@ -42,6 +42,8 @@ interface ProfileSectionProps {
   profileLoading?: boolean;
   /** Optional initial sub-view when opening the Profile section (e.g. directly to My babies) */
   initialView?: ProfileView;
+  /** When the app uses an inner scroll container (e.g. for Chrome), call this to scroll it to top on sub-view change */
+  onScrollToTop?: () => void;
 }
 
 export function ProfileSection({
@@ -69,6 +71,7 @@ export function ProfileSection({
   onClearRequestOpenAddBaby,
   profileLoading = false,
   initialView = 'menu',
+  onScrollToTop,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>(initialView);
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
@@ -104,10 +107,11 @@ export function ProfileSection({
     setSelectedBabyId(null);
   };
 
-  // Scroll to top when view changes
+  // Scroll to top when view changes (window + optional main scroll container used by App)
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [currentView]);
+    onScrollToTop?.();
+  }, [currentView, onScrollToTop]);
 
   const handleBack = () => {
     direction.current = -1;
