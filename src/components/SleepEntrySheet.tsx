@@ -152,6 +152,7 @@ const formatDurationLong = (startTime: string, endTime: string | null): string =
 };
 
 // Label under end time: today = "Xh Y min ago", yesterday = "Yesterday", older = "Feb 10" (localized)
+// No em-dash placeholder when empty — avoids skeleton-like appearance when ending a nap
 const getRelativeDateLabel = (
   t: TFunction,
   dateStr: string,
@@ -159,7 +160,7 @@ const getRelativeDateLabel = (
   now: Date,
   isActiveEntry: boolean
 ): string => {
-  if (!endTime) return isActiveEntry ? t('sleepEntrySheet.sleeping') : '—';
+  if (!endTime) return isActiveEntry ? t('sleepEntrySheet.sleeping') : '';
   if (isToday(dateStr)) return getRelativeAgo(t, endTime, dateStr, now) || '';
   if (isYesterday(dateStr)) return t('time.yesterday');
   const date = parseISO(dateStr + 'T12:00:00');
@@ -244,7 +245,8 @@ export function SleepEntrySheet({
     if (isOpen) {
       if (entry) {
         setStartTime(extractTime(entry.startTime));
-        setEndTime(entry.endTime ? extractTime(entry.endTime) : '');
+        // Pre-fill end time with "now" for active entries — avoids native time input showing "--:--"
+        setEndTime(entry.endTime ? extractTime(entry.endTime) : getCurrentTime());
       } else {
         setStartTime(getDefaultTime(selectedDate, sleepType));
         setEndTime(defaultEndTimeToNow ? getCurrentTime() : '');
@@ -507,21 +509,23 @@ export function SleepEntrySheet({
                     type="time"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
-                    placeholder={t('sleepEntrySheet.timePlaceholder')}
+                    placeholder=""
                     aria-label={t('sleepEntrySheet.endTime')}
                     className="text-center font-display font-bold bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
                     style={{ fontSize: '2.75rem', lineHeight: 1.2, width: '7ch', color: endTime ? 'var(--text-primary)' : 'var(--text-muted)' }}
                   />
                 </div>
 
-                {/* Duration below start time, relative date below end time; nowrap so they stay on one line */}
+                {/* Duration below start time, relative date below end time; only show when we have content (no skeleton dashes) */}
                 <div className="flex justify-center items-baseline gap-4 mt-5">
                   <p className="min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap">
-                    {durationLabel || '—'}
+                    {durationLabel}
                   </p>
-                  <p className="text-center text-sm text-[var(--text-muted)] italic shrink-0" aria-hidden="true">
-                    –
-                  </p>
+                  {durationLabel && relativeDateLabel ? (
+                    <p className="text-center text-sm text-[var(--text-muted)] italic shrink-0" aria-hidden="true">
+                      –
+                    </p>
+                  ) : null}
                   <p className={`min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap ${!endTime && isActiveEntry ? 'italic' : ''}`}>
                     {relativeDateLabel}
                   </p>
