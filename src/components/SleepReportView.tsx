@@ -1,6 +1,6 @@
 /**
  * Sleep Report view: narrative report with Overview, Summary table,
- * Bedtime & wake times, Patterns, and What to try (from .context/sleep-report-prd.md).
+ * Bedtime & wake times, Patterns, and What to try (from .context/reference/docs/sleep-report-prd.md).
  * Report always uses the last 30 days of data so parents see a precise, recent picture.
  */
 

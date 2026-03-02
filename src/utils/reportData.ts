@@ -1,6 +1,6 @@
 /**
  * Report data and "What to try" tip pool for the Sleep Report feature.
- * Logic and tip copy aligned with .context/sleep-report-prd.md Appendix A.
+ * Logic and tip copy aligned with .context/reference/docs/sleep-report-prd.md Appendix A.
  */
 
 import {

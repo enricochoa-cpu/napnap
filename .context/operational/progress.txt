@@ -166,11 +166,11 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 - [x] supabase/config.toml: [functions.delete-account] verify_jwt = false for CLI deploys
 
 **Not implemented / pending:**
-- [ ] **Multi-baby (2+ babies per account)**: DB not ready for 1 user + 2+ own babies. To do: (1) Add `babies` table (id, owner_id, name, date_of_birth, …); (2) profiles for user-only data; (3) sleep_entries.baby_id FK to babies; (4) baby_shares reference baby_id; (5) RLS + app (useBabyProfile, useSleepEntries, create/update/delete) aligned. Full checklist in .context/ESSENTIAL-GAPS.md Priority 3.
+- [ ] **Multi-baby (2+ babies per account)**: DB not ready for 1 user + 2+ own babies. To do: (1) Add `babies` table (id, owner_id, name, date_of_birth, …); (2) profiles for user-only data; (3) sleep_entries.baby_id FK to babies; (4) baby_shares reference baby_id; (5) RLS + app (useBabyProfile, useSleepEntries, create/update/delete) aligned. Full checklist in .context/operational/backlog/ESSENTIAL-GAPS.md Priority 3.
 - [ ] Resend domain verification for production invitation emails
 
 **Implemented (for reference):**
-- **Delete Account**: Implemented (2026-02-13). Full flow: storage cleanup → delete-account Edge Function (anonymize + deleteUser) → signOut (ignore 403) → redirect. See .context/plans/delete-account-with-anonymization.md and lessons 4.1, 4.2, 5.2, 5.3.
+- **Delete Account**: Implemented (2026-02-13). Full flow: storage cleanup → delete-account Edge Function (anonymize + deleteUser) → signOut (ignore 403) → redirect. See lessons 4.1, 4.2, 5.2, 5.3.
 
 ## Onboarding (2026-02-12 / 2026-02-13) [UX/UI DONE — FIRST-LOGIN PROFILE DONE]
 

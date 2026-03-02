@@ -48,7 +48,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - `useGrowthLogs` handles measurement logs per baby (weight, height, head; one row per date); returns measurementLogs plus derived weightLogs/heightLogs for Stats; add/update/delete; past-value warning
 - `useCircadianTheme` provides time-based theme switching (morning/afternoon/night)
 - `useFocusTrap` traps keyboard focus inside modals/sheets (Tab cycling, Escape key, focus save/restore)
-- `useDeleteAccount` handles account deletion (storage cleanup, invoke delete-account Edge Function with JWT, signOut + onSignedOut; see .context/lessons.md §5.2, 5.3)
+- `useDeleteAccount` handles account deletion (storage cleanup, invoke delete-account Edge Function with JWT, signOut + onSignedOut; see .context/reference/lessons.md §5.2, 5.3)
 - `useLocalStorage` is available for local-only data if needed
 
 ### Key Types (`src/types/index.ts`)
@@ -106,7 +106,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - Google OAuth (via Supabase `signInWithOAuth`)
 - Password reset via email
 
-**Google OAuth Setup:** Requires configuration in Google Cloud Console (OAuth client ID) and Supabase Dashboard (enable Google provider, add redirect URLs). See `.context/logs/2026-02-03.md` for detailed setup steps.
+**Google OAuth Setup:** Requires configuration in Google Cloud Console (OAuth client ID) and Supabase Dashboard (enable Google provider, add redirect URLs). See `.context/logs/2026-02-03.md` for setup steps.
 
 ### Utilities (`src/utils/`)
 - `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns. Includes prediction algorithms:
@@ -157,7 +157,7 @@ All theme values are CSS variables in `:root`:
 - `users-feedback.md`: User sentiment analysis, trust dynamics, feedback patterns
 - `ux-ui-findings.md`: Detailed UX/UI patterns, interaction design, visual system
 - `ux-ui-findings.pdf`: Original PDF with citations (keep for reference)
-- `.context/brand_guidelines.md`: NapNap brand identity, visual system, and voice & tone
+- `.context/guidelines/brand_guidelines.md`: NapNap brand identity, visual system, and voice & tone
 
 ### When to Consult Research
 - Designing new features or screens
@@ -205,30 +205,38 @@ All theme values are CSS variables in `:root`:
 
 The project uses a persistent memory system in `.context/`. **Always consult these before making changes.**
 
-### Reference Documents
-- **`.context/prd.md`**: Product requirements — north star, user persona, principles, constraints
-- **`.context/design_system.md`**: Full token reference — colours, typography, spacing, radii per circadian theme
-- **`.context/frontend_guidelines.md`**: Component patterns, styling approach, state management
-- **`.context/app_flow.md`**: Every screen mapped with primary goal, golden path, branching options, escape routes
-- **`.context/brand_guidelines.md`**: NapNap brand, logo system, copy voice, and guardrails
-- **`.context/tech_stack.md`**: Languages, frameworks, deployment details
-- **`.context/lessons.md`**: Past bugs and technical decisions (Problem → Root Cause → Permanent Fix)
+See `.context/README.md` for the full structure. Quick reference:
 
-### Operational Files
-- **`.context/MEMORY.md`**: Project DNA (philosophy, stack, business logic, decisions)
-- **`.context/rules.md`**: Coding rules and work protocols
+### Core (project DNA)
+- **`.context/core/MEMORY.md`**: Philosophy, stack, business logic, decisions
+- **`.context/core/prd.md`**: Product requirements — north star, user persona, constraints
+- **`.context/core/tech_stack.md`**: Languages, frameworks, deployment
+
+### Guidelines (how to build)
+- **`.context/guidelines/rules.md`**: Coding rules and work protocols
+- **`.context/guidelines/design_system.md`**: Full token reference — colours, typography, spacing, radii
+- **`.context/guidelines/frontend_guidelines.md`**: Component patterns, styling approach, state management
+- **`.context/guidelines/brand_guidelines.md`**: NapNap brand, logo system, copy voice, and guardrails
+
+### Reference (deep-dive)
+- **`.context/reference/app_flow.md`**: Every screen mapped with primary goal, golden path, escape routes
+- **`.context/reference/lessons.md`**: Past bugs and technical decisions (Problem → Root Cause → Permanent Fix)
+- **`.context/reference/docs/`**: Feature-specific research and PRDs
+
+### Operational
+- **`.context/operational/progress.txt`**: Project progress tracking
+- **`.context/operational/backlog/`**: Pending work
 - **`.context/logs/YYYY-MM-DD.md`**: Daily changelogs with technical changes and decisions
-- **`.context/progress.txt`**: Project progress tracking
 
 ### When to Consult What
 | Task | Read first |
 |------|-----------|
-| UI/UX changes | `prd.md` → `design_system.md` → `frontend_guidelines.md` |
-| Brand, copy, or marketing decisions | `brand_guidelines.md` → `prd.md` → `design_system.md` |
-| New feature | `prd.md` → `app_flow.md` → `frontend_guidelines.md` |
-| Bug fix | `lessons.md` (check if it's a known pattern) |
-| Prediction system changes | `lessons.md` §1 (5 recurring prediction bugs documented) |
-| Supabase changes | `lessons.md` §3-4 (query gotchas + Edge Function gotchas) |
-| Styling | `design_system.md` (never hardcode hex — use `var(--token)`) |
+| UI/UX changes | `core/prd.md` → `guidelines/design_system.md` → `guidelines/frontend_guidelines.md` |
+| Brand, copy, or marketing decisions | `guidelines/brand_guidelines.md` → `core/prd.md` → `guidelines/design_system.md` |
+| New feature | `core/prd.md` → `reference/app_flow.md` → `guidelines/frontend_guidelines.md` |
+| Bug fix | `reference/lessons.md` (check if it's a known pattern) |
+| Prediction system changes | `reference/lessons.md` §1 (5 recurring prediction bugs documented) |
+| Supabase changes | `reference/lessons.md` §3-4 (query gotchas + Edge Function gotchas) |
+| Styling | `guidelines/design_system.md` (never hardcode hex — use `var(--token)`) |
 
 **Golden Rule**: If it's not documented in `.context/`, it doesn't exist.
