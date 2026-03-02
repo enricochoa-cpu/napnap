@@ -330,7 +330,9 @@
     "editProfile": "Editar perfil",
     "viewProfile": "Ver perfil",
     "nameBirthdayRequired": "El nombre y la fecha de nacimiento son obligatorios",
-    "manageSharing": "Compartir perfil del bebé"
+    "manageSharing": "Compartir perfil del bebé",
+    "sharedCount": "{{count}} personas compartidas",
+    "sharedCount_one": "1 persona compartida"
   },
   "shareAccess": {
     "title": "Compartir perfil del bebé",

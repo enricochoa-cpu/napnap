@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { BabyProfile } from '../../types';
+import type { BabyProfile, BabyShare } from '../../types';
 import { formatAge, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
@@ -18,8 +18,10 @@ interface BabyDetailViewProps {
   /** When true, user can add/edit/delete weight and height logs (owner or caregiver). */
   canEditGrowth?: boolean;
   onDeleteBaby?: () => Promise<void>;
-  /** Opens the dedicated Share Access screen (owners only). When set, Baby Detail shows a "Manage sharing" row. */
+  /** Opens the dedicated Share Access screen (owners only). When set, Baby Detail shows a "Share baby profile" row. */
   onOpenShareAccess?: () => void;
+  /** Shares for this baby (to show count). Filter by babyOwnerId === baby.id. */
+  myShares?: BabyShare[];
   /** Opens the Measures view for this baby. */
   onOpenMeasures?: () => void;
 }
@@ -33,6 +35,16 @@ const MeasuresIcon = () => (
   </svg>
 );
 
+const ShareIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+  </svg>
+);
+
 export function BabyDetailView({
   baby,
   isOwner,
@@ -41,6 +53,7 @@ export function BabyDetailView({
   onUploadAvatar,
   onDeleteBaby,
   onOpenShareAccess,
+  myShares = [],
   onOpenMeasures,
 }: BabyDetailViewProps) {
   const { t } = useTranslation();
@@ -284,20 +297,17 @@ export function BabyDetailView({
         </div>
       )}
 
-      {/* Section 2 — Sharing: link to dedicated Share Access screen (owners only) */}
+      {/* Section 2 — Sharing: same ListRow pattern as Measures (icon + title + count) */}
       {isOwner && onOpenShareAccess && (
-        <button
-          type="button"
+        <ListRow
+          icon={<ShareIcon />}
+          title={t('babyDetail.manageSharing')}
+          subtitle={t('babyDetail.sharedCount', {
+            count: myShares.filter((s) => s.babyOwnerId === baby.id && s.status === 'accepted').length,
+          })}
           onClick={onOpenShareAccess}
-          className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-[var(--bg-soft)] border border-[var(--glass-border)] hover:bg-[var(--bg-soft)]/90 active:scale-[0.99] transition-all text-left"
-        >
-          <span className="text-base font-display font-semibold text-[var(--text-primary)]">
-            {t('babyDetail.manageSharing')}
-          </span>
-          <svg className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-          </svg>
-        </button>
+          iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
+        />
       )}
 
       {/* Delete baby — subtle at bottom (owners only) */}

@@ -330,7 +330,9 @@
     "editProfile": "Editar perfil",
     "viewProfile": "Veure perfil",
     "nameBirthdayRequired": "El nom i la data de naixement són obligatoris",
-    "manageSharing": "Compartir perfil del nadó"
+    "manageSharing": "Compartir perfil del nadó",
+    "sharedCount": "{{count}} persones compartides",
+    "sharedCount_one": "1 persona compartida"
   },
   "shareAccess": {
     "title": "Compartir perfil del nadó",

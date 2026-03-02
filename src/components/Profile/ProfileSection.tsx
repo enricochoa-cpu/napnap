@@ -287,6 +287,7 @@ export function ProfileSection({
                 onUploadAvatar={onUploadAvatar}
                 onDeleteBaby={selectedBaby.isOwner ? onDeleteBaby : undefined}
                 onOpenShareAccess={selectedBaby.isOwner ? handleNavigateToShareAccess : undefined}
+                myShares={myShares}
                 onOpenMeasures={handleNavigateToMeasures}
               />
             </motion.div>

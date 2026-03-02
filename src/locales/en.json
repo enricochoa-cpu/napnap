@@ -330,7 +330,9 @@
     "editProfile": "Edit profile",
     "viewProfile": "View profile",
     "nameBirthdayRequired": "Name and birthday are required",
-    "manageSharing": "Share baby profile"
+    "manageSharing": "Share baby profile",
+    "sharedCount": "{{count}} people shared",
+    "sharedCount_one": "1 person shared"
   },
   "shareAccess": {
     "title": "Share baby profile",

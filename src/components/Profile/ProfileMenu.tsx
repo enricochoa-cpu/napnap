@@ -61,7 +61,7 @@ export function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightE
       </div>
       <div className="flex-1 text-left min-w-0">
         <p className="font-display font-medium text-[var(--text-primary)] text-[15px]">{title}</p>
-        {subtitle && <p className="text-xs text-[var(--text-muted)] mt-0.5">{subtitle}</p>}
+        {subtitle && <p className="text-sm text-[var(--text-muted)] mt-0.5">{subtitle}</p>}
       </div>
       <div className="flex-shrink-0 text-[var(--text-muted)]/50">
         {rightElement || <ChevronRightIcon />}
