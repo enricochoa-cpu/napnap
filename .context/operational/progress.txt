@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-03-01 — Measures section: single baby_measurement_logs table (weight, height, head); MeasuresView + MeasureLogSheet; Baby Detail → Measures row; nav hidden when measure sheet open (NavHiddenWhenModalContext). See logs/2026-03-01.md.
+**Last updated:** 2026-03-02 — Nav bar Napper-style: pill shape (32px radius), FAB periwinkle (night-color), active tab pill background. See logs/2026-03-02.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

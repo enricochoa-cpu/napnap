@@ -123,7 +123,7 @@ This gives a single primary and secondary style aligned with Napper, clear Skip/
 | 18 | **Secondary** | **Activity collision modal** → “Cancel” | Dark fill + border. |
 | 19 | **Danger** | **Activity collision modal** → “Overwrite” | Red; unchanged. |
 | 20 | **Primary** / **Danger** | **Confirmation modals** (e.g. delete sleep entry, delete baby) | Confirm = primary (or danger for delete). Cancel = secondary. |
-| 21 | **Nav FAB** (center +) | Bottom nav bar | Same gradient as primary; dark icon (night). |
+| 21 | **Nav FAB** (center +) | Bottom nav bar | Periwinkle (`--night-color`); dark icon (night). |
 
 **Morning theme (set device time to 06:00–11:59, or force `.theme-morning` on `<html>`):**
 
@@ -132,7 +132,7 @@ This gives a single primary and secondary style aligned with Napper, clear Skip/
 | 22 | **Primary** | Same screens as #1, #3, #6, #7, etc. | Gradient indigo, **white** text; readable on light background. |
 | 23 | **Secondary** | Same as #2, #4, #8, etc. | **White** fill, indigo border, **dark** text. |
 | 24 | **Skip** | Missing bedtime → “Start new day” | Same as secondary (white fill, dark text). |
-| 25 | **Nav FAB** | Bottom nav | Gradient indigo, white icon. |
+| 25 | **Nav FAB** | Bottom nav | Periwinkle (`--night-color`), white icon. |
 
 **Afternoon theme (12:00–18:59):** Same as morning (#22–25).
 

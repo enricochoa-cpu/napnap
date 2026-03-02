@@ -70,6 +70,17 @@ All tokens below shift per-theme. Components consume `var(--token)` and never ha
 | `--glass-border` | `rgba(255,255,255, 0.06)` | `rgba(0,0,0, 0.06)` |
 | `--glass-nav-bg` | `rgba(26,27,46, 0.85)` | `rgba(255,255,255, 0.92)` |
 
+### Nav Bar (Napper-style)
+
+| Token | Night | Morning / Afternoon |
+|-------|-------|---------------------|
+| `--nav-fab-bg` | `var(--night-color)` | `var(--night-color)` |
+| `--nav-fab-text` | `var(--text-on-accent)` | `#FFFFFF` |
+| `--nav-fab-shadow` | `0 4px 16px rgba(165,180,252,0.35)` | `0 4px 16px rgba(99,102,241,0.25)` |
+| `--nav-active-pill-bg` | `rgba(252,217,163,0.2)` | `rgba(217,119,6,0.15)` |
+
+The center FAB uses periwinkle (`--night-color`), not the primary button gradient. Active tabs get a subtle pill background.
+
 ### Sky Gradients
 
 | Theme | Value |
