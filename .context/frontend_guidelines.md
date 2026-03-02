@@ -255,3 +255,18 @@ AnimatePresence slide animation on content change (±40px, 0.2s ease-out).
 - **Drag-to-dismiss**: Framer Motion `drag="y"` with elastic physics
 - **Drag-to-navigate**: Framer Motion `drag="x"` for horizontal strip navigation (week strip)
 - **Layout animations**: `layout` prop on cards for FLIP position changes
+
+## i18n (Internationalisation)
+
+All user-facing text must use `t()` from `react-i18next`. Keys live in `src/locales/{en,es,ca}.json`.
+
+### i18n audit checklist (before adding translations or when reviewing)
+
+When adding or changing UI text, run a systematic audit to avoid hardcoded strings:
+
+1. **Chart titles** — `<h3>` and similar labels above charts: `grep -n '<h3[^>]*>' src/components/StatsView.tsx` and verify each uses `{t('...')}`.
+2. **Legends** — `<span>` labels in chart legends (e.g. "Naps", "Night", "Bedtime"): search for literal strings inside `className="text-[var(--text-muted)]"` or similar.
+3. **Tooltips** — Custom Recharts tooltip components: ensure they call `useTranslation()` and use `t()` for all user-facing strings.
+4. **Section-wide** — `grep -E '"[A-Z][a-zA-Z\s]+"' src/components/StatsView.tsx` to find quoted English strings that may need translation.
+
+**Pattern:** Every visible label, title, or message should be `t('namespace.key')` — never a raw string.

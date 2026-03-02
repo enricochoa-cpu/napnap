@@ -85,8 +85,8 @@ const MAX_DAYS = 15;
 /** Chart margins: left fits Y-axis labels; right matches left for balanced horizontal padding. */
 const CHART_MARGIN = { top: 10, right: 38, left: 38, bottom: 32 };
 
-/** Time/weight/height: left fits "08:30", "2 kg", "70 cm" labels; right matches left. */
-const CHART_MARGIN_LONG_Y = { top: 10, right: 46, left: 46, bottom: 48 };
+/** Growth and night charts: tighter margins so the plot fills more of the card (less "floating in the middle"). */
+const CHART_MARGIN_GROWTH = { top: 6, right: 40, left: 40, bottom: 44 };
 
 /** Y-axis width: must be > 0 or Recharts does not render tick labels (duration: 0h, 1h 30m; long: time/kg/cm). */
 const Y_AXIS_WIDTH_SHORT = 36;
@@ -280,13 +280,14 @@ function BarTooltip({ active, payload, label }: TooltipProps) {
 
 // Wake up tooltip
 function WakeTooltip({ active, payload, label }: TooltipProps) {
+  const { t } = useTranslation();
   if (!active || !payload || !payload.length) return null;
 
   return (
     <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-medium" style={{ color: 'var(--wake-color)' }}>
-        Woke up: {formatWakeTime(payload[0].value)}
+        {t('stats.wokeUp')}: {formatWakeTime(payload[0].value)}
       </p>
     </div>
   );
@@ -294,13 +295,14 @@ function WakeTooltip({ active, payload, label }: TooltipProps) {
 
 // Bedtime tooltip
 function BedTooltip({ active, payload, label }: TooltipProps) {
+  const { t } = useTranslation();
   if (!active || !payload || !payload.length) return null;
 
   return (
     <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-medium" style={{ color: 'var(--night-color)' }}>
-        Bedtime: {formatWakeTime(payload[0].value)}
+        {t('stats.bedtime')}: {formatWakeTime(payload[0].value)}
       </p>
     </div>
   );
@@ -308,13 +310,14 @@ function BedTooltip({ active, payload, label }: TooltipProps) {
 
 // Average nap duration tooltip (minutes per day)
 function AvgNapTooltip({ active, payload, label }: TooltipProps) {
+  const { t } = useTranslation();
   if (!active || !payload || !payload.length) return null;
   const mins = payload[0]?.value as number;
   return (
     <div className="bg-[var(--bg-elevated)] px-3 py-2 rounded-xl shadow-lg border border-[var(--glass-border)]">
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       <p className="text-sm font-medium" style={{ color: 'var(--nap-color)' }}>
-        Avg. nap: {formatHours(mins)}
+        {t('stats.avgNap')}: {formatHours(mins)}
       </p>
     </div>
   );
@@ -1487,17 +1490,19 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 <div className="flex items-center gap-1.5">
                   <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
-                  <span className="text-[10px] text-[var(--text-muted)]">Wake Up</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">{t('stats.wokeUp')}</span>
                 </div>
                 {Array.from({ length: scheduleData.maxNapIndex }, (_, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <div className="w-3 h-[7px] rounded-full" style={{ background: getNapColor(i + 1) }} />
-                    <span className="text-[10px] text-[var(--text-muted)]">Nap {i + 1}</span>
+                    <span className="text-[10px] text-[var(--text-muted)]">
+                      {i === 0 ? t('stats.napFirst') : i === 1 ? t('stats.napSecond') : i === 2 ? t('stats.napThird') : t('stats.napOrdinal', { n: i + 1 })}
+                    </span>
                   </div>
                 ))}
                 <div className="flex items-center gap-1.5">
                   <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--night-color)' }} />
-                  <span className="text-[10px] text-[var(--text-muted)]">Bedtime</span>
+                  <span className="text-[10px] text-[var(--text-muted)]">{t('stats.bedtime')}</span>
                 </div>
               </div>
             </div>
@@ -1526,7 +1531,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             {averageNapChartData.length > 0 && (
               <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                  Average nap
+                  {t('stats.averageNap')}
                 </h3>
                 <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaNapDurationPerDay')}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -1610,11 +1615,11 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               <div className="flex justify-center gap-6 mt-3">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-sm" style={{ background: napColor }} />
-                  <span className="text-xs text-[var(--text-muted)]">Naps</span>
+                  <span className="text-xs text-[var(--text-muted)]">{t('history.naps')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-sm" style={{ background: nightColor }} />
-                  <span className="text-xs text-[var(--text-muted)]">Night</span>
+                  <span className="text-xs text-[var(--text-muted)]">{t('history.night')}</span>
                 </div>
               </div>
             </div>
@@ -1623,7 +1628,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
           {/* Section: Night sleep */}
           {statsSection === 'night' && (
-            <>
+            <div className="space-y-4">
             {/* Night KPI — commented out per user feedback */}
             {/* <div className="rounded-3xl backdrop-blur-xl p-4 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
               <p className="text-xs text-[var(--text-muted)] mb-1 font-display">{t('stats.avgNightSleep')}</p>
@@ -1633,13 +1638,13 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </div> */}
           {/* Woke Up Chart */}
           {wakeUpData && (
-            <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                Woke Up
+            <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                {t('stats.wokeUp')}
               </h3>
-              <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWokeUpTrend')}>
+              <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaWokeUpTrend')}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={wakeUpData.points} margin={CHART_MARGIN_LONG_Y}>
+                  <AreaChart data={wakeUpData.points} margin={CHART_MARGIN_GROWTH}>
                     <defs>
                       <linearGradient id="wakeGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={wakeColor} stopOpacity={0.4} />
@@ -1687,20 +1692,20 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 </ResponsiveContainer>
               </div>
               <p className="text-center text-xs font-display font-semibold mt-3" style={{ color: wakeColor }}>
-                Average: {formatWakeTime(wakeUpData.avg)}
+                {t('stats.average')}: {formatWakeTime(wakeUpData.avg)}
               </p>
             </div>
           )}
 
           {/* Bedtime Chart */}
           {bedtimeData && (
-            <div className="rounded-3xl backdrop-blur-xl p-4 mt-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
-                Bedtime
+            <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                {t('stats.bedtime')}
               </h3>
-              <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaBedtimeTrend')}>
+              <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaBedtimeTrend')}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={bedtimeData.points} margin={CHART_MARGIN_LONG_Y}>
+                  <AreaChart data={bedtimeData.points} margin={CHART_MARGIN_GROWTH}>
                     <defs>
                       <linearGradient id="bedGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor={nightColor} stopOpacity={0.4} />
@@ -1748,29 +1753,29 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 </ResponsiveContainer>
               </div>
               <p className="text-center text-xs font-display font-semibold mt-3" style={{ color: nightColor }}>
-                Average: {formatWakeTime(bedtimeData.avg)}
+                {t('stats.average')}: {formatWakeTime(bedtimeData.avg)}
               </p>
             </div>
           )}
-            </>
+            </div>
           )}
 
           {/* Section: Growth — weight & height charts */}
           {statsSection === 'growth' && (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {weightLogs.length > 0 || heightLogs.length > 0 ? (
                 <>
                   {weightLogs.length > 0 && (
                     weightChartData.length >= 2 ? (
-                      <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                      <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
                           {t('growth.weightOverTime')}
                         </h3>
-                        <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWeightOverTime')}>
+                        <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaWeightOverTime')}>
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={weightChartData}
-                              margin={CHART_MARGIN_LONG_Y}
+                              margin={CHART_MARGIN_GROWTH}
                             >
                               <defs>
                                 <linearGradient id="weightGradientChip" x1="0" y1="0" x2="0" y2="1">
@@ -1799,15 +1804,15 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   )}
                   {heightLogs.length > 0 && (
                     heightChartData.length >= 2 ? (
-                      <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+                      <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
                           {t('growth.heightOverTime')}
                         </h3>
-                        <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaHeightOverTime')}>
+                        <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaHeightOverTime')}>
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={heightChartData}
-                              margin={CHART_MARGIN_LONG_Y}
+                              margin={CHART_MARGIN_GROWTH}
                             >
                               <defs>
                                 <linearGradient id="heightGradientChip" x1="0" y1="0" x2="0" y2="1">
@@ -1847,18 +1852,18 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
       {/* When no sleep data but we have growth data, show growth charts or one-point empty state */}
       {!hasData && (weightLogs.length > 0 || heightLogs.length > 0) && (
-        <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-4">
           {weightLogs.length > 0 && (
             weightChartData.length >= 2 ? (
-              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+              <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
                   {t('growth.weightOverTime')}
                 </h3>
-                <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaWeightOverTime')}>
+                <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaWeightOverTime')}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={weightChartData}
-                      margin={CHART_MARGIN_LONG_Y}
+                      margin={CHART_MARGIN_GROWTH}
                     >
                       <defs>
                         <linearGradient id="weightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
@@ -1887,15 +1892,15 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
           )}
           {heightLogs.length > 0 && (
             heightChartData.length >= 2 ? (
-              <div className="rounded-3xl backdrop-blur-xl p-4" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
-                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-4">
+              <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
                   {t('growth.heightOverTime')}
                 </h3>
-                <div className="h-40 -mx-4" role="img" aria-label={t('stats.ariaHeightOverTime')}>
+                <div className="h-56 -mx-3" role="img" aria-label={t('stats.ariaHeightOverTime')}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={heightChartData}
-                      margin={CHART_MARGIN_LONG_Y}
+                      margin={CHART_MARGIN_GROWTH}
                     >
                       <defs>
                         <linearGradient id="heightGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
