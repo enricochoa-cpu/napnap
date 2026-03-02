@@ -100,6 +100,12 @@
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-nav-bg: rgba(26, 27, 46, 0.85);
 
+  /* Nav bar - Napper style: FAB periwinkle, active tab pill warm parchment */
+  --nav-fab-bg: var(--night-color);
+  --nav-fab-text: var(--text-on-accent);
+  --nav-fab-shadow: 0 4px 16px rgba(165, 180, 252, 0.35);
+  --nav-active-pill-bg: rgba(252, 217, 163, 0.2);
+
   /* Primary/secondary buttons - green (sage/teal) to match login moon, distinct from Napper purple */
   --btn-primary-bg: linear-gradient(180deg, #5B8A86 0%, #8AABA8 50%, #9DBAB7 100%);
   --btn-primary-text: #1A1B2E;
@@ -156,6 +162,12 @@
   --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
+
+  /* Nav bar - Napper style (light theme) */
+  --nav-fab-bg: var(--night-color);
+  --nav-fab-text: #FFFFFF;
+  --nav-fab-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  --nav-active-pill-bg: rgba(217, 119, 6, 0.15);
 
   /* Primary/secondary buttons - teal green (matches nap accent) */
   --btn-primary-bg: linear-gradient(180deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
@@ -214,6 +226,12 @@
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
 
+  /* Nav bar - Napper style (light theme) */
+  --nav-fab-bg: var(--night-color);
+  --nav-fab-text: #FFFFFF;
+  --nav-fab-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+  --nav-active-pill-bg: rgba(217, 119, 6, 0.15);
+
   /* Primary/secondary buttons - teal green (same as morning) */
   --btn-primary-bg: linear-gradient(180deg, #0F766E 0%, #0D9488 50%, #14B8A6 100%);
   --btn-primary-text: #FFFFFF;
@@ -270,6 +288,12 @@
   --glass-bg: rgba(37, 38, 61, 0.7);
   --glass-border: rgba(255, 255, 255, 0.06);
   --glass-nav-bg: rgba(26, 27, 46, 0.85);
+
+  /* Nav bar - Napper style (night theme) */
+  --nav-fab-bg: var(--night-color);
+  --nav-fab-text: var(--text-on-accent);
+  --nav-fab-shadow: 0 4px 16px rgba(165, 180, 252, 0.35);
+  --nav-active-pill-bg: rgba(252, 217, 163, 0.2);
 
   /* Primary/secondary buttons - green (same as default night) */
   --btn-primary-bg: linear-gradient(180deg, #5B8A86 0%, #8AABA8 50%, #9DBAB7 100%);
@@ -783,7 +807,7 @@ select {
   }
 }
 
-/* The nav bar - clean glass effect, fixed layout so it doesn't stretch on tap */
+/* The nav bar - Napper-style pill shape, glass morphism, fixed layout */
 .floating-nav-bar {
   display: flex;
   align-items: center;
@@ -791,11 +815,11 @@ select {
   height: 64px;
   padding: 0 0.5rem;
   min-width: 0;
-  /* Use theme token so nav background adapts to circadian theme */
   background: var(--glass-nav-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  /* Pill shape: highly rounded corners per Figma Napper design */
+  border-radius: 32px;
   border: 1px solid var(--glass-border);
   transition: background-color var(--circadian-transition);
 }
@@ -836,9 +860,10 @@ select {
   flex-shrink: 0;
 }
 
-/* Active state - clean color change, no glow */
+/* Active state - Napper style: circular pill background + accent color */
 .nav-tab-active {
-  color: var(--nap-color);
+  color: var(--text-primary);
+  background: var(--nav-active-pill-bg);
 }
 
 /* Center action button - integrated in the flow */
@@ -849,19 +874,19 @@ select {
   padding: 0 0.75rem;
 }
 
-/* Center FAB uses primary button style for consistency */
+/* Center FAB - Napper style: periwinkle/purple accent (night-color) per Figma */
 .nav-action-btn {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-text);
+  background: var(--nav-fab-bg);
+  color: var(--nav-fab-text);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border: none;
-  box-shadow: var(--btn-primary-shadow);
+  box-shadow: var(--nav-fab-shadow);
   transition: transform 0.2s ease,
               filter 0.2s ease;
 }
@@ -1401,7 +1426,7 @@ select {
 
 .theme-morning .nav-action-btn,
 .theme-afternoon .nav-action-btn {
-  box-shadow: var(--btn-primary-shadow);
+  box-shadow: var(--nav-fab-shadow);
 }
 
 /* ============================================================================
