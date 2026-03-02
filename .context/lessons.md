@@ -272,6 +272,13 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** In Recharts, `YAxis`’s `width` is the space reserved for the axis. When `width={0}`, the axis does not reserve space and **tick labels are not rendered** (or are clipped to zero width).
 - **Permanent Fix:** Use explicit widths > 0: e.g. `Y_AXIS_WIDTH_SHORT` (36) for duration charts, `Y_AXIS_WIDTH_LONG` (44) for time/weight/height. Keep edge-to-edge feel via chart wrapper `-mx-4` and moderate `margin.left` (38 / 46), not by zeroing YAxis width.
 
+### 7.6 Growth charts: "2 kg" Y-tick overlapping first X-axis label (margin increase not enough)
+**Date:** 2026-03-02
+
+- **Problem:** In "Pes al llarg del temps" (and height), the lowest Y-axis label ("2 kg") overlapped the first X-axis label ("dl. 16/6") at the bottom-left corner. Increasing `CHART_MARGIN_GROWTH` (left/bottom) alone did not fix it.
+- **Root Cause:** Recharts draws the lowest Y tick and the first X tick in the same corner; the overlap is structural. The domain can include a tick at 2 kg (e.g. domain [2.5, 10] → ticks 2, 4, 6, 8, 10) even when the data starts at ~4 kg.
+- **Permanent Fix:** Filter Y-axis ticks so we do not show ticks far below the actual data: `weightTicksFiltered` keeps only ticks ≥ min(weightLogs) − 0.5; `heightTicksFiltered` keeps only ticks ≥ min(heightLogs) − 5. Use these filtered arrays for the growth chart YAxis. This removes the "2 kg" label when the curve starts at 4 kg. Also use `CHART_MARGIN_GROWTH` with `left: 48, bottom: 48` for growth/night area charts. For "Son diari", reduce legend spacing from `mt-3` to `mt-1`.
+
 ---
 
 ## 8. UX / Modal Bugs

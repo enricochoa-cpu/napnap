@@ -85,8 +85,8 @@ const MAX_DAYS = 15;
 /** Chart margins: left fits Y-axis labels; right matches left for balanced horizontal padding. */
 const CHART_MARGIN = { top: 10, right: 38, left: 38, bottom: 32 };
 
-/** Growth and night charts: tighter margins so the plot fills more of the card (less "floating in the middle"). */
-const CHART_MARGIN_GROWTH = { top: 6, right: 40, left: 40, bottom: 44 };
+/** Growth and night charts: left/bottom must fit Y-axis labels (e.g. "2 kg") and two-line X-axis (day + date) without overlap. */
+const CHART_MARGIN_GROWTH = { top: 6, right: 40, left: 48, bottom: 48 };
 
 /** Y-axis width: must be > 0 or Recharts does not render tick labels (duration: 0h, 1h 30m; long: time/kg/cm). */
 const Y_AXIS_WIDTH_SHORT = 36;
@@ -1020,6 +1020,21 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
   );
   const weightTicks = useMemo(() => weightAxisTicks(weightDomain), [weightDomain]);
   const heightTicks = useMemo(() => heightAxisTicks(heightDomain), [heightDomain]);
+  // Filter out Y-axis ticks far below actual data to avoid "2 kg" overlapping the first X-axis label (e.g. "dl. 16/6")
+  const weightTicksFiltered = useMemo(() => {
+    const values = (weightLogs ?? []).map((l) => l.valueKg);
+    if (values.length === 0) return weightTicks;
+    const minVal = Math.min(...values);
+    const filtered = weightTicks.filter((t) => t >= minVal - 0.5);
+    return filtered.length > 0 ? filtered : weightTicks;
+  }, [weightTicks, weightLogs]);
+  const heightTicksFiltered = useMemo(() => {
+    const values = (heightLogs ?? []).map((l) => l.valueCm);
+    if (values.length === 0) return heightTicks;
+    const minVal = Math.min(...values);
+    const filtered = heightTicks.filter((t) => t >= minVal - 5);
+    return filtered.length > 0 ? filtered : heightTicks;
+  }, [heightTicks, heightLogs]);
   const locale = getDateFnsLocale();
   const weightChartData = useMemo(
     () =>
@@ -1276,7 +1291,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   </div>
                 </div>
               </div>
-              <div className="flex justify-center gap-6 mt-3">
+              <div className="flex justify-center gap-6 mt-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: nightColor }} />
                   <span className="text-xs text-[var(--text-muted)]">
@@ -1330,7 +1345,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="flex justify-center gap-6 mt-3">
+            <div className="flex justify-center gap-6 mt-1">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm" style={{ background: napColor }} />
                 <span className="text-xs text-[var(--text-muted)]">{t('history.naps')}</span>
@@ -1612,7 +1627,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex justify-center gap-6 mt-3">
+              <div className="flex justify-center gap-6 mt-1">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-sm" style={{ background: napColor }} />
                   <span className="text-xs text-[var(--text-muted)]">{t('history.naps')}</span>
@@ -1785,7 +1800,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                               </defs>
                               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                               <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                               <Tooltip content={<GrowthTooltip unit="kg" />} />
                               <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={3} fill="url(#weightGradientChip)" />
                             </AreaChart>
@@ -1822,7 +1837,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                               </defs>
                               <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                               <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                               <Tooltip content={<GrowthTooltip unit="cm" />} />
                               <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={3} fill="url(#heightGradientChip)" />
                             </AreaChart>
@@ -1873,7 +1888,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                       <XAxis dataKey="day" tick={<DayDateTick data={weightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
+                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={weightDomain} ticks={weightTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} kg`} />
                       <Tooltip content={<GrowthTooltip unit="kg" />} />
                       <Area type="monotone" dataKey="value" stroke={napColor} strokeWidth={3} fill="url(#weightGradientNoSleep)" />
                     </AreaChart>
@@ -1910,7 +1925,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
                       <XAxis dataKey="day" tick={<DayDateTick data={heightChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
-                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={heightDomain} ticks={heightTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
                       <Tooltip content={<GrowthTooltip unit="cm" />} />
                       <Area type="monotone" dataKey="value" stroke={nightColor} strokeWidth={3} fill="url(#heightGradientNoSleep)" />
                     </AreaChart>
