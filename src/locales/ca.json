@@ -348,6 +348,7 @@
     "roleViewer": "Lector",
     "caregiverDesc": "Pot afegir i editar registres",
     "viewerDesc": "Només pot veure registres",
+    "roleHint": "Lector: només veure. Cuidador: pot afegir i editar.",
     "peopleWithAccess": "Persones amb accés",
     "pendingInvitations": "Invitacions pendents",
     "waitingForResponse": "Esperant resposta...",

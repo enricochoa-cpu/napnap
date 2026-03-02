@@ -348,6 +348,7 @@
     "roleViewer": "Lector",
     "caregiverDesc": "Puede añadir y editar registros",
     "viewerDesc": "Solo puede ver registros",
+    "roleHint": "Lector: solo ver. Cuidador: puede añadir y editar.",
     "peopleWithAccess": "Personas con acceso",
     "pendingInvitations": "Invitaciones pendientes",
     "waitingForResponse": "Esperando respuesta...",

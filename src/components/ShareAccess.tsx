@@ -30,14 +30,14 @@ export function ShareAccess({
 }: ShareAccessProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<ShareRole>('caregiver');
+  const [role, setRole] = useState<ShareRole>('viewer');
   const [isInviting, setIsInviting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   // Bottom sheet state
   const [selectedShare, setSelectedShare] = useState<BabyShare | null>(null);
-  const [editingRole, setEditingRole] = useState<ShareRole>('caregiver');
+  const [editingRole, setEditingRole] = useState<ShareRole>('viewer');
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Edit sheet drag — opacity follows drag so swipe-down feels connected
@@ -56,7 +56,7 @@ export function ShareAccess({
 
     if (result.success) {
       setEmail('');
-      setRole('caregiver');
+      setRole('viewer');
       setSuccess(t('shareAccess.invitationSent'));
       setTimeout(() => setSuccess(null), 3000);
     } else {
@@ -167,59 +167,67 @@ export function ShareAccess({
           {t('shareAccess.sectionSubtitle')}
         </p>
 
-        {/* Invite Form */}
-        <form onSubmit={handleInvite} className="mb-6">
-          <div className="flex gap-2">
+        {/* Invite Form — stacked: email → role (segmented) → full-width Invite */}
+        <form onSubmit={handleInvite} className="mb-6 space-y-5">
+          <div>
+            <label htmlFor="share-email" className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-2 block">
+              {t('common.email')}
+            </label>
             <input
+              id="share-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t('shareAccess.invitePlaceholder')}
-              className="input flex-1"
+              className="input w-full"
               disabled={isInviting}
             />
-            <button
-              type="submit"
-              disabled={isInviting || !email.trim()}
-              className="btn btn-primary px-5 disabled:opacity-50"
-            >
-              {isInviting ? t('shareAccess.sending') : t('shareAccess.inviteButton')}
-            </button>
           </div>
 
-          {/* Role Selector */}
-          <div className="flex gap-2 mt-3">
-            <button
-              type="button"
-              onClick={() => setRole('caregiver')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-medium transition-all ${
-                role === 'caregiver'
-                  ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
-                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
-              }`}
-            >
-              <div className="font-semibold">{t('shareAccess.roleCaregiver')}</div>
-              <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.caregiverDesc')}</div>
-            </button>
-            <button
-              type="button"
-              onClick={() => setRole('viewer')}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-display font-medium transition-all ${
-                role === 'viewer'
-                  ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
-                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
-              }`}
-            >
-              <div className="font-semibold">{t('shareAccess.roleViewer')}</div>
-              <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.viewerDesc')}</div>
-            </button>
+          <div>
+            <label className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-2 block">
+              {t('shareAccess.permissionLevel')}
+            </label>
+            <div className="flex rounded-xl overflow-hidden border border-[var(--glass-border)] bg-[var(--bg-soft)] p-1">
+              <button
+                type="button"
+                onClick={() => setRole('viewer')}
+                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-display font-semibold transition-all ${
+                  role === 'viewer'
+                    ? 'bg-[var(--nap-color)]/25 text-[var(--nap-color)] shadow-sm'
+                    : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {t('shareAccess.roleViewer')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setRole('caregiver')}
+                className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-display font-semibold transition-all ${
+                  role === 'caregiver'
+                    ? 'bg-[var(--nap-color)]/25 text-[var(--nap-color)] shadow-sm'
+                    : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {t('shareAccess.roleCaregiver')}
+              </button>
+            </div>
+            <p className="text-xs text-[var(--text-muted)] mt-1.5">{t('shareAccess.roleHint')}</p>
           </div>
+
+          <button
+            type="submit"
+            disabled={isInviting || !email.trim()}
+            className="w-full btn btn-primary py-3.5 disabled:opacity-50"
+          >
+            {isInviting ? t('shareAccess.sending') : t('shareAccess.inviteButton')}
+          </button>
 
           {error && (
-            <p className="text-sm text-[var(--danger-color)] mt-2">{error}</p>
+            <p className="text-sm text-[var(--danger-color)] mt-3">{error}</p>
           )}
           {success && (
-            <p className="text-sm text-[var(--success-color)] mt-2">{success}</p>
+            <p className="text-sm text-[var(--success-color)] mt-3">{success}</p>
           )}
         </form>
 
@@ -357,39 +365,38 @@ export function ShareAccess({
                   </div>
                 </div>
 
-                {/* Role Selector */}
+                {/* Role selector — same segmented control as invite form */}
                 <div className="mb-6">
-                  <label className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-3 block">
+                  <label className="text-sm font-display font-semibold text-[var(--text-secondary)] mb-2 block">
                     {t('shareAccess.permissionLevel')}
                   </label>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditingRole('caregiver')}
-                      disabled={isUpdating}
-                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-display font-medium transition-all ${
-                        editingRole === 'caregiver'
-                          ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
-                          : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
-                      }`}
-                    >
-                      <div className="font-semibold">{t('shareAccess.roleCaregiver')}</div>
-                      <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.caregiverDesc')}</div>
-                    </button>
+                  <div className="flex rounded-xl overflow-hidden border border-[var(--glass-border)] bg-[var(--bg-soft)] p-1">
                     <button
                       type="button"
                       onClick={() => setEditingRole('viewer')}
                       disabled={isUpdating}
-                      className={`flex-1 py-3 px-4 rounded-xl text-sm font-display font-medium transition-all ${
+                      className={`flex-1 py-3 px-4 rounded-lg text-sm font-display font-semibold transition-all ${
                         editingRole === 'viewer'
-                          ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border-2 border-[var(--nap-color)]/40'
-                          : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border-2 border-transparent'
+                          ? 'bg-[var(--nap-color)]/25 text-[var(--nap-color)] shadow-sm'
+                          : 'text-[var(--text-muted)]'
                       }`}
                     >
-                      <div className="font-semibold">{t('shareAccess.roleViewer')}</div>
-                      <div className="text-xs opacity-70 mt-0.5">{t('shareAccess.viewerDesc')}</div>
+                      {t('shareAccess.roleViewer')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingRole('caregiver')}
+                      disabled={isUpdating}
+                      className={`flex-1 py-3 px-4 rounded-lg text-sm font-display font-semibold transition-all ${
+                        editingRole === 'caregiver'
+                          ? 'bg-[var(--nap-color)]/25 text-[var(--nap-color)] shadow-sm'
+                          : 'text-[var(--text-muted)]'
+                      }`}
+                    >
+                      {t('shareAccess.roleCaregiver')}
                     </button>
                   </div>
+                  <p className="text-xs text-[var(--text-muted)] mt-1.5">{t('shareAccess.roleHint')}</p>
                 </div>
 
                 {/* Actions */}

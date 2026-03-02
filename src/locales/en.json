@@ -348,6 +348,7 @@
     "roleViewer": "Viewer",
     "caregiverDesc": "Can add and edit entries",
     "viewerDesc": "Can only view entries",
+    "roleHint": "Viewer: view only. Caregiver: can add and edit.",
     "peopleWithAccess": "People with access",
     "pendingInvitations": "Pending invitations",
     "waitingForResponse": "Waiting for response...",
