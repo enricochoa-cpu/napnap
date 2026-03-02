@@ -30,7 +30,7 @@
 4. Night theme should still look correct (regression check)
 
 ### Key rule
-Never use `white/` or `rgba(255,255,255,...)` outside of a solid accent-coloured container. Always use CSS variables (`var(--glass-bg)`, `var(--glass-border)`, `var(--text-muted)`, etc.). See `.context/design_system.md` for the full token reference.
+Never use `white/` or `rgba(255,255,255,...)` outside of a solid accent-coloured container. Always use CSS variables (`var(--glass-bg)`, `var(--glass-border)`, `var(--text-muted)`, etc.). See `.context/guidelines/design_system.md` for the full token reference.
 
 ---
 
@@ -88,10 +88,10 @@ Never use `white/` or `rgba(255,255,255,...)` outside of a solid accent-coloured
 
 Before making changes, read these files for coding conventions:
 - `CLAUDE.md` — Project overview, architecture, design system
-- `.context/design_system.md` — CSS variable tokens (never hardcode hex colours)
-- `.context/frontend_guidelines.md` — Component patterns
-- `.context/lessons.md` — Known bugs and their fixes
-- `.context/prd.md` — Product principles
+- `.context/guidelines/design_system.md` — CSS variable tokens (never hardcode hex colours)
+- `.context/guidelines/frontend_guidelines.md` — Component patterns
+- `.context/reference/lessons.md` — Known bugs and their fixes
+- `.context/core/prd.md` — Product principles
 
 ## Tech stack
 - React 18 + TypeScript + Vite

@@ -93,7 +93,7 @@ Al finalizar una sesión de trabajo o hito importante, genera automáticamente:
 - `.context/logs/YYYY-MM-DD.md` con cambios técnicos, decisiones de diseño, pendientes
 
 ### Auto-Update MEMORY.md
-Si una decisión cambia el ADN del proyecto (nueva lógica, nuevo estándar), actualiza inmediatamente `.context/MEMORY.md`.
+Si una decisión cambia el ADN del proyecto (nueva lógica, nuevo estándar), actualiza inmediatamente `.context/core/MEMORY.md`.
 
 ### Golden Rule
 **Si algo no está documentado en `.context/`, no existe.**

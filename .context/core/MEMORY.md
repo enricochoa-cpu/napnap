@@ -59,7 +59,7 @@ Las wake windows se expanden a lo largo del día:
 - **No es hora fija**: Es un rango óptimo recalculado tras cada evento
 - **Anclaje**: Se basa en `lastNapEndTime + finalWakeWindow`
 - **Early Bedtime Trigger**: Si sueño diurno acumulado < mínimo, adelanta al límite inferior del rango
-- **Bedtime window constraint (2026-02-24):** La hora de dormir proyectada nunca puede ser anterior a `config.bedtime.earliest` (p. ej. 18:30). Si el motor sale del bucle con 2–3 siestas y el bedtime quedaría antes de ese mínimo (ej. 16:30 en un 8‑mes que aún necesita 3ª siesta), `simulateDay()` añade una **rescue catnap** para que el bedtime caiga en [earliest, latest]. Para 1 siesta (toddler) no se añade 2ª siesta; `calculateDynamicBedtime()` hace **floor** al earliest. Ver lessons.md §1.7 y `.context/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
+- **Bedtime window constraint (2026-02-24):** La hora de dormir proyectada nunca puede ser anterior a `config.bedtime.earliest` (p. ej. 18:30). Si el motor sale del bucle con 2–3 siestas y el bedtime quedaría antes de ese mínimo (ej. 16:30 en un 8‑mes que aún necesita 3ª siesta), `simulateDay()` añade una **rescue catnap** para que el bedtime caiga en [earliest, latest]. Para 1 siesta (toddler) no se añade 2ª siesta; `calculateDynamicBedtime()` hace **floor** al earliest. Ver lessons.md §1.7 y `.context/reference/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
 
 ### Predicciones Durante Nap Activa
 Cuando hay una nap en curso:
@@ -179,16 +179,23 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 ### Estructura
 ```
 .context/
-├── MEMORY.md          # Este archivo: ADN del proyecto, decisiones fundamentales
-├── rules.md           # Reglas de comportamiento para Claude
-├── design_system.md   # Full token reference (colours, typography, spacing, radii per theme)
-├── frontend_guidelines.md # Component patterns, styling approach, state management
-├── app_flow.md        # Every screen mapped with primary goal, golden path, escape routes
-├── prd.md             # Product requirements (north star, user persona, constraints)
-├── brand_guidelines.md # NapNap brand identity, tone, and visual guardrails
-├── tech_stack.md      # Languages, frameworks, deployment details
-├── lessons.md         # Past bugs and decisions (Problem → Root Cause → Fix)
-├── progress.txt       # Project progress tracking
+├── README.md          # Index: qué hay dónde, cuándo consultar qué
+├── core/              # ADN del proyecto
+│   ├── MEMORY.md      # Este archivo: filosofía, stack, decisiones fundamentales
+│   ├── prd.md         # Product requirements (north star, user persona, constraints)
+│   └── tech_stack.md  # Languages, frameworks, deployment
+├── guidelines/        # Cómo construir
+│   ├── rules.md      # Reglas de comportamiento para Claude
+│   ├── design_system.md
+│   ├── frontend_guidelines.md
+│   └── brand_guidelines.md
+├── reference/        # Deep-dive
+│   ├── app_flow.md
+│   ├── lessons.md     # Past bugs (Problem → Root Cause → Fix)
+│   └── docs/          # Feature-specific research
+├── operational/
+│   ├── progress.txt
+│   └── backlog/
 └── logs/
     └── YYYY-MM-DD.md  # Daily logs con cambios técnicos
 ```

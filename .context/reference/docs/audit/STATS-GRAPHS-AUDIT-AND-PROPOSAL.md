@@ -8,11 +8,11 @@ This document audits the Stats screen graphs (data, sections, implementation), d
 
 | Document | Role |
 |----------|------|
-| **`.context/prd.md`** | Product scope: Stats view (Sleep Trends), “Sleep statistics with visual charts”; principles (calm, one glance, night-first). |
-| **`.context/app_flow.md`** | Stats flow: path, component (`StatsView`), section chips (Summary, Naps, Night, Growth), date range, report entry. |
-| **`.context/design_system.md`** | Theme tokens (`--nap-color`, `--night-color`, `--wake-color`, etc.); no chart-specific tokens. |
-| **`.context/lessons.md`** §7 | Stats bugs: §7.4 documents X/Y axis overlap and the fix with `CHART_MARGIN_LONG_Y` (left 88, bottom 48). |
-| **`.context/tech_stack.md`** | Recharts 3.7 for sleep statistics. |
+| **`.context/core/prd.md`** | Product scope: Stats view (Sleep Trends), “Sleep statistics with visual charts”; principles (calm, one glance, night-first). |
+| **`.context/reference/app_flow.md`** | Stats flow: path, component (`StatsView`), section chips (Summary, Naps, Night, Growth), date range, report entry. |
+| **`.context/guidelines/design_system.md`** | Theme tokens (`--nap-color`, `--night-color`, `--wake-color`, etc.); no chart-specific tokens. |
+| **`.context/reference/lessons.md`** §7 | Stats bugs: §7.4 documents X/Y axis overlap and the fix with `CHART_MARGIN_LONG_Y` (left 88, bottom 48). |
+| **`.context/core/tech_stack.md`** | Recharts 3.7 for sleep statistics. |
 | **`product-research/ux-ui-findings.md`** | Napper UX: calming palette, visual restraint. |
 | **Figma (Playground)** | Reference for axis placement and Y-axis width. |
 | **`src/components/StatsView.tsx`** | Single implementation: all chart logic, data, and Recharts usage. |
