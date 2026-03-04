@@ -468,3 +468,18 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 - **Goal:** Handle DST changes and travel correctly: no double/missing hours, stable wake-window math.
 - **Approach:** (1) **Persistence:** Sleep entry `start_time` / `end_time` are stored in UTC (ISO with Z). In `useSleepEntries`, `toSupabaseTimestamp` uses `parseISO(datetime).toISOString()` so we always send UTC to Supabase. Entries in client state keep raw `startTime`/`endTime` from the DB (UTC ISO). (2) **Display:** `formatTime(entry.startTime)` and `extractTime` in SleepEntrySheet use `parseISO` then local formatting, so the user always sees local time. (3) **Durations and wake windows:** All logic uses `differenceInMinutes(parseISO(a), parseISO(b))` — i.e. difference between two instants — so wake windows and nap lengths are independent of clock changes. **Reusable rule:** Persist instants in UTC; use instant difference (minutes) for any duration or window; render in local for the current device.
+
+---
+
+## 17. JSX / Babel Parser — Unicode and Comments
+
+### 17.1 Unicode / Smart Characters Break JSX Parsing (plugin:vite:react-babel)
+**Date:** 2026-03-04
+
+- **Problem:** Build and dev failed with `[plugin:vite:react-babel] Unexpected token, expected "}"` at a JSX comment or string (e.g. in `SleepEntry.tsx` around the nap card time range). Error pointed at line/column of a comment like `{/* Time range */}` or at sibling elements; sometimes "JSX expressions must have one parent element" appeared instead.
+- **Root Cause:** **Smart/Unicode characters** inside JSX comments or string literals can confuse the Babel/TypeScript JSX parser. Examples: (1) **Right single quotation mark** (U+2019, `'`) in words like "don't" inside a comment — the parser can mis-parse the comment or expression boundary. (2) **En-dash** (U+2013, `–`) in strings like `' – ' + formatTime(...)` — same risk. (3) **Smart double quotes** (U+201C, U+201D) inside comments (e.g. `"Tercera migdiada"`) can trigger unexpected token or brace-matching errors. The parser expects ASCII `'`, `"`, and `-` in expression contexts; Unicode lookalikes can break tokenisation and cause "expected }" or wrong parent-element detection.
+- **Permanent Fix:**
+  - **In JSX comments:** Use **ASCII only**. No curly apostrophes (use `'` U+0027), no smart quotes (use `"` U+0022), no en/em dashes (use `-` U+002D). Prefer short comments; if a comment must mention user-facing text, paraphrase without quoting special characters.
+  - **In string literals inside JSX:** Use ASCII hyphen-minus for dashes (e.g. `' - '` not `' – '`). Use normal apostrophes and quotes in strings.
+  - **Before committing:** When adding or editing comments or copy-pasting text into `.tsx`/`.jsx`, ensure the file uses only ASCII punctuation in JSX (comments and strings). Run a quick sanity check: `xxd` or search for bytes `e2 80` (common UTF-8 prefix for U+2013, U+2019, U+201C, U+201D) if errors persist.
+- **Reusable rule:** In this codebase, **never use Unicode/smart punctuation inside JSX** (comments or string literals). Stick to ASCII `' " -` so the Babel/TypeScript JSX parser never hits ambiguous tokens. Apply this rule consistently to avoid the same parse error recurring.
