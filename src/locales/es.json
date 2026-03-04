@@ -433,7 +433,9 @@
     "deleteEntryDescription": "Este registro de sueño se eliminará permanentemente.",
     "timePlaceholder": "--:--",
     "napExceeds5h": "La siesta supera las 5 horas",
-    "nightExceeds14h": "El sueño nocturno supera las 14 horas"
+    "nightExceeds14h": "El sueño nocturno supera las 14 horas",
+    "pastDateRequiresEndTime": "Las fechas pasadas necesitan hora de fin (el sueño ya terminó).",
+    "logForDate": "Registrar para fecha"
   },
   "wakeUpSheet": {
     "title": "Despertar",

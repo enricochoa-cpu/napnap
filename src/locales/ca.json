@@ -433,7 +433,9 @@
     "deleteEntryDescription": "Aquest registre de son s'eliminarà permanentment.",
     "timePlaceholder": "--:--",
     "napExceeds5h": "La migdiada supera les 5 hores",
-    "nightExceeds14h": "El son nocturn supera les 14 hores"
+    "nightExceeds14h": "El son nocturn supera les 14 hores",
+    "pastDateRequiresEndTime": "Les dates passades necessiten hora de fi (el son ja ha acabat).",
+    "logForDate": "Registrar per a data"
   },
   "wakeUpSheet": {
     "title": "Despertar",
