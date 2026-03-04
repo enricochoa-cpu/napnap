@@ -433,7 +433,9 @@
     "deleteEntryDescription": "This sleep entry will be permanently removed.",
     "timePlaceholder": "--:--",
     "napExceeds5h": "Nap duration exceeds 5 hours",
-    "nightExceeds14h": "Night sleep exceeds 14 hours"
+    "nightExceeds14h": "Night sleep exceeds 14 hours",
+    "pastDateRequiresEndTime": "Past dates need an end time (sleep already finished).",
+    "logForDate": "Log for date"
   },
   "wakeUpSheet": {
     "title": "Wake up",

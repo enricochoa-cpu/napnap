@@ -21,6 +21,8 @@ interface SleepEntrySheetProps {
   onSave: (data: Omit<SleepEntry, 'id' | 'date'>) => void | Promise<void>;
   onDelete?: (id: string) => void;
   selectedDate: string;
+  /** When adding a new entry, allows user to change the log date (e.g. log for yesterday). Omitted when editing. */
+  onDateChange?: (date: string) => void;
   /** Shown when save failed (e.g. network error); sheet stays open */
   saveError?: string | null;
   /** When true (e.g. "Wake up" with no active night): pre-fill end time with now and require it */
@@ -71,6 +73,15 @@ const CloseIcon = () => (
   </svg>
 );
 
+const CalendarIcon = () => (
+  <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
 // Helpers
 /** Extract local time HH:mm from an ISO datetime (UTC or with offset). Ensures form shows local time after DST/travel. */
 const extractTime = (datetime: string): string => {
@@ -94,6 +105,12 @@ const isYesterday = (dateStr: string): boolean => {
   yesterday.setDate(yesterday.getDate() - 1);
   return dateStr === yesterday.toISOString().split('T')[0];
 };
+
+/** YYYY-MM-DD for today (for date input max). */
+const getTodayStr = (): string => new Date().toISOString().split('T')[0];
+
+/** True when the date is before today (past). Past-day logs must have an end time. */
+const isPastDate = (dateStr: string): boolean => dateStr < getTodayStr();
 
 const getDefaultTime = (selectedDate: string, sleepType: SleepType): string => {
   if (isToday(selectedDate)) {
@@ -216,6 +233,7 @@ export function SleepEntrySheet({
   onSave,
   onDelete,
   selectedDate,
+  onDateChange,
   saveError = null,
   defaultEndTimeToNow = false,
 }: SleepEntrySheetProps) {
@@ -290,6 +308,10 @@ export function SleepEntrySheet({
     if (defaultEndTimeToNow && !endTime) {
       return { isValid: false, warningKey: null, errorKey: 'wakeUpSheet.pleaseSetWakeUpTime' };
     }
+    // Past dates: sleep is already over, so end time is required (no "ongoing" entry for yesterday)
+    if (!isEditing && isPastDate(selectedDate) && !endTime) {
+      return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.pastDateRequiresEndTime' };
+    }
     // No end time = no validation needed (ongoing entry), unless we require it above
     if (!endTime) return { isValid: true, warningKey: null, errorKey: null };
 
@@ -316,7 +338,7 @@ export function SleepEntrySheet({
     }
 
     return { isValid: true, warningKey: null, errorKey: null };
-  }, [startTime, endTime, sleepType, defaultEndTimeToNow]);
+  }, [startTime, endTime, sleepType, defaultEndTimeToNow, isEditing, selectedDate]);
 
   const handleSave = async () => {
     if (!validation.isValid) return;
@@ -491,6 +513,28 @@ export function SleepEntrySheet({
                 >
                   {typeLabel}
                 </span>
+
+                {/* Date picker for new entries: log for today, yesterday, or another past day */}
+                {!isEditing && onDateChange && (
+                  <label className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer w-full max-w-[240px] mx-auto">
+                    <CalendarIcon />
+                    <span className="text-[var(--text-primary)] font-display font-medium text-sm">
+                      {isToday(selectedDate)
+                        ? t('time.today')
+                        : isYesterday(selectedDate)
+                          ? t('time.yesterday')
+                          : format(parseISO(selectedDate + 'T12:00:00'), 'EEE, MMM d', { locale: getDateFnsLocale() })}
+                    </span>
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      max={getTodayStr()}
+                      onChange={(e) => onDateChange(e.target.value)}
+                      className="absolute opacity-0 w-0 h-0"
+                      aria-label={t('sleepEntrySheet.logForDate')}
+                    />
+                  </label>
+                )}
               </div>
 
               {/* Time inputs - large, horizontal */}

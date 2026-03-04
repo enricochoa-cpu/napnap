@@ -687,12 +687,12 @@ function App() {
           setShowActionMenu(false);
         }}
         onSelectNap={() => {
-          setSelectedDate(formatDate(new Date()));
+          // Use current selectedDate so History view's chosen day is respected when adding
           handleOpenNewEntry('nap');
           setShowActionMenu(false);
         }}
         onSelectBedtime={() => {
-          setSelectedDate(formatDate(new Date()));
+          // Use current selectedDate so History view's chosen day is respected when adding
           handleOpenNewEntry('night');
           setShowActionMenu(false);
         }}
@@ -742,6 +742,7 @@ function App() {
         onSave={handleAddEntry}
         onDelete={deleteEntry}
         selectedDate={selectedDate}
+        onDateChange={setSelectedDate}
         saveError={entrySheetError}
         defaultEndTimeToNow={logWakeUpMode}
       />
