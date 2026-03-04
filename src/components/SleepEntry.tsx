@@ -67,7 +67,7 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
 
         {/* Content: show "Night sleep" (not "Add bedtime") since this card is for an existing entry; "Add bedtime" is only for the sheet when creating a new one */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-[var(--text-primary)]">
+          <p className="font-display font-semibold text-base text-[var(--text-primary)]">
             {t('sleepEntry.nightSleep')}
           </p>
           {isActive && (
@@ -131,9 +131,9 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
           </svg>
         </div>
 
-        {/* Content */}
+        {/* Nap label and duration (text-base to avoid long labels dominating on mobile) */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-[var(--text-primary)]">
+          <p className="font-display font-semibold text-base text-[var(--text-primary)]">
             {napLabel}
           </p>
           <p className="text-sm text-[var(--text-secondary)]">
@@ -142,10 +142,9 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
           </p>
         </div>
 
-        {/* Time range */}
         <span className="font-display font-semibold text-lg text-[var(--text-primary)]">
           {formatTime(entry.startTime)}
-          {entry.endTime && ` – ${formatTime(entry.endTime)}`}
+          {entry.endTime != null ? ' - ' + formatTime(entry.endTime) : ''}
         </span>
 
         {/* Actions */}
@@ -174,8 +173,8 @@ export function WakeUpEntry({ time }: WakeUpEntryProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-display font-bold text-[var(--text-primary)]">
-          {t('sleepEntry.wakeUp')}
+          <p className="font-display font-semibold text-base text-[var(--text-primary)]">
+            {t('sleepEntry.wakeUp')}
           </p>
         </div>
 
