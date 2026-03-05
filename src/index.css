@@ -316,9 +316,11 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
-  overscroll-behavior: none;
-  /* Keep vertical scrollbar space so viewport width stays constant when switching views (stops nav bar from stretching) */
-  overflow-y: scroll;
+  /* Avoid scroll chaining bounce, but don't interfere with wheel/trackpad scrolling */
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: auto;
+  /* Let the browser decide when to show scrollbars instead of forcing a scroll state */
+  overflow-y: auto;
 }
 
 body {
@@ -335,9 +337,13 @@ body {
   letter-spacing: -0.02em; /* Modern, tighter tracking */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior: none;
-  user-select: none;
-  -webkit-user-select: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  /* Allow normal page scrolling and selection on marketing landing.
+     App shell can still control its own scroll via container divs. */
+  user-select: text;
+  -webkit-user-select: text;
+  overflow-y: auto;
   overflow-x: hidden; /* Prevent horizontal scroll from affecting nav width */
   /* Smooth circadian transition */
   transition: background-color var(--circadian-transition),
