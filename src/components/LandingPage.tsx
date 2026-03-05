@@ -414,7 +414,7 @@ export function LandingPage() {
           <div className="grid gap-6 md:grid-cols-2 items-start">
             <div className="card p-5 space-y-3">
               <p className="text-sm font-display">What feeds our suggestions</p>
-              <ul className="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
+              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-1">
                 <li>Age‑based wake windows for 0–18 months.</li>
                 <li>How long your baby has been awake since the last sleep.</li>
                 <li>Recent nap lengths and when the last nap ended.</li>
@@ -427,7 +427,7 @@ export function LandingPage() {
             </div>
             <div className="card p-5 space-y-3">
               <p className="text-sm font-display">What NapNap does not do</p>
-              <ul className="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-1">
+              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-1">
                 <li>No medical diagnosis or treatment recommendations.</li>
                 <li>No strict training method or &ldquo;one right&rdquo; way to settle.</li>
                 <li>No scores, grades, or language that implies you are failing.</li>
@@ -489,7 +489,7 @@ export function LandingPage() {
               <p className="text-sm text-[var(--text-secondary)]">
                 What &ldquo;normal&rdquo; looks like when everything still feels upside down.
               </p>
-              <ul className="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-0.5">
+              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
                 <li>Short naps and day‑night confusion are expected.</li>
                 <li>Gentle morning light and calm evenings help.</li>
                 <li>NapNap tracks wake time and suggests when sleep is likely to work.</li>
@@ -500,7 +500,7 @@ export function LandingPage() {
               <p className="text-sm text-[var(--text-secondary)]">
                 Why sleep suddenly changes and how to keep a gentle rhythm.
               </p>
-              <ul className="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-0.5">
+              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
                 <li>Sleep cycles change; shorter naps and more wakings are common.</li>
                 <li>Steady wake windows and calm bedtime help the new pattern settle.</li>
                 <li>NapNap shows when to aim for naps and bedtime so you stay consistent.</li>
@@ -511,7 +511,7 @@ export function LandingPage() {
               <p className="text-sm text-[var(--text-secondary)]">
                 A calm look at expectations, night wakings, and what you can influence.
               </p>
-              <ul className="list-disc list-inside text-sm text-[var(--text-secondary)] space-y-0.5">
+              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
                 <li>&ldquo;Sleeping through&rdquo; means different things at different ages; many babies wake at night into the first year.</li>
                 <li>You can shape timing: a gentle nap and bedtime rhythm reduces overtiredness.</li>
                 <li>NapNap helps protect that rhythm so nights are easier to manage.</li>
