@@ -63,9 +63,12 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
+const MOBILE_WORDMARK_HIDE_SCROLL_THRESHOLD = 80;
+
 export function LandingPage() {
   const [faqOpenId, setFaqOpenId] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hideMobileWordmark, setHideMobileWordmark] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleLoginClick = () => {
@@ -101,6 +104,18 @@ export function LandingPage() {
     };
   }, []);
 
+  // On mobile: hide "NapNap" wordmark when user scrolls down so only the burger icon stays visible.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setHideMobileWordmark(el.scrollTop > MOBILE_WORDMARK_HIDE_SCROLL_THRESHOLD);
+    };
+    onScroll(); // set initial state
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <div
       ref={scrollRef}
@@ -113,11 +128,13 @@ export function LandingPage() {
         className="fixed left-0 right-0 z-50 px-4 sm:px-6 flex items-center"
         style={{ top: 'calc(40px + env(safe-area-inset-top, 0px))' }}
       >
-        {/* Mobile only: wordmark, same typography and color as hero h1 */}
+        {/* Mobile only: wordmark fades out on scroll so only burger remains visible */}
         <button
           type="button"
           onClick={scrollToTop}
-          className="sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded"
+          className={`sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded transition-opacity duration-200 ${
+            hideMobileWordmark ? 'opacity-0 pointer-events-none' : ''
+          }`}
           aria-label="Scroll to top"
         >
           <span className="text-display-lg text-[var(--text-primary)]">NapNap</span>
