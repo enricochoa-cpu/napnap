@@ -408,6 +408,35 @@ input, textarea {
   color: var(--text-muted);
 }
 
+/* Landing FAQ: hide browser default disclosure triangle (often blue on mobile)
+   and show a theme-colored chevron that matches the page */
+.faq-details-list details summary {
+  list-style: none;
+}
+.faq-details-list details summary::-webkit-details-marker {
+  display: none;
+}
+.faq-details-list details summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.faq-details-list details summary::before {
+  content: '';
+  flex-shrink: 0;
+  width: 0.4em;
+  height: 0.4em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  margin-top: -0.15em;
+  transition: transform var(--ease-smooth) 0.2s;
+}
+.faq-details-list details[open] summary::before {
+  transform: rotate(-135deg);
+  margin-top: 0.15em;
+}
+
 /* ============================================================================
    GLASS MORPHISM - Premium Blur Effects (Theme-Aware)
    ============================================================================ */
@@ -434,6 +463,37 @@ input, textarea {
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   transition: background-color var(--circadian-transition);
+}
+
+/* Landing page nav: very transparent pill bar (Napper-style), content-width, generous padding */
+.glass-nav-landing {
+  background: color-mix(in srgb, var(--night-color) 6%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  width: fit-content;
+  padding: 1.25rem 2rem; /* py-5 px-8 */
+}
+
+/* Mobile menu button on landing: glass pill (Napper-style) */
+.landing-mobile-menu-btn {
+  background: color-mix(in srgb, var(--night-color) 6%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Full-screen mobile menu background (Napper-style): dark gradient, nothing else visible */
+.landing-mobile-menu-fullscreen {
+  background: linear-gradient(0deg, #0B0B0B 0%, #1B1A3D 100%);
+}
+
+/* Main content top padding so hero clears fixed landing nav (126px mobile, 196px lg + safe area) */
+.main-below-landing-nav {
+  padding-top: calc(126px + env(safe-area-inset-top, 0px));
+}
+@media (min-width: 1024px) {
+  .main-below-landing-nav {
+    padding-top: calc(196px + env(safe-area-inset-top, 0px));
+  }
 }
 
 /* ============================================================================
@@ -778,6 +838,12 @@ select {
 .tag-active {
   background: rgba(124, 176, 126, 0.15);
   color: var(--success-color);
+}
+
+/* Theme-aware neutral pill (e.g. age stages on landing) — no hardcoded hex */
+.tag-neutral {
+  background: color-mix(in srgb, var(--text-muted) 22%, transparent);
+  color: var(--text-secondary);
 }
 
 /* ============================================================================
