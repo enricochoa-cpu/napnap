@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Logo } from './Logo';
 import { SkyBackground } from './SkyBackground';
 
 const LANDING_FAQS: { question: string; answer: string }[] = [
@@ -147,10 +146,10 @@ export function LandingPage() {
               <button
                 type="button"
                 onClick={scrollToTop}
-                className="pressable p-0 border-0 bg-transparent rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)]"
+                className="pressable p-0 border-0 bg-transparent rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)]"
                 aria-label="Scroll to top"
               >
-                <Logo size={32} variant="brand" className="text-[var(--nap-color)] flex-shrink-0 block" />
+                <span className="text-display-lg text-[var(--text-primary)]">NapNap</span>
               </button>
               <nav className="flex items-center gap-4 text-[var(--text-secondary)] text-base">
                 <button
