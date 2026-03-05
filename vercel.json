@@ -1,14 +1,12 @@
 {
-  "redirects": [
+  "rewrites": [
     {
       "source": "/app",
-      "destination": "/",
-      "permanent": true
+      "destination": "/"
     },
     {
       "source": "/app/(.*)",
-      "destination": "/$1",
-      "permanent": true
+      "destination": "/"
     }
   ]
 }
