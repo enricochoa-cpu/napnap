@@ -64,6 +64,77 @@ function MenuIcon({ open }: { open: boolean }) {
 
 const MOBILE_WORDMARK_HIDE_SCROLL_THRESHOLD = 80;
 
+const VIDEO_CLASS =
+  'w-full sm:flex-1 sm:min-w-0 aspect-[9/16] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.35)] object-cover';
+
+/**
+ * Two video slots: each has its own playlist and advances to the next video when the current one ends.
+ * Left and right are fully independent (each tracks its own index).
+ */
+function PairedCyclingVideos({
+  videosLeft,
+  videosRight,
+  className,
+  ariaLabelLeft,
+  ariaLabelRight,
+}: {
+  videosLeft: string[];
+  videosRight: string[];
+  className?: string;
+  ariaLabelLeft?: string;
+  ariaLabelRight?: string;
+}) {
+  const [leftIndex, setLeftIndex] = useState(0);
+  const [rightIndex, setRightIndex] = useState(0);
+  const leftRef = useRef<HTMLVideoElement>(null);
+  const rightRef = useRef<HTMLVideoElement>(null);
+
+  const advanceLeft = () =>
+    setLeftIndex((i) => (i + 1) % videosLeft.length);
+
+  const advanceRight = () =>
+    setRightIndex((i) => (i + 1) % videosRight.length);
+
+  useEffect(() => {
+    const el = leftRef.current;
+    if (!el) return;
+    el.load();
+    el.play().catch(() => {});
+  }, [leftIndex]);
+
+  useEffect(() => {
+    const el = rightRef.current;
+    if (!el) return;
+    el.load();
+    el.play().catch(() => {});
+  }, [rightIndex]);
+
+  return (
+    <>
+      <video
+        ref={leftRef}
+        className={className ?? VIDEO_CLASS}
+        src={videosLeft[leftIndex]}
+        autoPlay
+        muted
+        playsInline
+        onEnded={advanceLeft}
+        aria-label={ariaLabelLeft}
+      />
+      <video
+        ref={rightRef}
+        className={className ?? VIDEO_CLASS}
+        src={videosRight[rightIndex]}
+        autoPlay
+        muted
+        playsInline
+        onEnded={advanceRight}
+        aria-label={ariaLabelRight}
+      />
+    </>
+  );
+}
+
 export function LandingPage() {
   const [faqOpenId, setFaqOpenId] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -291,30 +362,12 @@ export function LandingPage() {
                 role="group"
                 className="flex flex-col gap-3 sm:flex-row sm:gap-4"
               >
-                <video
-                  className="w-full sm:w-[60%] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.35)] object-cover"
-                  autoPlay
-                  muted
-                  playsInline
-                  loop
-                >
-                  <source src="/media/hero-left-1.mp4" type="video/mp4" />
-                  <p className="sr-only">
-                    Vertical video showing a parent using NapNap with their baby during the day.
-                  </p>
-                </video>
-                <video
-                  className="w-full sm:w-[40%] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.35)] object-cover"
-                  autoPlay
-                  muted
-                  playsInline
-                  loop
-                >
-                  <source src="/media/hero-right-2.mp4" type="video/mp4" />
-                  <p className="sr-only">
-                    Vertical video with another everyday moment while NapNap runs in the background.
-                  </p>
-                </video>
+                <PairedCyclingVideos
+                  videosLeft={['/media/train.mp4', '/media/sleeping.mp4', '/media/park.mp4', '/media/home-2.mp4']}
+                  videosRight={['/media/sleep-time.mp4', '/media/sleep-time-2.mp4', '/media/home-3.mp4', '/media/holidays.mp4']}
+                  ariaLabelLeft="Short clips: lifestyle moments with NapNap"
+                  ariaLabelRight="Short clips: calm moments with NapNap"
+                />
               </div>
             </div>
           </div>
@@ -460,17 +513,14 @@ export function LandingPage() {
                 <span className="tag tag-active">12–18 months</span>
               </div>
             </div>
-            <div className="flex-shrink-0 w-full md:w-[280px] rounded-[1.5rem] overflow-hidden border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.2)]">
-              <video
-                className="w-full aspect-[9/16] object-cover"
-                autoPlay
-                muted
-                playsInline
-                loop
-                aria-label="Short clip showing NapNap used with a baby"
-              >
-                <source src="/media/hero-right-1.mp4" type="video/mp4" />
-              </video>
+            <div className="flex-shrink-0 flex gap-3 w-full md:w-[360px]">
+              <PairedCyclingVideos
+                videosLeft={['/media/park.mp4', '/media/sleep-time-2.mp4', '/media/sleeping.mp4']}
+                videosRight={['/media/sleep-time.mp4', '/media/holidays.mp4', '/media/home-3.mp4']}
+                className="flex-1 min-w-0 aspect-[9/16] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.2)] object-cover"
+                ariaLabelLeft="Short clips: baby and park moments"
+                ariaLabelRight="Short clips: sleep and calm moments"
+              />
             </div>
           </div>
         </section>
