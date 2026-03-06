@@ -166,6 +166,13 @@ Cambio automático basado en hora del día:
 | `useCircadianTheme` | Time-based theme switching |
 | `useDeleteAccount` | Delete account: client deletes storage objects, invokes delete-account Edge Function with JWT, then signOut (ignore 403); redirects via onSignedOut |
 
+### Edge Functions (`supabase/functions/`)
+| Function | Purpose |
+|----------|---------|
+| `delete-account` | Anonymize profile + sleep data, delete auth user (verify_jwt = false, validates JWT internally) |
+| `send-invitation-email` | Send caregiver invitation email via Resend |
+| `waitlist-notify` | Send notification to getnapnap@gmail.com when landing page visitor submits email (verify_jwt = false, public endpoint) |
+
 ### Key Utilities
 - `dateUtils.ts`: Prediction algorithms, duration formatting, age calculations
 - `storage.ts`: localStorage helpers; sessionStorage helpers for onboarding draft (ONBOARDING_DRAFT key)
@@ -245,6 +252,9 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-02-27 | Pending-invite UX: header avatar (Today/History only) with nap ring + dot; invites in My Babies (invite cards, Accept/Decline); Profile menu My Babies row pending dot; Today empty state "You have a baby invite" + Review invite. SubViewHeader centered; Stats/Profile headers consistent. See logs/2026-02-27.md. |
 | 2026-02-27 | Production deployed to napnap.vercel.app; Google OAuth redirect configured; i18n: hardcoded strings extracted to en/es locales (TodayView, DayNavigator, SleepEntry, SleepList, StatsView, useBabyProfile). |
 | 2026-03-01 | Measures section: baby_measurement_logs (weight, height, head; one row per baby+date); useGrowthLogs refactored to measurementLogs + derived weightLogs/heightLogs; MeasuresView + MeasureLogSheet; Baby Detail → single Measures row → Measures view; NavHiddenWhenModalContext hides nav when sheet open so Save button visible. |
+| 2026-03-06 | Landing page redesign: testimonial carousel, product showcase (device-framed screenshots), mid-page CTA, removed Sleep Guides/Science sections, visual rhythm with --bg-mid bands, scroll-aware nav. |
+| 2026-03-06 | Waitlist email notification: Edge Function `waitlist-notify` sends styled email to getnapnap@gmail.com via Resend when visitor submits email on landing page. |
+| 2026-03-06 | Fix: createProfile .insert() → .upsert() to avoid 23505 duplicate key error for returning users. |
 
 ---
 

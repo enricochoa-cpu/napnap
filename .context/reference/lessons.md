@@ -483,3 +483,31 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
   - **In string literals inside JSX:** Use ASCII hyphen-minus for dashes (e.g. `' - '` not `' – '`). Use normal apostrophes and quotes in strings.
   - **Before committing:** When adding or editing comments or copy-pasting text into `.tsx`/`.jsx`, ensure the file uses only ASCII punctuation in JSX (comments and strings). Run a quick sanity check: `xxd` or search for bytes `e2 80` (common UTF-8 prefix for U+2013, U+2019, U+201C, U+201D) if errors persist.
 - **Reusable rule:** In this codebase, **never use Unicode/smart punctuation inside JSX** (comments or string literals). Stick to ASCII `' " -` so the Babel/TypeScript JSX parser never hits ambiguous tokens. Apply this rule consistently to avoid the same parse error recurring.
+
+## 18. Profile / Database Bugs
+
+### 18.1 createProfile Fails with "duplicate key" (23505) for Returning Users
+**Date:** 2026-03-06
+
+- **Problem:** Creating a baby profile (via onboarding or My Babies) failed with error `23505: duplicate key value violates unique constraint "profiles_pkey"` when the user already had a profile row (e.g. returning user, previously invited user, or user who signed up via Google OAuth before completing onboarding).
+- **Root Cause:** `createProfile` in `useBabyProfile.ts` used `.insert()` which fails when a row with the same `id` (user UUID) already exists in the `profiles` table.
+- **Permanent Fix:** Changed `.insert(insertPayload)` to `.upsert(insertPayload, { onConflict: 'id' })`. This creates a new row if none exists, or updates the existing row. Matches the pattern already used in `updateProfile` (line 260).
+- **Reusable rule:** For profile-type tables where the primary key is the user's auth UUID, always use `.upsert()` instead of `.insert()` to handle the case where a partial row already exists (from invitations, OAuth callbacks, or previous incomplete sessions).
+
+## 19. Landing Page / Marketing
+
+### 19.1 Waitlist Email via Supabase Edge Function + Resend
+**Date:** 2026-03-06
+
+- **Pattern:** Landing page email capture calls `supabase.functions.invoke('waitlist-notify', { body: { email } })`. The Edge Function sends a styled HTML notification to `getnapnap@gmail.com` via Resend API (same provider as invitation emails).
+- **Config:** `supabase/config.toml` must include `[functions.waitlist-notify] verify_jwt = false` since the landing page is public (no auth).
+- **Deploy:** `npx supabase functions deploy waitlist-notify --no-verify-jwt`.
+- **Note:** The function currently sends a notification only (no database storage). To build a subscriber list, add a `waitlist_emails` table and insert before sending.
+
+### 19.2 Landing Page Section Architecture (Post-Redesign)
+**Date:** 2026-03-06
+
+- **Section order:** Hero > Social Proof (testimonial carousel on --bg-mid band) > How It Works > Product Showcase (device frames) > Mid-Page CTA > What You Get (--bg-mid band) > Age Range (lightweight) > FAQ > Email Capture > Footer.
+- **Removed sections:** Sleep Guides, Sleep Science (low conversion value, added bulk).
+- **Visual rhythm:** Alternating full-bleed `--bg-mid` bands break monotony. Product showcase uses existing `.device-frame` CSS.
+- **Nav:** Scroll-aware solid background (`.glass-nav-landing--solid`) after 200px scroll. Links: How it works, The app, FAQ.

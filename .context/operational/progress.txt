@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-03-02 — Nav bar Napper-style: pill shape (32px radius), FAB periwinkle (night-color), active tab pill background. See logs/2026-03-02.md.
+**Last updated:** 2026-03-06 — Landing page redesign, waitlist email Edge Function, profile upsert fix. See logs/2026-03-06.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 
@@ -209,3 +209,25 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 
 - [x] Production URL https://napnap.vercel.app deployed on Vercel; APP_URL Edge Function secret and Supabase/Vercel env vars configured.
 - [x] Google OAuth redirect configured in Google Cloud + Supabase URL Configuration; sign-in flow from https://napnap.vercel.app/ tested successfully.
+
+## Landing Page Redesign (2026-03-06) [COMPLETED]
+
+- [x] Scroll-aware solid nav background (`.glass-nav-landing--solid`) after 200px
+- [x] Cinematic testimonial carousel replacing static star-rating grid (auto-rotate, swipe, dots)
+- [x] Product showcase section: 3 device-framed real app screenshots (Today, Sleep Log, Trends)
+- [x] Mid-page CTA: "Ready to find your rhythm?" + reassurance text
+- [x] Section consolidation: removed Sleep Guides, Sleep Science; lightened Age Range
+- [x] Visual rhythm breaks: --bg-mid bands on Social Proof and What You Get
+- [x] Cleanup: removed dead components (StarIcon, PairedCyclingVideos), added pricing FAQ
+- [x] Real app screenshots extracted and saved to public/media/
+
+## Waitlist Email Notification (2026-03-06) [COMPLETED]
+
+- [x] Edge Function `waitlist-notify`: sends styled notification to getnapnap@gmail.com via Resend
+- [x] Frontend: supabase.functions.invoke with loading/error states
+- [x] Config: verify_jwt = false in supabase/config.toml
+- [ ] Deploy: `npx supabase functions deploy waitlist-notify --no-verify-jwt` (user must run)
+
+## Profile Bug Fix (2026-03-06) [COMPLETED]
+
+- [x] createProfile: .insert() → .upsert() to fix 23505 duplicate key for returning users
