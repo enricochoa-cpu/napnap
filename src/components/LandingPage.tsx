@@ -519,8 +519,8 @@ export function LandingPage() {
               <div className="device-frame">
                 <div className="device-notch" />
                 <img
-                  src="/media/napnap-today.png"
-                  alt="NapNap Today view showing next nap countdown and daily schedule"
+                  src="/media/napnap-today-new.png"
+                  alt="NapNap Today view showing NAP NOW alert and daily schedule"
                   className="device-screen"
                   loading="lazy"
                 />
@@ -533,8 +533,8 @@ export function LandingPage() {
               <div className="device-frame">
                 <div className="device-notch" />
                 <img
-                  src="/media/napnap-history.png"
-                  alt="NapNap Sleep log with daily entries and wake times"
+                  src="/media/napnap-sleeplog.png"
+                  alt="NapNap Sleep log with night sleep, naps, and wake times"
                   className="device-screen"
                   loading="lazy"
                 />
@@ -547,8 +547,8 @@ export function LandingPage() {
               <div className="device-frame">
                 <div className="device-notch" />
                 <img
-                  src="/media/napnap-stats.png"
-                  alt="NapNap Stats view with sleep trends and daily schedule chart"
+                  src="/media/napnap-trends.png"
+                  alt="NapNap Trends view with nap averages and sleep distribution charts"
                   className="device-screen"
                   loading="lazy"
                 />
