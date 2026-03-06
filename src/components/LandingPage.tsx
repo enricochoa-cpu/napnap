@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { SkyBackground } from './SkyBackground';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -28,6 +28,11 @@ const LANDING_FAQS: { question: string; answer: string }[] = [
     question: 'Is my data private?',
     answer:
       'Yes. Sleep and growth data stays with your account. You control who has access through caregiver sharing.',
+  },
+  {
+    question: 'How much does NapNap cost?',
+    answer:
+      'NapNap is free to start. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost.',
   },
 ];
 
@@ -113,14 +118,6 @@ function MenuIcon({ open }: { open: boolean }) {
   );
 }
 
-function StarIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-[var(--wake-color)]" aria-hidden>
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
-  );
-}
-
 // ─── Single cycling video slot ────────────────────────────────────────────────
 
 function CyclingVideo({
@@ -184,75 +181,16 @@ function HeroVideos() {
   );
 }
 
-// ─── Paired cycling videos (lower sections) ───────────────────────────────────
-
-const PAIRED_VIDEO_CLASS =
-  'w-full sm:flex-1 sm:min-w-0 aspect-[9/16] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.35)] object-cover';
-
-function PairedCyclingVideos({
-  videosLeft,
-  videosRight,
-  className,
-  ariaLabelLeft,
-  ariaLabelRight,
-}: {
-  videosLeft: string[];
-  videosRight: string[];
-  className?: string;
-  ariaLabelLeft?: string;
-  ariaLabelRight?: string;
-}) {
-  const [leftIndex, setLeftIndex] = useState(0);
-  const [rightIndex, setRightIndex] = useState(0);
-  const leftRef = useRef<HTMLVideoElement>(null);
-  const rightRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const el = leftRef.current;
-    if (!el) return;
-    el.load();
-    el.play().catch(() => {});
-  }, [leftIndex]);
-
-  useEffect(() => {
-    const el = rightRef.current;
-    if (!el) return;
-    el.load();
-    el.play().catch(() => {});
-  }, [rightIndex]);
-
-  return (
-    <>
-      <video
-        ref={leftRef}
-        className={className ?? PAIRED_VIDEO_CLASS}
-        src={videosLeft[leftIndex]}
-        autoPlay
-        muted
-        playsInline
-        onEnded={() => setLeftIndex((i) => (i + 1) % videosLeft.length)}
-        aria-label={ariaLabelLeft}
-      />
-      <video
-        ref={rightRef}
-        className={className ?? PAIRED_VIDEO_CLASS}
-        src={videosRight[rightIndex]}
-        autoPlay
-        muted
-        playsInline
-        onEnded={() => setRightIndex((i) => (i + 1) % videosRight.length)}
-        aria-label={ariaLabelRight}
-      />
-    </>
-  );
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function LandingPage() {
   const [faqOpenId, setFaqOpenId] = useState<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hideMobileWordmark, setHideMobileWordmark] = useState(false);
+  const [scrolledPastHero, setScrolledPastHero] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [testimonialPaused, setTestimonialPaused] = useState(false);
+  const touchStartX = useRef(0);
   const [emailValue, setEmailValue] = useState('');
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -281,11 +219,33 @@ export function LandingPage() {
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const onScroll = () =>
+    const onScroll = () => {
       setHideMobileWordmark(el.scrollTop > MOBILE_WORDMARK_HIDE_SCROLL_THRESHOLD);
+      setScrolledPastHero(el.scrollTop > 200);
+    };
     onScroll();
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Auto-rotate testimonials every 6s (pause on hover/touch)
+  useEffect(() => {
+    if (testimonialPaused) return;
+    const timer = setInterval(() => {
+      setActiveTestimonial((i) => (i + 1) % SOCIAL_PROOF.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [testimonialPaused]);
+
+  const handleTestimonialSwipe = useCallback((endX: number) => {
+    const delta = touchStartX.current - endX;
+    if (Math.abs(delta) > 50) {
+      setActiveTestimonial((i) =>
+        delta > 0
+          ? (i + 1) % SOCIAL_PROOF.length
+          : (i - 1 + SOCIAL_PROOF.length) % SOCIAL_PROOF.length
+      );
+    }
   }, []);
 
   return (
@@ -311,7 +271,7 @@ export function LandingPage() {
 
         {/* Desktop: glass pill nav */}
         <div className="hidden sm:flex max-w-5xl mx-auto w-full">
-          <div className="glass-nav glass-nav-landing rounded-full border border-[var(--glass-border)] flex items-center justify-between gap-6 flex-grow-0">
+          <div className={`glass-nav glass-nav-landing rounded-full border border-[var(--glass-border)] flex items-center justify-between gap-6 flex-grow-0 transition-all duration-300${scrolledPastHero ? ' glass-nav-landing--solid' : ''}`}>
             <div className="flex items-center gap-6 min-w-0" aria-label="NapNap">
               <button
                 type="button"
@@ -325,8 +285,8 @@ export function LandingPage() {
                 <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('how-it-works')}>
                   How it works
                 </button>
-                <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('sleep-science')}>
-                  Sleep science
+                <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('product-showcase')}>
+                  The app
                 </button>
                 <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('faq')}>
                   FAQ
@@ -343,7 +303,7 @@ export function LandingPage() {
         <button
           type="button"
           onClick={() => setMobileMenuOpen((o) => !o)}
-          className="fixed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] right-4 w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer p-0 box-border transition-colors duration-250 sm:hidden z-[60] text-[var(--text-primary)] landing-mobile-menu-btn"
+          className={`fixed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] right-4 w-14 h-14 rounded-full flex items-center justify-center border-none cursor-pointer p-0 box-border transition-all duration-300 sm:hidden z-[60] text-[var(--text-primary)] landing-mobile-menu-btn${scrolledPastHero ? ' landing-mobile-menu-btn--solid' : ''}`}
           style={{ top: 'calc(40px + env(safe-area-inset-top, 0px))' }}
           aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileMenuOpen}
@@ -369,8 +329,8 @@ export function LandingPage() {
           <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
             How it works
           </button>
-          <button type="button" onClick={() => scrollToSection('sleep-science')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            Sleep science
+          <button type="button" onClick={() => scrollToSection('product-showcase')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
+            The app
           </button>
           <button type="button" onClick={() => scrollToSection('faq')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
             FAQ
@@ -438,24 +398,68 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Social proof ── */}
-        <section aria-label="What parents say" className="space-y-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="flex gap-0.5" aria-label="5 stars">
-              {Array.from({ length: 5 }).map((_, i) => <StarIcon key={i} />)}
-            </div>
-            <span className="text-sm text-[var(--text-muted)]">Loved by tired parents</span>
-          </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            {SOCIAL_PROOF.map((item) => (
-              <figure key={item.author} className="card p-5 space-y-3 flex flex-col justify-between">
-                <blockquote className="text-sm text-[var(--text-secondary)] leading-relaxed">
+        {/* ── Social proof — cinematic carousel ── */}
+        <section
+          aria-label="What parents say"
+          className="bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10 relative overflow-hidden"
+          onMouseEnter={() => setTestimonialPaused(true)}
+          onMouseLeave={() => setTestimonialPaused(false)}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; setTestimonialPaused(true); }}
+          onTouchEnd={(e) => { handleTestimonialSwipe(e.changedTouches[0].clientX); setTestimonialPaused(false); }}
+        >
+          {/* Decorative open-quote mark */}
+          <svg
+            width="48" height="48" viewBox="0 0 24 24" fill="currentColor"
+            className="text-[var(--nap-color)] opacity-15 absolute top-6 left-6 md:left-10"
+            aria-hidden="true"
+          >
+            <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C9.591 11.69 11 13.166 11 15c0 1.933-1.567 3.5-3.5 3.5-1.199 0-2.344-.592-2.917-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C19.591 11.69 21 13.166 21 15c0 1.933-1.567 3.5-3.5 3.5-1.199 0-2.344-.592-2.917-1.179z" />
+          </svg>
+
+          <div className="max-w-lg mx-auto text-center relative" style={{ minHeight: '120px' }}>
+            {SOCIAL_PROOF.map((item, i) => (
+              <figure
+                key={item.author}
+                className="absolute inset-0 flex flex-col justify-center items-center transition-all duration-500 ease-in-out"
+                style={{
+                  opacity: i === activeTestimonial ? 1 : 0,
+                  transform: i === activeTestimonial ? 'translateY(0)' : 'translateY(8px)',
+                  pointerEvents: i === activeTestimonial ? 'auto' : 'none',
+                }}
+                aria-hidden={i !== activeTestimonial}
+              >
+                <blockquote className="text-display-sm text-[var(--text-primary)] leading-relaxed">
                   &ldquo;{item.quote}&rdquo;
                 </blockquote>
-                <figcaption className="text-xs text-[var(--text-muted)] font-display">
-                  — {item.author}
+                <figcaption className="mt-4 text-sm text-[var(--text-muted)] font-display">
+                  {item.author}
                 </figcaption>
               </figure>
+            ))}
+          </div>
+
+          {/* Dot indicators */}
+          <div className="flex justify-center gap-3 mt-6" role="tablist" aria-label="Testimonial navigation">
+            {SOCIAL_PROOF.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                role="tab"
+                aria-selected={i === activeTestimonial}
+                aria-label={`Testimonial ${i + 1}`}
+                onClick={() => setActiveTestimonial(i)}
+                className="w-12 h-12 flex items-center justify-center bg-transparent border-none cursor-pointer p-0"
+              >
+                <span
+                  className="block rounded-full transition-all duration-300"
+                  style={{
+                    width: i === activeTestimonial ? '24px' : '8px',
+                    height: '8px',
+                    backgroundColor: i === activeTestimonial ? 'var(--nap-color)' : 'var(--text-muted)',
+                    opacity: i === activeTestimonial ? 1 : 0.3,
+                  }}
+                />
+              </button>
             ))}
           </div>
         </section>
@@ -465,8 +469,9 @@ export function LandingPage() {
           <div className="space-y-2">
             <h2 className="text-display-md">How it works</h2>
             <p className="text-[var(--text-secondary)] max-w-xl">
-              NapNap learns your baby&apos;s patterns and quietly turns them into a clear daily rhythm
-              you can follow, even on very little sleep.
+              NapNap uses age‑based wake windows and your baby&apos;s recent sleep to build a clear
+              daily rhythm you can follow, even on very little sleep. No scores, no training method,
+              no judgement.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -500,184 +505,151 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── What you get — feature showcase with icon tokens ── */}
-        <section className="space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-display-md">What you get</h2>
-            <p className="text-[var(--text-secondary)] max-w-xl">
-              A calm set of tools that work together to keep your baby&apos;s sleep on a gentle rhythm.
+        {/* ── Product showcase — app in device frames ── */}
+        <section id="product-showcase" className="space-y-8">
+          <div className="space-y-2 text-center">
+            <h2 className="text-display-md">See it in action</h2>
+            <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
+              A calm dashboard that tells you exactly what comes next.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="card p-6 space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-[var(--nap-glow)] flex items-center justify-center mb-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nap-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                </svg>
+
+          <div className="flex gap-8 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0 md:grid md:grid-cols-3 md:overflow-visible md:gap-10 justify-items-center">
+            <div className="snap-center flex-shrink-0 w-[200px] md:w-auto space-y-3 flex flex-col items-center">
+              <div className="device-frame">
+                <div className="device-notch" />
+                <img
+                  src="/media/napnap-today.png"
+                  alt="NapNap Today view showing next nap countdown and daily schedule"
+                  className="device-screen"
+                  loading="lazy"
+                />
               </div>
-              <h3 className="text-base font-display">Live nap and bedtime plan</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                See today&apos;s naps, bedtime, and wake windows in one simple view. Updates as your baby sleeps.
+              <p className="text-sm text-[var(--text-secondary)] text-center font-display">
+                Your day at a glance
               </p>
             </div>
-            <div className="card p-6 space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-[var(--night-glow)] flex items-center justify-center mb-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--night-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
+            <div className="snap-center flex-shrink-0 w-[200px] md:w-auto space-y-3 flex flex-col items-center">
+              <div className="device-frame">
+                <div className="device-notch" />
+                <img
+                  src="/media/napnap-history.png"
+                  alt="NapNap Sleep log with daily entries and wake times"
+                  className="device-screen"
+                  loading="lazy"
+                />
               </div>
-              <h3 className="text-base font-display">Multi‑caregiver sharing</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Share access with partners or caregivers so everyone works from the same plan.
+              <p className="text-sm text-[var(--text-secondary)] text-center font-display">
+                Every nap and night, logged
               </p>
             </div>
-            <div className="card p-6 space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-[var(--wake-glow)] flex items-center justify-center mb-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--wake-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                </svg>
+            <div className="snap-center flex-shrink-0 w-[200px] md:w-auto space-y-3 flex flex-col items-center">
+              <div className="device-frame">
+                <div className="device-notch" />
+                <img
+                  src="/media/napnap-stats.png"
+                  alt="NapNap Stats view with sleep trends and daily schedule chart"
+                  className="device-screen"
+                  loading="lazy"
+                />
               </div>
-              <h3 className="text-base font-display">Growth tracking</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Log weight, height, and head circumference alongside sleep, without extra clutter.
-              </p>
-            </div>
-            <div className="card p-6 space-y-2">
-              <div className="w-8 h-8 rounded-lg bg-[var(--nap-glow)] flex items-center justify-center mb-3">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nap-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
-                </svg>
-              </div>
-              <h3 className="text-base font-display">30‑day sleep report</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                A gentle narrative on the last month to spot patterns without chart overload.
+              <p className="text-sm text-[var(--text-secondary)] text-center font-display">
+                Patterns, not spreadsheets
               </p>
             </div>
           </div>
         </section>
 
-        {/* ── Sleep science ── */}
-        <section id="sleep-science" className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-display-md">Sleep science, not guesswork</h2>
-            <p className="text-[var(--text-secondary)] max-w-xl">
-              NapNap uses gentle, research‑informed patterns to suggest when sleep is likely to go
-              well, without promising perfection.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2 items-start">
-            <div className="card p-5 space-y-3">
-              <p className="text-sm font-display">What feeds our suggestions</p>
-              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-1">
-                <li>Age‑based wake windows for 0–18 months.</li>
-                <li>How long your baby has been awake since the last sleep.</li>
-                <li>Recent nap lengths and when the last nap ended.</li>
-                <li>Bedtime trends over the last days and weeks.</li>
-              </ul>
-              <p className="text-sm text-[var(--text-secondary)]">
-                As you log more naps and nights, NapNap quietly adjusts the rhythm it suggests for your baby.
-              </p>
-            </div>
-            <div className="card p-5 space-y-3">
-              <p className="text-sm font-display">What NapNap does not do</p>
-              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-1">
-                <li>No medical diagnosis or treatment recommendations.</li>
-                <li>No strict training method or &ldquo;one right&rdquo; way to settle.</li>
-                <li>No scores, grades, or language that implies you are failing.</li>
-              </ul>
-              <p className="text-sm text-[var(--text-secondary)]">
-                You stay in charge of how you care for your baby. NapNap simply keeps track of the
-                timing so you do not have to hold it all in your head.
-              </p>
-            </div>
-          </div>
+        {/* ── Mid-page CTA ── */}
+        <section className="text-center space-y-4 py-4">
+          <h2 className="text-display-sm">Ready to find your rhythm?</h2>
+          <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
+            Free to start. No credit card. No sleep training method required.
+          </p>
+          <button
+            type="button"
+            className="btn btn-primary px-8 py-3"
+            onClick={handleLoginClick}
+          >
+            Create your free sleep plan
+          </button>
         </section>
 
-        {/* ── Age range ── */}
+        {/* ── What you get — feature showcase with icon tokens (tinted band) ── */}
+        <div className="bg-[var(--bg-mid)] -mx-6 px-6 py-12 rounded-none md:rounded-3xl md:mx-0 md:px-8">
+          <section className="space-y-8 max-w-5xl mx-auto">
+            <div className="space-y-2">
+              <h2 className="text-display-md">What you get</h2>
+              <p className="text-[var(--text-secondary)] max-w-xl">
+                A calm set of tools that work together to keep your baby&apos;s sleep on a gentle rhythm.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="card p-6 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--nap-glow)] flex items-center justify-center mb-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nap-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-display">Live nap and bedtime plan</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  See today&apos;s naps, bedtime, and wake windows in one simple view. Updates as your baby sleeps.
+                </p>
+              </div>
+              <div className="card p-6 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--night-glow)] flex items-center justify-center mb-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--night-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-display">Multi‑caregiver sharing</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Share access with partners or caregivers so everyone works from the same plan.
+                </p>
+              </div>
+              <div className="card p-6 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--wake-glow)] flex items-center justify-center mb-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--wake-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-display">Growth tracking</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  Log weight, height, and head circumference alongside sleep, without extra clutter.
+                </p>
+              </div>
+              <div className="card p-6 space-y-2">
+                <div className="w-8 h-8 rounded-lg bg-[var(--nap-glow)] flex items-center justify-center mb-3">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--nap-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+                  </svg>
+                </div>
+                <h3 className="text-base font-display">30‑day sleep report</h3>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  A gentle narrative on the last month to spot patterns without chart overload.
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* ── Age range — lightweight text + tags ── */}
         <section className="space-y-4">
           <div className="space-y-1">
             <h2 className="text-display-md">For 0–18 months</h2>
-            <p className="text-base text-[var(--text-secondary)]">
-              Newborn to toddler, with age‑aware nap transitions.
-            </p>
-          </div>
-          <div className="card p-5 flex flex-col gap-6 md:flex-row md:items-center">
-            <div className="flex-1 space-y-4">
-              <p className="text-sm text-[var(--text-secondary)]">
-                From short newborn naps to the final one‑nap days, NapNap adapts the suggested rhythm
-                to your baby&apos;s age and recent sleep.
-              </p>
-              <div className="flex flex-wrap gap-2 text-sm text-[var(--text-muted)]">
-                <span className="tag tag-nap">Newborn</span>
-                <span className="tag tag-neutral">3–6 months</span>
-                <span className="tag tag-night">6–12 months</span>
-                <span className="tag tag-active">12–18 months</span>
-              </div>
-            </div>
-            <div className="flex-shrink-0 flex gap-3 w-full md:w-[360px]">
-              <PairedCyclingVideos
-                videosLeft={['/media/park.mp4', '/media/sleep-time-2.mp4', '/media/sleeping.mp4']}
-                videosRight={['/media/sleep-time.mp4', '/media/holidays.mp4', '/media/home-3.mp4']}
-                className="flex-1 min-w-0 aspect-[9/16] rounded-[1.5rem] border border-[var(--glass-border)] shadow-[0_12px_40px_rgba(0,0,0,0.2)] object-cover"
-                ariaLabelLeft="Short clips: baby and park moments"
-                ariaLabelRight="Short clips: sleep and calm moments"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* ── Sleep guides — editorial style, distinct from features ── */}
-        <section className="space-y-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 text-xs font-display uppercase tracking-widest text-[var(--text-muted)] mb-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
-                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-              </svg>
-              Reading material
-            </div>
-            <h2 className="text-display-md">Sleep guides for tired parents</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
-              Short, practical pieces you can read during a contact nap.
+              From short newborn naps to the final one‑nap days, NapNap adapts the suggested rhythm
+              to your baby&apos;s age and recent sleep.
             </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
-            <article className="card p-5 space-y-3 border-l-2 border-[var(--nap-color)]">
-              <h3 className="text-sm font-display">Newborn sleep 0–3 months</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                What &ldquo;normal&rdquo; looks like when everything still feels upside down.
-              </p>
-              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
-                <li>Short naps and day‑night confusion are expected.</li>
-                <li>Gentle morning light and calm evenings help.</li>
-                <li>NapNap tracks wake time and suggests when sleep is likely to work.</li>
-              </ul>
-            </article>
-            <article className="card p-5 space-y-3 border-l-2 border-[var(--night-color)]">
-              <h3 className="text-sm font-display">The 4‑month shift</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                Why sleep suddenly changes and how to keep a gentle rhythm.
-              </p>
-              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
-                <li>Sleep cycles change; shorter naps and more wakings are common.</li>
-                <li>Steady wake windows and calm bedtime help the new pattern settle.</li>
-                <li>NapNap shows when to aim for naps and bedtime so you stay consistent.</li>
-              </ul>
-            </article>
-            <article className="card p-5 space-y-3 border-l-2 border-[var(--wake-color)]">
-              <h3 className="text-sm font-display">When will they sleep through?</h3>
-              <p className="text-sm text-[var(--text-secondary)]">
-                A calm look at expectations, night wakings, and what you can influence.
-              </p>
-              <ul className="list-disc pl-5 text-sm text-[var(--text-secondary)] space-y-0.5">
-                <li>&ldquo;Sleeping through&rdquo; means different things at different ages.</li>
-                <li>You can shape timing: a gentle nap and bedtime rhythm reduces overtiredness.</li>
-                <li>NapNap helps protect that rhythm so nights are easier to manage.</li>
-              </ul>
-            </article>
+          <div className="flex flex-wrap gap-2 text-sm">
+            <span className="tag tag-nap">Newborn</span>
+            <span className="tag tag-neutral">3–6 months</span>
+            <span className="tag tag-night">6–12 months</span>
+            <span className="tag tag-active">12–18 months</span>
           </div>
         </section>
 
