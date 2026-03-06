@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { SkyBackground } from './SkyBackground';
+import { supabase } from '../lib/supabase';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -193,6 +194,8 @@ export function LandingPage() {
   const touchStartX = useRef(0);
   const [emailValue, setEmailValue] = useState('');
   const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleLoginClick = () => { window.location.href = '/app'; };
@@ -203,8 +206,25 @@ export function LandingPage() {
     setMobileMenuOpen(false);
   };
 
-  const handleEmailSubmit = () => {
-    if (emailValue.trim()) setEmailSubmitted(true);
+  const handleEmailSubmit = async () => {
+    const trimmed = emailValue.trim();
+    if (!trimmed || !trimmed.includes('@')) return;
+
+    setEmailSending(true);
+    setEmailError('');
+
+    try {
+      const { error } = await supabase.functions.invoke('waitlist-notify', {
+        body: { email: trimmed },
+      });
+
+      if (error) throw error;
+      setEmailSubmitted(true);
+    } catch {
+      setEmailError('Something went wrong. Please try again.');
+    } finally {
+      setEmailSending(false);
+    }
   };
 
   // Force morning palette on the landing page without affecting /app
@@ -699,19 +719,30 @@ export function LandingPage() {
               ✓ Got it. We&apos;ll be in touch gently.
             </p>
           ) : (
-            <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto w-full">
-              <input
-                type="email"
-                value={emailValue}
-                onChange={(e) => setEmailValue(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleEmailSubmit()}
-                placeholder="your@email.com"
-                className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-[var(--glass-bg,rgba(255,255,255,0.06))] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)]"
-                aria-label="Email address"
-              />
-              <button type="button" onClick={handleEmailSubmit} className="btn btn-primary px-5 py-2.5 text-sm flex-shrink-0">
-                Notify me
-              </button>
+            <div className="space-y-2 max-w-sm mx-auto w-full">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <input
+                  type="email"
+                  value={emailValue}
+                  onChange={(e) => { setEmailValue(e.target.value); setEmailError(''); }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleEmailSubmit()}
+                  placeholder="your@email.com"
+                  className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-[var(--glass-bg,rgba(255,255,255,0.06))] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)]"
+                  aria-label="Email address"
+                  disabled={emailSending}
+                />
+                <button
+                  type="button"
+                  onClick={handleEmailSubmit}
+                  disabled={emailSending}
+                  className="btn btn-primary px-5 py-2.5 text-sm flex-shrink-0 disabled:opacity-60"
+                >
+                  {emailSending ? 'Sending...' : 'Notify me'}
+                </button>
+              </div>
+              {emailError && (
+                <p className="text-xs text-[var(--danger-color)]">{emailError}</p>
+              )}
             </div>
           )}
         </section>
