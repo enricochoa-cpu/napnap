@@ -196,7 +196,7 @@ export function useBabyProfile() {
       };
       const { error } = await supabase
         .from('profiles')
-        .insert(insertPayload);
+        .upsert(insertPayload, { onConflict: 'id' });
 
       if (error) {
         console.error('Error creating profile:', error);
