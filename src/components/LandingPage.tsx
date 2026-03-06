@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { SkyBackground } from './SkyBackground';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase'; // uncomment when re-enabling waitlist email
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -192,10 +192,11 @@ export function LandingPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [testimonialPaused, setTestimonialPaused] = useState(false);
   const touchStartX = useRef(0);
-  const [emailValue, setEmailValue] = useState('');
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [emailSending, setEmailSending] = useState(false);
-  const [emailError, setEmailError] = useState('');
+  // -- Waitlist email capture (temporarily commented out) --
+  // const [emailValue, setEmailValue] = useState('');
+  // const [emailSubmitted, setEmailSubmitted] = useState(false);
+  // const [emailSending, setEmailSending] = useState(false);
+  // const [emailError, setEmailError] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleLoginClick = () => { window.location.href = '/app'; };
@@ -204,27 +205,6 @@ export function LandingPage() {
   const scrollToSection = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     setMobileMenuOpen(false);
-  };
-
-  const handleEmailSubmit = async () => {
-    const trimmed = emailValue.trim();
-    if (!trimmed || !trimmed.includes('@')) return;
-
-    setEmailSending(true);
-    setEmailError('');
-
-    try {
-      const { error } = await supabase.functions.invoke('waitlist-notify', {
-        body: { email: trimmed },
-      });
-
-      if (error) throw error;
-      setEmailSubmitted(true);
-    } catch {
-      setEmailError('Something went wrong. Please try again.');
-    } finally {
-      setEmailSending(false);
-    }
   };
 
   // Force morning palette on the landing page without affecting /app
@@ -707,7 +687,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Email capture — retains warm intent before visitors leave ── */}
+        {/* ── Email capture — temporarily hidden while verifying Edge Function deploy ──
         <section aria-label="Stay in the loop" className="card p-6 sm:p-8 space-y-4 text-center">
           <h2 className="text-display-sm">Not ready yet? That&apos;s fine.</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
@@ -716,7 +696,7 @@ export function LandingPage() {
           </p>
           {emailSubmitted ? (
             <p className="text-sm text-[var(--nap-color)] font-display py-2">
-              ✓ Got it. We&apos;ll be in touch gently.
+              Got it. We&apos;ll be in touch gently.
             </p>
           ) : (
             <div className="space-y-2 max-w-sm mx-auto w-full">
@@ -746,6 +726,7 @@ export function LandingPage() {
             </div>
           )}
         </section>
+        */}
 
       </main>
 
