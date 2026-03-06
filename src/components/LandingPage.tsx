@@ -289,12 +289,7 @@ export function LandingPage() {
   }, []);
 
   return (
-    <div
-      ref={scrollRef}
-      className={`min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)] ${
-        mobileMenuOpen ? 'overflow-hidden' : 'overflow-y-auto'
-      }`}
-    >
+    <div className="min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)]">
       <SkyBackground theme="morning" />
 
       {/* ── Header ── */}
@@ -386,6 +381,14 @@ export function LandingPage() {
         </nav>
       </div>
 
+      {/* Inner scroll container: fixes desktop scroll (wheel/trackpad). Same pattern as App.tsx lesson 6.7. */}
+      <div
+        ref={scrollRef}
+        className={`min-h-[100dvh] overflow-x-hidden ${
+          mobileMenuOpen ? 'overflow-hidden' : 'overflow-y-auto'
+        }`}
+        style={{ height: '100dvh' }}
+      >
       <main className="main-below-landing-nav max-w-5xl mx-auto px-6 pb-20 space-y-16">
 
         {/* ── Hero ── */}
@@ -755,6 +758,7 @@ export function LandingPage() {
           </button>
         </div>
       </footer>
+      </div>
     </div>
   );
 }
