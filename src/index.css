@@ -474,16 +474,39 @@ input, textarea {
   padding: 1.25rem 2rem; /* py-5 px-8 */
 }
 
+/* Solid nav state after scrolling past hero */
+.glass-nav-landing--solid {
+  background: var(--glass-nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Mobile menu button on landing: glass pill (Napper-style) */
 .landing-mobile-menu-btn {
   background: color-mix(in srgb, var(--night-color) 6%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+.landing-mobile-menu-btn--solid {
+  background: var(--glass-nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-sm);
+}
 
 /* Full-screen mobile menu background (Napper-style): dark gradient, nothing else visible */
 .landing-mobile-menu-fullscreen {
   background: linear-gradient(0deg, #0B0B0B 0%, #1B1A3D 100%);
+}
+
+/* Hide scrollbar for horizontal snap-scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Main content top padding so hero clears fixed landing nav (126px mobile, 196px lg + safe area) */
