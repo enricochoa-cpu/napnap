@@ -7,8 +7,40 @@ No router library. Navigation is state-driven (`useState`) inside `App.tsx` and 
 ## Entry Point
 
 ```
-main.tsx → <AuthGuard> → <App />
+main.tsx
+  ├── / → <LandingPage />          (public marketing page)
+  └── /app → <AuthGuard> → <App /> (authenticated app)
 ```
+
+---
+
+## 0. Landing Page (public, `/`)
+
+| Field | Value |
+|-------|-------|
+| **Path** | `/` |
+| **Component** | `LandingPage` → `components/LandingPage.tsx` |
+| **Primary Goal** | Convert visitors to sign-ups or waitlist subscribers |
+| **Golden Path** | Read → CTA "Create your free sleep plan" → `/app` (auth gate) |
+| **Alternative Path** | Scroll → "Notify me" email capture → waitlist-notify Edge Function |
+
+### Section Order (post-redesign 2026-03-06)
+1. **Hero** — Value prop + CTA + cycling videos
+2. **Social Proof** — Testimonial carousel (auto-rotate, swipe, --bg-mid band)
+3. **How It Works** — 3-step explainer with trust messaging in subtitle
+4. **Product Showcase** — 3 device-framed screenshots (Today, Sleep Log, Trends)
+5. **Mid-Page CTA** — "Ready to find your rhythm?" + reassurance
+6. **What You Get** — Feature grid (--bg-mid band)
+7. **Age Range** — Supported ages (0-18 months) with tags
+8. **FAQ** — Accordion (6 questions)
+9. **Email Capture** — Waitlist form → `waitlist-notify` Edge Function → email to getnapnap@gmail.com
+10. **Footer** — Links + brand
+
+### Nav
+- Desktop: glass morphism, becomes solid after 200px scroll (`.glass-nav-landing--solid`)
+- Mobile: burger menu with same solid treatment
+- Links: How it works, The app, FAQ, Log in
+- Forces `.theme-morning` (light palette regardless of time)
 
 ---
 
