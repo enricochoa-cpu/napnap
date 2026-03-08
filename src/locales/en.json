@@ -13,6 +13,7 @@
     "password": "Password",
     "loading": "Loading...",
     "saving": "Saving…",
+    "saved": "Saved",
     "ariaGoBack": "Go back",
     "ariaDelete": "Delete",
     "ariaClose": "Close",
@@ -248,7 +249,8 @@
     "editBabyInfo": "Edit your baby's information",
     "noBabies": "No babies yet",
     "noBabiesSubtitle": "Add your first baby to start tracking sleep",
-    "ageUnknown": "Age unknown"
+    "ageUnknown": "Age unknown",
+    "sharedBabyRemoved": "A shared baby is no longer available"
   },
   "growth": {
     "babyWeight": "Baby weight",
@@ -264,13 +266,15 @@
     "editHeight": "Edit height",
     "addWeight": "Add weight",
     "addHeight": "Add height",
+    "addMeasurement": "Add measurement",
     "weightWarning": "This value is lower than a later entry. You can still save.",
     "heightWarning": "This value is lower than a later entry. You can still save.",
     "deleteConfirmTitle": "Delete this log?",
     "deleteConfirmDescription": "This weight or height entry will be removed.",
     "weightOverTime": "Weight over time",
     "heightOverTime": "Height over time",
-    "noGrowthData": "Add weight and height in your baby's profile to see growth here.",
+    "headOverTime": "Head circumference over time",
+    "noGrowthData": "Add weight, height or head in your baby's profile to see growth here.",
     "addAnotherToSeeTrend": "Add another to see your trend",
     "viewAllEntries": "View all ({{count}})",
     "showLess": "Show less"
@@ -291,6 +295,7 @@
     "notesOptional": "Notes (optional)",
     "notesPlaceholder": "Add notes…",
     "atLeastOneRequired": "Add at least one measurement (weight, height or head).",
+    "valueSeemsHigh": "That seems high — did you mean",
     "deleteMeasurement": "Delete measurement",
     "deleteConfirmTitle": "Delete this measurement?",
     "deleteConfirmDescription": "This log will be removed.",
@@ -332,7 +337,9 @@
     "nameBirthdayRequired": "Name and birthday are required",
     "manageSharing": "Share baby profile",
     "sharedCount": "{{count}} people shared",
-    "sharedCount_one": "1 person shared"
+    "sharedCount_one": "1 person shared",
+    "discardChangesTitle": "Discard changes?",
+    "discardChangesDescription": "You have unsaved changes that are incomplete. Going back will discard them."
   },
   "shareAccess": {
     "title": "Share baby profile",
@@ -363,7 +370,9 @@
     "failedRevoke": "Failed to revoke access",
     "failedUpdateRole": "Failed to update role",
     "failedAccept": "Failed to accept invitation",
-    "failedDecline": "Failed to decline invitation"
+    "failedDecline": "Failed to decline invitation",
+    "removeAccessConfirmTitle": "Remove access?",
+    "removeAccessConfirmDescription": "This person will no longer be able to view or edit your baby's sleep data."
   },
   "history": {
     "sleepLog": "Sleep log",
@@ -441,12 +450,15 @@
     "title": "Wake up",
     "subtitle": "Baby woke up",
     "confirm": "Confirm wake up",
-    "delete": "Delete night",
+    "delete": "Delete entry",
     "ariaLogWakeUp": "Log wake up time",
     "ariaHours": "Hours",
     "ariaMinutes": "Minutes",
     "deleteEntryTitle": "Delete entry?",
-    "pleaseSetWakeUpTime": "Please set wake-up time"
+    "pleaseSetWakeUpTime": "Please set wake-up time",
+    "ariaConfirmWakeUp": "Confirm wake up",
+    "decrementLabel": "-1 min",
+    "incrementLabel": "+1 min"
   },
   "missingBedtime": {
     "title": "Log last night's bedtime?",
@@ -466,7 +478,8 @@
     "stillOngoingShort": "· Still ongoing",
     "replaceEntry": "Replace Entry",
     "replace": "Replace",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "adjustTimes": "Adjust times"
   },
   "stats": {
     "title": "Trends",
@@ -517,6 +530,7 @@
   "report": {
     "title": "Sleep report",
     "subtitle": "Last 30 days",
+    "share": "Share report",
     "overviewNoAge": "This is {{name}}'s sleep so far. Here's what we're seeing.",
     "overviewWithAge": "This is {{name}}'s sleep so far. {{pronoun}} {{ageLabel}} — here's what we're seeing.",
     "pronounHe": "He's",
@@ -628,6 +642,8 @@
     "subjectPlaceholder": "e.g. Privacy question, Account help",
     "messagePlaceholder": "Write your message here...",
     "sendEmail": "Send us an email",
+    "copyEmail": "Copy email address",
+    "copied": "Copied!",
     "opensEmail": "Opens your email app and sends to {{email}}"
   },
   "loading": {

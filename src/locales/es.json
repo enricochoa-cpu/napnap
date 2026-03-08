@@ -13,6 +13,7 @@
     "password": "Contraseña",
     "loading": "Cargando...",
     "saving": "Guardando…",
+    "saved": "Guardado",
     "ariaGoBack": "Volver",
     "ariaDelete": "Eliminar",
     "ariaClose": "Cerrar",
@@ -248,7 +249,8 @@
     "editBabyInfo": "Edita los datos de tu bebé",
     "noBabies": "Aún no hay bebés",
     "noBabiesSubtitle": "Añade tu primer bebé para empezar a registrar el sueño",
-    "ageUnknown": "Edad desconocida"
+    "ageUnknown": "Edad desconocida",
+    "sharedBabyRemoved": "Un bebé compartido ya no está disponible"
   },
   "growth": {
     "babyWeight": "Peso del bebé",
@@ -264,13 +266,15 @@
     "editHeight": "Editar altura",
     "addWeight": "Añadir peso",
     "addHeight": "Añadir altura",
+    "addMeasurement": "Añadir medición",
     "weightWarning": "Este valor es menor que una entrada posterior. Puedes guardar igualmente.",
     "heightWarning": "Este valor es menor que una entrada posterior. Puedes guardar igualmente.",
     "deleteConfirmTitle": "¿Eliminar esta entrada?",
     "deleteConfirmDescription": "Se eliminará esta entrada de peso o altura.",
     "weightOverTime": "Peso en el tiempo",
     "heightOverTime": "Altura en el tiempo",
-    "noGrowthData": "Añade peso y altura en el perfil del bebé para ver el crecimiento aquí.",
+    "headOverTime": "Perímetro cefálico en el tiempo",
+    "noGrowthData": "Añade peso, altura o cabeza en el perfil del bebé para ver el crecimiento aquí.",
     "addAnotherToSeeTrend": "Añade otro para ver la tendencia",
     "viewAllEntries": "Ver todos ({{count}})",
     "showLess": "Ver menos"
@@ -291,6 +295,7 @@
     "notesOptional": "Notas (opcional)",
     "notesPlaceholder": "Añadir notas…",
     "atLeastOneRequired": "Añade al menos una medida (peso, talla o cabeza).",
+    "valueSeemsHigh": "Parece muy alto — ¿quisiste decir",
     "deleteMeasurement": "Eliminar medición",
     "deleteConfirmTitle": "¿Eliminar esta medición?",
     "deleteConfirmDescription": "Se eliminará este registro.",
@@ -332,7 +337,9 @@
     "nameBirthdayRequired": "El nombre y la fecha de nacimiento son obligatorios",
     "manageSharing": "Compartir perfil del bebé",
     "sharedCount": "{{count}} personas compartidas",
-    "sharedCount_one": "1 persona compartida"
+    "sharedCount_one": "1 persona compartida",
+    "discardChangesTitle": "¿Descartar cambios?",
+    "discardChangesDescription": "Tienes cambios sin guardar que están incompletos. Volver atrás los descartará."
   },
   "shareAccess": {
     "title": "Compartir perfil del bebé",
@@ -363,7 +370,9 @@
     "failedRevoke": "Error al revocar el acceso",
     "failedUpdateRole": "Error al actualizar el rol",
     "failedAccept": "Error al aceptar la invitación",
-    "failedDecline": "Error al rechazar la invitación"
+    "failedDecline": "Error al rechazar la invitación",
+    "removeAccessConfirmTitle": "¿Quitar acceso?",
+    "removeAccessConfirmDescription": "Esta persona ya no podrá ver ni editar los datos de sueño de tu bebé."
   },
   "history": {
     "sleepLog": "Registro de sueño",
@@ -441,12 +450,15 @@
     "title": "Despertar",
     "subtitle": "El bebé se despertó",
     "confirm": "Confirmar despertar",
-    "delete": "Eliminar noche",
+    "delete": "Eliminar registro",
     "ariaLogWakeUp": "Registrar hora de despertar",
     "ariaHours": "Horas",
     "ariaMinutes": "Minutos",
     "deleteEntryTitle": "¿Eliminar registro?",
-    "pleaseSetWakeUpTime": "Indica la hora de despertar"
+    "pleaseSetWakeUpTime": "Indica la hora de despertar",
+    "ariaConfirmWakeUp": "Confirmar despertar",
+    "decrementLabel": "-1 min",
+    "incrementLabel": "+1 min"
   },
   "missingBedtime": {
     "title": "¿Registrar la hora de dormir de anoche?",
@@ -466,7 +478,8 @@
     "stillOngoingShort": "· Aún en curso",
     "replaceEntry": "Reemplazar registro",
     "replace": "Reemplazar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "adjustTimes": "Ajustar horarios"
   },
   "stats": {
     "title": "Tendencias",
@@ -517,6 +530,7 @@
   "report": {
     "title": "Informe de sueño",
     "subtitle": "Últimos 30 días",
+    "share": "Compartir informe",
     "overviewNoAge": "Así ha dormido {{name}} hasta ahora. Esto es lo que vemos.",
     "overviewWithAge": "Así ha dormido {{name}} hasta ahora. {{pronoun}} {{ageLabel}} — esto es lo que vemos.",
     "pronounHe": "Es",
@@ -628,6 +642,8 @@
     "subjectPlaceholder": "ej. Pregunta de privacidad, Ayuda con la cuenta",
     "messagePlaceholder": "Escribe tu mensaje aquí...",
     "sendEmail": "Enviar correo",
+    "copyEmail": "Copiar dirección de email",
+    "copied": "¡Copiado!",
     "opensEmail": "Se abrirá tu app de correo y enviará a {{email}}"
   },
   "loading": {

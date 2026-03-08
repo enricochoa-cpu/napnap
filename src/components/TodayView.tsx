@@ -40,6 +40,8 @@ interface TodayViewProps {
   hasPendingInvite?: boolean;
   /** Optional handler for the invite CTA (e.g. navigate to Profile to review invites). */
   onPendingInviteClick?: () => void;
+  /** Called when user taps a predicted nap card to pre-fill SleepEntrySheet with the predicted times. */
+  onStartPredictedNap?: (startTime: Date, endTime: Date) => void;
 }
 
 // Get today's completed naps
@@ -136,6 +138,7 @@ export function TodayView({
   onAddBabyClick,
   hasPendingInvite = false,
   onPendingInviteClick,
+  onStartPredictedNap,
 }: TodayViewProps) {
   const { t } = useTranslation();
   // Force re-render every minute for live countdowns
@@ -817,8 +820,11 @@ export function TodayView({
                   key={`predicted-${index}`}
                   variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}
                 >
-                  <div
-                    className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--nap-color)]/30"
+                  <button
+                    type="button"
+                    onClick={() => onStartPredictedNap?.(displayStart, expectedEnd)}
+                    aria-label={`${napInfo.isCatnap ? t('today.shortNap') : t('today.napOrdinal', { n: napNumber })} ${formatTime(displayStart)} — ${formatTime(expectedEnd)}`}
+                    className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--nap-color)]/30 w-full text-left cursor-pointer transition-all active:scale-[0.98] active:brightness-[1.08]"
                     style={{ background: 'color-mix(in srgb, var(--nap-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}
                   >
                     <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
@@ -832,7 +838,7 @@ export function TodayView({
                         {formatTime(displayStart)} — {formatTime(expectedEnd)}
                       </p>
                     </div>
-                  </div>
+                  </button>
                 </motion.div>
               );
             })}

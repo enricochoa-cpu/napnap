@@ -178,7 +178,7 @@ Tab Bar
 | **Branching Options** | 1. Date range picker (single control opens calendar sheet for start+end), 2. Tab bar navigation |
 | **Escape Routes** | Tab bar → other views |
 
-**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"), **"Generate report (last 30 days)"** button. When there is sleep data, **section chips** (Sleep summary, Naps, Night sleep, Growth) switch the content below; selected chip scrolls into view (centered). **Summary:** 4 summary cards, report row, distribution pie, daily bar, trend area, daily schedule. **Naps:** Nap cards + daily bar. **Night:** Night card + woke up + bedtime charts. **Growth:** Weight over time and Height over time area charts only in this section (or in a dedicated block when there is no sleep data but there is growth data); Y-axis is adaptive to data range (e.g. 50–70 cm). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet`. **Report sub-view:** "Generate report (last 30 days)" opens `SleepReportView`; "Back to trends" returns to charts.
+**Contents:** Insight tag, single date range control (e.g. "6 Feb – 12 Feb 2026 · 7d"). When there is sleep data, **section chips** (Sleep summary, Naps, Night sleep, Growth) switch the content below; selected chip scrolls into view (centered). **Summary:** 4 summary cards, distribution pie, daily bar, trend area, daily schedule. **Naps:** Nap cards + daily bar. **Night:** Night card + woke up + bedtime charts. **Growth:** Weight over time and Height over time area charts only in this section (or in a dedicated block when there is no sleep data but there is growth data); Y-axis is adaptive to data range (e.g. 50–70 cm). Date range max 15 days. Tapping the date row opens `DateRangePickerSheet`. **Report:** Temporarily disabled (2026-03-07) — "Generate report" button and SleepReportView commented out; will be redesigned.
 
 ### 2.4 Profile (container)
 
@@ -201,7 +201,7 @@ Tab Bar
 | **Component** | `ProfileMenu` → `components/Profile/ProfileMenu.tsx` |
 | **Primary Goal** | Navigate to profile sub-sections |
 | **Golden Path** | Tap primary baby card → My Babies |
-| **Branching Options** | 1. Primary baby card → My Babies, 2. Algorithm status pill → toggle AlgorithmStatusCard, 3. My Babies row → My Babies, 4. Support row → Support, 5. Settings row → Account Settings, 6. Accept/Decline pending invitations |
+| **Branching Options** | 1. My Babies row → My Babies, 2. Settings row → Account Settings, 3. Support row → Support, 4. Sign Out shortcut → ConfirmationModal (2 taps from home) |
 | **Escape Routes** | Tab bar → other main views |
 
 > **DENSITY AUDIT FLAG**: This screen has **6 interactive elements** (baby card, status pill, 3 nav rows, invitation actions). If invitations are present, the count rises further. Consider whether the primary baby card and the "My Babies" list row are redundant — they both navigate to the same destination.
@@ -232,9 +232,9 @@ Tab Bar
 
 **Sections:**
 1. Avatar + profile form (name, DOB, gender)
-2. Measures — single row; tap opens Measures view (list by day: weight, height, head; + to add; edit icon opens MeasureLogSheet; delete in sheet header when editing).
-3. "Manage sharing" row (owners only) → navigates to Share Access screen
-4. Save button (only visible when form has changes)
+2. Save button (always visible; disabled when no changes; auto-saves valid changes on back; shows discard confirmation for invalid unsaved changes)
+3. Measures — single row; tap opens Measures view (list by day: weight, height, head; + to add; edit icon opens MeasureLogSheet; delete in sheet header when editing).
+4. "Manage sharing" row (owners only) → navigates to Share Access screen
 5. Delete baby link (owners only, at bottom)
 
 ### 2.4.2b Share Access
@@ -290,7 +290,7 @@ Tab Bar
 | **Path** | `ProfileSection.currentView === 'contact'` |
 | **Component** | `ContactView` → `components/Profile/ContactView.tsx` |
 | **Primary Goal** | Reach the support team |
-| **Golden Path** | Use provided contact method |
+| **Golden Path** | Use provided contact method (mailto: + "Copy email address" fallback) |
 | **Branching Options** | None |
 | **Escape Routes** | Back button → Support (or Profile Menu, depending on entry path) |
 
@@ -308,7 +308,7 @@ These float above all content. Managed by boolean state in `App.tsx`. Available 
 | **Component** | `QuickActionSheet` → `components/QuickActionSheet.tsx` |
 | **Primary Goal** | Log a sleep event in one tap |
 | **Golden Path (no active sleep)** | Tap Nap or Bedtime → SleepEntrySheet |
-| **Golden Path (active sleep)** | Tap Wake Up → ends active sleep immediately |
+| **Golden Path (active sleep)** | Tap Wake Up → WakeUpSheet (time picker for both nap and night) |
 | **Branching Options (no active sleep)** | 1. Wake Up, 2. Nap, 3. Bedtime |
 | **Branching Options (active sleep)** | 1. Wake Up (only option shown) |
 | **Escape Routes** | Tap backdrop, drag down (handle bar) to dismiss |
@@ -351,7 +351,7 @@ All bottom sheets that show a drag handle support drag-to-dismiss; open/close us
 | **Component** | `ActivityCollisionModal` → `components/ActivityCollisionModal.tsx` |
 | **Primary Goal** | Resolve a time overlap between entries |
 | **Golden Path** | "Replace Entry" (delete old, save new) |
-| **Branching Options** | 1. Replace Entry, 2. Cancel |
+| **Branching Options** | 1. Replace Entry, 2. Adjust times (re-opens SleepEntrySheet with pending data), 3. Cancel |
 | **Escape Routes** | Cancel button, tap backdrop |
 
 ---

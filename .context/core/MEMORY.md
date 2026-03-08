@@ -104,7 +104,8 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 - **Section chips:** When there is sleep data, horizontal chips (Sleep summary, Naps, Night sleep, Growth) switch the content below. Selected chip is scrolled into view (center) so tapping Growth doesn’t push the row to the end. Growth charts (weight/height over time) show only in the Growth section — or in a dedicated block when there is no sleep data but there is growth data.
 - **Adaptive Y-axis:** Weight and height area charts use data-driven domains (min/max + padding, rounded to 0.5 kg / 5 cm) so e.g. 50–70 cm or 3–9 kg uses vertical space well; see lessons.md §15.3.
 
-### Sleep Report (Stats)
+### Sleep Report (Stats) — ⏸️ TEMPORARILY DISABLED (2026-03-07)
+- **Status:** Report section commented out in StatsView. Will be redesigned.
 - **Entry:** Stats tab → botón "Generate report (last 30 days)" (copy explícita: reporte cubre últimos 30 días).
 - **Alcance:** Reporte siempre sobre **últimos 30 días** de datos (independiente del date picker de Stats). Rationale: bebés varían mucho; padres necesitan una foto precisa y reciente.
 - **Vista:** SleepReportView (sub-view dentro de Stats). Secciones: Overview (tono cálido, sin fechas), Summary (tabla), Bedtime & wake times, Patterns we're seeing, What to try. Todas las listas con **icon bullets** (luna, sol, patrón, check) y mismo interlineado (`--night-color`). "Back to trends" vuelve a los charts.
@@ -255,6 +256,7 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-03-06 | Landing page redesign: testimonial carousel, product showcase (device-framed screenshots), mid-page CTA, removed Sleep Guides/Science sections, visual rhythm with --bg-mid bands, scroll-aware nav. |
 | 2026-03-06 | Waitlist email notification: Edge Function `waitlist-notify` sends styled email to getnapnap@gmail.com via Resend when visitor submits email on landing page. |
 | 2026-03-06 | Fix: createProfile .insert() → .upsert() to avoid 23505 duplicate key error for returning users. |
+| 2026-03-07 | UX/UI audit: 44 issues identified, 38 resolved, 3 deferred (report redesign). Touch targets, i18n, error states, save feedback, sign-out shortcut, ghost predictions tappable, nap wake-up time picker, collision "Adjust times", contact fallback. Glass-bg opacity fix (0.85 → 0.55 in light themes). Full audit in `.context/reference/ux-audit.md`. |
 
 ---
 

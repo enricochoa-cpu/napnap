@@ -158,8 +158,8 @@
   /* Sky gradient - subtle warm fade */
   --sky-gradient: linear-gradient(to bottom, #FFFBF2 0%, #FFFFFF 100%);
 
-  /* Glass effects - light mode with subtle border for definition */
-  --glass-bg: rgba(255, 255, 255, 0.85);
+  /* Glass effects - light mode: softer opacity so warm bg bleeds through */
+  --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
 
@@ -221,8 +221,8 @@
   /* Sky gradient - subtle cool fade */
   --sky-gradient: linear-gradient(to bottom, #FDF7F2 0%, #FFFFFF 100%);
 
-  /* Glass effects - light mode with subtle border for definition */
-  --glass-bg: rgba(255, 255, 255, 0.85);
+  /* Glass effects - light mode: softer opacity so warm bg bleeds through */
+  --glass-bg: rgba(255, 255, 255, 0.55);
   --glass-border: rgba(0, 0, 0, 0.06);
   --glass-nav-bg: rgba(255, 255, 255, 0.92);
 
@@ -1578,5 +1578,62 @@ select {
   .fade-in,
   .slide-up {
     animation: none !important;
+  }
+}
+
+/* ── Print styles (report export) ── */
+@media print {
+  /* Hide navigation, sky background, and non-report UI */
+  .floating-nav,
+  .sky-background,
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  /* White background, dark text for readability */
+  body,
+  html {
+    background: white !important;
+    color: #1a1a1a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Report content fills the page */
+  #sleep-report {
+    padding: 0 !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+  }
+
+  /* Convert glass cards to solid backgrounds */
+  #sleep-report section {
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  /* Ensure text is dark */
+  #sleep-report h1,
+  #sleep-report h2,
+  #sleep-report p,
+  #sleep-report li,
+  #sleep-report span {
+    color: #1a1a1a !important;
+  }
+
+  /* Section headers */
+  #sleep-report h2 {
+    color: #555 !important;
+  }
+
+  /* Stat values stay coloured for print — use data attributes instead of escaped Tailwind classes */
+  #sleep-report [data-print-nap] {
+    color: #5a8a86 !important;
+  }
+  #sleep-report [data-print-night] {
+    color: #6a729a !important;
   }
 }

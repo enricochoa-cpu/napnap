@@ -60,6 +60,7 @@ export function BabyDetailView({
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
 
   const { measurementLogs } = useGrowthLogs({ babyId: baby.id });
 
@@ -140,10 +141,11 @@ export function BabyDetailView({
       : t('babyDetail.viewProfile');
 
   // When user taps back: save first if there are valid unsaved changes, then navigate.
-  // This matches the expectation that "back" = done and keeps changes (many users never tap "Save").
+  // If changes exist but are invalid, warn before discarding.
   const handleBack = async () => {
     const dobOk = validateDateOfBirth(formData.dateOfBirth).valid;
     if (isOwner && hasChanges && isValid && dobOk && !isSaving) {
+      // Valid changes — auto-save
       setIsSaving(true);
       try {
         await Promise.resolve(onUpdate(formData));
@@ -154,6 +156,9 @@ export function BabyDetailView({
       } finally {
         setIsSaving(false);
       }
+    } else if (isOwner && hasChanges && !isValid) {
+      // Invalid changes — confirm discard
+      setShowDiscardConfirm(true);
     } else {
       onBack();
     }
@@ -254,31 +259,21 @@ export function BabyDetailView({
           )}
         </div>
 
-        {/* Measures — opens dedicated Measures view */}
-        {onOpenMeasures && (
-          <ListRow
-            icon={<MeasuresIcon />}
-            title={t('measures.title')}
-            subtitle={measurementLogs.length === 0 ? t('measures.empty') : t('measures.subtitleCount', { count: measurementLogs.length })}
-            onClick={onOpenMeasures}
-            iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
-          />
-        )}
       </div>
 
-      {/* Save button — only visible when form has unsaved changes */}
-      {isOwner && hasChanges && (
+      {/* Save button — always visible for owners; disabled when no changes */}
+      {isOwner && (
         <div>
           <button
             onClick={handleSave}
-            disabled={!isValid || isSaving}
+            disabled={!hasChanges || !isValid || isSaving}
             className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
-              isValid && !isSaving
+              hasChanges && isValid && !isSaving
                 ? 'bg-[var(--nap-color)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--nap-color)]/20'
                 : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
             }`}
             aria-busy={isSaving}
-            aria-describedby={!isValid ? 'save-helper' : undefined}
+            aria-describedby={hasChanges && !isValid ? 'save-helper' : undefined}
           >
             {isSaving ? (
               <>
@@ -289,12 +284,23 @@ export function BabyDetailView({
               t('profile.saveChanges')
             )}
           </button>
-          {!isValid && (
+          {hasChanges && !isValid && (
             <p id="save-helper" className="text-xs text-[var(--text-muted)] text-center mt-2">
               {t('babyDetail.nameBirthdayRequired')}
             </p>
           )}
         </div>
+      )}
+
+      {/* Measures — opens dedicated Measures view */}
+      {onOpenMeasures && (
+        <ListRow
+          icon={<MeasuresIcon />}
+          title={t('measures.title')}
+          subtitle={measurementLogs.length === 0 ? t('measures.empty') : t('measures.subtitleCount', { count: measurementLogs.length })}
+          onClick={onOpenMeasures}
+          iconColorClass="bg-[var(--nap-color)]/20 text-[var(--nap-color)]"
+        />
       )}
 
       {/* Section 2 — Sharing: same ListRow pattern as Measures (icon + title + count) */}
@@ -334,6 +340,18 @@ export function BabyDetailView({
         onCancel={() => setShowDeleteConfirm(false)}
         title={t('babyEdit.deleteProfileConfirmTitle')}
         description={t('babyEdit.deleteProfileConfirmDescription', { name: baby?.name || t('common.baby') })}
+      />
+
+      {/* Discard unsaved changes confirmation */}
+      <ConfirmationModal
+        isOpen={showDiscardConfirm}
+        onConfirm={() => {
+          setShowDiscardConfirm(false);
+          onBack();
+        }}
+        onCancel={() => setShowDiscardConfirm(false)}
+        title={t('babyDetail.discardChangesTitle')}
+        description={t('babyDetail.discardChangesDescription')}
       />
     </div>
   );

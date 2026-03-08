@@ -30,6 +30,44 @@ interface MeasureLogSheetProps {
   onDelete?: (id: string) => void | Promise<void>;
 }
 
+interface MeasureWarning {
+  suggestedValue: number;
+  unit: string;
+}
+
+function getMeasureWarning(
+  field: 'weight' | 'height' | 'head',
+  value: number | ''
+): MeasureWarning | null {
+  if (value === '' || value <= 0) return null;
+
+  if (field === 'weight') {
+    if (value <= 25) return null;
+    const suggested = value >= 100 ? value / 100 : value / 10;
+    if (suggested >= 1 && suggested <= 25) {
+      return { suggestedValue: Math.round(suggested * 100) / 100, unit: 'kg' };
+    }
+  }
+
+  if (field === 'height') {
+    if (value <= 120) return null;
+    const suggested = value / 10;
+    if (suggested >= 35 && suggested <= 120) {
+      return { suggestedValue: Math.round(suggested * 10) / 10, unit: 'cm' };
+    }
+  }
+
+  if (field === 'head') {
+    if (value <= 60) return null;
+    const suggested = value / 10;
+    if (suggested >= 25 && suggested <= 60) {
+      return { suggestedValue: Math.round(suggested * 10) / 10, unit: 'cm' };
+    }
+  }
+
+  return null;
+}
+
 function hasAtLeastOne(payload: { weightKg?: number | null; heightCm?: number | null; headCm?: number | null }): boolean {
   return (
     (payload.weightKg != null && payload.weightKg > 0) ||
@@ -203,6 +241,23 @@ export function MeasureLogSheet({
                       placeholder="0"
                       className="w-full rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] font-display focus:outline-none focus:ring-2 focus:ring-[var(--nap-color)]"
                     />
+                    {(() => {
+                      const w = getMeasureWarning('weight', weightKg);
+                      if (!w) return null;
+                      return (
+                        <p className="text-xs text-[var(--wake-color)] mt-1" role="alert">
+                          {t('measures.valueSeemsHigh')}{' '}
+                          <button
+                            type="button"
+                            onClick={() => setWeightKg(w.suggestedValue)}
+                            className="underline underline-offset-2 font-semibold"
+                          >
+                            {w.suggestedValue} {w.unit}
+                          </button>
+                          ?
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div>
                     <label htmlFor="measure-log-height" className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
@@ -218,6 +273,23 @@ export function MeasureLogSheet({
                       placeholder="0"
                       className="w-full rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] font-display focus:outline-none focus:ring-2 focus:ring-[var(--nap-color)]"
                     />
+                    {(() => {
+                      const w = getMeasureWarning('height', heightCm);
+                      if (!w) return null;
+                      return (
+                        <p className="text-xs text-[var(--wake-color)] mt-1" role="alert">
+                          {t('measures.valueSeemsHigh')}{' '}
+                          <button
+                            type="button"
+                            onClick={() => setHeightCm(w.suggestedValue)}
+                            className="underline underline-offset-2 font-semibold"
+                          >
+                            {w.suggestedValue} {w.unit}
+                          </button>
+                          ?
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div>
                     <label htmlFor="measure-log-head" className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
@@ -233,6 +305,23 @@ export function MeasureLogSheet({
                       placeholder="0"
                       className="w-full rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] font-display focus:outline-none focus:ring-2 focus:ring-[var(--nap-color)]"
                     />
+                    {(() => {
+                      const w = getMeasureWarning('head', headCm);
+                      if (!w) return null;
+                      return (
+                        <p className="text-xs text-[var(--wake-color)] mt-1" role="alert">
+                          {t('measures.valueSeemsHigh')}{' '}
+                          <button
+                            type="button"
+                            onClick={() => setHeadCm(w.suggestedValue)}
+                            className="underline underline-offset-2 font-semibold"
+                          >
+                            {w.suggestedValue} {w.unit}
+                          </button>
+                          ?
+                        </p>
+                      );
+                    })()}
                   </div>
                   <div>
                     <label htmlFor="measure-log-notes" className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">

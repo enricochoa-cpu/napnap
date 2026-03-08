@@ -27,6 +27,10 @@ interface SleepEntrySheetProps {
   saveError?: string | null;
   /** When true (e.g. "Wake up" with no active night): pre-fill end time with now and require it */
   defaultEndTimeToNow?: boolean;
+  /** Override initial start time (HH:mm) — used when pre-filling from predicted nap times */
+  initialStartTimeOverride?: string;
+  /** Override initial end time (HH:mm) — used when pre-filling from predicted nap times */
+  initialEndTimeOverride?: string;
 }
 
 // Icons
@@ -236,6 +240,8 @@ export function SleepEntrySheet({
   onDateChange,
   saveError = null,
   defaultEndTimeToNow = false,
+  initialStartTimeOverride,
+  initialEndTimeOverride,
 }: SleepEntrySheetProps) {
   const { t } = useTranslation();
   const isEditing = !!entry;
@@ -266,11 +272,12 @@ export function SleepEntrySheet({
         // Pre-fill end time with "now" for active entries — avoids native time input showing "--:--"
         setEndTime(entry.endTime ? extractTime(entry.endTime) : getCurrentTime());
       } else {
-        setStartTime(getDefaultTime(selectedDate, sleepType));
-        setEndTime(defaultEndTimeToNow ? getCurrentTime() : '');
+        // Use overrides (e.g. from predicted nap tap) or fall back to defaults
+        setStartTime(initialStartTimeOverride || getDefaultTime(selectedDate, sleepType));
+        setEndTime(initialEndTimeOverride || (defaultEndTimeToNow ? getCurrentTime() : ''));
       }
     }
-  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow]);
+  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
 
   // Check if values have changed
   const hasChanges = useMemo(() => {

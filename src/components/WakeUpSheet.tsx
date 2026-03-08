@@ -59,17 +59,17 @@ const RotateCWIcon = () => (
   </svg>
 );
 
-function formatRelativeTime(date: Date): string {
+function formatRelativeTime(date: Date, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  if (diffMs < 0) return 'just now';
+  if (diffMs < 0) return t('time.justNow');
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return 'just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffMins < 1) return t('time.justNow');
+  if (diffMins < 60) return t('time.minAgo', { count: diffMins });
   const hours = Math.floor(diffMins / 60);
   const mins = diffMins % 60;
-  if (mins === 0) return `${hours}h ago`;
-  return `${hours}h ${mins}m ago`;
+  if (mins === 0) return t('time.hoursAgo', { count: hours });
+  return t('time.hoursMinsAgo', { hours, minutes: mins });
 }
 
 function toTimeString(date: Date): string {
@@ -89,7 +89,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
     if (isOpen) {
       const now = new Date();
       setTimeValue(toTimeString(now));
-      setRelativeLabel(formatRelativeTime(now));
+      setRelativeLabel(formatRelativeTime(now, t));
     }
   }, [isOpen]);
 
@@ -105,9 +105,9 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
   // Refresh relative label every 30s
   useEffect(() => {
     if (!isOpen) return;
-    setRelativeLabel(formatRelativeTime(wakeDate()));
+    setRelativeLabel(formatRelativeTime(wakeDate(), t));
     const interval = setInterval(() => {
-      setRelativeLabel(formatRelativeTime(wakeDate()));
+      setRelativeLabel(formatRelativeTime(wakeDate(), t));
     }, 30000);
     return () => clearInterval(interval);
   }, [isOpen, timeValue, wakeDate]);
@@ -121,7 +121,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
       next.setHours(h, m, 0, 0);
       if (next.getTime() > Date.now()) return;
       if (bedtime && next.getTime() <= new Date(bedtime).getTime()) return;
-      setRelativeLabel(formatRelativeTime(next));
+      setRelativeLabel(formatRelativeTime(next, t));
     }
     setTimeValue(val);
   };
@@ -132,7 +132,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
     if (next.getTime() > Date.now()) return;
     if (bedtime && next.getTime() <= new Date(bedtime).getTime()) return;
     setTimeValue(toTimeString(next));
-    setRelativeLabel(formatRelativeTime(next));
+    setRelativeLabel(formatRelativeTime(next, t));
   }, [bedtime, wakeDate]);
 
   const handleConfirm = async () => {
@@ -253,47 +253,49 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                   {t('wakeUpSheet.title')}
                 </h2>
 
-                {/* Editable time — two plain inputs for perfect centering */}
-                <div className="flex items-baseline justify-center gap-1">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={2}
-                    aria-label={t('wakeUpSheet.ariaHours')}
-                    value={timeValue.split(':')[0] ?? ''}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                      const h = Math.min(Number(v) || 0, 23);
-                      const padded = v.length === 2 ? h.toString().padStart(2, '0') : v;
-                      handleFieldChange(padded, timeValue.split(':')[1] ?? '00');
-                    }}
-                    onBlur={() => {
-                      const [h] = timeValue.split(':');
-                      handleFieldChange(h.padStart(2, '0'), timeValue.split(':')[1] ?? '00');
-                    }}
-                    className="w-[2.4ch] text-right font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                    style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                  />
-                  <span className="font-display font-bold text-[var(--text-primary)]" style={{ fontSize: '3.5rem', lineHeight: 1.2 }} aria-hidden="true">:</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={2}
-                    aria-label={t('wakeUpSheet.ariaMinutes')}
-                    value={timeValue.split(':')[1] ?? ''}
-                    onChange={(e) => {
-                      const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                      const m = Math.min(Number(v) || 0, 59);
-                      const padded = v.length === 2 ? m.toString().padStart(2, '0') : v;
-                      handleFieldChange(timeValue.split(':')[0] ?? '00', padded);
-                    }}
-                    onBlur={() => {
-                      const [, m] = timeValue.split(':');
-                      handleFieldChange(timeValue.split(':')[0] ?? '00', (m ?? '00').padStart(2, '0'));
-                    }}
-                    className="w-[2.4ch] text-left font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                    style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                  />
+                {/* Editable time — padded wrapper for larger touch target */}
+                <div className="rounded-2xl px-6 py-3" style={{ background: 'color-mix(in srgb, var(--wake-color) 8%, transparent)' }}>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={2}
+                      aria-label={t('wakeUpSheet.ariaHours')}
+                      value={timeValue.split(':')[0] ?? ''}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const h = Math.min(Number(v) || 0, 23);
+                        const padded = v.length === 2 ? h.toString().padStart(2, '0') : v;
+                        handleFieldChange(padded, timeValue.split(':')[1] ?? '00');
+                      }}
+                      onBlur={() => {
+                        const [h] = timeValue.split(':');
+                        handleFieldChange(h.padStart(2, '0'), timeValue.split(':')[1] ?? '00');
+                      }}
+                      className="w-[2.4ch] text-right font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
+                      style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
+                    />
+                    <span className="font-display font-bold text-[var(--text-primary)]" style={{ fontSize: '3.5rem', lineHeight: 1.2 }} aria-hidden="true">:</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={2}
+                      aria-label={t('wakeUpSheet.ariaMinutes')}
+                      value={timeValue.split(':')[1] ?? ''}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
+                        const m = Math.min(Number(v) || 0, 59);
+                        const padded = v.length === 2 ? m.toString().padStart(2, '0') : v;
+                        handleFieldChange(timeValue.split(':')[0] ?? '00', padded);
+                      }}
+                      onBlur={() => {
+                        const [, m] = timeValue.split(':');
+                        handleFieldChange(timeValue.split(':')[0] ?? '00', (m ?? '00').padStart(2, '0'));
+                      }}
+                      className="w-[2.4ch] text-left font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
+                      style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
+                    />
+                  </div>
                 </div>
 
                 {/* Relative time */}
@@ -317,7 +319,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     >
                       <RotateCCWIcon />
                     </div>
-                    <span className="text-xs text-[var(--text-muted)]">-1 min</span>
+                    <span className="text-xs text-[var(--text-muted)]">{t('wakeUpSheet.decrementLabel')}</span>
                   </button>
 
                   <motion.button
@@ -332,7 +334,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                       backgroundColor: 'var(--wake-color)',
                       color: 'var(--bg-deep)',
                     }}
-                    aria-label={isSaving ? 'Saving…' : 'Confirm wake up'}
+                    aria-label={isSaving ? t('common.saving') : t('wakeUpSheet.ariaConfirmWakeUp')}
                     aria-busy={isSaving}
                   >
                     {isSaving ? (
@@ -356,7 +358,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                     >
                       <RotateCWIcon />
                     </div>
-                    <span className="text-xs text-[var(--text-muted)]">+1 min</span>
+                    <span className="text-xs text-[var(--text-muted)]">{t('wakeUpSheet.incrementLabel')}</span>
                   </button>
                 </div>
               </div>
