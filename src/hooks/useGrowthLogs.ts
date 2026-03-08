@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import type { WeightLog, HeightLog, MeasurementLog } from '../types';
+import type { WeightLog, HeightLog, HeadLog, MeasurementLog } from '../types';
 
 interface UseGrowthLogsOptions {
   babyId: string | null;
@@ -91,6 +91,20 @@ export function useGrowthLogs({ babyId }: UseGrowthLogsOptions) {
           babyId: m.babyId,
           date: m.date,
           valueCm: m.heightCm!,
+        })),
+    [measurementLogs]
+  );
+
+  /** Derived for StatsView: head-only entries (one per log that has head circumference). */
+  const headLogs = useMemo<HeadLog[]>(
+    () =>
+      measurementLogs
+        .filter((m) => m.headCm != null && m.headCm > 0)
+        .map((m) => ({
+          id: m.id,
+          babyId: m.babyId,
+          date: m.date,
+          valueCm: m.headCm!,
         })),
     [measurementLogs]
   );
@@ -226,6 +240,7 @@ export function useGrowthLogs({ babyId }: UseGrowthLogsOptions) {
     measurementLogs,
     weightLogs,
     heightLogs,
+    headLogs,
     loading,
     fetchLogs,
     addMeasurementLog,

@@ -8,6 +8,8 @@ interface ProfileMenuProps {
   userProfile?: UserProfile | null;
   /** When true, show a pending-task indicator on the My Babies row (e.g. invite to review). */
   hasPendingInvite?: boolean;
+  /** Optional sign-out shortcut directly from the menu. */
+  onSignOut?: () => void;
 }
 
 // Icons
@@ -23,6 +25,14 @@ const SupportIcon = () => (
     <circle cx="12" cy="12" r="10" />
     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const LogoutIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
   </svg>
 );
 
@@ -75,6 +85,7 @@ export function ProfileMenu({
   onNavigate,
   userProfile,
   hasPendingInvite = false,
+  onSignOut,
 }: ProfileMenuProps) {
   const { t } = useTranslation();
   const hour = new Date().getHours();
@@ -107,7 +118,7 @@ export function ProfileMenu({
           rightElement={
             hasPendingInvite ? (
               <span className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[var(--wake-color)] border border-[var(--bg-deep)] flex-shrink-0" aria-hidden />
+                <span className="w-3 h-3 rounded-full bg-[var(--wake-color)] border border-[var(--bg-deep)] flex-shrink-0" aria-hidden />
                 <ChevronRightIcon />
               </span>
             ) : undefined
@@ -126,6 +137,19 @@ export function ProfileMenu({
           iconColorClass="bg-[var(--night-color)]/20 text-[var(--night-color)]"
         />
       </div>
+
+      {/* Sign out shortcut */}
+      {onSignOut && (
+        <div>
+          <ListRow
+            icon={<LogoutIcon />}
+            title={t('profile.signOut')}
+            onClick={onSignOut}
+            iconColorClass="bg-[var(--danger-color)]/15 text-[var(--danger-color)]"
+            rightElement={<span />}
+          />
+        </div>
+      )}
     </div>
   );
 }

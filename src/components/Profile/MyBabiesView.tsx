@@ -187,6 +187,9 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
         </div>
       </button>
 
+      {/* Visual separator between edit and select zones */}
+      <div className="w-px self-stretch bg-[var(--text-muted)]/15 my-2 flex-shrink-0" aria-hidden />
+
       {/* Right: tap to set as active baby (sleep logs / Today / History refer to this baby) */}
       <button
         type="button"
@@ -194,7 +197,7 @@ function BabyProfileCard({ baby, isActive, onSelect, onEdit }: BabyProfileCardPr
           e.stopPropagation();
           onSelect();
         }}
-        className="flex-shrink-0 px-4 py-2 rounded-full min-w-[72px] touch-manipulation transition-colors active:scale-95 border text-xs font-display font-semibold"
+        className="flex-shrink-0 px-4 py-3 min-h-[48px] flex items-center justify-center rounded-full min-w-[72px] touch-manipulation transition-colors active:scale-95 border text-xs font-display font-semibold"
         title={isActive ? t('myBabies.selectedAria') : t('myBabies.selectAria')}
         aria-pressed={isActive}
         aria-label={isActive ? t('myBabies.selectedAria') : t('myBabies.selectAria')}

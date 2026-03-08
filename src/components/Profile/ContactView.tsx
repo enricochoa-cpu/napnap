@@ -23,13 +23,41 @@ function mailtoLink(email: string, subject?: string, body?: string): string {
   return query ? `mailto:${email}?${query}` : `mailto:${email}`;
 }
 
+const ClipboardIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
 export function ContactView({ onBack }: ContactViewProps) {
   const { t } = useTranslation();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const handleSendEmail = () => {
     window.location.href = mailtoLink(SUPPORT_EMAIL, subject.trim() || undefined, message.trim() || undefined);
+  };
+
+  const handleCopyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(SUPPORT_EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = SUPPORT_EMAIL;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -84,6 +112,14 @@ export function ContactView({ onBack }: ContactViewProps) {
         >
           <EmailIcon />
           <span>{t('contact.sendEmail')}</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleCopyEmail}
+          className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border border-[var(--text-muted)]/20 text-[var(--text-secondary)] font-display font-medium transition-all active:scale-[0.98]"
+        >
+          <ClipboardIcon />
+          <span>{copied ? t('contact.copied') : t('contact.copyEmail')}</span>
         </button>
         <p className="text-xs text-[var(--text-muted)] text-center">
           {t('contact.opensEmail', { email: SUPPORT_EMAIL })}

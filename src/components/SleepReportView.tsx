@@ -4,7 +4,7 @@
  * Report always uses the last 30 days of data so parents see a precise, recent picture.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { startOfDay, subDays } from 'date-fns';
 import type { SleepEntry } from '../types';
@@ -29,6 +29,14 @@ interface SleepReportViewProps {
 const BackIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
+  </svg>
+);
+
+const ShareIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+    <polyline points="16 6 12 2 8 6" />
+    <line x1="12" y1="2" x2="12" y2="15" />
   </svg>
 );
 
@@ -90,6 +98,39 @@ export function SleepReportView({
 
   const isEmpty = !data.flags.hasEnoughData;
 
+  /** Build a plain-text version of the report for sharing via Web Share API. */
+  const buildReportText = useCallback(() => {
+    const lines: string[] = [];
+    lines.push(t('report.title'));
+    lines.push(t('report.subtitle'));
+    lines.push('');
+    if (data.flags.hasEnoughData) {
+      lines.push(`${t('stats.avgTotalSleep')}: ${formatMinutesToHours(data.averages.avgTotal)}`);
+      lines.push(`${t('stats.avgNapsPerDay')}: ${data.averages.avgNapCount.toFixed(1)}`);
+      lines.push(`${t('stats.avgNapTime')}: ${formatMinutesToHours(data.averages.avgNapDuration)}`);
+      lines.push(`${t('stats.avgNightSleep')}: ${formatMinutesToHours(data.averages.avgNight)}`);
+    }
+    return lines.join('\n');
+  }, [data, t]);
+
+  const handleShare = useCallback(async () => {
+    const text = buildReportText();
+    // Try Web Share API first (mobile-native share sheets)
+    if (navigator.share && navigator.canShare?.({ text })) {
+      try {
+        await navigator.share({
+          title: t('report.title'),
+          text,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to print
+      }
+    }
+    // Fallback: open print dialog
+    window.print();
+  }, [buildReportText, t]);
+
   const overviewCopy = useMemo(() => {
     const name = data.babyName;
     const ageLabel = profile?.dateOfBirth ? formatAge(t, profile.dateOfBirth) : '';
@@ -101,9 +142,9 @@ export function SleepReportView({
   }, [data.babyName, profile?.dateOfBirth, profile?.gender, t]);
 
   return (
-    <div className="pb-32 px-6 fade-in">
-      {/* Header with Back */}
-      <div className="pt-6 pb-4 flex items-center gap-3">
+    <div id="sleep-report" className="pb-32 px-6 fade-in">
+      {/* Header with Back + Share */}
+      <div className="pt-6 pb-4 flex items-center gap-3 print:hidden">
         <button
           type="button"
           onClick={onBack}
@@ -120,6 +161,16 @@ export function SleepReportView({
             {t('report.subtitle')}
           </p>
         </div>
+        {!isEmpty && (
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center justify-center w-10 h-10 rounded-full text-[var(--text-primary)] hover:bg-[var(--bg-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--night-color)]"
+            aria-label={t('report.share')}
+          >
+            <ShareIcon />
+          </button>
+        )}
       </div>
 
       {isEmpty ? (
@@ -205,13 +256,13 @@ export function SleepReportView({
               </div>
               <div>
                 <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgNapTime')}</p>
-                <p className="text-lg font-display font-semibold text-[var(--nap-color)]">
+                <p className="text-lg font-display font-semibold text-[var(--nap-color)]" data-print-nap>
                   {formatMinutesToHours(data.averages.avgNapDuration)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-[var(--text-muted)] font-display">{t('stats.avgNightSleep')}</p>
-                <p className="text-lg font-display font-semibold text-[var(--night-color)]">
+                <p className="text-lg font-display font-semibold text-[var(--night-color)]" data-print-night>
                   {formatMinutesToHours(data.averages.avgNight)}
                 </p>
               </div>

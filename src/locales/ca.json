@@ -13,6 +13,7 @@
     "password": "Contrasenya",
     "loading": "Carregant...",
     "saving": "Desant…",
+    "saved": "Desat",
     "ariaGoBack": "Tornar",
     "ariaDelete": "Eliminar",
     "ariaClose": "Tancar",
@@ -248,7 +249,8 @@
     "editBabyInfo": "Edita les dades del teu nadó",
     "noBabies": "Encara no hi ha nadons",
     "noBabiesSubtitle": "Afegeix el teu primer nadó per començar a registrar el son",
-    "ageUnknown": "Edat desconeguda"
+    "ageUnknown": "Edat desconeguda",
+    "sharedBabyRemoved": "Un nadó compartit ja no està disponible"
   },
   "growth": {
     "babyWeight": "Pes del nadó",
@@ -264,13 +266,15 @@
     "editHeight": "Editar alçada",
     "addWeight": "Afegir pes",
     "addHeight": "Afegir alçada",
+    "addMeasurement": "Afegir mesura",
     "weightWarning": "Aquest valor és més baix que una entrada posterior. Pots desar igualment.",
     "heightWarning": "Aquest valor és més baix que una entrada posterior. Pots desar igualment.",
     "deleteConfirmTitle": "Eliminar aquesta entrada?",
     "deleteConfirmDescription": "S'eliminarà aquesta entrada de pes o alçada.",
     "weightOverTime": "Pes al llarg del temps",
     "heightOverTime": "Alçada al llarg del temps",
-    "noGrowthData": "Afegeix pes i alçada al perfil del nadó per veure el creixement aquí.",
+    "headOverTime": "Perímetre cranial al llarg del temps",
+    "noGrowthData": "Afegeix pes, alçada o cap al perfil del nadó per veure el creixement aquí.",
     "addAnotherToSeeTrend": "Afegeix un altre per veure la tendència",
     "viewAllEntries": "Veure tots ({{count}})",
     "showLess": "Veure menys"
@@ -291,6 +295,7 @@
     "notesOptional": "Notes (opcional)",
     "notesPlaceholder": "Afegir notes…",
     "atLeastOneRequired": "Afegeix almenys una mesura (pes, alçada o cap).",
+    "valueSeemsHigh": "Sembla molt alt — volies dir",
     "deleteMeasurement": "Eliminar mesura",
     "deleteConfirmTitle": "Eliminar aquesta mesura?",
     "deleteConfirmDescription": "S'eliminarà aquest registre.",
@@ -332,7 +337,9 @@
     "nameBirthdayRequired": "El nom i la data de naixement són obligatoris",
     "manageSharing": "Compartir perfil del nadó",
     "sharedCount": "{{count}} persones compartides",
-    "sharedCount_one": "1 persona compartida"
+    "sharedCount_one": "1 persona compartida",
+    "discardChangesTitle": "Descartar canvis?",
+    "discardChangesDescription": "Tens canvis sense desar que estan incomplets. Tornar enrere els descartarà."
   },
   "shareAccess": {
     "title": "Compartir perfil del nadó",
@@ -363,7 +370,9 @@
     "failedRevoke": "Error en revocar l'accés",
     "failedUpdateRole": "Error en actualitzar el rol",
     "failedAccept": "Error en acceptar la invitació",
-    "failedDecline": "Error en rebutjar la invitació"
+    "failedDecline": "Error en rebutjar la invitació",
+    "removeAccessConfirmTitle": "Treure accés?",
+    "removeAccessConfirmDescription": "Aquesta persona ja no podrà veure ni editar les dades de son del teu nadó."
   },
   "history": {
     "sleepLog": "Registre de son",
@@ -441,12 +450,15 @@
     "title": "Despertar",
     "subtitle": "El nadó s'ha despertat",
     "confirm": "Confirmar despertar",
-    "delete": "Eliminar nit",
+    "delete": "Eliminar registre",
     "ariaLogWakeUp": "Registrar hora de despertar",
     "ariaHours": "Hores",
     "ariaMinutes": "Minuts",
     "deleteEntryTitle": "Eliminar registre?",
-    "pleaseSetWakeUpTime": "Indica l'hora de despertar"
+    "pleaseSetWakeUpTime": "Indica l'hora de despertar",
+    "ariaConfirmWakeUp": "Confirmar despertar",
+    "decrementLabel": "-1 min",
+    "incrementLabel": "+1 min"
   },
   "missingBedtime": {
     "title": "Registrar l'hora de dormir d'ahir nit?",
@@ -466,7 +478,8 @@
     "stillOngoingShort": "· Encara en curs",
     "replaceEntry": "Reemplaçar registre",
     "replace": "Reemplaçar",
-    "cancel": "Cancel·lar"
+    "cancel": "Cancel·lar",
+    "adjustTimes": "Ajustar horaris"
   },
   "stats": {
     "title": "Tendències",
@@ -517,6 +530,7 @@
   "report": {
     "title": "Informe de son",
     "subtitle": "Últims 30 dies",
+    "share": "Compartir informe",
     "overviewNoAge": "Així ha dormit {{name}} fins ara. Això és el que veiem.",
     "overviewWithAge": "Així ha dormit {{name}} fins ara. {{pronoun}} {{ageLabel}} — això és el que veiem.",
     "pronounHe": "És",
@@ -628,6 +642,8 @@
     "subjectPlaceholder": "p. ex. Pregunta de privacitat, Ajuda amb el compte",
     "messagePlaceholder": "Escriu el teu missatge aquí...",
     "sendEmail": "Enviar correu",
+    "copyEmail": "Copiar adreça d'email",
+    "copied": "Copiat!",
     "opensEmail": "S'obrirà la teva app de correu i enviarà a {{email}}"
   },
   "loading": {

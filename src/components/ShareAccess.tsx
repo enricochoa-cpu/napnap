@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import type { BabyShare } from '../types';
+import { ConfirmationModal } from './ConfirmationModal';
 
 type ShareRole = 'caregiver' | 'viewer';
 
@@ -40,6 +41,9 @@ export function ShareAccess({
   const [editingRole, setEditingRole] = useState<ShareRole>('viewer');
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Revoke confirmation state
+  const [revokeShareId, setRevokeShareId] = useState<string | null>(null);
+
   // Edit sheet drag — opacity follows drag so swipe-down feels connected
   const shareSheetY = useMotionValue(0);
   const shareSheetBackdropOpacity = useTransform(shareSheetY, [0, 300], [1, 0]);
@@ -66,12 +70,18 @@ export function ShareAccess({
     setIsInviting(false);
   };
 
-  const handleRevoke = async (shareId: string) => {
+  const handleRevokeRequest = (shareId: string) => {
+    setRevokeShareId(shareId);
+  };
+
+  const handleRevokeConfirm = async () => {
+    if (!revokeShareId) return;
     setIsUpdating(true);
-    const result = await onRevokeAccess(shareId);
+    const result = await onRevokeAccess(revokeShareId);
     if (!result.success) {
       setError(result.error || t('shareAccess.failedRevoke'));
     }
+    setRevokeShareId(null);
     setSelectedShare(null);
     setIsUpdating(false);
   };
@@ -212,7 +222,9 @@ export function ShareAccess({
                 {t('shareAccess.roleCaregiver')}
               </button>
             </div>
-            <p className="text-xs text-[var(--text-muted)] mt-1.5">{t('shareAccess.roleHint')}</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1.5">
+              {role === 'viewer' ? t('shareAccess.viewerDesc') : t('shareAccess.caregiverDesc')}
+            </p>
           </div>
 
           <button
@@ -294,7 +306,7 @@ export function ShareAccess({
                     </div>
                   </div>
                   <button
-                    onClick={() => handleRevoke(share.id)}
+                    onClick={() => handleRevokeRequest(share.id)}
                     className="text-xs text-[var(--danger-color)] font-display px-3 py-1.5 flex-shrink-0 whitespace-nowrap"
                   >
                     {t('common.cancel')}
@@ -396,7 +408,9 @@ export function ShareAccess({
                       {t('shareAccess.roleCaregiver')}
                     </button>
                   </div>
-                  <p className="text-xs text-[var(--text-muted)] mt-1.5">{t('shareAccess.roleHint')}</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-1.5">
+                    {editingRole === 'viewer' ? t('shareAccess.viewerDesc') : t('shareAccess.caregiverDesc')}
+                  </p>
                 </div>
 
                 {/* Actions */}
@@ -410,7 +424,10 @@ export function ShareAccess({
                   </button>
 
                   <button
-                    onClick={() => handleRevoke(selectedShare.id)}
+                    onClick={() => {
+                      setSelectedShare(null);
+                      handleRevokeRequest(selectedShare.id);
+                    }}
                     disabled={isUpdating}
                     className="w-full py-3.5 rounded-xl text-[var(--danger-color)] font-display font-semibold bg-[var(--danger-color)]/10 hover:bg-[var(--danger-color)]/20 transition-colors disabled:opacity-50"
                   >
@@ -433,6 +450,15 @@ export function ShareAccess({
           </>
         )}
       </AnimatePresence>
+
+      {/* Revoke access confirmation modal */}
+      <ConfirmationModal
+        isOpen={!!revokeShareId}
+        onConfirm={handleRevokeConfirm}
+        onCancel={() => setRevokeShareId(null)}
+        title={t('shareAccess.removeAccessConfirmTitle')}
+        description={t('shareAccess.removeAccessConfirmDescription')}
+      />
     </div>
   );
 }

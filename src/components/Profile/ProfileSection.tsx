@@ -48,6 +48,8 @@ interface ProfileSectionProps {
   resetToMenuTrigger?: number;
   /** When the app uses an inner scroll container (e.g. for Chrome), call this to scroll it to top on sub-view change */
   onScrollToTop?: () => void;
+  /** Called when user taps back from a view that was entered directly via initialView (e.g. Measures from Stats) — returns to previous tab */
+  onExitProfile?: () => void;
 }
 
 export function ProfileSection({
@@ -77,11 +79,14 @@ export function ProfileSection({
   initialView = 'menu',
   resetToMenuTrigger,
   onScrollToTop,
+  onExitProfile,
 }: ProfileSectionProps) {
   const [currentView, setCurrentView] = useState<ProfileView>(initialView);
   const [selectedBabyId, setSelectedBabyId] = useState<string | null>(null);
   const previousView = useRef<ProfileView>('menu');
   const direction = useRef(1); // 1 = forward (drill in), -1 = backward (go back)
+  // Track whether current view was entered directly via initialView (from outside Profile, e.g. Stats → Measures)
+  const enteredExternally = useRef(initialView !== 'menu');
 
   // When user taps the Profile tab from any sub-view (e.g. Baby Detail), reset to menu so they land on Profile root
   useEffect(() => {
@@ -134,10 +139,17 @@ export function ProfileSection({
   const handleNavigateToMeasures = () => {
     previousView.current = currentView;
     direction.current = 1;
+    enteredExternally.current = false; // internal navigation, not from Stats
     setCurrentView('measures');
   };
 
   const handleBackFromMeasures = () => {
+    // When entered directly from another tab (e.g. Stats → Measures), go back to that tab
+    if (enteredExternally.current && onExitProfile) {
+      enteredExternally.current = false;
+      onExitProfile();
+      return;
+    }
     direction.current = -1;
     setCurrentView('baby-detail');
   };
@@ -187,7 +199,13 @@ export function ProfileSection({
   // navigation self-contained while still allowing high-level entry points to choose where to land.
   useEffect(() => {
     setCurrentView(initialView);
-  }, [initialView]);
+    // Views that require a selected baby — auto-select the active baby
+    if ((initialView === 'measures' || initialView === 'baby-detail') && activeBabyId) {
+      setSelectedBabyId(activeBabyId);
+    }
+    // Track external entry so back button can return to previous tab (e.g. Stats)
+    enteredExternally.current = initialView !== 'menu';
+  }, [initialView, activeBabyId]);
 
   const slideVariants = {
     initial: (d: number) => ({ x: d * 60, opacity: 0 }),
@@ -228,6 +246,7 @@ export function ProfileSection({
               onNavigate={handleNavigate}
               userProfile={userProfile}
               hasPendingInvite={pendingInvitations.length > 0}
+              onSignOut={onSignOut}
             />
           </motion.div>
         )}

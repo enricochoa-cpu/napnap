@@ -1,6 +1,6 @@
 # Progress
 
-**Last updated:** 2026-03-06 — Landing page redesign, waitlist email Edge Function, profile upsert fix. See logs/2026-03-06.md.
+**Last updated:** 2026-03-07 — UX audit implementation (38/44 items done), glass-bg opacity fix, report section deferred. See logs/2026-03-07.md.
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 
@@ -231,3 +231,55 @@ Audited all components and fixed every remaining `white/` and hardcoded hex colo
 ## Profile Bug Fix (2026-03-06) [COMPLETED]
 
 - [x] createProfile: .insert() → .upsert() to fix 23505 duplicate key for returning users
+
+## UX/UI Audit Implementation (2026-03-06 / 2026-03-07) [COMPLETED]
+
+Full screen-by-screen audit documented in `.context/reference/ux-audit.md`.
+44 issues identified, 38 resolved, 3 deferred (report redesign), 3 pending (low priority).
+
+**Quick Wins (1–7):** i18n fixes, touch target violations, delete account link visibility
+- [x] #1 WakeUpSheet i18n (WU-01, WU-02)
+- [x] #2 StatsView i18n — tooltips + calendar weekdays (S-04, S-05)
+- [x] #3 Measures edit button 44px (MV-01)
+- [x] #4 My Babies "Select" button min-h-[48px] (MB-02)
+- [x] #5 Language pill height min-h-[48px] (AS-01)
+- [x] #6 Modal button height py-4 (AS-06)
+- [x] #7 Delete Account link proper button (AS-03)
+
+**Medium Effort (8–14):** Save feedback toasts, error states, navigation fixes
+- [x] #8 Save feedback toasts (BD-01, MV-02, MB-03, AS-04)
+- [x] #9 Error states with retry (T-02)
+- [x] #10 Stats "Add weight" → direct MeasuresView navigation (S-02)
+- [x] #11 History empty state copy (H-01)
+- [x] #12 Loading skeletons — History, Stats (H-02, S-01)
+- [x] #13 Share role explanations (SA-01)
+- [x] #14 Privacy Policy shortcut in Settings (SP-03)
+
+**Significant Effort (15–20):** Tappable predictions, report export, collision modal, nap wake-up
+- [x] #15 Ghost predictions tappable → pre-fill SleepEntrySheet (T-01)
+- [x] #16 Report export — print/share (R-01)
+- [x] #17 Collision modal "Adjust times" option (AC-01)
+- [x] #18 Nap wake-up gets time picker via WakeUpSheet (QA-01)
+- [x] #19 Contact mailto fallback — "Copy email address" (SP-02)
+- [x] #20 Stale shared baby handling (SA-03)
+
+**Polish Pass (2026-03-07):** 14 remaining items resolved
+- [x] S-03: Report section temporarily disabled (deferred for redesign)
+- [x] PM-01: Sign-out shortcut added to Profile Menu (2 taps)
+- [x] PM-02: Pending invite dot increased to 12px
+- [x] MB-01 (My Babies): Visual separator between edit/select zones
+- [x] BD-02: Save button always visible (disabled when no changes)
+- [x] BD-03: Discard confirmation modal on back with unsaved changes
+- [x] MV-03: Inline CTA in Measures empty state
+- [x] SA-02: ConfirmationModal before revoking access
+- [x] AS-02: Edit profile button min-h-[48px]
+- [x] AS-05: Sign-out confirm button → --danger-color
+- [x] WU-03: Time input padded wrapper with wake-color tint
+- [x] MB-01 (Missing Bedtime): sessionStorage persistence per day
+- [x] AC-02: Collision modal buttons min-h-[48px]
+- [x] Glass-bg opacity fix: 0.85 → 0.55 in light themes (cards too white)
+
+**Remaining (3):**
+- [ ] T-03: Keyboard focus indicator on timeline cards
+- [ ] SP-01: "Still need help?" CTA at end of FAQs
+- [ ] SE-01: Save error retry guidance in SleepEntrySheet

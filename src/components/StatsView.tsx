@@ -37,10 +37,11 @@ import {
   isSameDay,
   isWithinInterval,
 } from 'date-fns';
-import type { SleepEntry, WeightLog, HeightLog } from '../types';
+import type { SleepEntry, WeightLog, HeightLog, HeadLog } from '../types';
 import type { BabyProfile } from '../types';
 import { getDateFnsLocale } from '../utils/dateFnsLocale';
-import { SleepReportView } from './SleepReportView';
+// [S-03] Report section temporarily disabled — will be redesigned in a future iteration.
+// import { SleepReportView } from './SleepReportView';
 
 /** X-axis tick: day name above date (Napper-style). Recharts passes payload as { value } or the value itself. */
 function DayDateTick(props: {
@@ -74,6 +75,7 @@ interface StatsViewProps {
   profile?: BabyProfile | null;
   weightLogs?: WeightLog[];
   heightLogs?: HeightLog[];
+  headLogs?: HeadLog[];
   /** Optional: when provided, one-point growth state shows a plus button that calls this (e.g. navigate to Profile to add). */
   onAddWeight?: () => void;
   /** Optional: when provided, one-point growth state shows a plus button that calls this. */
@@ -249,6 +251,7 @@ interface TooltipProps {
 }
 
 function CustomTooltip({ active, payload, label }: TooltipProps) {
+  const { t } = useTranslation();
   if (!active || !payload || !payload.length) return null;
 
   return (
@@ -256,7 +259,7 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
       <p className="text-xs text-[var(--text-muted)] mb-1">{label}</p>
       {payload.map((entry, index) => (
         <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
-          {entry.dataKey === 'nap' ? 'Naps' : 'Night'}: {formatHours(entry.value)}
+          {entry.dataKey === 'nap' ? t('history.naps') : t('history.night')}: {formatHours(entry.value)}
         </p>
       ))}
     </div>
@@ -378,13 +381,20 @@ function GrowthOnePointEmptyState({
           className="mt-3 w-full py-2.5 rounded-xl font-display font-medium text-sm flex items-center justify-center gap-2 transition-colors"
           style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: lineColor }}
         >
-          <span className="w-5 h-5 rounded-full flex items-center justify-center border-2 border-current" aria-hidden="true">+</span>
+          <PlusIcon />
           {addButtonLabel}
         </button>
       )}
     </div>
   );
 }
+
+const PlusIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+);
 
 // Calendar icon for date range control
 const CalendarIcon = () => (
@@ -653,14 +663,15 @@ function DateRangePickerSheet({
 
 export type StatsSection = 'summary' | 'naps' | 'night' | 'growth';
 
-export function StatsView({ entries, profile = null, weightLogs = [], heightLogs = [], onAddWeight, onAddHeight }: StatsViewProps) {
+export function StatsView({ entries, profile: _profile = null, weightLogs = [], heightLogs = [], headLogs = [], onAddWeight, onAddHeight }: StatsViewProps) {
   const { t } = useTranslation();
   // Date range state - default to last 7 days
   const today = new Date();
   const [endDate, setEndDate] = useState<Date>(today);
   const [startDate, setStartDate] = useState<Date>(subDays(today, 6));
   const [isRangePickerOpen, setIsRangePickerOpen] = useState(false);
-  const [showReport, setShowReport] = useState(false);
+  // [S-03] Report section temporarily disabled — will be redesigned in a future iteration.
+  // const [showReport, setShowReport] = useState(false);
   const [statsSection, setStatsSection] = useState<StatsSection>('summary');
   const chipRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -750,13 +761,13 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
 
     return {
       slices: [
-        { name: 'Night', value: totalNight },
-        { name: 'Day', value: totalNap },
+        { name: t('history.night'), value: totalNight },
+        { name: t('history.naps'), value: totalNap },
       ],
       nightPct,
       napPct,
     };
-  }, [rangeData]);
+  }, [rangeData, t]);
 
   // Daytime sleep distribution by nap slot (Nap 1, Nap 2, Nap 3…) for Napper-style donut in Naps section
   const napDistributionData = useMemo(() => {
@@ -1018,8 +1029,13 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
     () => adaptiveHeightDomain((heightLogs ?? []).map((l) => l.valueCm)),
     [heightLogs]
   );
+  const headDomain = useMemo(
+    () => adaptiveHeightDomain((headLogs ?? []).map((l) => l.valueCm)),
+    [headLogs]
+  );
   const weightTicks = useMemo(() => weightAxisTicks(weightDomain), [weightDomain]);
   const heightTicks = useMemo(() => heightAxisTicks(heightDomain), [heightDomain]);
+  const headTicks = useMemo(() => heightAxisTicks(headDomain), [headDomain]);
   // Filter out Y-axis ticks far below actual data to avoid "2 kg" overlapping the first X-axis label (e.g. "dl. 16/6")
   const weightTicksFiltered = useMemo(() => {
     const values = (weightLogs ?? []).map((l) => l.valueKg);
@@ -1035,6 +1051,13 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
     const filtered = heightTicks.filter((t) => t >= minVal - 5);
     return filtered.length > 0 ? filtered : heightTicks;
   }, [heightTicks, heightLogs]);
+  const headTicksFiltered = useMemo(() => {
+    const values = (headLogs ?? []).map((l) => l.valueCm);
+    if (values.length === 0) return headTicks;
+    const minVal = Math.min(...values);
+    const filtered = headTicks.filter((t) => t >= minVal - 5);
+    return filtered.length > 0 ? filtered : headTicks;
+  }, [headTicks, headLogs]);
   const locale = getDateFnsLocale();
   const weightChartData = useMemo(
     () =>
@@ -1051,6 +1074,14 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
         return { day: format(d, 'd/M'), dayName: format(d, 'EEE', { locale }), value: l.valueCm };
       }),
     [heightLogs, locale]
+  );
+  const headChartData = useMemo(
+    () =>
+      (headLogs ?? []).map((l) => {
+        const d = parseISO(l.date);
+        return { day: format(d, 'd/M'), dayName: format(d, 'EEE', { locale }), value: l.valueCm };
+      }),
+    [headLogs, locale]
   );
   const wakeUpTicks = useMemo(
     () => (wakeUpData ? timeOfDayAxisTicks(wakeUpData.domain) : []),
@@ -1071,15 +1102,16 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
   //   return { text: 'Building patterns', color: 'var(--wake-color)' };
   // }, [hasData, averages]);
 
-  if (showReport) {
-    return (
-      <SleepReportView
-        entries={entries}
-        profile={profile}
-        onBack={() => setShowReport(false)}
-      />
-    );
-  }
+  // [S-03] Report section temporarily disabled — will be redesigned in a future iteration.
+  // if (showReport) {
+  //   return (
+  //     <SleepReportView
+  //       entries={entries}
+  //       profile={profile}
+  //       onBack={() => setShowReport(false)}
+  //     />
+  //   );
+  // }
 
   return (
     <div className="pb-32 px-6 fade-in">
@@ -1232,7 +1264,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </div>
           </div> */}
 
-          {/* Sleep report row — below KPIs; single line to keep height minimal; premium-ready */}
+          {/* [S-03] Sleep report row — temporarily disabled; will be redesigned in a future iteration.
           <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
             <button
               type="button"
@@ -1257,6 +1289,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               </span>
             </button>
           </div>
+          */}
 
           {/* Sleep Distribution Donut */}
           {distributionData && (
@@ -1775,10 +1808,10 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
             </div>
           )}
 
-          {/* Section: Growth — weight & height charts */}
+          {/* Section: Growth — weight, height & head charts */}
           {statsSection === 'growth' && (
             <div className="space-y-4">
-              {weightLogs.length > 0 || heightLogs.length > 0 ? (
+              {weightLogs.length > 0 || heightLogs.length > 0 || headLogs.length > 0 ? (
                 <>
                   {weightLogs.length > 0 && (
                     weightChartData.length >= 2 ? (
@@ -1854,11 +1887,74 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
                       />
                     )
                   )}
+                  {headLogs.length > 0 && (
+                    headChartData.length >= 2 ? (
+                      <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                        <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                          {t('growth.headOverTime')}
+                        </h3>
+                        <div className="h-56 -mx-3" role="img" aria-label={t('growth.headOverTime')}>
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={headChartData}
+                              margin={CHART_MARGIN_GROWTH}
+                            >
+                              <defs>
+                                <linearGradient id="headGradientChip" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor={wakeColor} stopOpacity={0.4} />
+                                  <stop offset="95%" stopColor={wakeColor} stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                              <XAxis dataKey="day" tick={<DayDateTick data={headChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                              <YAxis width={Y_AXIS_WIDTH_LONG} domain={headDomain} ticks={headTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                              <Tooltip content={<GrowthTooltip unit="cm" />} />
+                              <Area type="monotone" dataKey="value" stroke={wakeColor} strokeWidth={3} fill="url(#headGradientChip)" />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+                    ) : (
+                      <GrowthOnePointEmptyState
+                        titleKey="growth.headOverTime"
+                        valueLabel={headChartData[0] ? `${headChartData[0].value} cm` : ''}
+                        addButtonLabel={t('growth.addMeasurement')}
+                        onAdd={onAddWeight || onAddHeight}
+                        lineColor={wakeColor}
+                      />
+                    )
+                  )}
+                  {(onAddWeight || onAddHeight) && (
+                    <div className="flex justify-center pt-2">
+                      <button
+                        type="button"
+                        onClick={onAddWeight || onAddHeight}
+                        className="px-5 py-2.5 rounded-xl font-display font-medium text-sm inline-flex items-center gap-2 transition-colors"
+                        style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: napColor }}
+                      >
+                        <PlusIcon />
+                        {t('growth.addMeasurement')}
+                      </button>
+                    </div>
+                  )}
                 </>
               ) : (
-                <p className="text-sm text-[var(--text-muted)] text-center py-8">
-                  {t('growth.noGrowthData')}
-                </p>
+                <div className="text-center py-8">
+                  <p className="text-sm text-[var(--text-muted)]">
+                    {t('growth.noGrowthData')}
+                  </p>
+                  {(onAddWeight || onAddHeight) && (
+                    <button
+                      type="button"
+                      onClick={onAddWeight || onAddHeight}
+                      className="mt-3 px-5 py-2.5 rounded-xl font-display font-medium text-sm inline-flex items-center gap-2 transition-colors"
+                      style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: napColor }}
+                    >
+                      <PlusIcon />
+                      {t('growth.addWeight')}
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -1866,7 +1962,7 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
       )}
 
       {/* When no sleep data but we have growth data, show growth charts or one-point empty state */}
-      {!hasData && (weightLogs.length > 0 || heightLogs.length > 0) && (
+      {!hasData && (weightLogs.length > 0 || heightLogs.length > 0 || headLogs.length > 0) && (
         <div className="mt-6 space-y-4">
           {weightLogs.length > 0 && (
             weightChartData.length >= 2 ? (
@@ -1942,14 +2038,77 @@ export function StatsView({ entries, profile = null, weightLogs = [], heightLogs
               />
             )
           )}
+          {headLogs.length > 0 && (
+            headChartData.length >= 2 ? (
+              <div className="rounded-3xl backdrop-blur-xl p-3" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+                <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] uppercase tracking-wider mb-2">
+                  {t('growth.headOverTime')}
+                </h3>
+                <div className="h-56 -mx-3" role="img" aria-label={t('growth.headOverTime')}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={headChartData}
+                      margin={CHART_MARGIN_GROWTH}
+                    >
+                      <defs>
+                        <linearGradient id="headGradientNoSleep" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={wakeColor} stopOpacity={0.4} />
+                          <stop offset="95%" stopColor={wakeColor} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={gridColor} strokeOpacity={0.1} vertical={false} />
+                      <XAxis dataKey="day" tick={<DayDateTick data={headChartData} />} tickLine={false} axisLine={false} padding={{ left: 0, right: 0 }} />
+                      <YAxis width={Y_AXIS_WIDTH_LONG} domain={headDomain} ticks={headTicksFiltered} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `${v} cm`} />
+                      <Tooltip content={<GrowthTooltip unit="cm" />} />
+                      <Area type="monotone" dataKey="value" stroke={wakeColor} strokeWidth={3} fill="url(#headGradientNoSleep)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            ) : (
+              <GrowthOnePointEmptyState
+                titleKey="growth.headOverTime"
+                valueLabel={headChartData[0] ? `${headChartData[0].value} cm` : ''}
+                addButtonLabel={t('growth.addMeasurement')}
+                onAdd={onAddWeight || onAddHeight}
+                lineColor={wakeColor}
+              />
+            )
+          )}
+          {(onAddWeight || onAddHeight) && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={onAddWeight || onAddHeight}
+                className="px-5 py-2.5 rounded-xl font-display font-medium text-sm inline-flex items-center gap-2 transition-colors"
+                style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: napColor }}
+              >
+                <PlusIcon />
+                {t('growth.addMeasurement')}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
       {/* Hint when no sleep data and no growth data */}
-      {!hasData && weightLogs.length === 0 && heightLogs.length === 0 && (
-        <p className="text-sm text-[var(--text-muted)] text-center mt-4">
-          {t('growth.noGrowthData')}
-        </p>
+      {!hasData && weightLogs.length === 0 && heightLogs.length === 0 && headLogs.length === 0 && (
+        <div className="text-center mt-4">
+          <p className="text-sm text-[var(--text-muted)]">
+            {t('growth.noGrowthData')}
+          </p>
+          {(onAddWeight || onAddHeight) && (
+            <button
+              type="button"
+              onClick={onAddWeight || onAddHeight}
+              className="mt-3 px-5 py-2.5 rounded-xl font-display font-medium text-sm inline-flex items-center gap-2 transition-colors"
+              style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', color: napColor }}
+            >
+              <PlusIcon />
+              {t('growth.addWeight')}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

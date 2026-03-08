@@ -46,6 +46,7 @@ export function AccountSettingsView({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const logoutDialogRef = useFocusTrap(showLogoutConfirm, () => setShowLogoutConfirm(false));
   const deleteDialogRef = useFocusTrap(showDeleteConfirm, () => setShowDeleteConfirm(false));
@@ -76,6 +77,8 @@ export function AccountSettingsView({
     e.preventDefault();
     onUpdateUser(formData);
     setIsEditingProfile(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   const getRoleDisplay = (role: string) => {
@@ -102,7 +105,7 @@ export function AccountSettingsView({
           <button
             type="button"
             onClick={() => currentLocale !== 'en' && onUpdateUser({ locale: 'en' })}
-            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
+            className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'en'
                 ? 'bg-[var(--night-color)] text-white'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
@@ -113,7 +116,7 @@ export function AccountSettingsView({
           <button
             type="button"
             onClick={() => currentLocale !== 'es' && onUpdateUser({ locale: 'es' })}
-            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
+            className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'es'
                 ? 'bg-[var(--night-color)] text-white'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
@@ -124,7 +127,7 @@ export function AccountSettingsView({
           <button
             type="button"
             onClick={() => currentLocale !== 'ca' && onUpdateUser({ locale: 'ca' })}
-            className={`flex-1 min-w-0 py-3 rounded-xl font-display font-medium transition-all ${
+            className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'ca'
                 ? 'bg-[var(--night-color)] text-white'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
@@ -144,7 +147,7 @@ export function AccountSettingsView({
           {!isEditingProfile && (
             <button
               onClick={() => setIsEditingProfile(true)}
-              className="text-[var(--nap-color)] text-sm font-medium font-display"
+              className="text-[var(--nap-color)] text-sm font-medium font-display min-h-[48px] px-3 flex items-center"
             >
               {t('common.edit')}
             </button>
@@ -236,6 +239,12 @@ export function AccountSettingsView({
             </div>
           </div>
         )}
+
+        {saveSuccess && (
+          <p className="text-center text-sm text-[var(--success-color)] font-display mt-3 fade-in">
+            {t('common.saved')}
+          </p>
+        )}
       </div>
 
       {/* Sign Out - Prominent standalone card */}
@@ -259,11 +268,23 @@ export function AccountSettingsView({
         </div>
       </button>
 
-      {/* Delete Account - Subtle text link at bottom */}
-      <div className="mt-8 text-center">
+      {/* Footer links — grouped */}
+      <div className="mt-8 flex flex-col items-center gap-0 rounded-2xl bg-[var(--bg-soft)] py-1">
+        {onNavigateToPrivacy && (
+          <button
+            type="button"
+            onClick={onNavigateToPrivacy}
+            className="w-full text-center text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors py-3 px-4 min-h-[48px]"
+          >
+            {t('auth.privacyPolicy')}
+          </button>
+        )}
+        {onNavigateToPrivacy && (
+          <div className="w-4/5 h-px bg-[var(--text-muted)]/10" />
+        )}
         <button
           onClick={() => setShowDeleteConfirm(true)}
-          className="text-xs text-[var(--text-muted)] opacity-50 hover:opacity-75 transition-opacity"
+          className="w-full text-center text-sm text-[var(--danger-color)]/60 hover:text-[var(--danger-color)] transition-colors py-3 px-4 min-h-[48px]"
         >
           {t('profile.deleteAccount')}
         </button>
@@ -297,7 +318,7 @@ export function AccountSettingsView({
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
                 >
                   {t('common.cancel')}
                 </button>
@@ -306,7 +327,7 @@ export function AccountSettingsView({
                     setShowLogoutConfirm(false);
                     onSignOut();
                   }}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--night-color)] text-white font-display font-semibold"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold"
                 >
                   {t('profile.signOut')}
                 </button>
@@ -372,14 +393,14 @@ export function AccountSettingsView({
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={isDeletingAccount}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium disabled:opacity-50"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium disabled:opacity-50"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => onDeleteAccount()}
                   disabled={isDeletingAccount}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
                 >
                   {isDeletingAccount ? t('profile.deleting') : t('profile.deleteAccount')}
                 </button>

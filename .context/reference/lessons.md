@@ -511,3 +511,28 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Removed sections:** Sleep Guides, Sleep Science (low conversion value, added bulk).
 - **Visual rhythm:** Alternating full-bleed `--bg-mid` bands break monotony. Product showcase uses existing `.device-frame` CSS.
 - **Nav:** Scroll-aware solid background (`.glass-nav-landing--solid`) after 200px scroll. Links: How it works, The app, FAQ.
+
+## 20. UX Audit — Implementation Patterns (2026-03-07)
+
+### 20.1 Glass Background Opacity in Light Themes
+**Date:** 2026-03-07
+
+- **Problem:** Cards using `var(--glass-bg)` appeared as solid white blocks in morning/afternoon themes, looking disconnected from the warm cream page background.
+- **Root Cause:** `--glass-bg: rgba(255, 255, 255, 0.85)` was too opaque in light mode. On the warm cream page (`#FFFBF2`), nearly-opaque white creates a stark contrast.
+- **Permanent Fix:** Reduced `--glass-bg` to `rgba(255, 255, 255, 0.55)` in both morning and afternoon themes. This lets the background warmth bleed through while maintaining card readability. Nav bar stays at `0.92` opacity for legibility.
+- **Reusable rule:** Glass surfaces in light themes need lower opacity (~0.5–0.6) than dark themes (~0.7) because the contrast between glass-bg and page-bg is more visible in light mode.
+
+### 20.2 Missing Bedtime Dismissal Persistence
+**Date:** 2026-03-07
+
+- **Problem:** `MissingBedtimeModal` used `useState(true)` — re-appeared on every page refresh within the same session.
+- **Root Cause:** No persistence of dismissal state.
+- **Permanent Fix:** Use `sessionStorage` keyed to today's date (`format(new Date(), 'yyyy-MM-dd')`). On dismiss, store the date. On init, if stored date matches today, start with `false`. Resets naturally the next day.
+- **Reusable rule:** For "dismiss once per day" UI patterns, store the dismissal date in sessionStorage (per tab session) rather than localStorage (which persists too long).
+
+### 20.3 Save Button Placement in Detail Views
+**Date:** 2026-03-07
+
+- **Problem:** Save button in BabyDetailView was positioned after the Measures and Share navigation rows — easy to miss, and logically confusing (save profile data appears after navigation actions).
+- **Permanent Fix:** Moved Save button to appear immediately after the form fields (before Measures row). Order: Profile fields → Gender → **Save button** → Measures row → Share row → Delete.
+- **Reusable rule:** Save/submit buttons should appear directly after the form fields they save, before any navigation rows that lead to other views.

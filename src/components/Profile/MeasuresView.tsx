@@ -128,9 +128,19 @@ export function MeasuresView({ baby, canEdit, onBack }: MeasuresViewProps) {
             {t('measures.empty')}
           </p>
           {canEdit && (
-            <p className="text-sm text-[var(--text-muted)] mt-2">
-              {t('measures.emptyHint')}
-            </p>
+            <>
+              <p className="text-sm text-[var(--text-muted)] mt-2">
+                {t('measures.emptyHint')}
+              </p>
+              <button
+                type="button"
+                onClick={handleOpenAdd}
+                className="mt-4 inline-flex items-center gap-2 px-5 py-3 min-h-[48px] rounded-xl bg-[var(--nap-color)] text-[var(--text-on-accent)] font-display font-semibold text-sm transition-all active:scale-[0.97]"
+              >
+                <AddIcon />
+                {t('measures.addMeasurement')}
+              </button>
+            </>
           )}
         </div>
       ) : (
@@ -146,7 +156,7 @@ export function MeasuresView({ baby, canEdit, onBack }: MeasuresViewProps) {
                   <button
                     type="button"
                     onClick={() => handleOpenEdit(log)}
-                    className="p-2 rounded-full text-[var(--text-muted)] hover:text-[var(--nap-color)] hover:bg-[var(--nap-color)]/10 transition-colors"
+                    className="w-11 h-11 flex items-center justify-center rounded-full text-[var(--text-muted)] hover:text-[var(--nap-color)] hover:bg-[var(--nap-color)]/10 transition-colors"
                     aria-label={t('measures.editMeasurement')}
                   >
                     <EditIcon />

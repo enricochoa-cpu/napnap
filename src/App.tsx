@@ -8,7 +8,7 @@ import { ActivityCollisionModal } from './components/ActivityCollisionModal';
 import { MissingBedtimeModal } from './components/MissingBedtimeModal';
 import { TodayView } from './components/TodayView';
 import { SkyBackground } from './components/SkyBackground';
-import { ProfileSection } from './components/Profile';
+import { ProfileSection, type ProfileView } from './components/Profile';
 import { SleepEntrySheet } from './components/SleepEntrySheet';
 import { WakeUpSheet } from './components/WakeUpSheet';
 import { QuickActionSheet } from './components/QuickActionSheet';
@@ -128,7 +128,7 @@ function App() {
     loading: entriesLoading,
   } = useSleepEntries({ babyId: activeBabyId });
 
-  const { weightLogs, heightLogs } = useGrowthLogs({ babyId: activeBabyId });
+  const { weightLogs, heightLogs, headLogs } = useGrowthLogs({ babyId: activeBabyId });
 
   const hasPendingBabyInvite = pendingInvitations.length > 0;
 
@@ -174,11 +174,19 @@ function App() {
   const [showWakeUpSheet, setShowWakeUpSheet] = useState(false);
   const [wakeUpEntry, setWakeUpEntry] = useState<SleepEntry | null>(null);
   const [newEntryType, setNewEntryType] = useState<'nap' | 'night'>('nap');
-  const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
+  const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(() => {
+    // Persist dismissal across page refreshes within the same session
+    const dismissed = sessionStorage.getItem('missingBedtimeDismissed');
+    if (dismissed === format(new Date(), 'yyyy-MM-dd')) return false;
+    return true;
+  });
   const [entrySheetError, setEntrySheetError] = useState<string | null>(null);
   const [logWakeUpMode, setLogWakeUpMode] = useState(false);
+  /** Pre-filled start/end times from predicted nap tap (HH:mm format) */
+  const [predictedStartTime, setPredictedStartTime] = useState<string | undefined>();
+  const [predictedEndTime, setPredictedEndTime] = useState<string | undefined>();
   const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
-  const [profileInitialView, setProfileInitialView] = useState<'menu' | 'my-babies'>('menu');
+  const [profileInitialView, setProfileInitialView] = useState<ProfileView>('menu');
   /** Incremented when user taps Profile tab so ProfileSection resets to menu (tap tab = go to Profile root). */
   const [profileTabTapCount, setProfileTabTapCount] = useState(0);
 
@@ -304,6 +312,26 @@ function App() {
     handleViewChange('home');
   };
 
+  /** "Adjust times" from collision modal: dismiss modal, re-open entry sheet with the pending times. */
+  const handleAdjustCollision = () => {
+    if (pendingEntry) {
+      const startDate = parseISO(pendingEntry.startTime);
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      setPredictedStartTime(`${pad(startDate.getHours())}:${pad(startDate.getMinutes())}`);
+      if (pendingEntry.endTime) {
+        const endDate = parseISO(pendingEntry.endTime);
+        setPredictedEndTime(`${pad(endDate.getHours())}:${pad(endDate.getMinutes())}`);
+      } else {
+        setPredictedEndTime(undefined);
+      }
+      setNewEntryType(pendingEntry.type);
+      setEditingEntry(null);
+      setShowEntrySheet(true);
+    }
+    setCollisionEntry(null);
+    setPendingEntry(null);
+  };
+
   const handleEdit = (entry: SleepEntry) => {
     setEditingEntry(entry);
     setSelectedDate(entry.date);
@@ -319,8 +347,21 @@ function App() {
     }
     setEditingEntry(null);
     setNewEntryType(type);
+    setPredictedStartTime(undefined);
+    setPredictedEndTime(undefined);
     setShowEntrySheet(true);
     setShowActionMenu(false);
+  };
+
+  /** Open SleepEntrySheet pre-filled with predicted nap times (from tapping ghost card in TodayView). */
+  const handleStartPredictedNap = (startTime: Date, endTime: Date) => {
+    setEditingEntry(null);
+    setNewEntryType('nap');
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    setPredictedStartTime(`${pad(startTime.getHours())}:${pad(startTime.getMinutes())}`);
+    setPredictedEndTime(`${pad(endTime.getHours())}:${pad(endTime.getMinutes())}`);
+    setSelectedDate(formatDate(new Date()));
+    setShowEntrySheet(true);
   };
 
   // Handle "Log bedtime" from missing bedtime modal
@@ -335,10 +376,20 @@ function App() {
   // Handle "Start a new day" from missing bedtime modal
   const handleSkipMissingBedtime = () => {
     setShowMissingBedtimeModal(false);
+    // Persist dismissal so it doesn't reappear on page refresh within the same session
+    sessionStorage.setItem('missingBedtimeDismissed', format(new Date(), 'yyyy-MM-dd'));
   };
 
   const handleEndSleep = (id: string) => {
-    endSleep(id, formatDateTime(new Date()));
+    // Route all wake-ups (naps AND nights) through WakeUpSheet for time picker
+    const entry = entries.find((e) => e.id === id);
+    if (entry) {
+      setWakeUpEntry(entry);
+      setShowWakeUpSheet(true);
+    } else {
+      // Fallback: entry not found, end immediately
+      endSleep(id, formatDateTime(new Date()));
+    }
     setShowActionMenu(false);
   };
 
@@ -409,13 +460,28 @@ function App() {
           </button>
         )}
       </div>
-      <SleepList
-        entries={dayEntries}
-        allEntries={entries}
-        selectedDate={selectedDate}
-        onEdit={handleEdit}
-        onEndSleep={handleEndSleep}
-      />
+      {entriesLoading ? (
+        <div className="space-y-2">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="card p-4 flex items-center gap-3 animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-[var(--text-muted)]/10" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 w-24 bg-[var(--text-muted)]/10 rounded" />
+                <div className="h-3 w-16 bg-[var(--text-muted)]/10 rounded" />
+              </div>
+              <div className="h-3 w-12 bg-[var(--text-muted)]/10 rounded" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <SleepList
+          entries={dayEntries}
+          allEntries={entries}
+          selectedDate={selectedDate}
+          onEdit={handleEdit}
+          onEndSleep={handleEndSleep}
+        />
+      )}
     </div>
   );
 
@@ -426,8 +492,15 @@ function App() {
       profile={activeBabyProfile || profile}
       weightLogs={weightLogs}
       heightLogs={heightLogs}
-      onAddWeight={() => handleViewChange('profile')}
-      onAddHeight={() => handleViewChange('profile')}
+      headLogs={headLogs}
+      onAddWeight={() => {
+        setProfileInitialView('measures');
+        handleViewChange('profile');
+      }}
+      onAddHeight={() => {
+        setProfileInitialView('measures');
+        handleViewChange('profile');
+      }}
     />
   );
 
@@ -460,6 +533,11 @@ function App() {
       initialView={profileInitialView}
       resetToMenuTrigger={profileTabTapCount}
       onScrollToTop={scrollMainToTop}
+      onExitProfile={() => {
+        // Return to previous tab (e.g. Stats) when user taps back from an externally-entered view
+        setProfileInitialView('menu');
+        handleViewChange(previousView.current);
+      }}
     />
   );
 
@@ -567,6 +645,7 @@ function App() {
                   setProfileInitialView('menu');
                   handleViewChange('profile');
                 }}
+                onStartPredictedNap={handleStartPredictedNap}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
@@ -698,13 +777,7 @@ function App() {
         }}
         hasActiveSleep={!!activeSleep}
         onEndSleep={activeSleep ? () => {
-          if (activeSleep.type === 'night') {
-            setWakeUpEntry(activeSleep);
-            setShowWakeUpSheet(true);
-          } else {
-            handleEndSleep(activeSleep.id);
-          }
-          setShowActionMenu(false);
+          handleEndSleep(activeSleep.id);
         } : undefined}
       />
 
@@ -721,6 +794,7 @@ function App() {
         <ActivityCollisionModal
           existingEntry={collisionEntry}
           onReplace={handleReplaceEntry}
+          onAdjust={handleAdjustCollision}
           onCancel={() => {
             setCollisionEntry(null);
             setPendingEntry(null);
@@ -738,6 +812,8 @@ function App() {
           setEditingEntry(null);
           setEntrySheetError(null);
           setLogWakeUpMode(false);
+          setPredictedStartTime(undefined);
+          setPredictedEndTime(undefined);
         }}
         onSave={handleAddEntry}
         onDelete={deleteEntry}
@@ -745,6 +821,8 @@ function App() {
         onDateChange={setSelectedDate}
         saveError={entrySheetError}
         defaultEndTimeToNow={logWakeUpMode}
+        initialStartTimeOverride={predictedStartTime}
+        initialEndTimeOverride={predictedEndTime}
       />
 
       {/* Wake Up Sheet — Napper-style focused modal for ending night sleep */}

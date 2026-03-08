@@ -96,6 +96,7 @@ export function useBabyProfile() {
         const { data: sharesData, error: sharesError } = await supabase
           .from('baby_shares')
           .select(`
+            id,
             baby_owner_id,
             profiles:baby_owner_id (
               id,
@@ -113,6 +114,8 @@ export function useBabyProfile() {
           // Table might not exist yet - this is OK
           console.log('Note: baby_shares table not available yet');
         } else if (sharesData) {
+          const staleShareIds: string[] = [];
+
           for (const share of sharesData) {
             // Type assertion needed because Supabase join typing infers array incorrectly
             const p = share.profiles as unknown as {
@@ -124,7 +127,13 @@ export function useBabyProfile() {
               user_name: string | null;
             } | null;
 
-            if (p && p.id !== user.id) {
+            // Stale share: accepted but owner deleted their profile or baby
+            if (!p || !p.baby_name) {
+              staleShareIds.push(share.id);
+              continue;
+            }
+
+            if (p.id !== user.id) {
               sharedBabies.push({
                 id: p.id,
                 name: p.baby_name || '',
@@ -135,6 +144,18 @@ export function useBabyProfile() {
                 ownerName: p.user_name || undefined,
               });
             }
+          }
+
+          // Auto-clean stale shares in background (fire-and-forget)
+          if (staleShareIds.length > 0) {
+            console.log('Cleaning stale shared baby rows:', staleShareIds);
+            supabase
+              .from('baby_shares')
+              .update({ status: 'revoked' })
+              .in('id', staleShareIds)
+              .then(({ error: cleanupError }) => {
+                if (cleanupError) console.error('Error cleaning stale shares:', cleanupError);
+              });
           }
         }
       } catch {
