@@ -8,6 +8,7 @@ interface ConfirmationModalProps {
   title: string;
   description: string;
   confirmLabel?: string;
+  cancelLabel?: string;
   confirmVariant?: 'danger' | 'primary';
   icon?: ReactNode;
 }
@@ -28,6 +29,7 @@ export function ConfirmationModal({
   title,
   description,
   confirmLabel = 'Delete',
+  cancelLabel,
   confirmVariant = 'danger',
   icon,
 }: ConfirmationModalProps) {
@@ -77,7 +79,7 @@ export function ConfirmationModal({
             onClick={onCancel}
             className="btn btn-secondary flex-1"
           >
-            Cancel
+            {cancelLabel || 'Cancel'}
           </button>
           <button
             onClick={onConfirm}

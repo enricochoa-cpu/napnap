@@ -27,6 +27,10 @@ interface SleepEntrySheetProps {
   saveError?: string | null;
   /** When true (e.g. "Wake up" with no active night): pre-fill end time with now and require it */
   defaultEndTimeToNow?: boolean;
+  /** Pre-fill start time for new entries (HH:mm format). Used when opening from predicted nap "Open nap" */
+  prefillStartTime?: string;
+  /** Pre-fill end time for new entries (HH:mm format). Used when opening from predicted nap "Open nap" */
+  prefillEndTime?: string;
 }
 
 // Icons
@@ -236,6 +240,8 @@ export function SleepEntrySheet({
   onDateChange,
   saveError = null,
   defaultEndTimeToNow = false,
+  prefillStartTime,
+  prefillEndTime,
 }: SleepEntrySheetProps) {
   const { t } = useTranslation();
   const isEditing = !!entry;
@@ -266,11 +272,11 @@ export function SleepEntrySheet({
         // Pre-fill end time with "now" for active entries — avoids native time input showing "--:--"
         setEndTime(entry.endTime ? extractTime(entry.endTime) : getCurrentTime());
       } else {
-        setStartTime(getDefaultTime(selectedDate, sleepType));
-        setEndTime(defaultEndTimeToNow ? getCurrentTime() : '');
+        setStartTime(prefillStartTime || getDefaultTime(selectedDate, sleepType));
+        setEndTime(prefillEndTime || (defaultEndTimeToNow ? getCurrentTime() : ''));
       }
     }
-  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow]);
+  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow, prefillStartTime, prefillEndTime]);
 
   // Check if values have changed
   const hasChanges = useMemo(() => {

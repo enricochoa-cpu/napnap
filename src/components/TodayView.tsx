@@ -40,6 +40,17 @@ interface TodayViewProps {
   hasPendingInvite?: boolean;
   /** Optional handler for the invite CTA (e.g. navigate to Profile to review invites). */
   onPendingInviteClick?: () => void;
+  /** Handler when a predicted nap ghost card is tapped. Passes full prediction data for the sheet. */
+  onStartPredictedNap?: (data: {
+    displayStart: Date;
+    expectedEnd: Date;
+    expectedDuration: number;
+    isCatnap: boolean;
+    napNumber: number;
+    napIndex: number;
+  }) => void;
+  /** Indices of naps that the user has skipped — those ghost cards are hidden. */
+  skippedNapIndices?: Set<number>;
 }
 
 // Get today's completed naps
@@ -136,6 +147,8 @@ export function TodayView({
   onAddBabyClick,
   hasPendingInvite = false,
   onPendingInviteClick,
+  onStartPredictedNap,
+  skippedNapIndices,
 }: TodayViewProps) {
   const { t } = useTranslation();
   // Force re-render every minute for live countdowns
@@ -803,36 +816,68 @@ export function TodayView({
               </motion.div>
             )}
 
-            {/* Predicted Naps - Ghost Cards */}
-            {[...displayPredictions].reverse().map((napInfo, index) => {
+            {/* Predicted Naps - Ghost Cards (tappable → opens PredictedNapSheet) */}
+            {[...displayPredictions].reverse()
+              .map((napInfo, _reverseIdx) => {
+              const originalIndex = displayPredictions.indexOf(napInfo);
+              const isSkipped = skippedNapIndices?.has(originalIndex) ?? false;
               // When overdue, show original suggested time in the card so user sees "expected nap"; keep anchor math using napInfo.time
               const displayStart = napInfo.isOverdue && napInfo.prediction.predictedTime
                 ? napInfo.prediction.predictedTime
                 : napInfo.time;
               const expectedEnd = addMinutes(displayStart, napInfo.expectedDuration);
-              const reversedIndex = displayPredictions.length - index;
-              const napNumber = todayNaps.length + (activeSleep?.type === 'nap' ? 1 : 0) + reversedIndex;
+              // Count non-skipped naps before this one to calculate accurate napNumber
+              const skippedBefore = skippedNapIndices
+                ? [...skippedNapIndices].filter(i => i < originalIndex).length
+                : 0;
+              const napNumber = todayNaps.length + (activeSleep?.type === 'nap' ? 1 : 0) + (originalIndex + 1) - skippedBefore;
               return (
                 <motion.div
-                  key={`predicted-${index}`}
+                  key={`predicted-${originalIndex}`}
                   variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}
                 >
-                  <div
-                    className="relative py-3 px-4 flex items-center gap-3 rounded-2xl border border-[var(--nap-color)]/30"
-                    style={{ background: 'color-mix(in srgb, var(--nap-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}
+                  <button
+                    type="button"
+                    onClick={() => onStartPredictedNap?.({
+                      displayStart,
+                      expectedEnd,
+                      expectedDuration: napInfo.expectedDuration,
+                      isCatnap: napInfo.isCatnap,
+                      napNumber,
+                      napIndex: originalIndex,
+                    })}
+                    className={`relative py-3 px-4 flex items-center gap-3 rounded-2xl border w-full text-left ${
+                      isSkipped
+                        ? 'border-[var(--text-muted)]/20 opacity-50'
+                        : 'border-[var(--nap-color)]/30'
+                    }`}
+                    style={{
+                      background: isSkipped
+                        ? 'color-mix(in srgb, var(--text-muted) 5%, var(--bg-card))'
+                        : 'color-mix(in srgb, var(--nap-color) 8%, var(--bg-card))',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
                   >
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed border-[var(--nap-color)]/40 text-[var(--nap-color)]/70 z-10">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 border-dashed z-10 ${
+                      isSkipped
+                        ? 'border-[var(--text-muted)]/30 text-[var(--text-muted)]/50'
+                        : 'border-[var(--nap-color)]/40 text-[var(--nap-color)]/70'
+                    }`}>
                       <CloudIcon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-wider">
-                        {napInfo.isCatnap ? t('today.shortNap') : t('today.napOrdinal', { n: napNumber })}
+                        {isSkipped
+                          ? t('predictedNap.skippedNap')
+                          : napInfo.isCatnap ? t('today.shortNap') : t('today.napOrdinal', { n: napNumber })}
                       </p>
                       <p className="text-[var(--text-secondary)] font-display font-semibold text-base">
-                        {formatTime(displayStart)} — {formatTime(expectedEnd)}
+                        {isSkipped
+                          ? formatTime(displayStart)
+                          : `${formatTime(displayStart)} — ${formatTime(expectedEnd)}`}
                       </p>
                     </div>
-                  </div>
+                  </button>
                 </motion.div>
               );
             })}
