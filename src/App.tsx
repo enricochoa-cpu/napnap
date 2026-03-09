@@ -11,6 +11,7 @@ import { SkyBackground } from './components/SkyBackground';
 import { ProfileSection } from './components/Profile';
 import { SleepEntrySheet } from './components/SleepEntrySheet';
 import { WakeUpSheet } from './components/WakeUpSheet';
+import { PredictedNapSheet, type PredictedNapData } from './components/PredictedNapSheet';
 import { QuickActionSheet } from './components/QuickActionSheet';
 import { StatsView } from './components/StatsView';
 import { useBabyProfile } from './hooks/useBabyProfile';
@@ -177,6 +178,9 @@ function App() {
   const [showMissingBedtimeModal, setShowMissingBedtimeModal] = useState(true);
   const [entrySheetError, setEntrySheetError] = useState<string | null>(null);
   const [logWakeUpMode, setLogWakeUpMode] = useState(false);
+  const [showPredictedNapSheet, setShowPredictedNapSheet] = useState(false);
+  const [predictedNapData, setPredictedNapData] = useState<PredictedNapData | null>(null);
+  const [skippedNapIndices, setSkippedNapIndices] = useState<Set<number>>(new Set());
   const [requestOpenAddBaby, setRequestOpenAddBaby] = useState(false);
   const [profileInitialView, setProfileInitialView] = useState<'menu' | 'my-babies'>('menu');
   /** Incremented when user taps Profile tab so ProfileSection resets to menu (tap tab = go to Profile root). */
@@ -356,6 +360,42 @@ function App() {
     }
     setShowWakeUpSheet(false);
     setWakeUpEntry(null);
+  };
+
+  // Handle predicted nap ghost card tap → opens PredictedNapSheet
+  const handlePredictedNapTap = (data: PredictedNapData) => {
+    setPredictedNapData(data);
+    setShowPredictedNapSheet(true);
+  };
+
+  // Handle starting a nap from the PredictedNapSheet (Play button)
+  const handleStartPredictedNap = async (startTime: Date) => {
+    const startTimeISO = startTime.toISOString();
+    const collision = checkCollision(startTimeISO, null);
+    if (collision) {
+      setCollisionEntry(collision);
+      setPendingEntry({ startTime: startTimeISO, endTime: null, type: 'nap' });
+      setShowPredictedNapSheet(false);
+      return;
+    }
+    await addEntry({ startTime: startTimeISO, endTime: null, type: 'nap' });
+    setShowPredictedNapSheet(false);
+    setSkippedNapIndices(new Set()); // Reset skipped naps when a nap starts
+  };
+
+  // Handle skipping a predicted nap
+  const handleSkipNap = (napIndex: number) => {
+    setSkippedNapIndices((prev) => new Set([...prev, napIndex]));
+    setShowPredictedNapSheet(false);
+  };
+
+  // Handle un-skipping a nap (from the skipped view's "Open nap" button)
+  const handleUnskipNap = (napIndex: number) => {
+    setSkippedNapIndices((prev) => {
+      const next = new Set(prev);
+      next.delete(napIndex);
+      return next;
+    });
   };
 
   // Handle logging wake-up time
@@ -567,6 +607,8 @@ function App() {
                   setProfileInitialView('menu');
                   handleViewChange('profile');
                 }}
+                onStartPredictedNap={handlePredictedNapTap}
+                skippedNapIndices={skippedNapIndices}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
@@ -757,6 +799,17 @@ function App() {
         onConfirm={handleWakeUpConfirm}
         onDelete={handleWakeUpDelete}
         bedtime={wakeUpEntry?.startTime ?? ''}
+      />
+
+      {/* Predicted Nap Sheet — Napper-style estimated nap preview & track flow */}
+      <PredictedNapSheet
+        isOpen={showPredictedNapSheet}
+        onClose={() => setShowPredictedNapSheet(false)}
+        onStartNap={handleStartPredictedNap}
+        onSkipNap={handleSkipNap}
+        onUnskipNap={handleUnskipNap}
+        prediction={predictedNapData}
+        isSkipped={!!predictedNapData && skippedNapIndices.has(predictedNapData.napIndex)}
       />
     </div>
     </MotionConfig>
