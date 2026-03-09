@@ -460,6 +460,27 @@
     "decrementLabel": "-1 min",
     "incrementLabel": "+1 min"
   },
+  "predictedNap": {
+    "estimatedNap": "Propera migdiada",
+    "napTitle": "Migdiada",
+    "durationLong": "Uns {{duration}}",
+    "tip": "Comença a relaxar l'ambient a partir de les {{time}}. Observa senyals de son.",
+    "skip": "Saltar",
+    "track": "Registrar",
+    "skipTitle": "Saltar aquesta migdiada?",
+    "skipBody": "L'horari d'avui s'ajustarà. Sempre pots tornar-hi.",
+    "skipConfirm": "Saltar migdiada",
+    "skipCancel": "Tornar",
+    "ariaSheet": "Detalls de la migdiada prevista",
+    "ariaPlay": "Començar a registrar aquesta migdiada",
+    "ariaAdjustMinus": "Restar un minut",
+    "ariaAdjustPlus": "Sumar un minut",
+    "ariaHours": "Hores",
+    "ariaMinutes": "Minuts",
+    "skippedNap": "Migdiada saltada",
+    "skippedMessage": "Aquesta migdiada s'ha saltat. Pots reprendre-la si les coses canvien.",
+    "openNap": "Recuperar migdiada"
+  },
   "missingBedtime": {
     "title": "Registrar l'hora de dormir d'ahir nit?",
     "body": "Tria quina nit vas oblidar de registrar i l'afegirem.",

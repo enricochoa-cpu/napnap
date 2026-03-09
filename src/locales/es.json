@@ -460,6 +460,27 @@
     "decrementLabel": "-1 min",
     "incrementLabel": "+1 min"
   },
+  "predictedNap": {
+    "estimatedNap": "Próxima siesta",
+    "napTitle": "Siesta",
+    "durationLong": "Unos {{duration}}",
+    "tip": "Empieza a relajar el ambiente a partir de las {{time}}. Observa señales de sueño.",
+    "skip": "Saltar",
+    "track": "Registrar",
+    "skipTitle": "¿Saltar esta siesta?",
+    "skipBody": "El horario de hoy se ajustará. Siempre puedes volver a ella.",
+    "skipConfirm": "Saltar siesta",
+    "skipCancel": "Volver",
+    "ariaSheet": "Detalles de la siesta prevista",
+    "ariaPlay": "Empezar a registrar esta siesta",
+    "ariaAdjustMinus": "Restar un minuto",
+    "ariaAdjustPlus": "Sumar un minuto",
+    "ariaHours": "Horas",
+    "ariaMinutes": "Minutos",
+    "skippedNap": "Siesta saltada",
+    "skippedMessage": "Esta siesta se ha saltado. Puedes retomarla si las cosas cambian.",
+    "openNap": "Recuperar siesta"
+  },
   "missingBedtime": {
     "title": "¿Registrar la hora de dormir de anoche?",
     "body": "Elige qué noche olvidaste registrar y la añadimos.",

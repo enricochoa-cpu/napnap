@@ -460,6 +460,27 @@
     "decrementLabel": "-1 min",
     "incrementLabel": "+1 min"
   },
+  "predictedNap": {
+    "estimatedNap": "Next nap",
+    "napTitle": "Nap",
+    "durationLong": "About {{duration}}",
+    "tip": "Start winding down around {{time}}. Watch for sleepy cues.",
+    "skip": "Skip",
+    "track": "Track",
+    "skipTitle": "Skip this nap?",
+    "skipBody": "Today's schedule will adjust. You can always come back to it.",
+    "skipConfirm": "Skip nap",
+    "skipCancel": "Go back",
+    "ariaSheet": "Predicted nap details",
+    "ariaPlay": "Start tracking this nap",
+    "ariaAdjustMinus": "Subtract one minute",
+    "ariaAdjustPlus": "Add one minute",
+    "ariaHours": "Hours",
+    "ariaMinutes": "Minutes",
+    "skippedNap": "Nap skipped",
+    "skippedMessage": "This nap was skipped. You can still start it if things change.",
+    "openNap": "Recover this nap"
+  },
   "missingBedtime": {
     "title": "Log last night's bedtime?",
     "body": "Select which night you forgot to log, and we'll help you add it.",
