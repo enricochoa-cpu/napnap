@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, type DbSleepEntry } from '../lib/supabase';
 import { calculateDuration } from '../utils/dateUtils';
 import { parseISO, format } from 'date-fns';
 import type { SleepEntry } from '../types';
@@ -45,7 +45,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       }
 
       const { data, error } = await supabase
-        .from('sleep_entries')
+        .from<DbSleepEntry>('sleep_entries')
         .select('*')
         .eq('user_id', targetBabyId)
         .order('start_time', { ascending: false });
@@ -86,7 +86,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       }
 
       const { data: inserted, error } = await supabase
-        .from('sleep_entries')
+        .from<DbSleepEntry>('sleep_entries')
         .insert({
           user_id: targetBabyId,
           start_time: toSupabaseTimestamp(data.startTime),
@@ -205,89 +205,13 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     return Math.floor((now.getTime() - lastWakeTime.getTime()) / (1000 * 60));
   }, [activeSleep, lastCompletedSleep]);
 
-  const getDailySummary = useCallback((date: string, allEntries: SleepEntry[]) => {
-    const dayEntries = getEntriesForDate(date);
-
-    const napEntries = dayEntries.filter((e) => e.type === 'nap');
-    const nightEntries = dayEntries.filter((e) => e.type === 'night');
-
-    const totalNapMinutes = napEntries.reduce(
-      (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
-      0
-    );
-
-    const totalNightMinutes = nightEntries.reduce(
-      (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
-      0
-    );
-
-    // Calculate average wake window for the day
-    // Wake windows are gaps between sleep periods
-    const wakeWindows: number[] = [];
-
-    // Find wake-up time for this day (from night entries that ended on this date)
-    const nightEntriesWithWakeup = allEntries.filter(
-      (e) => e.type === 'night' && e.endTime && e.endTime.split('T')[0] === date
-    );
-    const wakeUpTime = nightEntriesWithWakeup.length > 0
-      ? nightEntriesWithWakeup[0].endTime
-      : null;
-
-    // Sort naps chronologically
-    const sortedNaps = [...napEntries].sort(
-      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    );
-
-    // Sort bedtimes chronologically
-    const sortedBedtimes = [...nightEntries].sort(
-      (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    );
-
-    // Calculate wake window from wake-up to first nap
-    if (wakeUpTime && sortedNaps.length > 0) {
-      const wakeToFirstNap = Math.round(
-        (new Date(sortedNaps[0].startTime).getTime() - new Date(wakeUpTime).getTime()) / (1000 * 60)
-      );
-      if (wakeToFirstNap > 0) wakeWindows.push(wakeToFirstNap);
-    }
-
-    // Calculate wake windows between naps
-    for (let i = 0; i < sortedNaps.length - 1; i++) {
-      const currentNap = sortedNaps[i];
-      const nextNap = sortedNaps[i + 1];
-      if (currentNap.endTime) {
-        const betweenNaps = Math.round(
-          (new Date(nextNap.startTime).getTime() - new Date(currentNap.endTime).getTime()) / (1000 * 60)
-        );
-        if (betweenNaps > 0) wakeWindows.push(betweenNaps);
-      }
-    }
-
-    // Calculate wake window from last nap to bedtime
-    if (sortedNaps.length > 0 && sortedBedtimes.length > 0) {
-      const lastNap = sortedNaps[sortedNaps.length - 1];
-      if (lastNap.endTime) {
-        const napToBedtime = Math.round(
-          (new Date(sortedBedtimes[0].startTime).getTime() - new Date(lastNap.endTime).getTime()) / (1000 * 60)
-        );
-        if (napToBedtime > 0) wakeWindows.push(napToBedtime);
-      }
-    }
-
-    // Calculate average wake window
-    const averageWakeWindowMinutes = wakeWindows.length > 0
-      ? Math.round(wakeWindows.reduce((sum, w) => sum + w, 0) / wakeWindows.length)
-      : null;
-
-    return {
-      totalNapMinutes,
-      totalNightMinutes,
-      totalSleepMinutes: totalNapMinutes + totalNightMinutes,
-      napCount: napEntries.length,
-      nightCount: nightEntries.length,
-      averageWakeWindowMinutes,
-    };
-  }, [getEntriesForDate]);
+  const getDailySummary = useCallback(
+    (date: string, allEntries: SleepEntry[]) => {
+      const dayEntries = getEntriesForDate(date);
+      return computeDailySummary(date, dayEntries, allEntries);
+    },
+    [getEntriesForDate],
+  );
 
   return {
     entries,
@@ -302,5 +226,88 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     awakeMinutes,
     getDailySummary,
     refreshEntries: fetchEntries,
+  };
+}
+
+export function computeDailySummary(
+  date: string,
+  dayEntries: SleepEntry[],
+  allEntries: SleepEntry[],
+) {
+  const napEntries = dayEntries.filter((e) => e.type === 'nap');
+  const nightEntries = dayEntries.filter((e) => e.type === 'night');
+
+  const totalNapMinutes = napEntries.reduce(
+    (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
+    0,
+  );
+
+  const totalNightMinutes = nightEntries.reduce(
+    (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
+    0,
+  );
+
+  const wakeWindows: number[] = [];
+
+  const nightEntriesWithWakeup = allEntries.filter(
+    (e) => e.type === 'night' && e.endTime && e.endTime.split('T')[0] === date,
+  );
+  const wakeUpTime =
+    nightEntriesWithWakeup.length > 0 ? nightEntriesWithWakeup[0].endTime : null;
+
+  const sortedNaps = [...napEntries].sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+  );
+
+  const sortedBedtimes = [...nightEntries].sort(
+    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
+  );
+
+  if (wakeUpTime && sortedNaps.length > 0) {
+    const wakeToFirstNap = Math.round(
+      (new Date(sortedNaps[0].startTime).getTime() -
+        new Date(wakeUpTime).getTime()) /
+        (1000 * 60),
+    );
+    if (wakeToFirstNap > 0) wakeWindows.push(wakeToFirstNap);
+  }
+
+  for (let i = 0; i < sortedNaps.length - 1; i++) {
+    const currentNap = sortedNaps[i];
+    const nextNap = sortedNaps[i + 1];
+    if (currentNap.endTime) {
+      const betweenNaps = Math.round(
+        (new Date(nextNap.startTime).getTime() -
+          new Date(currentNap.endTime).getTime()) /
+          (1000 * 60),
+      );
+      if (betweenNaps > 0) wakeWindows.push(betweenNaps);
+    }
+  }
+
+  if (sortedNaps.length > 0 && sortedBedtimes.length > 0) {
+    const lastNap = sortedNaps[sortedNaps.length - 1];
+    if (lastNap.endTime) {
+      const napToBedtime = Math.round(
+        (new Date(sortedBedtimes[0].startTime).getTime() -
+          new Date(lastNap.endTime).getTime()) /
+          (1000 * 60),
+      );
+      if (napToBedtime > 0) wakeWindows.push(napToBedtime);
+    }
+  }
+
+  const averageWakeWindowMinutes =
+    wakeWindows.length > 0
+      ? Math.round(wakeWindows.reduce((sum, w) => sum + w, 0) / wakeWindows.length)
+      : null;
+
+  return {
+    totalNapMinutes,
+    totalNightMinutes,
+    totalSleepMinutes: totalNapMinutes + totalNightMinutes,
+    napCount: napEntries.length,
+    nightCount: nightEntries.length,
+    averageWakeWindowMinutes,
   };
 }

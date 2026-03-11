@@ -582,13 +582,13 @@ export function TodayView({
             style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-md)' }}
           >
             <p className="text-[var(--text-muted)] font-display text-xs uppercase tracking-widest mb-2 sm:mb-3">
-              Expected Wake Up
+              {t('today.expectedWake')}
             </p>
             <h1 className="hero-countdown text-[var(--wake-color)] mb-2 sm:mb-3">
               {expectedWakeUp ? formatTime(expectedWakeUp) : '—'}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm">
-              Bedtime at {formatTime(activeSleep!.startTime)}
+              {t('today.bedtimeAt', { time: formatTime(activeSleep!.startTime) })}
             </p>
           </div>
 
@@ -604,11 +604,11 @@ export function TodayView({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[var(--wake-color)] font-display font-semibold text-base">
-                Wake Up
+                {t('today.wakeUp')}
               </p>
             </div>
             <p className="text-[var(--text-muted)] font-display text-xs">
-              Tap to log
+              {t('today.tapToLog')}
             </p>
             <div className="text-[var(--text-muted)]">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

@@ -577,8 +577,8 @@ function App() {
     null;
   const headerAvatarUrl = activeDisplayBaby?.avatarUrl;
   const headerAvatarAriaLabel = hasPendingBabyInvite
-    ? 'My babies, you have a baby invite waiting'
-    : 'My babies';
+    ? t('profile.myBabiesHasInviteAria')
+    : t('profile.myBabiesAria');
 
   const { isNavHidden } = useNavHiddenWhenModal();
 

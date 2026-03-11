@@ -128,7 +128,9 @@
     "shortNap": "Short Nap",
     "napOrdinal": "Nap {{n}}",
     "nappingNow": "Napping Now",
-    "morningWakeUp": "Morning Wake Up"
+    "morningWakeUp": "Morning Wake Up",
+    "tapToLog": "Tap to log",
+    "bedtimeAt": "Bedtime at {{time}}"
   },
   "quickActions": {
     "ariaLabel": "Quick actions",
@@ -161,6 +163,8 @@
     "accept": "Accept",
     "decline": "Decline",
     "myBabies": "My Babies",
+    "myBabiesAria": "My babies",
+    "myBabiesHasInviteAria": "My babies, you have a baby invite waiting",
     "settings": "Settings",
     "support": "Support",
     "accountSettings": "Account settings",

@@ -128,7 +128,9 @@
     "shortNap": "Microsiesta",
     "napOrdinal": "Siesta {{n}}",
     "nappingNow": "Durmiendo la siesta",
-    "morningWakeUp": "Despertar matinal"
+    "morningWakeUp": "Despertar matinal",
+    "tapToLog": "Toca para registrar",
+    "bedtimeAt": "Hora de dormir a las {{time}}"
   },
   "quickActions": {
     "ariaLabel": "Acciones rápidas",
