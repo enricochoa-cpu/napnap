@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { supabase, type DbSleepEntry } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { calculateDuration } from '../utils/dateUtils';
 import { parseISO, format } from 'date-fns';
 import type { SleepEntry } from '../types';
@@ -45,7 +45,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       }
 
       const { data, error } = await supabase
-        .from<DbSleepEntry>('sleep_entries')
+        .from('sleep_entries')
         .select('*')
         .eq('user_id', targetBabyId)
         .order('start_time', { ascending: false });
@@ -86,7 +86,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       }
 
       const { data: inserted, error } = await supabase
-        .from<DbSleepEntry>('sleep_entries')
+        .from('sleep_entries')
         .insert({
           user_id: targetBabyId,
           start_time: toSupabaseTimestamp(data.startTime),
