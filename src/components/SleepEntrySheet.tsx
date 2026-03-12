@@ -269,8 +269,8 @@ export function SleepEntrySheet({
     if (isOpen) {
       if (entry) {
         setStartTime(extractTime(entry.startTime));
-        // Pre-fill end time with "now" for active entries — avoids native time input showing "--:--"
-        setEndTime(entry.endTime ? extractTime(entry.endTime) : getCurrentTime());
+        // Active entries: leave end time blank so user sees STOP button (not a pre-filled time)
+        setEndTime(entry.endTime ? extractTime(entry.endTime) : '');
       } else {
         // Use overrides (e.g. from predicted nap tap) or fall back to defaults
         setStartTime(initialStartTimeOverride || getDefaultTime(selectedDate, sleepType));

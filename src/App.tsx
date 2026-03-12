@@ -163,6 +163,10 @@ function App() {
   const handleViewChange = (newView: View) => {
     previousView.current = currentView;
     setCurrentView(newView);
+    // Reset date to today when navigating to home — prevents FAB creating entries for yesterday
+    if (newView === 'home') {
+      setSelectedDate(formatDate(new Date()));
+    }
     // Scroll container is the inner main wrapper (not window) so reset its scroll on tab change
     scrollMainToTop();
     window.scrollTo(0, 0);
