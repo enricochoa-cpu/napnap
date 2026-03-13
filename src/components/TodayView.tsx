@@ -761,6 +761,7 @@ export function TodayView({
           <div className="absolute left-5 top-6 bottom-6 w-px bg-[var(--text-muted)]/20" />
 
           <motion.div
+            key={`timeline-${todayNaps.length}-${activeSleep?.id ?? 'x'}-${displayPredictions.length}`}
             className="space-y-3"
             initial="hidden"
             animate="visible"

@@ -353,6 +353,11 @@ function App() {
       goToAddBaby();
       return;
     }
+    // When on Today view, always reset date to today — prevents stale selectedDate
+    // from a previous History visit creating entries for the wrong day
+    if (currentView === 'home') {
+      setSelectedDate(formatDate(new Date()));
+    }
     setEditingEntry(null);
     setNewEntryType(type);
     setPredictedStartTime(undefined);
