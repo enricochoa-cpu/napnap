@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SUPPORT_EMAIL } from '../constants/legal';
+import { LandingFooter } from './LandingFooter';
 
 const TERMS_SECTIONS = [
   {
@@ -77,6 +78,7 @@ export function LandingTermsPage() {
           ))}
         </div>
       </div>
+      <LandingFooter />
     </div>
   );
 }

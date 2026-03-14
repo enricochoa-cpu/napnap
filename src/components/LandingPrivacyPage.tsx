@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { PRIVACY_POLICY_SECTIONS } from '../constants/privacyPolicy';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../constants/legal';
+import { LandingFooter } from './LandingFooter';
 
 export function LandingPrivacyPage() {
   useEffect(() => {
@@ -43,6 +44,7 @@ export function LandingPrivacyPage() {
           Last updated: {PRIVACY_POLICY_LAST_UPDATED}
         </p>
       </div>
+      <LandingFooter />
     </div>
   );
 }

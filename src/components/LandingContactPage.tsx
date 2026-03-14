@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SUPPORT_EMAIL } from '../constants/legal';
+import { LandingFooter } from './LandingFooter';
 
 function mailtoLink(email: string, subject?: string, body?: string): string {
   const params = new URLSearchParams();
@@ -129,6 +130,7 @@ export function LandingContactPage() {
           </p>
         </div>
       </div>
+      <LandingFooter />
     </div>
   );
 }

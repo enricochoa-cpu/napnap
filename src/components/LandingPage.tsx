@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SkyBackground } from './SkyBackground';
 import { supabase } from '../lib/supabase';
+import { LandingFooter } from './LandingFooter';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -695,45 +696,7 @@ export function LandingPage() {
 
       </main>
 
-      {/* ── Footer ── */}
-      <footer className="border-t border-[var(--glass-border)] py-10 mt-8">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_0.8fr_0.8fr] gap-8">
-            {/* Brand column */}
-            <div className="space-y-3">
-              <p className="text-display-sm text-[var(--text-primary)]">NapNap</p>
-              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                The quiet voice at 3am that tells you what comes next.
-              </p>
-            </div>
-
-            {/* Product + Legal columns — side by side on mobile */}
-            <div className="grid grid-cols-2 md:contents gap-8">
-              <div className="space-y-3">
-                <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Product</p>
-                <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('how-it-works')}>How it works</button>
-                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('product-showcase')}>The app</button>
-                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('faq')}>FAQ</button>
-                </nav>
-              </div>
-              <div className="space-y-3">
-                <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Legal</p>
-                <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                  <a href="/privacy" className="hover:text-[var(--text-secondary)] transition-colors">Privacy</a>
-                  <a href="/terms" className="hover:text-[var(--text-secondary)] transition-colors">Terms</a>
-                  <a href="/contact" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
-                </nav>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom bar */}
-          <div className="mt-8 pt-4 border-t border-[var(--glass-border)] text-center text-xs text-[var(--text-muted)]">
-            &copy; 2026 NapNap. Made with care in Barcelona.
-          </div>
-        </div>
-      </footer>
+      <LandingFooter onScrollToSection={scrollToSection} />
       </div>
     </div>
   );
