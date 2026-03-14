@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { SUPPORT_EMAIL } from '../constants/legal';
+import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
 
 function mailtoLink(email: string, subject?: string, body?: string): string {
@@ -16,6 +17,17 @@ export function LandingContactPage() {
     const prev = Array.from(root.classList);
     if (!root.classList.contains('theme-morning')) root.classList.add('theme-morning');
     return () => { root.className = prev.join(' '); };
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Contact — NapNap';
+    setMeta('description', 'Get in touch with NapNap. Questions about baby sleep tracking, feedback, or support.');
+    setMeta('og:title', 'Contact — NapNap', true);
+    setMeta('og:description', 'Get in touch with NapNap for questions, feedback, or support.', true);
+    setMeta('og:type', 'website', true);
+    setMeta('og:url', 'https://napnap.app/contact', true);
+    setCanonical('https://napnap.app/contact');
+    return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
   }, []);
 
   const [subject, setSubject] = useState('');

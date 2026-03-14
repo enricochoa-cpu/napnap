@@ -53,15 +53,26 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
       '@type': 'Article',
       headline: guide.title,
       description: guide.metaDescription,
+      url: `https://napnap.app/sleep-guides/${guide.slug}`,
       datePublished: '2026-03-14',
       dateModified: '2026-03-14',
       author: { '@type': 'Organization', name: 'NapNap' },
       publisher: { '@type': 'Organization', name: 'NapNap' },
     }, 'sleep-guide');
 
+    const breadcrumbScript = setJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Sleep Guides', item: 'https://napnap.app/sleep-guides' },
+        { '@type': 'ListItem', position: 2, name: guide.title, item: `https://napnap.app/sleep-guides/${guide.slug}` },
+      ],
+    }, 'breadcrumb');
+
     return () => {
       document.title = 'NapNap — Baby Sleep Tracker';
       script.remove();
+      breadcrumbScript.remove();
     };
   }, [guide]);
 

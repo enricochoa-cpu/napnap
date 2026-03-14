@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { PRIVACY_POLICY_SECTIONS } from '../constants/privacyPolicy';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../constants/legal';
+import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
 
 export function LandingPrivacyPage() {
@@ -9,6 +10,17 @@ export function LandingPrivacyPage() {
     const prev = Array.from(root.classList);
     if (!root.classList.contains('theme-morning')) root.classList.add('theme-morning');
     return () => { root.className = prev.join(' '); };
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Privacy Policy — NapNap';
+    setMeta('description', 'How NapNap handles your data. Our privacy policy covers data collection, storage, and your rights under GDPR.');
+    setMeta('og:title', 'Privacy Policy — NapNap', true);
+    setMeta('og:description', 'How NapNap handles your data. Privacy policy and GDPR rights.', true);
+    setMeta('og:type', 'website', true);
+    setMeta('og:url', 'https://napnap.app/privacy', true);
+    setCanonical('https://napnap.app/privacy');
+    return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
   }, []);
 
   return (

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { SUPPORT_EMAIL } from '../constants/legal';
+import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
 
 const TERMS_SECTIONS = [
@@ -47,6 +48,17 @@ export function LandingTermsPage() {
     const prev = Array.from(root.classList);
     if (!root.classList.contains('theme-morning')) root.classList.add('theme-morning');
     return () => { root.className = prev.join(' '); };
+  }, []);
+
+  useEffect(() => {
+    document.title = 'Terms of Service — NapNap';
+    setMeta('description', 'Terms of Service for NapNap baby sleep tracker. Rules for using the app, liability, and governing law.');
+    setMeta('og:title', 'Terms of Service — NapNap', true);
+    setMeta('og:description', 'Terms of Service for NapNap baby sleep tracker.', true);
+    setMeta('og:type', 'website', true);
+    setMeta('og:url', 'https://napnap.app/terms', true);
+    setCanonical('https://napnap.app/terms');
+    return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
   }, []);
 
   return (
