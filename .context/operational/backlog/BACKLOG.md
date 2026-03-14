@@ -1,8 +1,8 @@
-# Essential Gaps — Pending Only
+# Backlog
 
-**Purpose:** What’s still missing for the product. Done items live in `.context/operational/progress.txt` and `.context/logs/`. Resolved bugs and patterns live in `.context/reference/lessons.md`.
+**Purpose:** Pending work for the product. Done items live in `.context/operational/progress.txt` and `.context/logs/`. Resolved bugs and patterns live in `.context/reference/lessons.md`.
 
-**Last updated:** 2026-02-24
+**Last updated:** 2026-03-14
 
 ---
 
@@ -145,18 +145,9 @@ Gaps i millores prioritzades del motor de predicció. Referència tècnica: `.co
 
 **Current state:** `SLEEP_DEVELOPMENT_MAP` has 13 age brackets covering 0–24 months, with variable granularity (e.g. 0–1.5mo is one bracket, 3–4mo is another). Newborns (0–12 weeks) change rapidly but are covered by only 2 brackets.
 
-**Opportunity:** Huckleberry publishes age-specific sleep schedules at **weekly** granularity for newborns and **monthly** for infants/toddlers (45+ pages total). This data can inform two things:
+**Done (2026-03-14):** Content pages — 17 public sleep guide pages at `/sleep-guides/:slug` (4 newborn + 10 infant + 3 toddler) with full SEO (meta tags, JSON-LD, BreadcrumbList, sitemap). See `docs/superpowers/specs/2026-03-14-sleep-guide-content-hub-design.md`.
 
-1. **More granular `SLEEP_DEVELOPMENT_MAP`** — weekly brackets for 0–12 weeks, monthly for 3–24 months. Improves prediction accuracy for the fastest-changing age range.
-2. **Content pages** — each age bracket can power a public `/sleep-schedule/:age` page for SEO (separate spec).
-
-**Reference — Huckleberry's age coverage:**
-
-| Stage | Ages | Granularity | Example URLs |
-|-------|------|-------------|--------------|
-| Newborn | 1 week – 11 weeks + 1 month, 2 months | Weekly | `huckleberrycare.com/blog/1-week-old-sleep-schedule-bedtime-and-nap-schedules` through `huckleberrycare.com/blog/11-week-old-sleep-schedule-bedtime-and-nap-schedule` |
-| Infant | 3–12 months | Monthly | `huckleberrycare.com/blog/3-month-old-sleep-schedule-and-development` through `huckleberrycare.com/blog/12-month-old-sleep-schedule-and-development` |
-| Toddler | 13–30 months + 3yr + 4yr | Monthly | `huckleberrycare.com/blog/13-month-old-sleep-schedule-and-development` through `huckleberrycare.com/blog/30-month-old-sleep-schedule-bedtime-and-nap-schedule` |
+**Still pending:** More granular `SLEEP_DEVELOPMENT_MAP` — weekly brackets for 0–12 weeks, monthly for 3–24 months. Improves prediction accuracy for the fastest-changing age range.
 
 **What to do:**
 1. Research wake windows, nap counts, and total sleep needs at weekly granularity for 0–12 weeks (cross-reference Huckleberry, AAP, peer-reviewed sleep science).

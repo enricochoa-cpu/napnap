@@ -43,7 +43,7 @@ Layout: Napper-style (question at top, Next at bottom). Fixed viewport (no scrol
 
 ## What's left
 
-Pending onboarding work is tracked in **`.context/operational/backlog/ESSENTIAL-GAPS.md`** (section 1): "Has completed onboarding" flag so returning users skip Entry choice and go to Login; optional persist draft across refresh.
+Pending onboarding work is tracked in **`.context/operational/backlog/BACKLOG.md`** (section 1): "Has completed onboarding" flag so returning users skip Entry choice and go to Login; optional persist draft across refresh.
 
 ## Out of scope (this phase)
 

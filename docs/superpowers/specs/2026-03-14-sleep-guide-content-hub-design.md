@@ -200,5 +200,5 @@ Following NapNap's brand voice:
 - Toddler guides (Batch 2)
 - CMS or markdown-based content (static data file for now)
 - Pre-rendering / SSG (deferred per earlier decision)
-- Algorithm enrichment from Huckleberry data (separate backlog item in ESSENTIAL-GAPS.md §7)
+- Algorithm enrichment from Huckleberry data (separate backlog item in BACKLOG.md §7)
 - Blog/articles section (Phase 2.2, separate spec)
