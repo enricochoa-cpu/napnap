@@ -7,6 +7,23 @@ Age-specific sleep schedule pages for SEO and parent education. Each page is a l
 **Batch 1 (this spec):** 10 monthly pages (3–12 months) + hub page.
 **Batch 2 (future):** Newborn weekly guides (weeks 1–4, months 1–2) + toddler guides (13–24 months).
 
+### Relationship to `SLEEP_DEVELOPMENT_MAP`
+
+The existing `SLEEP_DEVELOPMENT_MAP` in `dateUtils.ts` defines 13 age brackets with ranges (e.g. "5-6 months", "7-8 months"). Guide pages are per-month, so each page maps to the bracket whose range includes that month. Multiple guide pages may share the same bracket's base data, but prose content and tips are unique per page. The mapping:
+
+| Guide page | SLEEP_DEVELOPMENT_MAP bracket |
+|-----------|-------------------------------|
+| 3 months | 3-4 months |
+| 4 months | 3-4 months |
+| 5 months | 5-6 months |
+| 6 months | 5-6 months |
+| 7 months | 7-8 months |
+| 8 months | 7-8 months |
+| 9 months | 9-10 months |
+| 10 months | 9-10 months |
+| 11 months | 11-12 months |
+| 12 months | 11-12 months |
+
 ## Routes
 
 | Route | Component | Description |
@@ -26,14 +43,14 @@ Slugs follow the pattern: `3-month-old`, `4-month-old`, ..., `12-month-old`.
    - **Infant (3–12 months)** — active cards linking to guide pages
    - **Toddler (13–24 months)** — placeholder cards with "Coming soon" (Batch 2)
 3. **CTA**: "Track your baby's sleep with NapNap — Start free"
-4. **Footer**: Same as landing page
+4. **Footer**: Extract a shared `<LandingFooter />` component from `LandingPage.tsx` and reuse across all landing pages (hub, guide pages, privacy, terms, contact)
 
 ### Age Cards (Infant section)
 
 Each card shows:
 - Age label (e.g. "6 mo")
 - Quick stats: nap count + wake window
-- Regression badge (amber) on months with known regressions (4, 8, 12)
+- Regression badge (amber) on months with known regressions (4, 8, 12, per `SLEEP_DEVELOPMENT_MAP` regression flags)
 - Links to `/sleep-guides/:slug`
 
 Cards are displayed in a responsive grid: 4 columns on desktop, 3 on tablet, 2 on mobile.
@@ -64,7 +81,9 @@ Cards are displayed in a responsive grid: 4 columns on desktop, 3 on tablet, 2 o
 - Title: "{Age} Month Old Sleep Schedule — NapNap"
 - Meta description: "{Age}-month-old sleep schedule with wake windows, nap times, and bedtime. Learn what to expect and get a sample daily routine."
 - Canonical: `https://getnapnap.com/sleep-guides/{slug}`
-- JSON-LD: Article structured data with headline, description, datePublished
+- JSON-LD: Article structured data with `@type: Article`, headline, description, datePublished, dateModified, author (`@type: Organization`, name: "NapNap"), publisher
+- Open Graph: `og:title`, `og:description`, `og:type` (article), `og:url`
+- Twitter Card: `twitter:card` (summary), `twitter:title`, `twitter:description`
 
 ## Data Architecture
 
@@ -94,7 +113,7 @@ interface SleepGuideConfig {
   }[];
   sections: {
     heading: string;               // "What to expect at 6 months"
-    content: string;               // Prose paragraph(s) — unique per age
+    content: string;               // Paragraphs separated by \n\n — component splits and wraps each in <p>
   }[];
   tips: {
     title: string;                 // "Fighting the third nap"
@@ -118,7 +137,7 @@ Single component rendering the hub page. Imports the content array, groups by st
 
 ### `src/components/SleepGuidePage.tsx`
 
-Single component rendering any guide page. Receives the slug from routing, looks up the matching `SleepGuideConfig`, renders all sections. 404-style fallback if slug doesn't match.
+Single component rendering any guide page. Receives the slug from routing, looks up the matching `SleepGuideConfig`, renders all sections. If slug doesn't match any config, redirects to `/sleep-guides` hub page (avoids indexing empty 404 pages).
 
 Handles dynamic `<title>` and `<meta>` tags via `document.title` and meta tag manipulation in `useEffect` (same pattern already used for landing pages).
 
@@ -156,6 +175,15 @@ if (pathname.startsWith('/sleep-guides/')) {
 Add 11 new URLs to `public/sitemap.xml`:
 - `/sleep-guides` (changefreq: monthly, priority: 0.7)
 - `/sleep-guides/3-month-old` through `/sleep-guides/12-month-old` (changefreq: monthly, priority: 0.6)
+
+## Accessibility & Semantic HTML
+
+- Use `<main>`, `<article>`, `<nav>` semantic elements
+- Heading hierarchy: `<h1>` for page title, `<h2>` for content sections, `<h3>` for sub-sections
+- Breadcrumb uses `<nav aria-label="Breadcrumb">`
+- Prev/next navigation uses `<nav aria-label="Age navigation">`
+- Color-coded stats include text labels (not color-only communication)
+- Hub page cards are links with descriptive text (age + stats visible to screen readers)
 
 ## Content Tone
 
