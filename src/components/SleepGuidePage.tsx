@@ -88,7 +88,7 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
   const remainingSections = guide.sections.slice(1);
 
   return (
-    <div className="theme-morning min-h-screen bg-[var(--bg-deep)] overflow-x-hidden overflow-y-auto">
+    <div className="theme-morning bg-[var(--bg-deep)] overflow-x-hidden overflow-y-auto" style={{ height: '100dvh' }}>
       <main className="max-w-3xl mx-auto px-6 py-12">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-8">
