@@ -705,18 +705,6 @@ export function LandingPage() {
               <p className="text-sm text-[var(--text-muted)] leading-relaxed">
                 The quiet voice at 3am that tells you what comes next.
               </p>
-              <div className="flex gap-3 pt-1">
-                <a href="#" aria-label="X (Twitter)" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                </a>
-                <a href="#" aria-label="Instagram" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                  </svg>
-                </a>
-              </div>
             </div>
 
             {/* Product + Legal columns — side by side on mobile */}
@@ -732,9 +720,9 @@ export function LandingPage() {
               <div className="space-y-3">
                 <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Legal</p>
                 <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Privacy</a>
-                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Terms</a>
-                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
+                  <a href="/privacy" className="hover:text-[var(--text-secondary)] transition-colors">Privacy</a>
+                  <a href="/terms" className="hover:text-[var(--text-secondary)] transition-colors">Terms</a>
+                  <a href="/contact" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
                 </nav>
               </div>
             </div>
