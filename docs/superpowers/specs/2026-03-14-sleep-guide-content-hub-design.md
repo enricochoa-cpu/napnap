@@ -59,7 +59,7 @@ Cards are displayed in a responsive grid: 4 columns on desktop, 3 on tablet, 2 o
 
 - Title: "Baby Sleep Schedules by Age — NapNap"
 - Meta description: "Age-specific sleep schedules from 3 to 12 months. Wake windows, nap times, bedtime, and tips for every stage."
-- Canonical: `https://getnapnap.com/sleep-guides`
+- Canonical: `https://napnap.app/sleep-guides`
 
 ## Guide Page (`/sleep-guides/:slug`)
 
@@ -80,7 +80,7 @@ Cards are displayed in a responsive grid: 4 columns on desktop, 3 on tablet, 2 o
 
 - Title: "{Age} Month Old Sleep Schedule — NapNap"
 - Meta description: "{Age}-month-old sleep schedule with wake windows, nap times, and bedtime. Learn what to expect and get a sample daily routine."
-- Canonical: `https://getnapnap.com/sleep-guides/{slug}`
+- Canonical: `https://napnap.app/sleep-guides/{slug}`
 - JSON-LD: Article structured data with `@type: Article`, headline, description, datePublished, dateModified, author (`@type: Organization`, name: "NapNap"), publisher
 - Open Graph: `og:title`, `og:description`, `og:type` (article), `og:url`
 - Twitter Card: `twitter:card` (summary), `twitter:title`, `twitter:description`

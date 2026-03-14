@@ -141,6 +141,35 @@ Gaps i millores prioritzades del motor de predicció. Referència tècnica: `.co
 
 ---
 
+## 7. Algorithm granularity — weekly newborn + monthly infant age brackets
+
+**Current state:** `SLEEP_DEVELOPMENT_MAP` has 13 age brackets covering 0–24 months, with variable granularity (e.g. 0–1.5mo is one bracket, 3–4mo is another). Newborns (0–12 weeks) change rapidly but are covered by only 2 brackets.
+
+**Opportunity:** Huckleberry publishes age-specific sleep schedules at **weekly** granularity for newborns and **monthly** for infants/toddlers (45+ pages total). This data can inform two things:
+
+1. **More granular `SLEEP_DEVELOPMENT_MAP`** — weekly brackets for 0–12 weeks, monthly for 3–24 months. Improves prediction accuracy for the fastest-changing age range.
+2. **Content pages** — each age bracket can power a public `/sleep-schedule/:age` page for SEO (separate spec).
+
+**Reference — Huckleberry's age coverage:**
+
+| Stage | Ages | Granularity | Example URLs |
+|-------|------|-------------|--------------|
+| Newborn | 1 week – 11 weeks + 1 month, 2 months | Weekly | `huckleberrycare.com/blog/1-week-old-sleep-schedule-bedtime-and-nap-schedules` through `huckleberrycare.com/blog/11-week-old-sleep-schedule-bedtime-and-nap-schedule` |
+| Infant | 3–12 months | Monthly | `huckleberrycare.com/blog/3-month-old-sleep-schedule-and-development` through `huckleberrycare.com/blog/12-month-old-sleep-schedule-and-development` |
+| Toddler | 13–30 months + 3yr + 4yr | Monthly | `huckleberrycare.com/blog/13-month-old-sleep-schedule-and-development` through `huckleberrycare.com/blog/30-month-old-sleep-schedule-bedtime-and-nap-schedule` |
+
+**What to do:**
+1. Research wake windows, nap counts, and total sleep needs at weekly granularity for 0–12 weeks (cross-reference Huckleberry, AAP, peer-reviewed sleep science).
+2. Expand `SLEEP_DEVELOPMENT_MAP` with finer brackets (weekly for newborns, monthly for 3–24mo).
+3. Validate that `getSleepConfigForAge()` and prediction engine handle the increased resolution without regression.
+4. Extend app's age range to 24 months (currently 0–18 months data, 18–24 exists but app scope says 0–18).
+
+**Priority:** Medium-high (improves prediction quality for youngest babies — the segment with most anxious parents and highest app adoption).
+
+**Dependencies:** Best done after 6.3 (unified simulation engine) to avoid double refactoring.
+
+---
+
 ## Quick reference (pending only)
 
 | Item | UI | Backend |
@@ -156,6 +185,7 @@ Gaps i millores prioritzades del motor de predicció. Referència tècnica: `.co
 | 6.4 Dynamic 70/30 blending | — | dateUtils |
 | 6.5 Minutes-from-midnight → Date | — | dateUtils |
 | 6.6 Accumulated wake time | — | dateUtils |
+| 7. Weekly newborn + monthly age brackets | — | dateUtils (SLEEP_DEVELOPMENT_MAP) |
 
 ---
 

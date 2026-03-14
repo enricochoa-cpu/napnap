@@ -51,7 +51,11 @@ export function SleepGuideHub() {
     setMeta('description', 'Age-specific sleep schedules from 3 to 12 months. Wake windows, nap times, bedtime, and tips for every stage.');
     setMeta('og:title', 'Baby Sleep Schedules by Age — NapNap', true);
     setMeta('og:description', 'Age-specific sleep schedules from 3 to 12 months.', true);
+    setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://napnap.app/sleep-guides', true);
+    setMeta('twitter:card', 'summary');
+    setMeta('twitter:title', 'Baby Sleep Schedules by Age — NapNap');
+    setMeta('twitter:description', 'Age-specific sleep schedules from 3 to 12 months. Wake windows, nap times, bedtime, and tips for every stage.');
     setCanonical('https://napnap.app/sleep-guides');
     return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
   }, []);
