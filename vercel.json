@@ -7,6 +7,26 @@
     {
       "source": "/app/(.*)",
       "destination": "/"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/"
+    },
+    {
+      "source": "/terms",
+      "destination": "/"
+    },
+    {
+      "source": "/contact",
+      "destination": "/"
+    },
+    {
+      "source": "/sleep-guides",
+      "destination": "/"
+    },
+    {
+      "source": "/sleep-guides/(.*)",
+      "destination": "/"
     }
   ]
 }
