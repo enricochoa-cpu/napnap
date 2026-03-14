@@ -1,6 +1,6 @@
 // src/components/SleepGuidePage.tsx
 import { useEffect } from 'react';
-import { getGuideBySlug, GUIDE_SLUGS } from '../data/sleepGuideContent';
+import { getGuideBySlug, GUIDE_SLUGS, SLEEP_GUIDE_CONFIGS } from '../data/sleepGuideContent';
 import type { SleepGuideScheduleItem } from '../data/sleepGuideContent';
 import { setMeta, setCanonical, setJsonLd } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
@@ -69,10 +69,8 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
 
   // Prev/next navigation
   const currentIndex = GUIDE_SLUGS.indexOf(guide.slug);
-  const prevSlug = currentIndex > 0 ? GUIDE_SLUGS[currentIndex - 1] : null;
-  const nextSlug = currentIndex < GUIDE_SLUGS.length - 1 ? GUIDE_SLUGS[currentIndex + 1] : null;
-  const prevAge = prevSlug ? prevSlug.replace('-month-old', '') : null;
-  const nextAge = nextSlug ? nextSlug.replace('-month-old', '') : null;
+  const prevGuide = currentIndex > 0 ? SLEEP_GUIDE_CONFIGS[currentIndex - 1] : null;
+  const nextGuide = currentIndex < SLEEP_GUIDE_CONFIGS.length - 1 ? SLEEP_GUIDE_CONFIGS[currentIndex + 1] : null;
 
   // Spec ordering: sections[0] (What to expect), then schedule, then sections[1+] (wake windows), then tips
   const firstSection = guide.sections[0];
@@ -161,14 +159,14 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
 
           {/* Prev/Next navigation */}
           <nav aria-label="Age navigation" className="flex justify-between items-center py-4 border-t border-[var(--glass-border)] mb-8">
-            {prevSlug ? (
-              <a href={`/sleep-guides/${prevSlug}`} className="text-sm text-[var(--nap-color)] hover:text-[var(--text-primary)] transition-colors">
-                ← {prevAge} Month Old
+            {prevGuide ? (
+              <a href={`/sleep-guides/${prevGuide.slug}`} className="text-sm text-[var(--nap-color)] hover:text-[var(--text-primary)] transition-colors">
+                ← {prevGuide.title}
               </a>
             ) : <span />}
-            {nextSlug ? (
-              <a href={`/sleep-guides/${nextSlug}`} className="text-sm text-[var(--nap-color)] hover:text-[var(--text-primary)] transition-colors">
-                {nextAge} Month Old →
+            {nextGuide ? (
+              <a href={`/sleep-guides/${nextGuide.slug}`} className="text-sm text-[var(--nap-color)] hover:text-[var(--text-primary)] transition-colors">
+                {nextGuide.title} →
               </a>
             ) : <span />}
           </nav>
@@ -179,7 +177,7 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
               href="/app"
               className="inline-flex items-center justify-center px-8 py-3 rounded-xl bg-[var(--nap-color)] text-[var(--bg-deep)] font-display font-semibold transition-transform active:scale-[0.98]"
             >
-              Track your {guide.ageMonths}-month-old's sleep with NapNap
+              Track your {guide.ageLabel ?? `${guide.ageMonths}-month-old`}'s sleep with NapNap
             </a>
             <p className="text-xs text-[var(--text-muted)] mt-2">Free to start · No sleep training required</p>
           </div>

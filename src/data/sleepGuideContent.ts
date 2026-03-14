@@ -36,6 +36,8 @@ export interface SleepGuideRegression {
 export interface SleepGuideConfig {
   slug: string;
   ageMonths: number;
+  displayLabel?: string;  // Custom label for hub card (e.g. "Wk 1", "2 yr"). Falls back to "{ageMonths} mo"
+  ageLabel?: string;      // For CTA text (e.g. "1-week-old", "2-year-old"). Falls back to "{ageMonths}-month-old"
   title: string;
   subtitle: string;
   metaDescription: string;
@@ -51,6 +53,244 @@ export interface SleepGuideConfig {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const SLEEP_GUIDE_CONFIGS: SleepGuideConfig[] = [
+  // ── Week 1 (Newborn) ────────────────────────────────────────────────────
+  {
+    slug: 'week-1',
+    ageMonths: 0,
+    displayLabel: 'Wk 1',
+    ageLabel: '1-week-old',
+    title: 'Week 1 Newborn Sleep Guide',
+    subtitle: 'What to expect in your baby\'s first week of sleep',
+    metaDescription:
+      'A gentle guide to your newborn\'s first week of sleep. Learn about typical sleep patterns, safe sleep basics, and why unpredictable schedules are completely normal.',
+    stats: {
+      napsPerDay: 'Varies',
+      wakeWindow: '30–90 min',
+      bedtime: 'No set bedtime',
+      nightSleep: '9–12h (with wakings)',
+      totalDaySleep: '5–6h',
+      totalSleep: '15.5–17h',
+    },
+    sampleSchedule: [
+      { time: '—', label: 'Wake, feed, brief alert time', type: 'wake' },
+      { time: '—', label: 'Sleep (30 min–2h stretches)', type: 'nap' },
+      { time: '—', label: 'Feed, sleep, repeat throughout day', type: 'nap' },
+      { time: '—', label: 'Longest stretch often 2–4h overnight', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect in week one',
+        content:
+          'Welcome to the first week. Everything is new — for your baby, and for you. Right now, your newborn doesn\'t know the difference between day and night. They sleep in short bursts of 30 minutes to 2 hours, wake to feed, and drift off again. There is no schedule, and there shouldn\'t be. This is exactly how a healthy newborn sleeps.\n\nYour baby needs somewhere between 15.5 and 17 hours of sleep in a 24-hour period, but it arrives in unpredictable fragments. Some stretches will be 20 minutes, others might be 3 hours. Both are normal. The longest block of sleep is often just 2–4 hours, and it may happen during the day rather than at night. That will shift in the coming weeks, but right now, your only job is to follow your baby\'s lead.\n\nIf it feels chaotic, that\'s because it is — and that\'s okay. There is nothing to fix at this stage. Your baby is adjusting to life outside the womb, and the most helpful thing you can do is respond to their cues, keep them fed, and rest whenever you can.',
+      },
+      {
+        heading: 'Sleepy cues to watch for',
+        content:
+          'Even at one week old, your baby gives signals when they\'re ready to sleep. The classic cues are yawning, staring off into the distance, becoming very still, and fussiness that isn\'t about hunger. These signals come quickly — a newborn can go from alert to overtired in minutes, not the longer windows you\'ll see in older babies.\n\nWake windows at this age are incredibly short: 30 to 90 minutes, and often closer to the shorter end. After a feed and a few minutes of quiet alertness, your baby is likely ready to sleep again. Don\'t worry about "keeping them awake" to consolidate sleep later — that approach doesn\'t work with newborns and can lead to an overtired, harder-to-settle baby.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Always place baby on their back to sleep',
+        description:
+          'Back sleeping is the safest position for every sleep, day and night. A firm, flat mattress with no loose bedding, pillows, or toys is the gold standard for safe sleep.',
+      },
+      {
+        title: 'Follow your baby\'s cues, not the clock',
+        description:
+          'There is no schedule to follow this week. Feed on demand, let your baby sleep when they\'re tired, and trust that the unpredictability is temporary and completely normal.',
+      },
+      {
+        title: 'Swaddling can help with the startle reflex',
+        description:
+          'Many newborns settle more easily when swaddled snugly with arms in. Make sure the swaddle is firm around the chest but loose at the hips to allow healthy hip development.',
+      },
+    ],
+  },
+
+  // ── Week 2 (Newborn) ────────────────────────────────────────────────────
+  {
+    slug: 'week-2',
+    ageMonths: 0,
+    displayLabel: 'Wk 2',
+    ageLabel: '2-week-old',
+    title: 'Week 2 Newborn Sleep Guide',
+    subtitle: 'Sleep patterns and tips for your 2-week-old baby',
+    metaDescription:
+      'What does sleep look like at 2 weeks? Learn about typical newborn sleep amounts, wake windows of 30–90 minutes, and practical tips for surviving the early days.',
+    stats: {
+      napsPerDay: 'Varies',
+      wakeWindow: '30–90 min',
+      bedtime: 'No set bedtime',
+      nightSleep: '9–12h (with wakings)',
+      totalDaySleep: '5–6h',
+      totalSleep: '15.5–17h',
+    },
+    sampleSchedule: [
+      { time: '—', label: 'Wake and feed', type: 'wake' },
+      { time: '—', label: 'Short alert period (10–30 min)', type: 'nap' },
+      { time: '—', label: 'Sleep (45 min–2h stretches)', type: 'nap' },
+      { time: '—', label: 'Feed-sleep cycles continue overnight', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 2 weeks',
+        content:
+          'Two weeks in, and you\'re starting to find your feet — even if it doesn\'t feel that way. Your baby is still sleeping around 15.5 to 17 hours a day in short, irregular chunks. Day-night confusion is very real right now: your baby may have their longest sleep stretch during the day and be wide-eyed at 2 AM. This is normal and resolves naturally around 3–4 months as the circadian rhythm develops.\n\nYou might notice slightly longer alert periods this week compared to week one — your baby may stay awake for 20–40 minutes at a stretch, looking at your face or responding to your voice. These moments of connection are precious, but they\'re also tiring for your baby. Wake windows are still very short, between 30 and 90 minutes including the feed, and the shortest windows tend to happen in the morning.\n\nFeeding on demand remains the priority. Night feeds are frequent and necessary — your baby\'s stomach is tiny and they need to eat every 2–3 hours around the clock. Every feed is supporting their growth and helping establish your milk supply if you\'re breastfeeding.',
+      },
+      {
+        heading: 'Building the foundation for day-night awareness',
+        content:
+          'While a true schedule is months away, you can gently start helping your baby\'s brain learn the difference between day and night. During daytime feeds and alert periods, keep the environment bright and normally noisy — don\'t tiptoe around. Open curtains, go about your day, and let household sounds be part of the background.\n\nAt night, do the opposite. Keep feeds dim, quiet, and business-like — low lighting, minimal stimulation, no play. You\'re not training your baby; you\'re simply providing environmental cues that their developing brain will gradually pick up on. This gentle contrast between day and night is one of the most helpful things you can do in these early weeks.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Bright days, dark nights',
+        description:
+          'Expose your baby to natural daylight during awake periods and keep night-time interactions dim and calm. This simple contrast helps their circadian rhythm begin to develop.',
+      },
+      {
+        title: 'Feed on demand — don\'t watch the clock',
+        description:
+          'Your baby knows when they\'re hungry. Feeding on demand supports healthy weight gain and helps establish feeding patterns naturally. Night feeds are essential and expected.',
+      },
+      {
+        title: 'Accept help and rest when baby sleeps',
+        description:
+          'The advice to "sleep when the baby sleeps" sounds simple but matters enormously right now. Your recovery is important. Accept every offer of help and protect your own rest.',
+      },
+      {
+        title: 'Safe sleep environment for every sleep',
+        description:
+          'Whether it\'s a 20-minute nap or a 3-hour stretch, always use a firm, flat sleep surface. No cushions, no inclined sleepers, no sleeping on sofas or armchairs — even when you\'re exhausted.',
+      },
+    ],
+  },
+
+  // ── 1 Month ─────────────────────────────────────────────────────────────
+  {
+    slug: '1-month-old',
+    ageMonths: 1,
+    displayLabel: '1 mo',
+    ageLabel: '1-month-old',
+    title: '1 Month Old Sleep Schedule',
+    subtitle: 'Sleep patterns, wake windows, and tips for your 1-month-old',
+    metaDescription:
+      'Learn what sleep looks like at 1 month: 15.5 hours total, 30–90 min wake windows, and why unpredictable naps are perfectly normal. Practical tips for new parents.',
+    stats: {
+      napsPerDay: 'Varies',
+      wakeWindow: '30–90 min',
+      bedtime: 'Often 10 PM+',
+      nightSleep: '9–12h (with wakings)',
+      totalDaySleep: '5–6h',
+      totalSleep: '15.5h',
+    },
+    sampleSchedule: [
+      { time: '07:00', label: 'Wake and feed', type: 'wake' },
+      { time: '08:00', label: 'Nap (variable length)', type: 'nap' },
+      { time: '10:00', label: 'Feed, alert time, nap', type: 'nap' },
+      { time: '12:30', label: 'Feed-wake-sleep cycle continues', type: 'nap' },
+      { time: '22:00', label: 'Late evening "bedtime"', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 1 month',
+        content:
+          'At one month, you\'re past the initial shock of the first two weeks, but the sleep landscape hasn\'t changed dramatically. Your baby still needs around 15.5 hours of sleep across the day and night, and naps remain highly unpredictable — some days you\'ll get several long stretches, other days it\'ll feel like your baby only naps for 20 minutes at a time. Both patterns are within the range of normal.\n\nBedtime is typically late at this age — often 10 PM or later — and that\'s okay. Your baby\'s circadian rhythm is still developing, and an artificially early bedtime doesn\'t work yet. The natural late bedtime will gradually shift earlier over the next two months. For now, follow the "eat, play, sleep" rhythm as a loose guide rather than a rigid schedule.\n\nYou may start to notice your baby having a slightly longer sleep stretch at night — perhaps 3–4 hours — which is a wonderful early sign of consolidation. Celebrate these stretches when they appear, but don\'t expect them every night. Consistency is still weeks away, and that\'s perfectly fine.',
+      },
+      {
+        heading: 'The "eat, play, sleep" rhythm',
+        content:
+          'Around one month, many parents find it helpful to follow a gentle "eat, play, sleep" cycle. Feed your baby when they wake, enjoy a short period of alert interaction (even just quiet eye contact or gentle talking), and then help them settle back to sleep when you notice drowsy cues. The "play" portion at this age is very brief — sometimes just 10–15 minutes of calm alertness.\n\nThis isn\'t a schedule — it\'s a rhythm. Some cycles will be 1.5 hours, others 2.5 hours. Some days the pattern will be clear; other days it\'ll feel formless. That\'s all normal. The value of the rhythm is that it gives your day a gentle shape without the pressure of clock-based targets that simply don\'t apply to a 1-month-old.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Use the "eat, play, sleep" pattern loosely',
+        description:
+          'Feed after waking, enjoy brief alert time, then settle back to sleep. This gentle rhythm prevents feeding-to-sleep associations from forming while keeping things flexible enough for a newborn.',
+      },
+      {
+        title: 'Day-night contrast remains your best tool',
+        description:
+          'Bright, active daytime with open curtains and normal noise. Dim, quiet night-time with minimal interaction during feeds. Your baby\'s brain is slowly absorbing these cues.',
+      },
+      {
+        title: 'Don\'t compare your baby\'s sleep to others',
+        description:
+          'Every baby at this age has a different pattern. Some sleep in long stretches; others are frequent catnap champions. Neither is a problem. Your baby\'s sleep will consolidate on their own timeline.',
+      },
+      {
+        title: 'Overnight feeds are nourishing, not failures',
+        description:
+          'Your baby needs 2–3 overnight feeds at this age. This isn\'t a sleep problem to solve — it\'s healthy, normal nutrition. Keep night feeds calm and low-stimulus to help everyone get back to sleep quickly.',
+      },
+    ],
+  },
+
+  // ── 2 Months ────────────────────────────────────────────────────────────
+  {
+    slug: '2-month-old',
+    ageMonths: 2,
+    displayLabel: '2 mo',
+    ageLabel: '2-month-old',
+    title: '2 Month Old Sleep Schedule',
+    subtitle: 'Wake windows, emerging nap patterns, and tips for your 2-month-old',
+    metaDescription:
+      'A practical 2-month-old sleep guide: 15.5 hours total sleep, 45 min–1.75h wake windows, 4–5 naps per day, and tips for building early sleep foundations.',
+    stats: {
+      napsPerDay: '4–5',
+      wakeWindow: '45 min–1.75h',
+      bedtime: 'Often after 9 PM',
+      nightSleep: '9–12h (with wakings)',
+      totalDaySleep: '5–6h',
+      totalSleep: '15.5h',
+    },
+    sampleSchedule: [
+      { time: '08:00', label: 'Wake up', type: 'wake' },
+      { time: '09:15', label: 'Nap 1', type: 'nap' },
+      { time: '12:00', label: 'Nap 2', type: 'nap' },
+      { time: '15:00', label: 'Nap 3', type: 'nap' },
+      { time: '18:00', label: 'Nap 4', type: 'nap' },
+      { time: '20:15', label: 'Bedtime', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 2 months',
+        content:
+          'Two months is when you start to glimpse the earliest signs of a pattern. Your baby still needs around 15.5 hours of total sleep, but wake windows have stretched slightly — from the newborn range of 30–90 minutes to roughly 45 minutes to 1 hour 45 minutes. This is a meaningful change. It means you have a bit more awake time to enjoy together, and it means naps can start to have a loose structure.\n\nMost 2-month-olds take 4–5 naps per day. Each nap can range anywhere from 10 minutes to 2 hours — the variability is wide and normal. If your baby takes a very long nap (over 2 hours), it\'s generally helpful to gently wake them to protect the rest of the day\'s rhythm and ensure enough daytime feeds.\n\nBedtime is still late — usually after 9 PM — and earlier bedtimes will naturally emerge around 3–4 months as the circadian rhythm matures. You\'re not behind if your baby\'s bedtime is 10 PM right now. That\'s biology, not a problem.',
+      },
+      {
+        heading: 'Reading your baby\'s sleep cues',
+        content:
+          'At 2 months, your baby\'s sleepy cues are becoming more distinct. Watch for becoming quiet and still, staring into the distance, losing interest in toys or your face, and bringing hands to their face. These early signals appear before the louder cues of yawning and crying — and catching them early makes settling much smoother.\n\nThe wake windows at this age vary through the day: the first window of the morning is usually the shortest (around 45–60 minutes), while later windows can stretch toward 1.5–1.75 hours. Pay attention to when your individual baby tends to signal tiredness rather than following a rigid clock. A consistent wake-up time in the morning is one of the most helpful anchors you can establish right now.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Anchor the day with a consistent wake-up time',
+        description:
+          'Picking a regular morning wake time (within 30 minutes) helps your baby\'s internal clock start to organise. It doesn\'t need to be early — 7:30 or 8:00 AM works well at this age.',
+      },
+      {
+        title: 'Cap naps at 2 hours',
+        description:
+          'If your baby sleeps longer than 2 hours during a single nap, gently wake them. This protects daytime feeds and prevents one long nap from stealing sleep pressure from the rest of the day.',
+      },
+      {
+        title: 'Pacifiers are a helpful tool',
+        description:
+          'If your baby takes a pacifier, using one at sleep times is both soothing and protective. Research shows pacifier use during sleep is associated with reduced SIDS risk.',
+      },
+      {
+        title: 'Watch your baby, not the internet',
+        description:
+          'At 2 months, there\'s wide variation in what\'s normal. If your baby is feeding well, gaining weight, and having alert wakeful periods, their sleep is doing exactly what it should — even if it doesn\'t match the sample schedule above.',
+      },
+    ],
+  },
+
   // ── 3 months ──────────────────────────────────────────────────────────────
   {
     slug: '3-month-old',
@@ -649,6 +889,189 @@ export const SLEEP_GUIDE_CONFIGS: SleepGuideConfig[] = [
       name: '12-month sleep regression',
       description:
         "Around 12 months, walking and language development can disrupt sleep patterns. Some babies temporarily refuse their second nap, but most still need 2 naps for a few more months. This regression typically lasts 2–4 weeks.",
+    },
+  },
+
+  // ── 13 months (Toddler) ────────────────────────────────────────────────
+  {
+    slug: '13-month-old',
+    ageMonths: 13,
+    displayLabel: '13 mo',
+    ageLabel: '13-month-old',
+    title: '13 Month Old Sleep Schedule',
+    subtitle: 'Wake windows, nap times, and bedtime for your 13-month-old',
+    metaDescription:
+      'A complete 13-month-old sleep guide: 2 naps, 3.25–4h wake windows, bedtime around 7:15 PM, and tips for handling early nap resistance in toddlers.',
+    stats: {
+      napsPerDay: '2',
+      wakeWindow: '3.25–4h',
+      bedtime: '~19:15',
+      nightSleep: '11–12h',
+      totalDaySleep: '2–3h',
+      totalSleep: '13.25h',
+    },
+    sampleSchedule: [
+      { time: '06:30', label: 'Wake up', type: 'wake' },
+      { time: '09:45', label: 'Nap 1 (60–90 min)', type: 'nap' },
+      { time: '14:15', label: 'Nap 2 (60–90 min)', type: 'nap' },
+      { time: '19:15', label: 'Bedtime', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 13 months',
+        content:
+          'Thirteen months is a settling-in age. The big milestones of the first birthday have passed, and your toddler is consolidating their walking, expanding their vocabulary, and showing a growing sense of self. Sleep at this age is generally stable — most 13-month-olds are firmly on a 2-nap schedule and sleeping around 13.25 hours in total.\n\nYou may start to see occasional nap resistance, especially at the morning nap. This is usually your toddler testing their expanding independence rather than a genuine sign that they\'re ready to drop to 1 nap. Most children aren\'t ready for that transition until 14–18 months, so stick with 2 naps and adjust wake windows if settling becomes harder.\n\nWake windows have grown to 3.25–4 hours, with the morning window typically a bit shorter (3.25–3.5 hours) and the pre-bedtime window stretching to about 4 hours. This longer afternoon window means your toddler needs engaging activity to stay happy — outdoor play, water play, and physical exploration all help fill the time without creating overtiredness.',
+      },
+      {
+        heading: 'Fine-tuning the schedule',
+        content:
+          'At 13 months, small adjustments make a big difference. If your toddler is taking a long time to fall asleep at nap 1, try extending the morning wake window by 15 minutes. If nap 2 is being refused, check whether nap 1 was too long — capping it at 90 minutes usually protects the afternoon nap.\n\nDinner timing also starts to matter now. A meal that\'s too close to bedtime can cause discomfort, while eating too early means your toddler is hungry at bedtime. Aim for dinner about 1–1.5 hours before bedtime, with a small milk feed closer to the start of the bedtime routine.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Lengthen wake windows gradually',
+        description:
+          'If your toddler is resisting a nap, don\'t eliminate it — try pushing it later by 15–30 minutes. A small adjustment to the wake window often solves the settling problem without dropping a nap too early.',
+      },
+      {
+        title: 'Time dinner thoughtfully',
+        description:
+          'A substantial dinner 1–1.5 hours before bedtime, followed by a small milk feed in the routine, prevents both hunger-related wake-ups and bedtime discomfort from a too-full stomach.',
+      },
+      {
+        title: 'Keep the bedtime routine short and predictable',
+        description:
+          'At 13 months, a 15–20 minute routine is ideal: dinner, bath (or wash), pyjamas, book, milk, song, bed. Your toddler\'s growing memory means the predictability itself becomes soothing.',
+      },
+      {
+        title: 'Resist the urge to drop to 1 nap too early',
+        description:
+          'Most 13-month-olds still need 2 naps. Dropping to 1 nap before they\'re ready typically causes overtiredness, early waking, and worse night sleep. Wait for consistent signs over 2+ weeks before transitioning.',
+      },
+    ],
+  },
+
+  // ── 18 months (Toddler) ────────────────────────────────────────────────
+  {
+    slug: '18-month-old',
+    ageMonths: 18,
+    displayLabel: '18 mo',
+    ageLabel: '18-month-old',
+    title: '18 Month Old Sleep Schedule',
+    subtitle: 'Wake windows, the 1-nap transition, and the 18-month regression',
+    metaDescription:
+      'Navigate the 18-month-old sleep schedule: 1 midday nap, 5–5.75h wake windows, bedtime 6–8 PM, and how to handle the 18-month sleep regression with calm confidence.',
+    stats: {
+      napsPerDay: '1',
+      wakeWindow: '5–5.75h',
+      bedtime: '18:00–20:00',
+      nightSleep: '11+ hours',
+      totalDaySleep: '2–3h',
+      totalSleep: '13–14h',
+    },
+    sampleSchedule: [
+      { time: '07:00', label: 'Wake up', type: 'wake' },
+      { time: '12:00', label: 'Nap (2–2.5h)', type: 'nap' },
+      { time: '20:00', label: 'Bedtime', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 18 months',
+        content:
+          'Eighteen months is a big transition point. If your toddler hasn\'t already moved to 1 nap, this is typically when it happens. The single nap lands in the middle of the day — usually around noon — and runs for 2–3 hours. Wake windows have stretched to 5 hours before the nap and 5–5.75 hours before bedtime, which is a significant amount of awake time for a small person.\n\nThe 1-nap schedule has a beautiful simplicity to it. Your mornings are free, the nap is long and restorative, and the afternoon-to-bedtime stretch, while long, is manageable with engaging activities and outdoor time. Many parents find that the transition to 1 nap, once it settles, actually makes daily planning easier.\n\nBedtime at 18 months typically falls between 6 PM and 8 PM, depending on when the nap ends and your family\'s routine. On days when the nap is shorter or skipped entirely (it happens), an earlier bedtime is your best friend. Moving bedtime forward by 30–60 minutes on a rough nap day prevents the overtiredness cascade that leads to night waking.',
+      },
+      {
+        heading: 'The 18-month sleep regression',
+        content:
+          'The 18-month regression is one of the more challenging ones, because your toddler now has the will and the words to fight sleep more actively. You may see nap refusals, bedtime crying, increased night waking, and sometimes early morning wake-ups. The common drivers are a surge in independence, separation anxiety, teething (molars often arrive around now), and an explosion in language development.\n\nThe best response is consistent, empathetic boundaries. Your toddler needs to know that sleep time is non-negotiable, but they also need to feel safe and connected. Keep the routine exactly the same, offer brief reassurance if they\'re upset, and avoid introducing new sleep crutches just to get through the phase. This regression typically lasts 2–6 weeks and resolves on its own when the developmental surge settles.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Protect the nap fiercely',
+        description:
+          'At 18 months, your toddler may insist they don\'t need a nap. They do. Nap refusal at this age is almost always about independence, not genuine lack of tiredness. Keep offering the nap in a consistent, calm way.',
+      },
+      {
+        title: 'Use an earlier bedtime as a safety net',
+        description:
+          'On days when the nap is short or skipped, move bedtime earlier by 30–60 minutes. An overtired 18-month-old at bedtime is harder to settle and more likely to wake overnight.',
+      },
+      {
+        title: 'Build connection into the routine, not after it',
+        description:
+          'Separation anxiety peaks around 18 months. Extra cuddles, a special song, or a brief chat about the day — do this during the routine, not as a stalling tactic after lights out.',
+      },
+    ],
+    regression: {
+      name: '18-month sleep regression',
+      description:
+        'Around 18 months, a surge in independence, language development, separation anxiety, and teething can disrupt sleep. Your toddler may fight naps, cry at bedtime, or wake more at night. This phase typically lasts 2–6 weeks.',
+    },
+  },
+
+  // ── 24 months / 2 years (Toddler) ──────────────────────────────────────
+  {
+    slug: '2-year-old',
+    ageMonths: 24,
+    displayLabel: '2 yr',
+    ageLabel: '2-year-old',
+    title: '2 Year Old Sleep Schedule',
+    subtitle: 'Nap, bedtime, and the 2-year sleep regression',
+    metaDescription:
+      'Your complete 2-year-old sleep guide: 1 midday nap (1.5–2h), 5.5–6h wake windows, bedtime 7–9 PM, and how to navigate the 2-year sleep regression.',
+    stats: {
+      napsPerDay: '1',
+      wakeWindow: '5.5–6h',
+      bedtime: '19:00–21:00',
+      nightSleep: '10–12h',
+      totalDaySleep: '1.5–2h',
+      totalSleep: '12+ hours',
+    },
+    sampleSchedule: [
+      { time: '07:00', label: 'Wake up', type: 'wake' },
+      { time: '12:30', label: 'Nap (1.5–2h)', type: 'nap' },
+      { time: '20:00', label: 'Bedtime', type: 'bedtime' },
+    ],
+    sections: [
+      {
+        heading: 'What to expect at 2 years',
+        content:
+          'Two years old. Your baby is now a full-fledged toddler with opinions, sentences, and a remarkable ability to negotiate at bedtime. Sleep at this age typically totals 12 or more hours across a 24-hour period, split between a 1.5–2 hour midday nap and 10–12 hours of night sleep.\n\nNap resistance is common at 2 years, and it can feel very convincing — your toddler may genuinely seem like they don\'t need the nap. But most children aren\'t ready to drop the nap entirely until age 3 or later. What looks like "not tired" is often "too stimulated to settle" or "exercising independence." Consistency is your most powerful tool here. Keep offering the nap at the same time every day, in a calm, dark environment, and most 2-year-olds will continue napping.\n\nWake windows have stretched to 5.5–6 hours, giving you long, full mornings and afternoons. Bedtime falls anywhere from 7 PM to 9 PM depending on when the nap ends. The daily rhythm at 2 is relatively simple and predictable — which is a gift after the chaos of infancy.',
+      },
+      {
+        heading: 'The 2-year sleep regression',
+        content:
+          'The 2-year regression is fuelled by the same forces that make this age so exciting: explosive language, growing independence, new fears (the dark, monsters, being alone), and big developmental milestones like potty training. Your toddler may stall at bedtime, call out repeatedly after lights-out, refuse the nap, or start waking at night after months of sleeping through.\n\nThe key is boundaries wrapped in warmth. Acknowledge your toddler\'s feelings — "I know you want to stay up, and it\'s time for sleep" — and hold the line calmly. Avoid introducing new habits you\'ll need to undo later (lying down with them until they sleep, bringing them into your bed if that\'s not your plan). This regression typically lasts 2–4 weeks and passes when the developmental wave settles.',
+      },
+    ],
+    tips: [
+      {
+        title: 'Don\'t drop the nap yet',
+        description:
+          'Most 2-year-olds still need a nap, even when they resist it. Dropping the nap too early often causes overtiredness, worse night sleep, and more behavioural challenges during the day. Keep offering it consistently.',
+      },
+      {
+        title: 'Use clear, simple bedtime rules',
+        description:
+          'At 2, your toddler understands rules. "One more book, then lights out" or "After our song, it\'s sleep time." Simple, predictable boundaries reduce bedtime negotiations and help your toddler feel secure.',
+      },
+      {
+        title: 'Address new fears with empathy, not dismissal',
+        description:
+          'If your toddler is developing fear of the dark or monsters, take it seriously. A gentle night light, a "monster spray" ritual, or a special stuffed animal can provide genuine comfort without undermining sleep independence.',
+      },
+      {
+        title: 'Consistency through the regression is everything',
+        description:
+          'The 2-year regression tests your resolve. Keep the routine the same, respond briefly and calmly to night wake-ups, and trust that the phase will pass. Your calm consistency is the most reassuring thing your toddler can experience.',
+      },
+    ],
+    regression: {
+      name: '2-year sleep regression',
+      description:
+        'Around 2 years, growing independence, new fears, language development, and milestones like potty training can disrupt sleep. Bedtime stalling, nap refusal, and night waking are common. This phase typically lasts 2–4 weeks.',
     },
   },
 ];

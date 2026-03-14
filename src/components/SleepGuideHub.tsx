@@ -5,8 +5,9 @@ import type { SleepGuideConfig } from '../data/sleepGuideContent';
 import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
 
-const NEWBORN_PLACEHOLDERS = ['Week 1', 'Week 2', '1 month', '2 months'];
-const TODDLER_PLACEHOLDERS = ['13 months', '18 months', '2 years'];
+const NEWBORN_GUIDES = SLEEP_GUIDE_CONFIGS.filter(c => c.ageMonths < 3);
+const INFANT_GUIDES = SLEEP_GUIDE_CONFIGS.filter(c => c.ageMonths >= 3 && c.ageMonths <= 12);
+const TODDLER_GUIDES = SLEEP_GUIDE_CONFIGS.filter(c => c.ageMonths > 12);
 
 function AgeCard({ config }: { config: SleepGuideConfig }) {
   return (
@@ -15,7 +16,7 @@ function AgeCard({ config }: { config: SleepGuideConfig }) {
       className="card p-4 text-center hover:scale-[1.02] transition-transform block"
     >
       <div className="text-lg font-display font-bold text-[var(--nap-color)]">
-        {config.ageMonths} mo
+        {config.displayLabel ?? `${config.ageMonths} mo`}
       </div>
       <div className="text-[10px] text-[var(--text-muted)] mt-1">
         {config.stats.napsPerDay} naps · {config.stats.wakeWindow}
@@ -29,15 +30,6 @@ function AgeCard({ config }: { config: SleepGuideConfig }) {
   );
 }
 
-function PlaceholderCard({ label }: { label: string }) {
-  return (
-    <div className="card p-4 text-center opacity-50 border-dashed">
-      <div className="text-xs text-[var(--text-muted)]">{label}</div>
-      <div className="text-[9px] text-[var(--text-muted)] mt-1">Coming soon</div>
-    </div>
-  );
-}
-
 export function SleepGuideHub() {
   useEffect(() => {
     const root = document.documentElement;
@@ -48,14 +40,14 @@ export function SleepGuideHub() {
 
   useEffect(() => {
     document.title = 'Baby Sleep Schedules by Age — NapNap';
-    setMeta('description', 'Age-specific sleep schedules from 3 to 12 months. Wake windows, nap times, bedtime, and tips for every stage.');
+    setMeta('description', 'Age-specific sleep schedules from newborn to 2 years. Wake windows, nap times, bedtime, and tips for every stage.');
     setMeta('og:title', 'Baby Sleep Schedules by Age — NapNap', true);
-    setMeta('og:description', 'Age-specific sleep schedules from 3 to 12 months.', true);
+    setMeta('og:description', 'Age-specific sleep schedules from newborn to 2 years.', true);
     setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://napnap.app/sleep-guides', true);
     setMeta('twitter:card', 'summary');
     setMeta('twitter:title', 'Baby Sleep Schedules by Age — NapNap');
-    setMeta('twitter:description', 'Age-specific sleep schedules from 3 to 12 months. Wake windows, nap times, bedtime, and tips for every stage.');
+    setMeta('twitter:description', 'Age-specific sleep schedules from newborn to 2 years. Wake windows, nap times, bedtime, and tips for every stage.');
     setCanonical('https://napnap.app/sleep-guides');
     return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
   }, []);
@@ -74,21 +66,21 @@ export function SleepGuideHub() {
         <section className="mb-10">
           <h2 className="text-sm font-display font-bold mb-4" style={{ color: 'var(--night-color)' }}>Newborn (0–3 months)</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {NEWBORN_PLACEHOLDERS.map((label) => (<PlaceholderCard key={label} label={label} />))}
+            {NEWBORN_GUIDES.map((config) => (<AgeCard key={config.slug} config={config} />))}
           </div>
         </section>
 
         <section className="mb-10">
           <h2 className="text-sm font-display font-bold mb-4 text-[var(--nap-color)]">Infant (3–12 months)</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {SLEEP_GUIDE_CONFIGS.map((config) => (<AgeCard key={config.slug} config={config} />))}
+            {INFANT_GUIDES.map((config) => (<AgeCard key={config.slug} config={config} />))}
           </div>
         </section>
 
         <section className="mb-10">
           <h2 className="text-sm font-display font-bold mb-4" style={{ color: 'var(--wake-color)' }}>Toddler (13–24 months)</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {TODDLER_PLACEHOLDERS.map((label) => (<PlaceholderCard key={label} label={label} />))}
+            {TODDLER_GUIDES.map((config) => (<AgeCard key={config.slug} config={config} />))}
           </div>
         </section>
 

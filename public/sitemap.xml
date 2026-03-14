@@ -30,6 +30,26 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://napnap.app/sleep-guides/week-1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/week-2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/1-month-old</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/2-month-old</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://napnap.app/sleep-guides/3-month-old</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -76,6 +96,21 @@
   </url>
   <url>
     <loc>https://napnap.app/sleep-guides/12-month-old</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/13-month-old</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/18-month-old</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://napnap.app/sleep-guides/2-year-old</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
