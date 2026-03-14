@@ -23,6 +23,11 @@ Sentry.init({
 
 const pathname = window.location.pathname;
 
+// Apply morning theme synchronously for landing pages to prevent flash of dark theme
+if (!pathname.startsWith('/app')) {
+  document.documentElement.classList.add('theme-morning');
+}
+
 const LANDING_ROUTES: Record<string, React.JSX.Element> = {
   '/privacy': <LandingPrivacyPage />,
   '/terms': <LandingTermsPage />,
