@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SkyBackground } from './SkyBackground';
-// import { supabase } from '../lib/supabase'; // uncomment when re-enabling waitlist email
+import { supabase } from '../lib/supabase';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -37,18 +37,36 @@ const LANDING_FAQS: { question: string; answer: string }[] = [
   },
 ];
 
-const SOCIAL_PROOF = [
+const TESTIMONIALS = [
   {
     quote: 'Finally, something that tells me what to do next without judging how I got here.',
-    author: 'Priya, mum of a 4-month-old',
+    author: 'Mireia',
+    context: 'mum of a 4-month-old',
   },
   {
     quote: "I use it at 3am when my brain doesn't work. One tap and it tells me when to try again.",
-    author: 'James, dad of twins',
+    author: 'Rosa',
+    context: 'mum of twins',
   },
   {
-    quote: "No charts, no scores. Just \"next nap around 14:10.\" That's all I needed.",
-    author: 'Sofia, mum of a 7-month-old',
+    quote: "No charts, no scores. Just 'next nap around 14:10.' That's all I needed.",
+    author: 'Eva',
+    context: 'mum of a 7-month-old',
+  },
+  {
+    quote: "My partner logs naps too. We're finally on the same page without texting back and forth.",
+    author: 'Marta',
+    context: 'mum of a 10-month-old',
+  },
+  {
+    quote: "It learned my baby's rhythm in two days. Now I actually plan my mornings.",
+    author: 'Cristina',
+    context: 'mum of a 5-month-old',
+  },
+  {
+    quote: 'My daughter shared access with me. I know exactly when the little one needs to nap.',
+    author: 'Pepi',
+    context: 'grandmother and caregiver',
   },
 ];
 
@@ -189,14 +207,10 @@ export function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hideMobileWordmark, setHideMobileWordmark] = useState(false);
   const [scrolledPastHero, setScrolledPastHero] = useState(false);
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [testimonialPaused, setTestimonialPaused] = useState(false);
-  const touchStartX = useRef(0);
-  // -- Waitlist email capture (temporarily commented out) --
-  // const [emailValue, setEmailValue] = useState('');
-  // const [emailSubmitted, setEmailSubmitted] = useState(false);
-  // const [emailSending, setEmailSending] = useState(false);
-  // const [emailError, setEmailError] = useState('');
+  const [emailValue, setEmailValue] = useState('');
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleLoginClick = () => { window.location.href = '/app'; };
@@ -228,25 +242,21 @@ export function LandingPage() {
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Auto-rotate testimonials every 6s (pause on hover/touch)
-  useEffect(() => {
-    if (testimonialPaused) return;
-    const timer = setInterval(() => {
-      setActiveTestimonial((i) => (i + 1) % SOCIAL_PROOF.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [testimonialPaused]);
-
-  const handleTestimonialSwipe = useCallback((endX: number) => {
-    const delta = touchStartX.current - endX;
-    if (Math.abs(delta) > 50) {
-      setActiveTestimonial((i) =>
-        delta > 0
-          ? (i + 1) % SOCIAL_PROOF.length
-          : (i - 1 + SOCIAL_PROOF.length) % SOCIAL_PROOF.length
-      );
+  const handleEmailSubmit = async () => {
+    if (!emailValue || !/\S+@\S+\.\S+/.test(emailValue)) {
+      setEmailError('Please enter a valid email.');
+      return;
     }
-  }, []);
+    setEmailSending(true);
+    setEmailError('');
+    try {
+      await supabase.functions.invoke('waitlist-notify', { body: { email: emailValue } });
+    } catch {
+      // Silent — non-critical feature, don't break UX if Edge Function is down
+    }
+    setEmailSending(false);
+    setEmailSubmitted(true);
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)]">
@@ -398,68 +408,24 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Social proof — cinematic carousel ── */}
+        {/* ── Social proof — testimonial grid ── */}
         <section
           aria-label="What parents say"
-          className="bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10 relative overflow-hidden"
-          onMouseEnter={() => setTestimonialPaused(true)}
-          onMouseLeave={() => setTestimonialPaused(false)}
-          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; setTestimonialPaused(true); }}
-          onTouchEnd={(e) => { handleTestimonialSwipe(e.changedTouches[0].clientX); setTestimonialPaused(false); }}
+          className="bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10"
         >
-          {/* Decorative open-quote mark */}
-          <svg
-            width="48" height="48" viewBox="0 0 24 24" fill="currentColor"
-            className="text-[var(--nap-color)] opacity-15 absolute top-6 left-6 md:left-10"
-            aria-hidden="true"
-          >
-            <path d="M4.583 17.321C3.553 16.227 3 15 3 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C9.591 11.69 11 13.166 11 15c0 1.933-1.567 3.5-3.5 3.5-1.199 0-2.344-.592-2.917-1.179zm10 0C13.553 16.227 13 15 13 13.011c0-3.5 2.457-6.637 6.03-8.188l.893 1.378c-3.335 1.804-3.987 4.145-4.247 5.621.537-.278 1.24-.375 1.929-.311C19.591 11.69 21 13.166 21 15c0 1.933-1.567 3.5-3.5 3.5-1.199 0-2.344-.592-2.917-1.179z" />
-          </svg>
-
-          <div className="max-w-lg mx-auto text-center relative" style={{ minHeight: '120px' }}>
-            {SOCIAL_PROOF.map((item, i) => (
-              <figure
-                key={item.author}
-                className="absolute inset-0 flex flex-col justify-center items-center transition-all duration-500 ease-in-out"
-                style={{
-                  opacity: i === activeTestimonial ? 1 : 0,
-                  transform: i === activeTestimonial ? 'translateY(0)' : 'translateY(8px)',
-                  pointerEvents: i === activeTestimonial ? 'auto' : 'none',
-                }}
-                aria-hidden={i !== activeTestimonial}
-              >
-                <blockquote className="text-display-sm text-[var(--text-primary)] leading-relaxed">
+          <p className="text-center text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display mb-6">
+            Trusted by dozens of families
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+            {TESTIMONIALS.map((item) => (
+              <figure key={item.author} className="card p-5">
+                <blockquote className="text-sm text-[var(--text-primary)] italic leading-relaxed">
                   &ldquo;{item.quote}&rdquo;
                 </blockquote>
-                <figcaption className="mt-4 text-sm text-[var(--text-muted)] font-display">
-                  {item.author}
+                <figcaption className="mt-3 text-xs text-[var(--text-muted)] font-display">
+                  {item.author}, {item.context}
                 </figcaption>
               </figure>
-            ))}
-          </div>
-
-          {/* Dot indicators */}
-          <div className="flex justify-center gap-3 mt-6" role="tablist" aria-label="Testimonial navigation">
-            {SOCIAL_PROOF.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                role="tab"
-                aria-selected={i === activeTestimonial}
-                aria-label={`Testimonial ${i + 1}`}
-                onClick={() => setActiveTestimonial(i)}
-                className="w-12 h-12 flex items-center justify-center bg-transparent border-none cursor-pointer p-0"
-              >
-                <span
-                  className="block rounded-full transition-all duration-300"
-                  style={{
-                    width: i === activeTestimonial ? '24px' : '8px',
-                    height: '8px',
-                    backgroundColor: i === activeTestimonial ? 'var(--nap-color)' : 'var(--text-muted)',
-                    opacity: i === activeTestimonial ? 1 : 0.3,
-                  }}
-                />
-              </button>
             ))}
           </div>
         </section>
@@ -687,7 +653,7 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ── Email capture — temporarily hidden while verifying Edge Function deploy ──
+        {/* ── Email capture ── */}
         <section aria-label="Stay in the loop" className="card p-6 sm:p-8 space-y-4 text-center">
           <h2 className="text-display-sm">Not ready yet? That&apos;s fine.</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
@@ -726,20 +692,58 @@ export function LandingPage() {
             </div>
           )}
         </section>
-        */}
 
       </main>
 
-      {/* ── Footer — "Start free" not "Log in" for warm visitors ── */}
-      <footer className="border-t border-[var(--glass-border)] py-8 mt-8">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-sm text-[var(--text-muted)]">
-          <div className="space-y-1">
-            <p className="font-display text-sm text-[var(--text-secondary)]">Find your rhythm.</p>
-            <p>NapNap is the quiet voice at 3am that tells you what comes next.</p>
+      {/* ── Footer ── */}
+      <footer className="border-t border-[var(--glass-border)] py-10 mt-8">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-[1.2fr_0.8fr_0.8fr] gap-8">
+            {/* Brand column */}
+            <div className="space-y-3">
+              <p className="text-display-sm text-[var(--text-primary)]">NapNap</p>
+              <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                The quiet voice at 3am that tells you what comes next.
+              </p>
+              <div className="flex gap-3 pt-1">
+                <a href="#" aria-label="X (Twitter)" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                </a>
+                <a href="#" aria-label="Instagram" className="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Product + Legal columns — side by side on mobile */}
+            <div className="grid grid-cols-2 md:contents gap-8">
+              <div className="space-y-3">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Product</p>
+                <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
+                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('how-it-works')}>How it works</button>
+                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('product-showcase')}>The app</button>
+                  <button type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => scrollToSection('faq')}>FAQ</button>
+                </nav>
+              </div>
+              <div className="space-y-3">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Legal</p>
+                <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
+                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Privacy</a>
+                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Terms</a>
+                  <a href="#" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
+                </nav>
+              </div>
+            </div>
           </div>
-          <button type="button" onClick={handleLoginClick} className="btn btn-primary text-sm px-5 py-2.5 self-start md:self-auto flex-shrink-0">
-            Start free
-          </button>
+
+          {/* Bottom bar */}
+          <div className="mt-8 pt-4 border-t border-[var(--glass-border)] text-center text-xs text-[var(--text-muted)]">
+            &copy; 2026 NapNap. Made with care in Barcelona.
+          </div>
         </div>
       </footer>
       </div>
