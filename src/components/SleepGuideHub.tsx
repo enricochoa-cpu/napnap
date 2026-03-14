@@ -19,7 +19,9 @@ function AgeCard({ config }: { config: SleepGuideConfig }) {
         {config.displayLabel ?? `${config.ageMonths} mo`}
       </div>
       <div className="text-[10px] text-[var(--text-muted)] mt-1">
-        {config.stats.napsPerDay} naps · {config.stats.wakeWindow}
+        {/^\d+$/.test(config.stats.napsPerDay)
+          ? `${config.stats.napsPerDay} ${config.stats.napsPerDay === '1' ? 'nap' : 'naps'}`
+          : `${config.stats.napsPerDay} naps`} · {config.stats.wakeWindow}
       </div>
       {config.regression && (
         <div className="text-[9px] font-semibold mt-1" style={{ color: 'var(--wake-color)' }}>
