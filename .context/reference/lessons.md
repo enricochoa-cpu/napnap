@@ -233,6 +233,15 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 > **Rule of thumb:** Avoid overflow on the direct parent of a transformed element if you rely on document/window scroll; use body (or an outer wrapper) for horizontal clipping instead.
 
+### 6.8 Scroll Not Working on Sleep Guide Pages (Landing Pages)
+**Date:** 2026-03-14
+
+- **Problem:** Sleep guide pages (`/sleep-guides/12-month-old`, `/sleep-guides`, etc.) could not scroll in Chrome on production. Same symptom as §6.7.
+- **Root Cause:** `body` has `overflow-x: hidden` which per CSS spec forces `overflow-y: auto`, making body a scroll container. Using `min-h-screen` on the page wrapper lets the div grow to full content height — so `overflow-y: auto` on the wrapper never activates because there's nothing to overflow. The body scroll container then clips the content in Chrome.
+- **Permanent Fix:** Use a **fixed-height scroll container** on the page wrapper: `height: 100dvh` (inline style) + `overflow-x-hidden overflow-y-auto` (classes). This constrains the wrapper to viewport height so content overflows and scrolls internally — same pattern as `LandingPage.tsx` (`scrollRef` div). Do NOT use `min-h-screen` with overflow, as it defeats the scroll container.
+
+> **Rule of thumb:** For landing pages that need to scroll, use `height: 100dvh` (fixed) + `overflow-y: auto` on the wrapper — never `min-h-screen` + overflow, because `min-height` lets the element grow and eliminates the overflow.
+
 ---
 
 ## 7. Statistics Bugs
