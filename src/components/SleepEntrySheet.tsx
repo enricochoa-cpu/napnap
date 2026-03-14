@@ -315,8 +315,9 @@ export function SleepEntrySheet({
     if (defaultEndTimeToNow && !endTime) {
       return { isValid: false, warningKey: null, errorKey: 'wakeUpSheet.pleaseSetWakeUpTime' };
     }
-    // Past dates: sleep is already over, so end time is required (no "ongoing" entry for yesterday)
-    if (!isEditing && isPastDate(selectedDate) && !endTime) {
+    // Past dates: sleep is already over, so end time is required — except night sleep,
+    // which routinely starts yesterday evening and is still ongoing (e.g. bedtime at 20:00, it's now 4 AM)
+    if (!isEditing && isPastDate(selectedDate) && !endTime && sleepType !== 'night') {
       return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.pastDateRequiresEndTime' };
     }
     // No end time = no validation needed (ongoing entry), unless we require it above
