@@ -112,18 +112,15 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
     return () => clearInterval(interval);
   }, [isOpen, timeValue, wakeDate]);
 
-  const handleFieldChange = (hours: string, minutes: string) => {
-    const val = `${hours}:${minutes}`;
-    // Only validate when both fields are complete (2 digits each)
-    if (hours.length === 2 && minutes.length === 2) {
-      const [h, m] = [Number(hours), Number(minutes)];
-      const next = new Date();
-      next.setHours(h, m, 0, 0);
-      if (next.getTime() > Date.now()) return;
-      if (bedtime && next.getTime() <= new Date(bedtime).getTime()) return;
-      setRelativeLabel(formatRelativeTime(next, t));
-    }
+  const handleTimeChange = (val: string) => {
+    if (!val) return;
+    const [h, m] = val.split(':').map(Number);
+    const next = new Date();
+    next.setHours(h, m, 0, 0);
+    if (next.getTime() > Date.now()) return;
+    if (bedtime && next.getTime() <= new Date(bedtime).getTime()) return;
     setTimeValue(val);
+    setRelativeLabel(formatRelativeTime(next, t));
   };
 
   const adjustTime = useCallback((minutes: number) => {
@@ -253,50 +250,15 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
                   {t('wakeUpSheet.title')}
                 </h2>
 
-                {/* Editable time — padded wrapper for larger touch target */}
-                <div className="rounded-2xl px-6 py-3" style={{ background: 'color-mix(in srgb, var(--wake-color) 8%, transparent)' }}>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={2}
-                      aria-label={t('wakeUpSheet.ariaHours')}
-                      value={timeValue.split(':')[0] ?? ''}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const h = Math.min(Number(v) || 0, 23);
-                        const padded = v.length === 2 ? h.toString().padStart(2, '0') : v;
-                        handleFieldChange(padded, timeValue.split(':')[1] ?? '00');
-                      }}
-                      onBlur={() => {
-                        const [h] = timeValue.split(':');
-                        handleFieldChange(h.padStart(2, '0'), timeValue.split(':')[1] ?? '00');
-                      }}
-                      className="w-[2.4ch] text-right font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                      style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                    />
-                    <span className="font-display font-bold text-[var(--text-primary)]" style={{ fontSize: '3.5rem', lineHeight: 1.2 }} aria-hidden="true">:</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={2}
-                      aria-label={t('wakeUpSheet.ariaMinutes')}
-                      value={timeValue.split(':')[1] ?? ''}
-                      onChange={(e) => {
-                        const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                        const m = Math.min(Number(v) || 0, 59);
-                        const padded = v.length === 2 ? m.toString().padStart(2, '0') : v;
-                        handleFieldChange(timeValue.split(':')[0] ?? '00', padded);
-                      }}
-                      onBlur={() => {
-                        const [, m] = timeValue.split(':');
-                        handleFieldChange(timeValue.split(':')[0] ?? '00', (m ?? '00').padStart(2, '0'));
-                      }}
-                      className="w-[2.4ch] text-left font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                      style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                    />
-                  </div>
-                </div>
+                {/* Editable time — native scroll picker */}
+                <input
+                  type="time"
+                  value={timeValue}
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  aria-label={t('wakeUpSheet.ariaLogWakeUp')}
+                  className="text-center font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                  style={{ fontSize: '2.75rem', lineHeight: 1.2 }}
+                />
 
                 {/* Relative time */}
                 <p className="text-sm text-[var(--text-muted)] mt-2 mb-10">

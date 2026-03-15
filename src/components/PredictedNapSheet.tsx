@@ -123,8 +123,8 @@ export function PredictedNapSheet({
     return d;
   }, [timeValue]);
 
-  const handleFieldChange = (hours: string, minutes: string) => {
-    const val = `${hours}:${minutes}`;
+  const handleTimeChange = (val: string) => {
+    if (!val) return;
     setTimeValue(val);
   };
 
@@ -386,54 +386,15 @@ export function PredictedNapSheet({
                           {t('predictedNap.napTitle')}
                         </h2>
 
-                        {/* Editable time — two plain inputs */}
-                        <div className="flex items-baseline justify-center gap-1">
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={2}
-                            aria-label={t('predictedNap.ariaHours')}
-                            value={timeValue.split(':')[0] ?? ''}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                              const h = Math.min(Number(v) || 0, 23);
-                              const padded = v.length === 2 ? h.toString().padStart(2, '0') : v;
-                              handleFieldChange(padded, timeValue.split(':')[1] ?? '00');
-                            }}
-                            onBlur={() => {
-                              const [h] = timeValue.split(':');
-                              handleFieldChange(h.padStart(2, '0'), timeValue.split(':')[1] ?? '00');
-                            }}
-                            className="w-[2.4ch] text-right font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                            style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                          />
-                          <span
-                            className="font-display font-bold text-[var(--text-primary)]"
-                            style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                            aria-hidden="true"
-                          >
-                            :
-                          </span>
-                          <input
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={2}
-                            aria-label={t('predictedNap.ariaMinutes')}
-                            value={timeValue.split(':')[1] ?? ''}
-                            onChange={(e) => {
-                              const v = e.target.value.replace(/\D/g, '').slice(0, 2);
-                              const m = Math.min(Number(v) || 0, 59);
-                              const padded = v.length === 2 ? m.toString().padStart(2, '0') : v;
-                              handleFieldChange(timeValue.split(':')[0] ?? '00', padded);
-                            }}
-                            onBlur={() => {
-                              const [, m] = timeValue.split(':');
-                              handleFieldChange(timeValue.split(':')[0] ?? '00', (m ?? '00').padStart(2, '0'));
-                            }}
-                            className="w-[2.4ch] text-left font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none"
-                            style={{ fontSize: '3.5rem', lineHeight: 1.2 }}
-                          />
-                        </div>
+                        {/* Editable time — native scroll picker */}
+                        <input
+                          type="time"
+                          value={timeValue}
+                          onChange={(e) => handleTimeChange(e.target.value)}
+                          aria-label={t('predictedNap.ariaSheet')}
+                          className="text-center font-display font-bold text-[var(--text-primary)] bg-transparent border-none outline-none appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-datetime-edit-fields-wrapper]:p-0"
+                          style={{ fontSize: '2.75rem', lineHeight: 1.2 }}
+                        />
 
                         {/* Spacer */}
                         <div className="mb-10" />
