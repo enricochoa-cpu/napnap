@@ -1,10 +1,13 @@
 import { useEffect } from 'react';
-import { PRIVACY_POLICY_SECTIONS } from '../constants/privacyPolicy';
+import { useTranslation } from 'react-i18next';
+import { PRIVACY_POLICY_SECTIONS, PRIVACY_POLICY_SUPPORT_EMAIL } from '../constants/privacyPolicy';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../constants/legal';
 import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
 
 export function LandingPrivacyPage() {
+  const { t } = useTranslation();
+
   useEffect(() => {
     const root = document.documentElement;
     const prev = Array.from(root.classList);
@@ -13,15 +16,15 @@ export function LandingPrivacyPage() {
   }, []);
 
   useEffect(() => {
-    document.title = 'Privacy Policy — NapNap';
-    setMeta('description', 'How NapNap handles your data. Our privacy policy covers data collection, storage, and your rights under GDPR.');
-    setMeta('og:title', 'Privacy Policy — NapNap', true);
-    setMeta('og:description', 'How NapNap handles your data. Privacy policy and GDPR rights.', true);
+    document.title = `${t('privacy.viewTitle')} — NapNap`;
+    setMeta('description', t('privacy.metaDescription'));
+    setMeta('og:title', `${t('privacy.viewTitle')} — NapNap`, true);
+    setMeta('og:description', t('privacy.ogDescription'), true);
     setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://napnap.app/privacy', true);
     setCanonical('https://napnap.app/privacy');
     return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
-  }, []);
+  }, [t]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-deep)]">
@@ -33,27 +36,27 @@ export function LandingPrivacyPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Back to NapNap
+          {t('landing.backToNapNap')}
         </a>
 
-        <h1 className="text-display-md text-[var(--text-primary)] mb-2">Privacy Policy</h1>
-        <p className="text-sm text-[var(--text-muted)] mb-8">How we handle your data</p>
+        <h1 className="text-display-md text-[var(--text-primary)] mb-2">{t('privacy.viewTitle')}</h1>
+        <p className="text-sm text-[var(--text-muted)] mb-8">{t('privacy.viewSubtitle')}</p>
 
         <div className="space-y-6">
           {PRIVACY_POLICY_SECTIONS.map((section) => (
-            <div key={section.title} className="card p-5">
+            <div key={section.titleKey} className="card p-5">
               <h2 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-2">
-                {section.title}
+                {t(section.titleKey)}
               </h2>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                {section.body}
+                {t(section.bodyKey, { email: PRIVACY_POLICY_SUPPORT_EMAIL })}
               </p>
             </div>
           ))}
         </div>
 
         <p className="text-xs text-[var(--text-muted)] text-center mt-8">
-          Last updated: {PRIVACY_POLICY_LAST_UPDATED}
+          {t('privacy.lastUpdated')}: {PRIVACY_POLICY_LAST_UPDATED}
         </p>
       </div>
       <LandingFooter />

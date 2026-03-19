@@ -42,8 +42,8 @@ export function ShareAccessView({
         onInvite={onInvite}
         onUpdateRole={onUpdateRole}
         onRevokeAccess={onRevokeAccess}
-        onAcceptInvitation={async (_shareId: string) => ({ success: true })}
-        onDeclineInvitation={async (_shareId: string) => ({ success: true })}
+        onAcceptInvitation={async () => ({ success: true })}
+        onDeclineInvitation={async () => ({ success: true })}
         inviterName={inviterName}
         babyName={babyName}
       />

@@ -56,8 +56,7 @@ export function useBabyProfile() {
       // Apply DB locale to i18n and localStorage so UI language matches (and persists before next profile load).
       // If user just set a non-English language in Settings but a refetch returns stale 'en', don't overwrite — avoids
       // Today screen flipping back to English when navigating away from Profile (e.g. after accept-invite refetch).
-      const supported = ['en', 'es', 'ca'] as const;
-      type Locale = (typeof supported)[number];
+      type Locale = 'en' | 'es' | 'ca';
       const toLocale = (v: string | null | undefined): Locale =>
         (v === 'es' || v === 'ca' ? v : 'en');
       const serverLocale = toLocale(data?.locale ?? null);
@@ -289,7 +288,10 @@ export function useBabyProfile() {
       if (data.name !== undefined || data.dateOfBirth !== undefined || data.gender !== undefined || data.avatarUrl !== undefined) {
         setProfile((prev) => {
           if (!prev) return prev;
-          const { userName: _un, userRole: _ur, ...babyData } = data;
+          const { userName, userRole, ...babyData } = data;
+          // `userName` / `userRole` are intentionally excluded here; we only merge the baby fields.
+          void userName;
+          void userRole;
           return { ...prev, ...babyData };
         });
 
@@ -297,7 +299,10 @@ export function useBabyProfile() {
         setSharedProfiles((prev) =>
           prev.map((p) => {
             if (p.id === user.id) {
-              const { userName: _un2, userRole: _ur2, ...babyData } = data;
+              const { userName, userRole, ...babyData } = data;
+              // Exclude user-level fields, keep only baby-level fields.
+              void userName;
+              void userRole;
               return { ...p, ...babyData };
             }
             return p;

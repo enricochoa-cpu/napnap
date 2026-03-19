@@ -514,7 +514,7 @@ function DateRangePickerSheet({
   const handleApply = () => {
     const end = tempEnd ?? tempStart;
     const start = tempStart;
-    let finalStart = start;
+    const finalStart = start;
     let finalEnd = end;
     if (isAfter(finalEnd, finalStart)) {
       const daysDiff = differenceInDays(finalEnd, finalStart) + 1;
@@ -663,7 +663,7 @@ function DateRangePickerSheet({
 
 export type StatsSection = 'summary' | 'naps' | 'night' | 'growth';
 
-export function StatsView({ entries, profile: _profile = null, weightLogs = [], heightLogs = [], headLogs = [], onAddWeight, onAddHeight }: StatsViewProps) {
+export function StatsView({ entries, weightLogs = [], heightLogs = [], headLogs = [], onAddWeight, onAddHeight }: StatsViewProps) {
   const { t } = useTranslation();
   // Date range state - default to last 7 days
   const today = new Date();

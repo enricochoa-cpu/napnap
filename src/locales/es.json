@@ -198,14 +198,24 @@
     "viewTitle": "Política de privacidad",
     "viewSubtitle": "Cómo usamos y protegemos tus datos",
     "lastUpdated": "Última actualización",
+    "metaDescription": "Cómo NapNap gestiona tus datos. Nuestra política de privacidad cubre la recopilación de datos, el almacenamiento y tus derechos en virtud del RGPD.",
+    "ogDescription": "Cómo NapNap gestiona tus datos. Nuestra política de privacidad y tus derechos en virtud del RGPD.",
+    "dataController": "Responsable del tratamiento",
+    "dataControllerBody": "El responsable del tratamiento de tus datos personales es la persona que opera NapNap (la persona responsable de ejecutar la aplicación). Para solicitudes de protección de datos, preguntas de privacidad o para ejercer tus derechos en virtud del RGPD (acceso, rectificación, supresión, limitación, portabilidad, oposición), ponte en contacto con nosotros en {{email}}.",
     "whatWeCollect": "Qué recogemos",
     "whatWeCollectBody": "Recogemos la información que nos das al usar NapNap: tu correo y datos de cuenta, el perfil de tu bebé (nombre, fecha de nacimiento, peso y altura opcionales) y los datos de sueño que registras (siestas y noches).",
     "howWeUse": "Cómo lo usamos",
     "howWeUseBody": "Usamos estos datos para el funcionamiento de la app, mostrarte predicciones e historial de sueño y mejorar nuestro producto. No vendemos tus datos.",
+    "cookiesAndSimilarTechnologies": "Cookies y tecnologías similares",
+    "cookiesAndSimilarTechnologiesBody": "NapNap utiliza únicamente las cookies y tecnologías similares mínimas necesarias para ejecutar la aplicación de forma segura. Cuando te registras o inicias sesión, nuestro proveedor de backend, Supabase, almacena la información de autenticación en tu navegador para que puedas permanecer identificado y para que podamos proteger tu cuenta. Si eliges iniciar sesión con Google, Google puede utilizar sus propias cookies para autenticarte, según su propia política de privacidad. No utilizamos cookies publicitarias, píxeles de marketing ni herramientas de analítica que rastreen tu actividad a través de otras aplicaciones o sitios web.",
+    "retention": "Conservación",
+    "retentionBody": "Mantenemos tu cuenta y los datos de sueño durante el tiempo que tu cuenta esté activa. Después de que elimines tu cuenta, eliminamos todos los datos personales. Los únicos datos que podemos conservar son estadísticas anónimas relacionadas con el sueño y el crecimiento (p. ej., duraciones del sueño, rangos de edad): sin nombres, sin identificadores, sin fotos de perfil ni otra información que pueda identificarte a ti o a tu hijo. Conservamos esto únicamente para mejorar NapNap y para investigación (p. ej., comprender los patrones de sueño); no se puede vincular de nuevo contigo.",
     "accountDeletion": "Eliminación de cuenta",
     "accountDeletionBody": "Cuando eliminas tu cuenta, eliminamos de forma permanente tu correo, nombre(s), fotos de perfil y todos los datos vinculados. No conservamos nada que identifique a ti o a tu bebé. Los únicos datos que podemos conservar son datos de sueño y crecimiento anonimizados (sin nombres ni identificadores), para mejorar nuestro producto y la investigación. No conservamos fotos de perfil ni ninguna otra información personal tras la eliminación.",
+    "dataAboutMinors": "Datos sobre menores",
+    "dataAboutMinorsBody": "NapNap está diseñado para ser utilizado por adultos (padres o tutores legales). Al proporcionar los datos de tu bebé en la aplicación, confirmas que eres el padre/madre o tutor legal y que tienes autorización para facilitar esos datos en su nombre, de acuerdo con la normativa aplicable de protección de datos en la UE.",
     "contact": "Contacto",
-    "contactBody": "Para preguntas sobre tus datos o esta política, usa la opción Contacto en Ayuda."
+    "contactBody": "Para preguntas sobre tus datos o esta política, usa la opción Contacto en Ayuda o envíanos un correo a {{email}}."
   },
   "support": {
     "title": "Ayuda",
@@ -635,6 +645,8 @@
   "terms": {
     "viewTitle": "Términos de Servicio",
     "viewSubtitle": "Normas de uso de NapNap",
+    "metaDescription": "Términos del Servicio para el rastreador de sueño infantil NapNap. Normas de uso de la app, limitación de responsabilidad y ley aplicable.",
+    "ogDescription": "Términos del Servicio para el rastreador de sueño infantil NapNap.",
     "intro": "Introducción",
     "introBody": "Estos Términos de Servicio (\"Términos\") rigen el uso de la aplicación de seguimiento de sueño infantil NapNap (\"la App\"). Al crear una cuenta o usar la App, aceptas estos Términos. Si no estás de acuerdo, no uses la App.",
     "operator": "Responsable del servicio",
@@ -657,6 +669,8 @@
   "contact": {
     "title": "Contacto",
     "subtitle": "Escríbenos",
+    "metaDescription": "Contacta con NapNap. Preguntas sobre el seguimiento del sueño del bebé, comentarios o soporte.",
+    "ogDescription": "Contacta con NapNap para preguntas, comentarios o soporte.",
     "email": "Correo",
     "message": "Mensaje",
     "getInTouch": "Escríbenos",
@@ -668,6 +682,220 @@
     "copyEmail": "Copiar dirección de email",
     "copied": "¡Copiado!",
     "opensEmail": "Se abrirá tu app de correo y enviará a {{email}}"
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "Cómo funciona",
+      "theApp": "La app",
+      "faq": "Preguntas frecuentes"
+    },
+    "backToNapNap": "Volver a NapNap",
+    "languagePicker": {
+      "ariaLabel": "Selector de idioma"
+    },
+    "header": {
+      "login": "Iniciar sesión"
+    },
+    "mobile": {
+      "home": "Inicio",
+      "startFree": "Empieza gratis"
+    },
+    "hero": {
+      "tagline": "Tu acompañante del sueño con ritmo",
+      "titleLine1": "Deja de adivinar las siestas.",
+      "titleLine2": "Muévete al ritmo de tu bebé.",
+      "cta": {
+        "primary": "Crea tu plan de sueño gratuito",
+        "secondary": "Ver cómo funciona"
+      },
+      "description": "NapNap convierte las ventanas de vigilia y los patrones de sueño en un plan tranquilo. En un solo lugar podrás ver cuándo toca dormir la siesta, cuándo dormir y cuándo solo respirar."
+    },
+    "reassurances": {
+      "noTrainingMethod": "Sin métodos de entrenamiento del sueño",
+      "noScoresOrGrades": "Sin puntuaciones ni notas",
+      "freeToStart": "Gratis para empezar"
+    },
+    "testimonials": {
+      "heading": "Confiado por decenas de familias",
+      "t1": {
+        "quote": "Por fin, algo que me dice qué hacer después sin juzgar cómo llegué hasta aquí.",
+        "author": "Mireia",
+        "context": "mamá de un bebé de 4 meses"
+      },
+      "t2": {
+        "quote": "Lo uso a las 3am cuando mi cerebro no funciona. Un toque y me dice cuándo volver a intentarlo.",
+        "author": "Rosa",
+        "context": "mamá de gemelos"
+      },
+      "t3": {
+        "quote": "Sin gráficas, sin puntuaciones. Solo “próxima siesta sobre las 14:10”. Eso era todo lo que necesitaba.",
+        "author": "Eva",
+        "context": "mamá de un bebé de 7 meses"
+      },
+      "t4": {
+        "quote": "Mi pareja también registra las siestas. Por fin estamos en la misma página sin estar mandándonos mensajes sin parar.",
+        "author": "Marta",
+        "context": "mamá de un bebé de 10 meses"
+      },
+      "t5": {
+        "quote": "Aprendió el ritmo de mi bebé en dos días. Ahora de verdad planeo mis mañanas.",
+        "author": "Cristina",
+        "context": "mamá de un bebé de 5 meses"
+      },
+      "t6": {
+        "quote": "Mi hija compartió el acceso conmigo. Sé exactamente cuándo el peque necesita dormir la siesta.",
+        "author": "Pepi",
+        "context": "abuela y cuidadora"
+      }
+    },
+    "howItWorks": {
+      "title": "Cómo funciona",
+      "description": "NapNap utiliza ventanas de vigilia basadas en la edad y el sueño reciente de tu bebé para crear un ritmo diario claro que puedes seguir, incluso si duermes poco. Sin puntuaciones, sin métodos de entrenamiento, sin juicios.",
+      "step1": {
+        "title": "Cuéntanos sobre tu bebé",
+        "description": "Añade un nombre y la fecha de nacimiento. NapNap parte de ventanas de vigilia según la edad, adaptadas a su etapa."
+      },
+      "step2": {
+        "title": "Registra el sueño con un solo pulgar",
+        "description": "Toca una vez para empezar una siesta o la noche y una vez para despertar. Registrar es rápido, permisivo y pensado para usar con una sola mano en un día ajetreado."
+      },
+      "step3": {
+        "title": "Sigue el siguiente paso",
+        "description": "Mira las siestas y la hora de dormir de hoy en un plan sencillo. Las sugerencias se actualizan a medida que tu bebé duerme y crece, para que siempre sepas qué viene después."
+      }
+    },
+    "productShowcase": {
+      "title": "Mira la app en acción",
+      "description": "Un panel tranquilo que te dice exactamente qué viene ahora.",
+      "card1": {
+        "caption": "Tu día de un vistazo"
+      },
+      "card2": {
+        "caption": "Todas las siestas y noches registradas"
+      },
+      "card3": {
+        "caption": "Patrones, no hojas de cálculo"
+      }
+    },
+    "midCta": {
+      "title": "¿Listos para encontrar su ritmo?",
+      "description": "Gratis para empezar. Sin tarjeta de crédito. No se requiere ningún método de entrenamiento del sueño.",
+      "button": "Crea tu plan de sueño gratuito"
+    },
+    "whatYouGet": {
+      "title": "Lo que obtienes",
+      "description": "Un conjunto tranquilo de herramientas que trabajan juntas para mantener el sueño de tu bebé en un ritmo suave."
+    },
+    "features": {
+      "livePlan": {
+        "title": "Plan en vivo de siestas y hora de dormir",
+        "description": "Consulta las siestas de hoy, la hora de dormir y las ventanas de vigilia en una vista sencilla. Se actualiza mientras tu bebé duerme."
+      },
+      "sharing": {
+        "title": "Compartir con varios cuidadores",
+        "description": "Comparte el acceso con tu pareja o cuidadores para que todos sigan el mismo plan."
+      },
+      "growth": {
+        "title": "Seguimiento del crecimiento",
+        "description": "Registra peso, altura y perímetro cefálico junto al sueño, sin más complicaciones."
+      },
+      "report": {
+        "title": "Informe de sueño de 30 días",
+        "description": "Un relato amable del último mes para detectar patrones sin saturarte con gráficos."
+      }
+    },
+    "ageRange": {
+      "title": "Para 0–18 meses",
+      "description": "Desde siestas cortas de recién nacido hasta los últimos días de una sola siesta, NapNap adapta el ritmo sugerido a la edad de tu bebé y a su sueño reciente."
+    },
+    "ageTags": {
+      "newborn": "Recién nacido",
+      "3to6": "3–6 meses",
+      "6to12": "6–12 meses",
+      "12to18": "12–18 meses"
+    },
+    "faq": {
+      "title": "Preguntas, respondidas con calma",
+      "subtitle": "Algunas de las cosas que los padres suelen preguntar antes de empezar."
+    },
+    "faqs": {
+      "q1": "¿Qué es NapNap?",
+      "a1": "NapNap es un rastreador del sueño para bebés (0–18 meses) que te ayuda a registrar siestas y el sueño nocturno y a obtener sugerencias sencillas basadas en la edad sobre cuándo tu bebé podría necesitar dormir después. Nos centramos en próximos pasos claros—como “Siguiente siesta sobre las 13:42” o “Hora de dormir sobre las 19:30”—con un tono tranquilo y nada juzgador.",
+      "q2": "¿NapNap es un programa de entrenamiento del sueño?",
+      "a2": "No. NapNap te ayuda con horarios y patrones. No prescribe un método específico. Tú eliges cómo acomodar a tu bebé.",
+      "q3": "¿Qué es una ventana de vigilia?",
+      "a3": "Una ventana de vigilia es el tiempo que tu bebé puede permanecer despierto de forma cómoda entre periodos de sueño. Varía según la edad—de unos 45–60 minutos para recién nacidos a varias horas para bebés mayores. NapNap usa ventanas de vigilia basadas en la edad para sugerirte cuándo ofrecer la próxima siesta o la hora de dormir.",
+      "q4": "¿Tengo que registrar todas y cada una de las siestas?",
+      "a4": "No. La app funciona mejor si registras con regularidad, pero está hecha para perdonar huecos y entradas tardías. No hace falta que los datos sean perfectos.",
+      "q5": "¿Mis datos son privados?",
+      "a5": "Sí. Los datos de sueño y crecimiento se quedan en tu cuenta. Tú controlas el acceso mediante compartir con cuidadores.",
+      "q6": "¿Cuánto cuesta NapNap?",
+      "a6": "NapNap es gratis para empezar. Puedes registrar el sueño, obtener sugerencias de siesta y hora de dormir y compartir el acceso con una pareja sin coste."
+    },
+    "emailCapture": {
+      "title": "¿Aún no estás listo/a? No pasa nada.",
+      "description": "Deja tu correo y te enviaremos una nota breve cuando algo importante esté listo. Sin campañas repetitivas.",
+      "submitted": "¡Perfecto! Te mantendremos informado con suavidad.",
+      "sectionAriaLabel": "Mantente al día",
+      "placeholder": "tu@email.com",
+      "emailAriaLabel": "Dirección de correo electrónico",
+      "sending": "Enviando...",
+      "notifyMe": "Avísame",
+      "invalidEmail": "Introduce un correo electrónico válido."
+    },
+    "footer": {
+      "brand": {
+        "tagline": "La voz tranquila a las 3am que te dice qué viene después."
+      },
+      "product": {
+        "heading": "Producto",
+        "howItWorks": "Cómo funciona",
+        "theApp": "La app",
+        "faq": "Preguntas frecuentes"
+      },
+      "legal": {
+        "heading": "Legal",
+        "sleepGuides": "Guías de sueño",
+        "privacy": "Privacidad",
+        "terms": "Términos",
+        "contact": "Contacto"
+      },
+      "copyright": "© 2026 NapNap. Hecho con cuidado en Barcelona."
+    }
+  },
+  "sleepGuides": {
+    "hub": {
+      "pageTitle": "Horarios de sueño según la edad — NapNap",
+      "title": "El horario de sueño de tu bebé",
+      "subtitle": "Guías según la edad con ventanas de vigilia, siestas y hora de dormir",
+      "metaDescription": "Horarios de sueño según la edad de recién nacido a 2 años. Ventanas de vigilia, siestas, hora de dormir y consejos para cada etapa.",
+      "ogDescription": "Horarios de sueño según la edad de recién nacido a 2 años.",
+      "newbornHeading": "Recién nacidos (0–3 meses)",
+      "infantHeading": "Bebés (3–12 meses)",
+      "toddlerHeading": "Niños pequeños (13–24 meses)",
+      "napSingular": "siesta",
+      "napPlural": "siestas",
+      "regression": "Regresión",
+      "cta": "Rastrea el sueño de tu bebé con NapNap — Empieza gratis"
+    },
+    "page": {
+      "breadcrumbLink": "Guías de sueño",
+      "breadcrumbAriaLabel": "Migas de pan",
+      "atAGlance": "A simple vista",
+      "atAGlance": {
+        "naps": "Siestas",
+        "wakeWindow": "Ventana de vigilia",
+        "bedtime": "Hora de dormir",
+        "nightSleep": "Sueño nocturno",
+        "daySleep": "Sueño diurno",
+        "totalSleep": "Sueño total"
+      },
+      "ageNavigationAriaLabel": "Navegación por edad",
+      "sampleSchedule": "Horario de ejemplo",
+      "tipsTitle": "Señales a vigilar",
+      "cta": "Rastrea el sueño de tu {{ageLabel}} con NapNap",
+      "ctaSubtitle": "Gratis para empezar · No hace falta un método de entrenamiento del sueño"
+    }
   },
   "loading": {
     "message": "Cargando..."

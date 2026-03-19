@@ -14,7 +14,19 @@ const SUPPORTED_LOCALES = ['en', 'es', 'ca'] as const;
 type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
 const savedLocale = typeof window !== 'undefined'
-  ? (localStorage.getItem(STORAGE_KEYS.LOCALE) as SupportedLocale | null)
+  ? (() => {
+      const raw = localStorage.getItem(STORAGE_KEYS.LOCALE);
+      if (!raw) return null;
+
+      // `setToStorage()` JSON-stringifies values, so stored locale might look like `"es"`.
+      // We accept both raw (`es`) and JSON-stringified (`"es"`) formats.
+      try {
+        const parsed = JSON.parse(raw);
+        return typeof parsed === 'string' ? (parsed as SupportedLocale) : null;
+      } catch {
+        return raw as SupportedLocale;
+      }
+    })()
   : null;
 
 const initialLanguage: SupportedLocale = savedLocale && SUPPORTED_LOCALES.includes(savedLocale)

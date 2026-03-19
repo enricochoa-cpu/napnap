@@ -819,7 +819,7 @@ export function TodayView({
 
             {/* Predicted Naps - Ghost Cards (tappable → opens PredictedNapSheet) */}
             {[...displayPredictions].reverse()
-              .map((napInfo, _reverseIdx) => {
+              .map((napInfo) => {
               const originalIndex = displayPredictions.indexOf(napInfo);
               const isSkipped = skippedNapIndices?.has(originalIndex) ?? false;
               // When overdue, show original suggested time in the card so user sees "expected nap"; keep anchor math using napInfo.time

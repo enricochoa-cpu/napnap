@@ -196,14 +196,24 @@
     "viewTitle": "Política de privacitat",
     "viewSubtitle": "Com fem servir i protegim les teves dades",
     "lastUpdated": "Última actualització",
+    "metaDescription": "Com NapNap gestiona les teves dades. La nostra política de privacitat cobreix la recollida de dades, l'emmagatzematge i els teus drets en virtut del RGPD.",
+    "ogDescription": "Com NapNap gestiona les teves dades. Política de privacitat i drets del RGPD.",
+    "dataController": "Responsable del tractament",
+    "dataControllerBody": "El responsable del tractament de les teves dades personals és la persona que opera NapNap (la persona responsable d'executar l'aplicació). Per a sol·licituds de protecció de dades, preguntes de privacitat o per exercir els teus drets en virtut del RGPD (accés, rectificació, esborrat, restricció, portabilitat, oposició), contacta amb nosaltres a {{email}}.",
     "whatWeCollect": "Què recollim",
     "whatWeCollectBody": "Recollim la informació que ens dones en usar NapNap: el teu correu i dades del compte, el perfil del teu nadó (nom, data de naixement, pes i alçada opcionals) i les dades de son que registres (migdiades i nits).",
     "howWeUse": "Com ho fem servir",
     "howWeUseBody": "Fem servir aquestes dades per fer funcionar l'app, mostrar-te prediccions i historial de son i millorar el nostre producte. No venem les teves dades.",
+    "cookiesAndSimilarTechnologies": "Cookies i tecnologies similars",
+    "cookiesAndSimilarTechnologiesBody": "NapNap només utilitza les cookies i tecnologies similars mínimes necessàries per executar l'aplicació de manera segura. Quan et connectes, el nostre proveïdor de backend, Supabase, emmagatzema la informació d'autenticació al teu navegador perquè puguis mantenir-te connectat i perquè puguem protegir el teu compte. Si tries connectar-te amb Google, Google pot utilitzar les seves pròpies cookies per autenticar-te, d'acord amb la seva política de privacitat. No utilitzem cookies publicitàries, píxels de màrqueting ni eines d'analítica que rastregin la teva activitat a altres aplicacions o llocs web.",
+    "retention": "Conservació",
+    "retentionBody": "Conservem el teu compte i les dades de son mentre el teu compte estigui actiu. Després que eliminis el teu compte, eliminem totes les dades personals. L'única informació que podem conservar són estadístiques anonimitzades relacionades amb el son i el creixement (p. ex., durades del son, rangs d'edat): sense noms, sense identificadors, sense fotos de perfil ni cap altra informació que pugui identificar-te a tu o al teu fill. Ho conservem només per millorar NapNap i per a recerca (p. ex., entendre els patrons de son); no es pot vincular de nou a tu.",
     "accountDeletion": "Eliminació del compte",
     "accountDeletionBody": "Quan elimines el compte, eliminem de forma permanent el teu correu, nom(s), fotos de perfil i totes les dades vinculades. No conservem res que identifiqui tu o el teu nadó. Les úniques dades que podem conservar són dades de son i creixement anonimitzades (sense noms ni identificadors), per millorar el nostre producte i la recerca. No conservem fotos de perfil ni cap altra informació personal després de l'eliminació.",
+    "dataAboutMinors": "Dades sobre menors",
+    "dataAboutMinorsBody": "NapNap està dissenyat per ser utilitzat per adults (pares o tutors legals). En proporcionar les dades del teu nadó a l'aplicació, confirmes que ets el pare/mare o tutor legal i que tens autorització per facilitar aquestes dades en nom seu, d'acord amb la normativa aplicable de protecció de dades de la UE.",
     "contact": "Contacte",
-    "contactBody": "Per preguntes sobre les teves dades o aquesta política, fes servir l'opció Contacte a Ajuda."
+    "contactBody": "Per preguntes sobre les teves dades o aquesta política, fes servir l'opció Contacte a Ajuda o envia'ns un correu a {{email}}."
   },
   "support": {
     "title": "Ajuda",
@@ -633,6 +643,8 @@
   "terms": {
     "viewTitle": "Termes del servei",
     "viewSubtitle": "Normes d'ús de NapNap",
+    "metaDescription": "Termes del servei per al rastrejador de son infantil NapNap. Normes d'ús de l'aplicació, limitació de responsabilitat i llei aplicable.",
+    "ogDescription": "Termes del servei per al rastrejador de son infantil NapNap.",
     "intro": "Introducció",
     "introBody": "Aquests Termes del servei (\"Termes\") regeixen l'ús de l'aplicació de seguiment de son infantil NapNap (\"l'App\"). En crear un compte o usar l'App, acceptes aquests Termes. Si no estàs d'acord, no facis servir l'App.",
     "operator": "Responsable del servei",
@@ -655,6 +667,8 @@
   "contact": {
     "title": "Contacte",
     "subtitle": "Escriu-nos",
+    "metaDescription": "Contacta amb NapNap. Preguntes sobre el seguiment del son del nadó, comentaris o suport.",
+    "ogDescription": "Contacta amb NapNap per preguntes, comentaris o suport.",
     "email": "Correu",
     "message": "Missatge",
     "getInTouch": "Escriu-nos",
@@ -666,6 +680,220 @@
     "copyEmail": "Copiar adreça d'email",
     "copied": "Copiat!",
     "opensEmail": "S'obrirà la teva app de correu i enviarà a {{email}}"
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "Com funciona",
+      "theApp": "L'app",
+      "faq": "Preguntes freqüents"
+    },
+    "backToNapNap": "Tornar a NapNap",
+    "languagePicker": {
+      "ariaLabel": "Selector d'idioma"
+    },
+    "header": {
+      "login": "Iniciar sessió"
+    },
+    "mobile": {
+      "home": "Inici",
+      "startFree": "Comença gratis"
+    },
+    "hero": {
+      "tagline": "El teu acompanyant del son amb ritme",
+      "titleLine1": "Deixa d'endevinar les migdiades.",
+      "titleLine2": "Segueix el ritme del teu nadó.",
+      "cta": {
+        "primary": "Crea el teu pla de son gratuït",
+        "secondary": "Veure com funciona"
+      },
+      "description": "NapNap converteix les finestres de vetlla i els patrons de son en un pla tranquil. En un sol lloc veuràs quan toca fer migdiada, quan toca dormir i quan només cal respirar."
+    },
+    "reassurances": {
+      "noTrainingMethod": "Sense mètodes d'entrenament del son",
+      "noScoresOrGrades": "Sense puntuacions ni notes",
+      "freeToStart": "Gratuït per començar"
+    },
+    "testimonials": {
+      "heading": "Confien en nosaltres desenes de famílies",
+      "t1": {
+        "quote": "Finalment, alguna cosa que em diu què he de fer després sense jutjar com hi he arribat.",
+        "author": "Mireia",
+        "context": "mare d'un nadó de 4 mesos"
+      },
+      "t2": {
+        "quote": "L'utilitzo a les 3 de la matinada quan el meu cervell no funciona. Un toc i em diu quan ho he de tornar a provar.",
+        "author": "Rosa",
+        "context": "mare de bessons"
+      },
+      "t3": {
+        "quote": "Sense gràfics, sense puntuacions. Només “propera migdiada cap a les 14:10”. Això era tot el que necessitava.",
+        "author": "Eva",
+        "context": "mare d'un nadó de 7 mesos"
+      },
+      "t4": {
+        "quote": "El meu company també registra les migdiades. Per fi estem d'acord sense estar-nos enviant missatges amunt i avall.",
+        "author": "Marta",
+        "context": "mare d'un nadó de 10 mesos"
+      },
+      "t5": {
+        "quote": "Va aprendre el ritme del meu nadó en dos dies. Ara, de veritat, planifico els meus matins.",
+        "author": "Cristina",
+        "context": "mare d'un nadó de 5 mesos"
+      },
+      "t6": {
+        "quote": "La meva filla m'ha compartit l'accés. Sé exactament quan el petit necessita dormir la migdiada.",
+        "author": "Pepi",
+        "context": "àvia i cuidadora"
+      }
+    },
+    "howItWorks": {
+      "title": "Com funciona",
+      "description": "NapNap utilitza finestres de vetlla segons l'edat i el son recent del teu nadó per crear un ritme diari clar que pots seguir, fins i tot quan dorms molt poc. Sense puntuacions, sense mètodes d'entrenament, sense judicis.",
+      "step1": {
+        "title": "Explica'ns sobre el teu nadó",
+        "description": "Afegeix un nom i la data de naixement. NapNap parteix de finestres de vetlla segons l'edat, adaptades a la seva etapa."
+      },
+      "step2": {
+        "title": "Registra el son amb un sol polze",
+        "description": "Toca una vegada per començar una migdiada o el son nocturn i una vegada per despertar. Registrar és ràpid, tolera les omissions i està pensat per fer servir amb una sola mà en un dia complicat."
+      },
+      "step3": {
+        "title": "Segueix el següent pas",
+        "description": "Mira les migdiades i l'hora de dormir d'avui en un pla senzill. Les suggerències s'actualitzen mentre el teu nadó dorm i creix, perquè sempre sàpigues què ve després."
+      }
+    },
+    "productShowcase": {
+      "title": "Mira-ho en acció",
+      "description": "Un tauler tranquil que et diu exactament què ve ara.",
+      "card1": {
+        "caption": "El teu dia d'una ullada"
+      },
+      "card2": {
+        "caption": "Totes les migdiades i nits registrades"
+      },
+      "card3": {
+        "caption": "Patrons, no fulls de càlcul"
+      }
+    },
+    "midCta": {
+      "title": "Preparats per trobar el teu ritme?",
+      "description": "Gratuït per començar. Sense targeta de crèdit. No cal cap mètode d'entrenament del son.",
+      "button": "Crea el teu pla de son gratuït"
+    },
+    "whatYouGet": {
+      "title": "Què obtens",
+      "description": "Un conjunt tranquil d'eines que treballen juntes per mantenir el son del teu nadó en un ritme suau."
+    },
+    "features": {
+      "livePlan": {
+        "title": "Pla en viu de migdiades i hora de dormir",
+        "description": "Mira les migdiades d'avui, l'hora de dormir i les finestres de vetlla en una vista senzilla. S'actualitza mentre el teu nadó dorm."
+      },
+      "sharing": {
+        "title": "Compartir amb diversos cuidadors",
+        "description": "Comparteix l'accés amb la teva parella o cuidadors perquè tothom treballi amb el mateix pla."
+      },
+      "growth": {
+        "title": "Seguiment del creixement",
+        "description": "Registra pes, alçada i circumferència del cap al costat del son, sense més embolic."
+      },
+      "report": {
+        "title": "Informe de son de 30 dies",
+        "description": "Un relat amable de l'últim mes per veure patrons sense saturar-te amb gràfics."
+      }
+    },
+    "ageRange": {
+      "title": "Per a 0–18 mesos",
+      "description": "Des de migdiades curtes de nadó fins als últims dies d'una sola migdiada, NapNap adapta el ritme suggerit a l'edat del teu nadó i al seu son recent."
+    },
+    "ageTags": {
+      "newborn": "Recent nascut",
+      "3to6": "3–6 mesos",
+      "6to12": "6–12 mesos",
+      "12to18": "12–18 mesos"
+    },
+    "faq": {
+      "title": "Preguntes, contestades amb calma",
+      "subtitle": "Algunes de les coses que els pares solen preguntar abans de començar."
+    },
+    "faqs": {
+      "q1": "Què és NapNap?",
+      "a1": "NapNap és un rastrejador del son per a nadons (0–18 mesos) que t'ajuda a registrar les migdiades i el son nocturn, i a obtenir suggeriments senzills basats en l'edat sobre quan el teu nadó podria necessitar dormir després. Ens centrem en passos clars—com “Proper son cap a les 13:42” o “Hora de dormir cap a les 19:30”—amb un to tranquil i sense judicis.",
+      "q2": "NapNap és un programa d'entrenament del son?",
+      "a2": "No. NapNap t'ajuda amb horaris i patrons. No prescriu un mètode específic. Tu decideixes com acompanyar el teu nadó.",
+      "q3": "Què és una finestra de vetlla?",
+      "a3": "Una finestra de vetlla és el temps que el teu nadó pot mantenir-se despert de manera còmoda entre períodes de son. Variarà segons l'edat—d'uns 45–60 minuts per a nounats a diverses hores per a nadons més grans. NapNap fa servir finestres de vetlla basades en l'edat per suggerir-te quan oferir la propera migdiada o l'hora de dormir.",
+      "q4": "He de registrar totes i cada una de les migdiades?",
+      "a4": "No. L'app funciona millor si registres de manera regular, però està pensada per perdonar buits i entrades tardanes. No cal que les dades siguin perfectes.",
+      "q5": "Les meves dades són privades?",
+      "a5": "Sí. Les dades de son i creixement es queden amb el teu compte. Tu controles qui hi té accés mitjançant la compartició amb cuidadors.",
+      "q6": "Quant costa NapNap?",
+      "a6": "NapNap és gratuït per començar. Pots registrar el son, obtenir suggeriments de migdiada i d'hora de dormir, i compartir l'accés amb una parella sense cost."
+    },
+    "emailCapture": {
+      "title": "Encara no ho tens clar? Cap problema.",
+      "description": "Deixa el teu correu electrònic i t'enviarem una nota breu quan hi hagi alguna cosa important a punt. Sense campanyes repetitives.",
+      "submitted": "Perfecte. T'hi anirem quan toqui, amb suavitat.",
+      "sectionAriaLabel": "Mantén-te al dia",
+      "placeholder": "tu@email.com",
+      "emailAriaLabel": "Adreça de correu electrònic",
+      "sending": "Enviant...",
+      "notifyMe": "Avise'm",
+      "invalidEmail": "Introdueix un correu electrònic vàlid."
+    },
+    "footer": {
+      "brand": {
+        "tagline": "La veu tranquil·la a les 3am que et diu què ve després."
+      },
+      "product": {
+        "heading": "Producte",
+        "howItWorks": "Com funciona",
+        "theApp": "L'app",
+        "faq": "Preguntes freqüents"
+      },
+      "legal": {
+        "heading": "Legal",
+        "sleepGuides": "Guies de son",
+        "privacy": "Privacitat",
+        "terms": "Termes",
+        "contact": "Contacte"
+      },
+      "copyright": "© 2026 NapNap. Fet amb cura a Barcelona."
+    }
+  },
+  "sleepGuides": {
+    "hub": {
+      "pageTitle": "Horaris de son segons l'edat — NapNap",
+      "title": "L'horari de son del teu nadó",
+      "subtitle": "Guies segons l'edat amb finestres de vetlla, migdiades i hora de dormir",
+      "metaDescription": "Horaris de son segons l'edat des de nounat fins a 2 anys. Finestres de vetlla, migdiades, hora de dormir i consells per a cada etapa.",
+      "ogDescription": "Horaris de son segons l'edat des de nounat fins a 2 anys.",
+      "newbornHeading": "Nadó (0–3 mesos)",
+      "infantHeading": "Infant (3–12 mesos)",
+      "toddlerHeading": "Nen petit (13–24 mesos)",
+      "napSingular": "migdiada",
+      "napPlural": "migdiades",
+      "regression": "Regrésió",
+      "cta": "Fes el seguiment del son del teu nadó amb NapNap — Comença gratis"
+    },
+    "page": {
+      "breadcrumbLink": "Guies de son",
+      "breadcrumbAriaLabel": "Breadcrumb",
+      "atAGlance": "A simple vista",
+      "atAGlance": {
+        "naps": "Migdiades",
+        "wakeWindow": "Finestra de vetlla",
+        "bedtime": "Hora de dormir",
+        "nightSleep": "Son nocturn",
+        "daySleep": "Son diürn",
+        "totalSleep": "Son total"
+      },
+      "ageNavigationAriaLabel": "Navegació per edat",
+      "sampleSchedule": "Horari d'exemple",
+      "tipsTitle": "Senyal(s) a vigilar",
+      "cta": "Fes el seguiment del son del teu {{ageLabel}} amb NapNap",
+      "ctaSubtitle": "Gratuït per començar · No cal cap mètode d'entrenament del son"
+    }
   },
   "loading": {
     "message": "Carregant..."

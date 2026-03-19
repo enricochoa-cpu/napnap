@@ -627,8 +627,7 @@ export interface WakeWindowHistory {
  */
 export function calculateExponentialWeight(
   index: number,
-  totalEntries: number,
-  _todayWeight: number = 0.6
+  totalEntries: number
 ): number {
   if (totalEntries <= 1) return 1;
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SUPPORT_EMAIL } from '../constants/legal';
 import { setMeta, setCanonical } from '../utils/seo';
 import { LandingFooter } from './LandingFooter';
@@ -12,6 +13,8 @@ function mailtoLink(email: string, subject?: string, body?: string): string {
 }
 
 export function LandingContactPage() {
+  const { t } = useTranslation();
+
   useEffect(() => {
     const root = document.documentElement;
     const prev = Array.from(root.classList);
@@ -20,15 +23,15 @@ export function LandingContactPage() {
   }, []);
 
   useEffect(() => {
-    document.title = 'Contact — NapNap';
-    setMeta('description', 'Get in touch with NapNap. Questions about baby sleep tracking, feedback, or support.');
-    setMeta('og:title', 'Contact — NapNap', true);
-    setMeta('og:description', 'Get in touch with NapNap for questions, feedback, or support.', true);
+    document.title = `${t('contact.title')} — NapNap`;
+    setMeta('description', t('contact.metaDescription'));
+    setMeta('og:title', `${t('contact.title')} — NapNap`, true);
+    setMeta('og:description', t('contact.ogDescription'), true);
     setMeta('og:type', 'website', true);
     setMeta('og:url', 'https://napnap.app/contact', true);
     setCanonical('https://napnap.app/contact');
     return () => { document.title = 'NapNap — Baby Sleep Tracker'; };
-  }, []);
+  }, [t]);
 
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -67,11 +70,11 @@ export function LandingContactPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Back to NapNap
+          {t('landing.backToNapNap')}
         </a>
 
-        <h1 className="text-display-md text-[var(--text-primary)] mb-2">Contact</h1>
-        <p className="text-sm text-[var(--text-muted)] mb-8">Get in touch with us</p>
+        <h1 className="text-display-md text-[var(--text-primary)] mb-2">{t('contact.title')}</h1>
+        <p className="text-sm text-[var(--text-muted)] mb-8">{t('contact.subtitle')}</p>
 
         <div className="card p-6 space-y-5">
           <div className="flex items-center gap-3">
@@ -83,34 +86,34 @@ export function LandingContactPage() {
             </div>
             <div>
               <h2 className="font-display font-semibold text-[var(--text-primary)]">
-                Get in touch
+                {t('contact.getInTouch')}
               </h2>
               <p className="text-sm text-[var(--text-muted)]">
-                Questions, feedback, or data requests — we'll open your email app with your message.
+                {t('contact.formHint')}
               </p>
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-              Subject
+              {t('contact.subject')}
             </label>
             <input
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="e.g. Privacy question, Account help"
+              placeholder={t('contact.subjectPlaceholder')}
               className="input w-full"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
-              Message
+              {t('contact.message')}
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write your message here..."
+              placeholder={t('contact.messagePlaceholder')}
               className="input w-full min-h-[120px] resize-y"
               rows={4}
             />
@@ -124,7 +127,7 @@ export function LandingContactPage() {
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               <polyline points="22,6 12,13 2,6" />
             </svg>
-            <span>Send us an email</span>
+            <span>{t('contact.sendEmail')}</span>
           </button>
           <button
             type="button"
@@ -135,10 +138,10 @@ export function LandingContactPage() {
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
             </svg>
-            <span>{copied ? 'Copied!' : 'Copy email address'}</span>
+            <span>{copied ? t('contact.copied') : t('contact.copyEmail')}</span>
           </button>
           <p className="text-xs text-[var(--text-muted)] text-center">
-            Opens your email app and sends to {SUPPORT_EMAIL}
+            {t('contact.opensEmail', { email: SUPPORT_EMAIL })}
           </p>
         </div>
       </div>

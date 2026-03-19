@@ -200,14 +200,24 @@
     "viewTitle": "Privacy policy",
     "viewSubtitle": "How we use and protect your data",
     "lastUpdated": "Last updated",
+    "metaDescription": "How NapNap handles your data. Our privacy policy covers data collection, storage, and your rights under GDPR.",
+    "ogDescription": "How NapNap handles your data. Privacy policy and GDPR rights.",
+    "dataController": "Data controller",
+    "dataControllerBody": "The data controller for your personal data is the operator of NapNap (the person responsible for running the app). For data protection requests, privacy questions, or to exercise your GDPR rights (access, rectification, erasure, restriction, portability, objection), contact us at {{email}}.",
     "whatWeCollect": "What we collect",
     "whatWeCollectBody": "We collect the information you give us when you use NapNap: your email and account details, your baby's profile (name, date of birth, optional weight and height), and the sleep data you log (nap and night sleep times).",
     "howWeUse": "How we use it",
     "howWeUseBody": "We use this data to run the app, show you sleep predictions and history, and improve our product. We do not sell your data.",
+    "cookiesAndSimilarTechnologies": "Cookies and similar technologies",
+    "cookiesAndSimilarTechnologiesBody": "NapNap uses only the minimum cookies and similar technologies needed to run the app securely. When you sign in, our backend provider Supabase stores authentication information in your browser so you can stay logged in and we can protect your account. If you choose to sign in with Google, Google may use its own cookies to authenticate you, under Google's own privacy policy. We do not use advertising cookies, marketing pixels, or analytics tools that track you across other apps or websites.",
+    "retention": "Retention",
+    "retentionBody": "We keep your account and sleep data for as long as your account is active. After you delete your account, we remove all personal data. The only data we may retain is anonymized sleep and growth-related statistics (e.g. sleep durations, age ranges)—no names, no identifiers, no profile pictures or other information that could identify you or your child. We keep this solely to improve NapNap and for research (e.g. understanding sleep patterns); it cannot be linked back to you.",
     "accountDeletion": "Account deletion",
     "accountDeletionBody": "When you delete your account we permanently remove your email, name(s), profile pictures, and all other data linked to your account. We do not keep anything that identifies you or your baby. The only data we may retain is anonymized sleep and growth data (no names or identifiers), to improve our product and research. We do not keep profile pictures or any other personal information after deletion.",
+    "dataAboutMinors": "Data about minors",
+    "dataAboutMinorsBody": "NapNap is designed to be used by adults (parents or legal guardians). By providing your baby's data in the app, you confirm that you are the parent or legal guardian and have authority to provide that data on their behalf, in line with applicable EU data protection laws.",
     "contact": "Contact",
-    "contactBody": "For questions about your data or this policy, use the Contact option in Support."
+    "contactBody": "For questions about your data or this policy, use the Contact option in Support or email {{email}}."
   },
   "support": {
     "title": "Support",
@@ -637,6 +647,8 @@
   "terms": {
     "viewTitle": "Terms of Service",
     "viewSubtitle": "Rules for using NapNap",
+    "metaDescription": "Terms of Service for NapNap baby sleep tracker. Rules for using the app, liability, and governing law.",
+    "ogDescription": "Terms of Service for NapNap baby sleep tracker.",
     "intro": "Introduction",
     "introBody": "These Terms of Service (\"Terms\") govern your use of the NapNap baby sleep tracker app (\"the App\"). By creating an account or using the App, you agree to these Terms. If you do not agree, do not use the App.",
     "operator": "Operator",
@@ -659,6 +671,8 @@
   "contact": {
     "title": "Contact",
     "subtitle": "Get in touch with us",
+    "metaDescription": "Get in touch with NapNap. Questions about baby sleep tracking, feedback, or support.",
+    "ogDescription": "Get in touch with NapNap for questions, feedback, or support.",
     "email": "Email",
     "message": "Message",
     "getInTouch": "Get in touch",
@@ -670,6 +684,220 @@
     "copyEmail": "Copy email address",
     "copied": "Copied!",
     "opensEmail": "Opens your email app and sends to {{email}}"
+  },
+  "landing": {
+    "nav": {
+      "howItWorks": "How it works",
+      "theApp": "The app",
+      "faq": "FAQ"
+    },
+    "backToNapNap": "Back to NapNap",
+    "languagePicker": {
+      "ariaLabel": "Language picker"
+    },
+    "header": {
+      "login": "Log in"
+    },
+    "mobile": {
+      "home": "Home",
+      "startFree": "Start free"
+    },
+    "hero": {
+      "tagline": "Rhythmic baby sleep companion",
+      "titleLine1": "Stop guessing naps.",
+      "titleLine2": "Move with your baby's rhythm.",
+      "cta": {
+        "primary": "Create your free sleep plan",
+        "secondary": "See how it works"
+      },
+      "description": "NapNap turns wake windows and sleep patterns into a calm plan. One place to see when to nap, when to sleep, and when to just breathe."
+    },
+    "reassurances": {
+      "noTrainingMethod": "No sleep training method",
+      "noScoresOrGrades": "No scores or grades",
+      "freeToStart": "Free to start"
+    },
+    "testimonials": {
+      "heading": "Trusted by dozens of families",
+      "t1": {
+        "quote": "Finally, something that tells me what to do next without judging how I got here.",
+        "author": "Mireia",
+        "context": "mum of a 4-month-old"
+      },
+      "t2": {
+        "quote": "I use it at 3am when my brain doesn't work. One tap and it tells me when to try again.",
+        "author": "Rosa",
+        "context": "mum of twins"
+      },
+      "t3": {
+        "quote": "No charts, no scores. Just 'next nap around 14:10.' That's all I needed.",
+        "author": "Eva",
+        "context": "mum of a 7-month-old"
+      },
+      "t4": {
+        "quote": "My partner logs naps too. We're finally on the same page without texting back and forth.",
+        "author": "Marta",
+        "context": "mum of a 10-month-old"
+      },
+      "t5": {
+        "quote": "It learned my baby's rhythm in two days. Now I actually plan my mornings.",
+        "author": "Cristina",
+        "context": "mum of a 5-month-old"
+      },
+      "t6": {
+        "quote": "My daughter shared access with me. I know exactly when the little one needs to nap.",
+        "author": "Pepi",
+        "context": "grandmother and caregiver"
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "description": "NapNap uses age-based wake windows and your baby's recent sleep to build a clear daily rhythm you can follow, even on very little sleep. No scores, no training method, no judgement.",
+      "step1": {
+        "title": "Tell us about your baby",
+        "description": "Add a name and date of birth. NapNap starts from age-based wake windows tailored to their stage."
+      },
+      "step2": {
+        "title": "Log sleep with one thumb",
+        "description": "Tap once to start a nap or night sleep and once to wake. Logging is fast, forgiving, and built for one-hand use on a busy day."
+      },
+      "step3": {
+        "title": "Follow the next step",
+        "description": "See today's naps and bedtime in one simple plan. Suggestions update as your baby sleeps and grows, so you always know what comes next."
+      }
+    },
+    "productShowcase": {
+      "title": "See it in action",
+      "description": "A calm dashboard that tells you exactly what comes next.",
+      "card1": {
+        "caption": "Your day at a glance"
+      },
+      "card2": {
+        "caption": "Every nap and night, logged"
+      },
+      "card3": {
+        "caption": "Patterns, not spreadsheets"
+      }
+    },
+    "midCta": {
+      "title": "Ready to find your rhythm?",
+      "description": "Free to start. No credit card. No sleep training method required.",
+      "button": "Create your free sleep plan"
+    },
+    "whatYouGet": {
+      "title": "What you get",
+      "description": "A calm set of tools that work together to keep your baby's sleep on a gentle rhythm."
+    },
+    "features": {
+      "livePlan": {
+        "title": "Live nap and bedtime plan",
+        "description": "See today's naps, bedtime, and wake windows in one simple view. Updates as your baby sleeps."
+      },
+      "sharing": {
+        "title": "Multi-caregiver sharing",
+        "description": "Share access with partners or caregivers so everyone works from the same plan."
+      },
+      "growth": {
+        "title": "Growth tracking",
+        "description": "Log weight, height, and head circumference alongside sleep, without extra clutter."
+      },
+      "report": {
+        "title": "30-day sleep report",
+        "description": "A gentle narrative on the last month to spot patterns without chart overload."
+      }
+    },
+    "ageRange": {
+      "title": "For 0–18 months",
+      "description": "From short newborn naps to the final one-nap days, NapNap adapts the suggested rhythm to your baby's age and recent sleep."
+    },
+    "ageTags": {
+      "newborn": "Newborn",
+      "3to6": "3–6 months",
+      "6to12": "6–12 months",
+      "12to18": "12–18 months"
+    },
+    "faq": {
+      "title": "Questions, calmly answered",
+      "subtitle": "A few of the things parents usually ask before they start."
+    },
+    "faqs": {
+      "q1": "What is NapNap?",
+      "a1": "NapNap is a sleep tracker for babies (0–18 months) that helps you log naps and night sleep and get simple, age-based suggestions for when your baby might need to sleep next. We focus on clear next steps—like \"Next nap around 13:42\" or \"Bedtime around 19:30\"—with a calm, non-judgmental tone.",
+      "q2": "Is NapNap a sleep training program?",
+      "a2": "No. NapNap helps you with timing and patterns. It does not prescribe a specific method. You choose how to settle your baby.",
+      "q3": "What is a wake window?",
+      "a3": "A wake window is the amount of time your baby can comfortably stay awake between sleep periods. They vary by age—from about 45–60 minutes for newborns to several hours for older babies. NapNap uses age-based wake windows to suggest when to offer the next nap or bedtime.",
+      "q4": "Do I have to log every single nap?",
+      "a4": "No. The app works best when you log regularly, but it is built to forgive gaps and late entries. Perfect data is not required.",
+      "q5": "Is my data private?",
+      "a5": "Yes. Sleep and growth data stays with your account. You control who has access through caregiver sharing.",
+      "q6": "How much does NapNap cost?",
+      "a6": "NapNap is free to start. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost."
+    },
+    "emailCapture": {
+      "title": "Not ready yet? That's fine.",
+      "description": "Leave your email and we'll send one short note when something worth knowing about is ready. No drip campaigns.",
+      "submitted": "Got it. We'll be in touch gently.",
+      "sectionAriaLabel": "Stay in the loop",
+      "placeholder": "your@email.com",
+      "emailAriaLabel": "Email address",
+      "sending": "Sending...",
+      "notifyMe": "Notify me",
+      "invalidEmail": "Please enter a valid email."
+    },
+    "footer": {
+      "brand": {
+        "tagline": "The quiet voice at 3am that tells you what comes next."
+      },
+      "product": {
+        "heading": "Product",
+        "howItWorks": "How it works",
+        "theApp": "The app",
+        "faq": "FAQ"
+      },
+      "legal": {
+        "heading": "Legal",
+        "sleepGuides": "Sleep Guides",
+        "privacy": "Privacy",
+        "terms": "Terms",
+        "contact": "Contact"
+      },
+      "copyright": "© 2026 NapNap. Made with care in Barcelona."
+    }
+  },
+  "sleepGuides": {
+    "hub": {
+      "pageTitle": "Baby Sleep Schedules by Age — NapNap",
+      "title": "Your Baby's Sleep Schedule",
+      "subtitle": "Age-specific guides with wake windows, nap times, and bedtime",
+      "metaDescription": "Age-specific sleep schedules from newborn to 2 years. Wake windows, nap times, bedtime, and tips for every stage.",
+      "ogDescription": "Age-specific sleep schedules from newborn to 2 years.",
+      "newbornHeading": "Newborn (0–3 months)",
+      "infantHeading": "Infant (3–12 months)",
+      "toddlerHeading": "Toddler (13–24 months)",
+      "napSingular": "nap",
+      "napPlural": "naps",
+      "regression": "Regression",
+      "cta": "Track your baby's sleep with NapNap — Start free"
+    },
+    "page": {
+      "breadcrumbLink": "Sleep Guides",
+      "breadcrumbAriaLabel": "Breadcrumb",
+      "atAGlance": "At a glance",
+      "atAGlance": {
+        "naps": "Naps",
+        "wakeWindow": "Wake window",
+        "bedtime": "Bedtime",
+        "nightSleep": "Night sleep",
+        "daySleep": "Day sleep",
+        "totalSleep": "Total sleep"
+      },
+      "ageNavigationAriaLabel": "Age navigation",
+      "sampleSchedule": "Sample schedule",
+      "tipsTitle": "Signs to watch for",
+      "cta": "Track your {{ageLabel}}'s sleep with NapNap",
+      "ctaSubtitle": "Free to start · No sleep training required"
+    }
   },
   "loading": {
     "message": "Loading..."

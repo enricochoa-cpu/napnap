@@ -1,12 +1,16 @@
+import { LandingLanguagePicker } from './LandingLanguagePicker';
+import { useTranslation } from 'react-i18next';
+
 interface LandingFooterProps {
   onScrollToSection?: (id: string) => void;
 }
 
 export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
+  const { t } = useTranslation();
   const productLinks = [
-    { id: 'how-it-works', label: 'How it works' },
-    { id: 'product-showcase', label: 'The app' },
-    { id: 'faq', label: 'FAQ' },
+    { id: 'how-it-works', labelKey: 'landing.footer.product.howItWorks' },
+    { id: 'product-showcase', labelKey: 'landing.footer.product.theApp' },
+    { id: 'faq', labelKey: 'landing.footer.product.faq' },
   ];
 
   return (
@@ -17,31 +21,53 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
           <div className="space-y-3">
             <p className="text-display-sm text-[var(--text-primary)]">NapNap</p>
             <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-              The quiet voice at 3am that tells you what comes next.
+              {t('landing.footer.brand.tagline')}
             </p>
+            <LandingLanguagePicker />
           </div>
 
           {/* Product + Legal columns */}
           <div className="grid grid-cols-2 md:contents gap-8">
             <div className="space-y-3">
-              <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Product</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">
+                {t('landing.footer.product.heading')}
+              </p>
               <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                {productLinks.map(({ id, label }) =>
+                {productLinks.map(({ id, labelKey }) =>
                   onScrollToSection ? (
-                    <button key={id} type="button" className="text-left hover:text-[var(--text-secondary)] transition-colors" onClick={() => onScrollToSection(id)}>{label}</button>
+                    <button
+                      key={id}
+                      type="button"
+                      className="text-left hover:text-[var(--text-secondary)] transition-colors"
+                      onClick={() => onScrollToSection(id)}
+                    >
+                      {t(labelKey)}
+                    </button>
                   ) : (
-                    <a key={id} href={`/#${id}`} className="hover:text-[var(--text-secondary)] transition-colors">{label}</a>
+                    <a key={id} href={`/#${id}`} className="hover:text-[var(--text-secondary)] transition-colors">
+                      {t(labelKey)}
+                    </a>
                   )
                 )}
               </nav>
             </div>
             <div className="space-y-3">
-              <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">Legal</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">
+                {t('landing.footer.legal.heading')}
+              </p>
               <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                <a href="/sleep-guides" className="hover:text-[var(--text-secondary)] transition-colors">Sleep Guides</a>
-                <a href="/privacy" className="hover:text-[var(--text-secondary)] transition-colors">Privacy</a>
-                <a href="/terms" className="hover:text-[var(--text-secondary)] transition-colors">Terms</a>
-                <a href="/contact" className="hover:text-[var(--text-secondary)] transition-colors">Contact</a>
+                <a href="/sleep-guides" className="hover:text-[var(--text-secondary)] transition-colors">
+                  {t('landing.footer.legal.sleepGuides')}
+                </a>
+                <a href="/privacy" className="hover:text-[var(--text-secondary)] transition-colors">
+                  {t('landing.footer.legal.privacy')}
+                </a>
+                <a href="/terms" className="hover:text-[var(--text-secondary)] transition-colors">
+                  {t('landing.footer.legal.terms')}
+                </a>
+                <a href="/contact" className="hover:text-[var(--text-secondary)] transition-colors">
+                  {t('landing.footer.legal.contact')}
+                </a>
               </nav>
             </div>
           </div>
@@ -49,7 +75,7 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
 
         {/* Bottom bar */}
         <div className="mt-8 pt-4 border-t border-[var(--glass-border)] text-center text-xs text-[var(--text-muted)]">
-          &copy; 2026 NapNap. Made with care in Barcelona.
+          {t('landing.footer.copyright')}
         </div>
       </div>
     </footer>

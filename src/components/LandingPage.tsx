@@ -1,74 +1,32 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { SkyBackground } from './SkyBackground';
 import { supabase } from '../lib/supabase';
 import { LandingFooter } from './LandingFooter';
+import { LandingLanguagePicker } from './LandingLanguagePicker';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const LANDING_FAQS: { question: string; answer: string }[] = [
-  {
-    question: 'What is NapNap?',
-    answer:
-      'NapNap is a sleep tracker for babies (0–18 months) that helps you log naps and night sleep and get simple, age-based suggestions for when your baby might need to sleep next. We focus on clear next steps—like "Next nap around 13:42" or "Bedtime around 19:30"—with a calm, non-judgmental tone.',
-  },
-  {
-    question: 'Is NapNap a sleep training program?',
-    answer:
-      'No. NapNap helps you with timing and patterns. It does not prescribe a specific method. You choose how to settle your baby.',
-  },
-  {
-    question: 'What is a wake window?',
-    answer:
-      'A wake window is the amount of time your baby can comfortably stay awake between sleep periods. They vary by age—from about 45–60 minutes for newborns to several hours for older babies. NapNap uses age-based wake windows to suggest when to offer the next nap or bedtime.',
-  },
-  {
-    question: 'Do I have to log every single nap?',
-    answer:
-      'No. The app works best when you log regularly, but it is built to forgive gaps and late entries. Perfect data is not required.',
-  },
-  {
-    question: 'Is my data private?',
-    answer:
-      'Yes. Sleep and growth data stays with your account. You control who has access through caregiver sharing.',
-  },
-  {
-    question: 'How much does NapNap cost?',
-    answer:
-      'NapNap is free to start. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost.',
-  },
+const LANDING_FAQ_KEYS: Array<{ questionKey: string; answerKey: string }> = [
+  { questionKey: 'landing.faqs.q1', answerKey: 'landing.faqs.a1' },
+  { questionKey: 'landing.faqs.q2', answerKey: 'landing.faqs.a2' },
+  { questionKey: 'landing.faqs.q3', answerKey: 'landing.faqs.a3' },
+  { questionKey: 'landing.faqs.q4', answerKey: 'landing.faqs.a4' },
+  { questionKey: 'landing.faqs.q5', answerKey: 'landing.faqs.a5' },
+  { questionKey: 'landing.faqs.q6', answerKey: 'landing.faqs.a6' },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote: 'Finally, something that tells me what to do next without judging how I got here.',
-    author: 'Mireia',
-    context: 'mum of a 4-month-old',
-  },
-  {
-    quote: "I use it at 3am when my brain doesn't work. One tap and it tells me when to try again.",
-    author: 'Rosa',
-    context: 'mum of twins',
-  },
-  {
-    quote: "No charts, no scores. Just 'next nap around 14:10.' That's all I needed.",
-    author: 'Eva',
-    context: 'mum of a 7-month-old',
-  },
-  {
-    quote: "My partner logs naps too. We're finally on the same page without texting back and forth.",
-    author: 'Marta',
-    context: 'mum of a 10-month-old',
-  },
-  {
-    quote: "It learned my baby's rhythm in two days. Now I actually plan my mornings.",
-    author: 'Cristina',
-    context: 'mum of a 5-month-old',
-  },
-  {
-    quote: 'My daughter shared access with me. I know exactly when the little one needs to nap.',
-    author: 'Pepi',
-    context: 'grandmother and caregiver',
-  },
+const TESTIMONIAL_KEYS: Array<{
+  quoteKey: string;
+  authorKey: string;
+  contextKey: string;
+}> = [
+  { quoteKey: 'landing.testimonials.t1.quote', authorKey: 'landing.testimonials.t1.author', contextKey: 'landing.testimonials.t1.context' },
+  { quoteKey: 'landing.testimonials.t2.quote', authorKey: 'landing.testimonials.t2.author', contextKey: 'landing.testimonials.t2.context' },
+  { quoteKey: 'landing.testimonials.t3.quote', authorKey: 'landing.testimonials.t3.author', contextKey: 'landing.testimonials.t3.context' },
+  { quoteKey: 'landing.testimonials.t4.quote', authorKey: 'landing.testimonials.t4.author', contextKey: 'landing.testimonials.t4.context' },
+  { quoteKey: 'landing.testimonials.t5.quote', authorKey: 'landing.testimonials.t5.author', contextKey: 'landing.testimonials.t5.context' },
+  { quoteKey: 'landing.testimonials.t6.quote', authorKey: 'landing.testimonials.t6.author', contextKey: 'landing.testimonials.t6.context' },
 ];
 
 // Three video slots for the floating hero composition.
@@ -213,6 +171,26 @@ export function LandingPage() {
   const [emailSending, setEmailSending] = useState(false);
   const [emailError, setEmailError] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
+
+  const landingFaqs = useMemo(
+    () =>
+      LANDING_FAQ_KEYS.map((item) => ({
+        question: t(item.questionKey),
+        answer: t(item.answerKey),
+      })),
+    [t],
+  );
+
+  const testimonials = useMemo(
+    () =>
+      TESTIMONIAL_KEYS.map((item) => ({
+        quote: t(item.quoteKey),
+        author: t(item.authorKey),
+        context: t(item.contextKey),
+      })),
+    [t],
+  );
 
   const handleLoginClick = () => { window.location.href = '/app'; };
   const scrollToTop = () => { scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); };
@@ -245,7 +223,7 @@ export function LandingPage() {
 
   const handleEmailSubmit = async () => {
     if (!emailValue || !/\S+@\S+\.\S+/.test(emailValue)) {
-      setEmailError('Please enter a valid email.');
+      setEmailError(t('landing.emailCapture.invalidEmail'));
       return;
     }
     setEmailSending(true);
@@ -294,19 +272,26 @@ export function LandingPage() {
               </button>
               <nav className="flex items-center gap-4 text-[var(--text-secondary)] text-base">
                 <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('how-it-works')}>
-                  How it works
+                  {t('landing.nav.howItWorks')}
                 </button>
                 <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('product-showcase')}>
-                  The app
+                  {t('landing.nav.theApp')}
                 </button>
                 <button type="button" className="pressable bg-transparent border-none p-0 whitespace-nowrap" onClick={() => scrollToSection('faq')}>
-                  FAQ
+                  {t('landing.nav.faq')}
                 </button>
               </nav>
             </div>
-            <button type="button" onClick={handleLoginClick} className="btn btn-primary text-base px-5 py-2.5 min-h-[40px] flex-shrink-0">
-              Log in
-            </button>
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <LandingLanguagePicker />
+              <button
+                type="button"
+                onClick={handleLoginClick}
+                className="btn btn-primary text-base px-5 py-2.5 min-h-[40px] flex-shrink-0"
+              >
+                {t('landing.header.login')}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -335,19 +320,22 @@ export function LandingPage() {
         <nav className="flex flex-col justify-center min-h-full px-6 pt-24 pb-12 gap-2" aria-label="Page sections">
           <span className="text-display-lg text-white mb-4 select-none" aria-hidden>NapNap</span>
           <button type="button" onClick={() => { scrollToTop(); setMobileMenuOpen(false); }} className="text-left py-4 text-lg font-display text-white hover:opacity-90 transition-opacity">
-            Home
+            {t('landing.mobile.home')}
           </button>
           <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            How it works
+            {t('landing.nav.howItWorks')}
           </button>
           <button type="button" onClick={() => scrollToSection('product-showcase')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            The app
+            {t('landing.nav.theApp')}
           </button>
           <button type="button" onClick={() => scrollToSection('faq')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            FAQ
+            {t('landing.nav.faq')}
           </button>
+          <div className="pt-2 pb-2">
+            <LandingLanguagePicker />
+          </div>
           <button type="button" onClick={() => { setMobileMenuOpen(false); handleLoginClick(); }} className="btn btn-primary w-full text-base py-3.5 mt-6 max-w-xs">
-            Start free
+            {t('landing.mobile.startFree')}
           </button>
         </nav>
       </div>
@@ -365,39 +353,40 @@ export function LandingPage() {
         {/* ── Hero ── */}
         <section className="grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-center">
           <div className="space-y-6">
-            <p className="hero-secondary">Rhythmic baby sleep companion</p>
+            <p className="hero-secondary">{t('landing.hero.tagline')}</p>
             <h1 className="text-display-lg max-w-xl">
-              Stop guessing naps.
+              {t('landing.hero.titleLine1')}
               <br />
-              Move with your baby&apos;s rhythm.
+              {t('landing.hero.titleLine2')}
             </h1>
 
             {/* CTA above the description — faster path to conversion */}
             <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
               <button type="button" className="btn btn-primary w-full sm:w-auto" onClick={handleLoginClick}>
-                Create your free sleep plan
+                {t('landing.hero.cta.primary')}
               </button>
               <button type="button" className="btn-link text-[var(--text-secondary)]" onClick={() => scrollToSection('how-it-works')}>
-                See how it works
+                {t('landing.hero.cta.secondary')}
               </button>
             </div>
 
-            <p className="text-[var(--text-secondary)] max-w-lg">
-              NapNap turns wake windows and sleep patterns into a calm plan. One place to see
-              when to nap, when to sleep, and when to just breathe.
-            </p>
+            <p className="text-[var(--text-secondary)] max-w-lg">{t('landing.hero.description')}</p>
 
             {/* Key reassurances surfaced near the hero — not buried in FAQ */}
             <div className="flex flex-wrap gap-2 pt-1">
-              {['No sleep training method', 'No scores or grades', 'Free to start'].map((label) => (
+              {[
+                'landing.reassurances.noTrainingMethod',
+                'landing.reassurances.noScoresOrGrades',
+                'landing.reassurances.freeToStart',
+              ].map((key) => (
                 <span
-                  key={label}
+                  key={key}
                   className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] bg-[var(--glass-bg,rgba(255,255,255,0.06))] border border-[var(--glass-border)] rounded-full px-3 py-1"
                 >
                   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden>
                     <path d="M2 6.5l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  {label}
+                  {t(key)}
                 </span>
               ))}
             </div>
@@ -415,11 +404,11 @@ export function LandingPage() {
           className="bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10"
         >
           <p className="text-center text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display mb-6">
-            Trusted by dozens of families
+            {t('landing.testimonials.heading')}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
-            {TESTIMONIALS.map((item) => (
-              <figure key={item.author} className="card p-5">
+            {testimonials.map((item, idx) => (
+              <figure key={idx} className="card p-5">
                 <blockquote className="text-sm text-[var(--text-primary)] italic leading-relaxed">
                   &ldquo;{item.quote}&rdquo;
                 </blockquote>
@@ -434,39 +423,37 @@ export function LandingPage() {
         {/* ── How it works ── */}
         <section id="how-it-works" className="space-y-8">
           <div className="space-y-2">
-            <h2 className="text-display-md">How it works</h2>
+            <h2 className="text-display-md">{t('landing.howItWorks.title')}</h2>
             <p className="text-[var(--text-secondary)] max-w-xl">
-              NapNap uses age‑based wake windows and your baby&apos;s recent sleep to build a clear
-              daily rhythm you can follow, even on very little sleep. No scores, no training method,
-              no judgement.
+              {t('landing.howItWorks.description')}
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             <div className="card p-5 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[var(--nap-glow)] flex items-center justify-center text-sm font-display text-[var(--nap-color)]">1</div>
-                <h3 className="text-sm font-display">Tell us about your baby</h3>
+                <h3 className="text-sm font-display">{t('landing.howItWorks.step1.title')}</h3>
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                Add a name and date of birth. NapNap starts from age‑based wake windows tailored to their stage.
+                {t('landing.howItWorks.step1.description')}
               </p>
             </div>
             <div className="card p-5 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[var(--night-glow)] flex items-center justify-center text-sm font-display text-[var(--night-color)]">2</div>
-                <h3 className="text-sm font-display">Log sleep with one thumb</h3>
+                <h3 className="text-sm font-display">{t('landing.howItWorks.step2.title')}</h3>
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                Tap once to start a nap or night sleep and once to wake. Logging is fast, forgiving, and built for one‑hand use on a busy day.
+                {t('landing.howItWorks.step2.description')}
               </p>
             </div>
             <div className="card p-5 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-[var(--wake-glow)] flex items-center justify-center text-sm font-display text-[var(--wake-color)]">3</div>
-                <h3 className="text-sm font-display">Follow the next step</h3>
+                <h3 className="text-sm font-display">{t('landing.howItWorks.step3.title')}</h3>
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                See today&apos;s naps and bedtime in one simple plan. Suggestions update as your baby sleeps and grows, so you always know what comes next.
+                {t('landing.howItWorks.step3.description')}
               </p>
             </div>
           </div>
@@ -475,9 +462,9 @@ export function LandingPage() {
         {/* ── Product showcase — app in device frames ── */}
         <section id="product-showcase" className="space-y-8">
           <div className="space-y-2 text-center">
-            <h2 className="text-display-md">See it in action</h2>
+            <h2 className="text-display-md">{t('landing.productShowcase.title')}</h2>
             <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
-              A calm dashboard that tells you exactly what comes next.
+              {t('landing.productShowcase.description')}
             </p>
           </div>
 
@@ -493,7 +480,7 @@ export function LandingPage() {
                 />
               </div>
               <p className="text-sm text-[var(--text-secondary)] text-center font-display">
-                Your day at a glance
+                {t('landing.productShowcase.card1.caption')}
               </p>
             </div>
             <div className="snap-center flex-shrink-0 w-[200px] md:w-auto space-y-3 flex flex-col items-center">
@@ -507,7 +494,7 @@ export function LandingPage() {
                 />
               </div>
               <p className="text-sm text-[var(--text-secondary)] text-center font-display">
-                Every nap and night, logged
+                {t('landing.productShowcase.card2.caption')}
               </p>
             </div>
             <div className="snap-center flex-shrink-0 w-[200px] md:w-auto space-y-3 flex flex-col items-center">
@@ -521,7 +508,7 @@ export function LandingPage() {
                 />
               </div>
               <p className="text-sm text-[var(--text-secondary)] text-center font-display">
-                Patterns, not spreadsheets
+                {t('landing.productShowcase.card3.caption')}
               </p>
             </div>
           </div>
@@ -529,16 +516,16 @@ export function LandingPage() {
 
         {/* ── Mid-page CTA ── */}
         <section className="text-center space-y-4 py-4">
-          <h2 className="text-display-sm">Ready to find your rhythm?</h2>
+          <h2 className="text-display-sm">{t('landing.midCta.title')}</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
-            Free to start. No credit card. No sleep training method required.
+            {t('landing.midCta.description')}
           </p>
           <button
             type="button"
             className="btn btn-primary px-8 py-3"
             onClick={handleLoginClick}
           >
-            Create your free sleep plan
+            {t('landing.midCta.button')}
           </button>
         </section>
 
@@ -546,9 +533,9 @@ export function LandingPage() {
         <div className="bg-[var(--bg-mid)] -mx-6 px-6 py-12 rounded-none md:rounded-3xl md:mx-0 md:px-8">
           <section className="space-y-8 max-w-5xl mx-auto">
             <div className="space-y-2">
-              <h2 className="text-display-md">What you get</h2>
+              <h2 className="text-display-md">{t('landing.whatYouGet.title')}</h2>
               <p className="text-[var(--text-secondary)] max-w-xl">
-                A calm set of tools that work together to keep your baby&apos;s sleep on a gentle rhythm.
+                {t('landing.whatYouGet.description')}
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
@@ -558,9 +545,9 @@ export function LandingPage() {
                     <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
-                <h3 className="text-base font-display">Live nap and bedtime plan</h3>
+                <h3 className="text-base font-display">{t('landing.features.livePlan.title')}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  See today&apos;s naps, bedtime, and wake windows in one simple view. Updates as your baby sleeps.
+                  {t('landing.features.livePlan.description')}
                 </p>
               </div>
               <div className="card p-6 space-y-2">
@@ -570,9 +557,9 @@ export function LandingPage() {
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </div>
-                <h3 className="text-base font-display">Multi‑caregiver sharing</h3>
+                <h3 className="text-base font-display">{t('landing.features.sharing.title')}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Share access with partners or caregivers so everyone works from the same plan.
+                  {t('landing.features.sharing.description')}
                 </p>
               </div>
               <div className="card p-6 space-y-2">
@@ -581,9 +568,9 @@ export function LandingPage() {
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
                   </svg>
                 </div>
-                <h3 className="text-base font-display">Growth tracking</h3>
+                <h3 className="text-base font-display">{t('landing.features.growth.title')}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  Log weight, height, and head circumference alongside sleep, without extra clutter.
+                  {t('landing.features.growth.description')}
                 </p>
               </div>
               <div className="card p-6 space-y-2">
@@ -594,9 +581,9 @@ export function LandingPage() {
                     <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
                   </svg>
                 </div>
-                <h3 className="text-base font-display">30‑day sleep report</h3>
+                <h3 className="text-base font-display">{t('landing.features.report.title')}</h3>
                 <p className="text-sm text-[var(--text-secondary)]">
-                  A gentle narrative on the last month to spot patterns without chart overload.
+                  {t('landing.features.report.description')}
                 </p>
               </div>
             </div>
@@ -606,30 +593,29 @@ export function LandingPage() {
         {/* ── Age range — lightweight text + tags ── */}
         <section className="space-y-4">
           <div className="space-y-1">
-            <h2 className="text-display-md">For 0–18 months</h2>
+            <h2 className="text-display-md">{t('landing.ageRange.title')}</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
-              From short newborn naps to the final one‑nap days, NapNap adapts the suggested rhythm
-              to your baby&apos;s age and recent sleep.
+              {t('landing.ageRange.description')}
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-sm">
-            <span className="tag tag-nap">Newborn</span>
-            <span className="tag tag-neutral">3–6 months</span>
-            <span className="tag tag-night">6–12 months</span>
-            <span className="tag tag-active">12–18 months</span>
+            <span className="tag tag-nap">{t('landing.ageTags.newborn')}</span>
+            <span className="tag tag-neutral">{t('landing.ageTags.3to6')}</span>
+            <span className="tag tag-night">{t('landing.ageTags.6to12')}</span>
+            <span className="tag tag-active">{t('landing.ageTags.12to18')}</span>
           </div>
         </section>
 
         {/* ── FAQ ── */}
         <section id="faq" aria-labelledby="faq-heading" className="space-y-6">
           <div className="space-y-2">
-            <h2 id="faq-heading" className="text-display-md">Questions, calmly answered</h2>
+            <h2 id="faq-heading" className="text-display-md">{t('landing.faq.title')}</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
-              A few of the things parents usually ask before they start.
+              {t('landing.faq.subtitle')}
             </p>
           </div>
           <div className="card p-5">
-            {LANDING_FAQS.map((faq, index) => (
+            {landingFaqs.map((faq, index) => (
               <div key={index} className="border-b border-[var(--text-muted)]/30 last:border-b-0">
                 <button
                   type="button"
@@ -655,15 +641,14 @@ export function LandingPage() {
         </section>
 
         {/* ── Email capture ── */}
-        <section aria-label="Stay in the loop" className="card p-6 sm:p-8 space-y-4 text-center">
-          <h2 className="text-display-sm">Not ready yet? That&apos;s fine.</h2>
+        <section aria-label={t('landing.emailCapture.sectionAriaLabel')} className="card p-6 sm:p-8 space-y-4 text-center">
+          <h2 className="text-display-sm">{t('landing.emailCapture.title')}</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
-            Leave your email and we&apos;ll send one short note when something worth knowing about is
-            ready. No drip campaigns.
+            {t('landing.emailCapture.description')}
           </p>
           {emailSubmitted ? (
             <p className="text-sm text-[var(--nap-color)] font-display py-2">
-              Got it. We&apos;ll be in touch gently.
+              {t('landing.emailCapture.submitted')}
             </p>
           ) : (
             <div className="space-y-2 max-w-sm mx-auto w-full">
@@ -673,9 +658,9 @@ export function LandingPage() {
                   value={emailValue}
                   onChange={(e) => { setEmailValue(e.target.value); setEmailError(''); }}
                   onKeyDown={(e) => e.key === 'Enter' && handleEmailSubmit()}
-                  placeholder="your@email.com"
+                  placeholder={t('landing.emailCapture.placeholder')}
                   className="flex-1 min-w-0 px-4 py-2.5 rounded-xl bg-[var(--glass-bg,rgba(255,255,255,0.06))] border border-[var(--glass-border)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)]"
-                  aria-label="Email address"
+                  aria-label={t('landing.emailCapture.emailAriaLabel')}
                   disabled={emailSending}
                 />
                 <button
@@ -684,7 +669,7 @@ export function LandingPage() {
                   disabled={emailSending}
                   className="btn btn-primary px-5 py-2.5 text-sm flex-shrink-0 disabled:opacity-60"
                 >
-                  {emailSending ? 'Sending...' : 'Notify me'}
+                  {emailSending ? t('landing.emailCapture.sending') : t('landing.emailCapture.notifyMe')}
                 </button>
               </div>
               {emailError && (

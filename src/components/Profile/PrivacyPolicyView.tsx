@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { PRIVACY_POLICY_SECTIONS } from '../../constants/privacyPolicy';
 import { PRIVACY_POLICY_LAST_UPDATED } from '../../constants/legal';
+import { SUPPORT_EMAIL } from '../../constants/legal';
 import { SubViewHeader } from './SubViewHeader';
 
 interface PrivacyPolicyViewProps {
@@ -20,12 +21,12 @@ export function PrivacyPolicyView({ onBack }: PrivacyPolicyViewProps) {
 
       <div className="space-y-6">
         {PRIVACY_POLICY_SECTIONS.map((section) => (
-          <div key={section.title} className="card p-5">
+          <div key={section.titleKey} className="card p-5">
             <h3 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-2">
-              {section.title}
+              {t(section.titleKey)}
             </h3>
             <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-              {section.body}
+              {t(section.bodyKey, { email: SUPPORT_EMAIL })}
             </p>
           </div>
         ))}

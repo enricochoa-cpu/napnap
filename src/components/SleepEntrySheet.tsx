@@ -144,7 +144,7 @@ const calculateDuration = (startTime: string, endTime: string | null): string =>
   const [startH, startM] = startTime.split(':').map(Number);
   const [endH, endM] = endTime.split(':').map(Number);
 
-  let startMinutes = startH * 60 + startM;
+  const startMinutes = startH * 60 + startM;
   let endMinutes = endH * 60 + endM;
 
   // If end is before start, it crossed midnight
@@ -193,7 +193,7 @@ const computeDurationMinutes = (start: string, end: string): number => {
   if (!start || !end) return 0;
   const [sH, sM] = start.split(':').map(Number);
   const [eH, eM] = end.split(':').map(Number);
-  let startMins = sH * 60 + sM;
+  const startMins = sH * 60 + sM;
   let endMins = eH * 60 + eM;
   if (endMins <= startMins) endMins += 24 * 60; // cross-midnight
   return endMins - startMins;
