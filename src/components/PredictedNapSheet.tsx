@@ -188,7 +188,7 @@ export function PredictedNapSheet({
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.6 }}

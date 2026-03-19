@@ -238,7 +238,7 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)] text-[var(--text-primary)]">
+    <div className="min-h-[100dvh] bg-[var(--bg-deep)] text-[var(--text-primary)]">
       <SkyBackground theme="morning" />
 
       {/* ── Header ── */}

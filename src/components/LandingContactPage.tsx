@@ -61,7 +61,7 @@ export function LandingContactPage() {
   };
 
   return (
-    <div className="theme-morning min-h-screen bg-[var(--bg-deep)]">
+    <div className="theme-morning min-h-[100dvh] bg-[var(--bg-deep)]">
       <div className="max-w-2xl mx-auto px-6 py-12">
         <a
           href="/"

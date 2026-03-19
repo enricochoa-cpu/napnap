@@ -593,7 +593,7 @@ function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="min-h-screen bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
+    <div className="min-h-[100dvh] bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
       {/* Circadian Sky Background */}
       <SkyBackground theme={theme} />
 

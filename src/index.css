@@ -337,6 +337,7 @@ body {
   letter-spacing: -0.02em; /* Modern, tighter tracking */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
   overscroll-behavior-y: none;
   overscroll-behavior-x: none;
   /* Allow normal page scrolling and selection on marketing landing.
@@ -368,6 +369,7 @@ input, textarea {
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 .text-display-md {
@@ -375,12 +377,14 @@ input, textarea {
   font-size: 1.5rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  text-wrap: balance;
 }
 
 .text-display-sm {
   font-family: var(--font-display);
   font-size: 1.125rem;
   font-weight: 600;
+  text-wrap: balance;
 }
 
 /* Hero Countdown - THE Focal Point */
@@ -1160,7 +1164,7 @@ select {
 }
 
 .slide-up {
-  animation: slideUp 0.4s var(--ease-out-expo);
+  animation: slideUp 0.25s var(--ease-out-expo);
 }
 
 @keyframes slideUpSoft {
@@ -1169,7 +1173,7 @@ select {
 }
 
 .slide-up-soft {
-  animation: slideUpSoft 0.4s var(--ease-out-expo);
+  animation: slideUpSoft 0.25s var(--ease-out-expo);
 }
 
 @keyframes scaleIn {

@@ -27,7 +27,7 @@ export function LandingPrivacyPage() {
   }, [t]);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-deep)]">
+    <div className="min-h-[100dvh] bg-[var(--bg-deep)]">
       <div className="max-w-2xl mx-auto px-6 py-12">
         <a
           href="/"
