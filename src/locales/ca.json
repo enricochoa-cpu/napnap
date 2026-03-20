@@ -692,7 +692,8 @@
       "ariaLabel": "Selector d'idioma"
     },
     "header": {
-      "login": "Iniciar sessió"
+      "login": "Iniciar sessió",
+      "cta": "Comença"
     },
     "mobile": {
       "home": "Inici",
@@ -714,7 +715,7 @@
       "freeToStart": "Gratuït per començar"
     },
     "testimonials": {
-      "heading": "Confien en nosaltres desenes de famílies",
+      "heading": "Què diuen els pares",
       "t1": {
         "quote": "Finalment, alguna cosa que em diu què he de fer després sense jutjar com hi he arribat.",
         "author": "Mireia",
@@ -722,18 +723,18 @@
       },
       "t2": {
         "quote": "L'utilitzo a les 3 de la matinada quan el meu cervell no funciona. Un toc i em diu quan ho he de tornar a provar.",
-        "author": "Rosa",
-        "context": "mare de bessons"
+        "author": "Andreu",
+        "context": "pare de bessons"
       },
       "t3": {
-        "quote": "Sense gràfics, sense puntuacions. Només “propera migdiada cap a les 14:10”. Això era tot el que necessitava.",
-        "author": "Eva",
+        "quote": "Sense gràfics, sense puntuacions. Només 'propera migdiada cap a les 14:10'. Això era tot el que necessitava.",
+        "author": "Laura",
         "context": "mare d'un nadó de 7 mesos"
       },
       "t4": {
         "quote": "El meu company també registra les migdiades. Per fi estem d'acord sense estar-nos enviant missatges amunt i avall.",
-        "author": "Marta",
-        "context": "mare d'un nadó de 10 mesos"
+        "author": "David",
+        "context": "pare d'un nadó de 10 mesos"
       },
       "t5": {
         "quote": "Va aprendre el ritme del meu nadó en dos dies. Ara, de veritat, planifico els meus matins.",
@@ -802,15 +803,10 @@
         "description": "Un relat amable de l'últim mes per veure patrons sense saturar-te amb gràfics."
       }
     },
-    "ageRange": {
-      "title": "Per a 0–18 mesos",
-      "description": "Des de migdiades curtes de nadó fins als últims dies d'una sola migdiada, NapNap adapta el ritme suggerit a l'edat del teu nadó i al seu son recent."
-    },
-    "ageTags": {
-      "newborn": "Recent nascut",
-      "3to6": "3–6 mesos",
-      "6to12": "6–12 mesos",
-      "12to18": "12–18 mesos"
+    "sleepGuides": {
+      "title": "Guies de son per edat",
+      "description": "Des de migdiades curtes de nadó fins als últims dies d'una sola migdiada. Horaris, finestres de vetlla i consells per edat.",
+      "viewAll": "Veure totes les guies de son"
     },
     "faq": {
       "title": "Preguntes, contestades amb calma",
@@ -818,7 +814,7 @@
     },
     "faqs": {
       "q1": "Què és NapNap?",
-      "a1": "NapNap és un rastrejador del son per a nadons (0–18 mesos) que t'ajuda a registrar les migdiades i el son nocturn, i a obtenir suggeriments senzills basats en l'edat sobre quan el teu nadó podria necessitar dormir després. Ens centrem en passos clars—com “Proper son cap a les 13:42” o “Hora de dormir cap a les 19:30”—amb un to tranquil i sense judicis.",
+      "a1": "NapNap és un rastrejador del son per a nadons (0–18 mesos) que t'ajuda a registrar les migdiades i el son nocturn, i a obtenir suggeriments senzills basats en l'edat sobre quan el teu nadó podria necessitar dormir després. Ens centrem en passos clars—com 'Proper son cap a les 13:42' o 'Hora de dormir cap a les 19:30'—amb un to tranquil i sense judicis.",
       "q2": "NapNap és un programa d'entrenament del son?",
       "a2": "No. NapNap t'ajuda amb horaris i patrons. No prescriu un mètode específic. Tu decideixes com acompanyar el teu nadó.",
       "q3": "Què és una finestra de vetlla?",
@@ -830,15 +826,19 @@
       "q6": "Quant costa NapNap?",
       "a6": "NapNap és gratuït per començar. Pots registrar el son, obtenir suggeriments de migdiada i d'hora de dormir, i compartir l'accés amb una parella sense cost."
     },
+    "builtBy": {
+      "label": "Fet amb cura",
+      "description": "NapNap el construeixen pares a Barcelona que saben què es sent a les 3 de la matinada. Sense inversors, sense trucs de creixement — només una eina que ens hauria agradat tenir."
+    },
     "emailCapture": {
-      "title": "Encara no ho tens clar? Cap problema.",
-      "description": "Deixa el teu correu electrònic i t'enviarem una nota breu quan hi hagi alguna cosa important a punt. Sense campanyes repetitives.",
-      "submitted": "Perfecte. T'hi anirem quan toqui, amb suavitat.",
+      "title": "Mantén-te al dia",
+      "description": "Rep una nota breu quan llançem alguna cosa nova. Sense spam, sense campanyes — només el bo.",
+      "submitted": "Hi ets! T'escriurem amb suavitat.",
       "sectionAriaLabel": "Mantén-te al dia",
       "placeholder": "tu@email.com",
       "emailAriaLabel": "Adreça de correu electrònic",
       "sending": "Enviant...",
-      "notifyMe": "Avise'm",
+      "notifyMe": "Unir-me",
       "invalidEmail": "Introdueix un correu electrònic vàlid."
     },
     "footer": {
@@ -849,11 +849,11 @@
         "heading": "Producte",
         "howItWorks": "Com funciona",
         "theApp": "L'app",
-        "faq": "Preguntes freqüents"
+        "faq": "Preguntes freqüents",
+        "sleepGuides": "Guies de son"
       },
       "legal": {
         "heading": "Legal",
-        "sleepGuides": "Guies de son",
         "privacy": "Privacitat",
         "terms": "Termes",
         "contact": "Contacte"

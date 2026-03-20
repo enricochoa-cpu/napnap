@@ -4,6 +4,7 @@ import { SkyBackground } from './SkyBackground';
 import { supabase } from '../lib/supabase';
 import { LandingFooter } from './LandingFooter';
 import { LandingLanguagePicker } from './LandingLanguagePicker';
+import { getSleepGuideConfigsForCurrentLanguage } from '../data/sleepGuideContentByLanguage';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -20,13 +21,16 @@ const TESTIMONIAL_KEYS: Array<{
   quoteKey: string;
   authorKey: string;
   contextKey: string;
+  avatar?: string; // path to avatar image, falls back to initials
+  initials: string;
+  color: string; // CSS variable for avatar bg
 }> = [
-  { quoteKey: 'landing.testimonials.t1.quote', authorKey: 'landing.testimonials.t1.author', contextKey: 'landing.testimonials.t1.context' },
-  { quoteKey: 'landing.testimonials.t2.quote', authorKey: 'landing.testimonials.t2.author', contextKey: 'landing.testimonials.t2.context' },
-  { quoteKey: 'landing.testimonials.t3.quote', authorKey: 'landing.testimonials.t3.author', contextKey: 'landing.testimonials.t3.context' },
-  { quoteKey: 'landing.testimonials.t4.quote', authorKey: 'landing.testimonials.t4.author', contextKey: 'landing.testimonials.t4.context' },
-  { quoteKey: 'landing.testimonials.t5.quote', authorKey: 'landing.testimonials.t5.author', contextKey: 'landing.testimonials.t5.context' },
-  { quoteKey: 'landing.testimonials.t6.quote', authorKey: 'landing.testimonials.t6.author', contextKey: 'landing.testimonials.t6.context' },
+  { quoteKey: 'landing.testimonials.t1.quote', authorKey: 'landing.testimonials.t1.author', contextKey: 'landing.testimonials.t1.context', initials: 'MR', color: 'var(--nap-color)' },
+  { quoteKey: 'landing.testimonials.t2.quote', authorKey: 'landing.testimonials.t2.author', contextKey: 'landing.testimonials.t2.context', initials: 'AM', color: 'var(--night-color)' },
+  { quoteKey: 'landing.testimonials.t3.quote', authorKey: 'landing.testimonials.t3.author', contextKey: 'landing.testimonials.t3.context', initials: 'LS', color: 'var(--wake-color)' },
+  { quoteKey: 'landing.testimonials.t4.quote', authorKey: 'landing.testimonials.t4.author', contextKey: 'landing.testimonials.t4.context', initials: 'DG', color: 'var(--nap-color)' },
+  { quoteKey: 'landing.testimonials.t5.quote', authorKey: 'landing.testimonials.t5.author', contextKey: 'landing.testimonials.t5.context', initials: 'CR', color: 'var(--night-color)' },
+  { quoteKey: 'landing.testimonials.t6.quote', authorKey: 'landing.testimonials.t6.author', contextKey: 'landing.testimonials.t6.context', initials: 'PP', color: 'var(--wake-color)' },
 ];
 
 // Three video slots for the floating hero composition.
@@ -182,12 +186,17 @@ export function LandingPage() {
     [t],
   );
 
+  const sleepGuideConfigs = useMemo(() => getSleepGuideConfigsForCurrentLanguage(), [t]);
+
   const testimonials = useMemo(
     () =>
       TESTIMONIAL_KEYS.map((item) => ({
         quote: t(item.quoteKey),
         author: t(item.authorKey),
         context: t(item.contextKey),
+        avatar: item.avatar,
+        initials: item.initials,
+        color: item.color,
       })),
     [t],
   );
@@ -289,7 +298,7 @@ export function LandingPage() {
                 onClick={handleLoginClick}
                 className="btn btn-primary text-base px-5 py-2.5 min-h-[40px] flex-shrink-0"
               >
-                {t('landing.header.login')}
+                {t('landing.header.cta')}
               </button>
             </div>
           </div>
@@ -332,7 +341,7 @@ export function LandingPage() {
             {t('landing.nav.faq')}
           </button>
           <div className="pt-2 pb-2">
-            <LandingLanguagePicker />
+            <LandingLanguagePicker variant="stack" />
           </div>
           <button type="button" onClick={() => { setMobileMenuOpen(false); handleLoginClick(); }} className="btn btn-primary w-full text-base py-3.5 mt-6 max-w-xs">
             {t('landing.mobile.startFree')}
@@ -412,8 +421,25 @@ export function LandingPage() {
                 <blockquote className="text-sm text-[var(--text-primary)] italic leading-relaxed">
                   &ldquo;{item.quote}&rdquo;
                 </blockquote>
-                <figcaption className="mt-3 text-xs text-[var(--text-muted)] font-display">
-                  {item.author}, {item.context}
+                <figcaption className="mt-3 flex items-center gap-2.5">
+                  {item.avatar ? (
+                    <img
+                      src={item.avatar}
+                      alt={item.author}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <span
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-display font-semibold flex-shrink-0"
+                      style={{ background: `color-mix(in srgb, ${item.color} 20%, transparent)`, color: item.color }}
+                      aria-hidden
+                    >
+                      {item.initials}
+                    </span>
+                  )}
+                  <span className="text-xs text-[var(--text-muted)] font-display">
+                    {item.author}, {item.context}
+                  </span>
                 </figcaption>
               </figure>
             ))}
@@ -590,20 +616,37 @@ export function LandingPage() {
           </section>
         </div>
 
-        {/* ── Age range — lightweight text + tags ── */}
-        <section className="space-y-4">
-          <div className="space-y-1">
-            <h2 className="text-display-md">{t('landing.ageRange.title')}</h2>
+        {/* ── Sleep guides by age ── */}
+        <section className="space-y-6">
+          <div className="space-y-2">
+            <h2 className="text-display-md">{t('landing.sleepGuides.title')}</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
-              {t('landing.ageRange.description')}
+              {t('landing.sleepGuides.description')}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 text-sm">
-            <span className="tag tag-nap">{t('landing.ageTags.newborn')}</span>
-            <span className="tag tag-neutral">{t('landing.ageTags.3to6')}</span>
-            <span className="tag tag-night">{t('landing.ageTags.6to12')}</span>
-            <span className="tag tag-active">{t('landing.ageTags.12to18')}</span>
+          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+            {sleepGuideConfigs.map((config) => (
+              <a
+                key={config.slug}
+                href={`/sleep-guides/${config.slug}`}
+                className="card p-3 text-center hover:scale-[1.03] transition-transform block"
+              >
+                <span className="text-sm font-display font-bold text-[var(--nap-color)]">
+                  {config.displayLabel ?? `${config.ageMonths} mo`}
+                </span>
+                <span className="block text-[9px] text-[var(--text-muted)] mt-0.5">
+                  {config.stats.napsPerDay} {config.stats.napsPerDay === '1' ? t('sleepGuides.hub.napSingular') : t('sleepGuides.hub.napPlural')}
+                </span>
+              </a>
+            ))}
           </div>
+          <a
+            href="/sleep-guides"
+            className="inline-flex items-center gap-1.5 text-sm text-[var(--nap-color)] font-display font-medium hover:underline"
+          >
+            {t('landing.sleepGuides.viewAll')}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="9 18 15 12 9 6" /></svg>
+          </a>
         </section>
 
         {/* ── FAQ ── */}
@@ -677,6 +720,16 @@ export function LandingPage() {
               )}
             </div>
           )}
+        </section>
+
+        {/* ── Built by parents ── */}
+        <section className="text-center space-y-3 py-4">
+          <p className="text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">
+            {t('landing.builtBy.label')}
+          </p>
+          <p className="text-base text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
+            {t('landing.builtBy.description')}
+          </p>
         </section>
 
       </main>

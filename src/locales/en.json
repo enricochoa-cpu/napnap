@@ -696,7 +696,8 @@
       "ariaLabel": "Language picker"
     },
     "header": {
-      "login": "Log in"
+      "login": "Log in",
+      "cta": "Get started"
     },
     "mobile": {
       "home": "Home",
@@ -718,7 +719,7 @@
       "freeToStart": "Free to start"
     },
     "testimonials": {
-      "heading": "Trusted by dozens of families",
+      "heading": "What parents are saying",
       "t1": {
         "quote": "Finally, something that tells me what to do next without judging how I got here.",
         "author": "Mireia",
@@ -726,18 +727,18 @@
       },
       "t2": {
         "quote": "I use it at 3am when my brain doesn't work. One tap and it tells me when to try again.",
-        "author": "Rosa",
-        "context": "mum of twins"
+        "author": "Andreu",
+        "context": "dad of twins"
       },
       "t3": {
         "quote": "No charts, no scores. Just 'next nap around 14:10.' That's all I needed.",
-        "author": "Eva",
+        "author": "Laura",
         "context": "mum of a 7-month-old"
       },
       "t4": {
         "quote": "My partner logs naps too. We're finally on the same page without texting back and forth.",
-        "author": "Marta",
-        "context": "mum of a 10-month-old"
+        "author": "David",
+        "context": "dad of a 10-month-old"
       },
       "t5": {
         "quote": "It learned my baby's rhythm in two days. Now I actually plan my mornings.",
@@ -806,15 +807,10 @@
         "description": "A gentle narrative on the last month to spot patterns without chart overload."
       }
     },
-    "ageRange": {
-      "title": "For 0–18 months",
-      "description": "From short newborn naps to the final one-nap days, NapNap adapts the suggested rhythm to your baby's age and recent sleep."
-    },
-    "ageTags": {
-      "newborn": "Newborn",
-      "3to6": "3–6 months",
-      "6to12": "6–12 months",
-      "12to18": "12–18 months"
+    "sleepGuides": {
+      "title": "Sleep guides by age",
+      "description": "From short newborn naps to the final one-nap days. Explore age-specific schedules, wake windows, and tips.",
+      "viewAll": "View all sleep guides"
     },
     "faq": {
       "title": "Questions, calmly answered",
@@ -834,15 +830,19 @@
       "q6": "How much does NapNap cost?",
       "a6": "NapNap is free to start. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost."
     },
+    "builtBy": {
+      "label": "Made with care",
+      "description": "NapNap is built by parents in Barcelona who know what 3am feels like. No investors, no growth hacks — just a tool we wished we'd had."
+    },
     "emailCapture": {
-      "title": "Not ready yet? That's fine.",
-      "description": "Leave your email and we'll send one short note when something worth knowing about is ready. No drip campaigns.",
-      "submitted": "Got it. We'll be in touch gently.",
+      "title": "Stay in the loop",
+      "description": "Get a short note when we ship something new. No spam, no drip campaigns — just the good stuff.",
+      "submitted": "You're in. We'll be in touch gently.",
       "sectionAriaLabel": "Stay in the loop",
       "placeholder": "your@email.com",
       "emailAriaLabel": "Email address",
       "sending": "Sending...",
-      "notifyMe": "Notify me",
+      "notifyMe": "Join",
       "invalidEmail": "Please enter a valid email."
     },
     "footer": {
@@ -853,11 +853,11 @@
         "heading": "Product",
         "howItWorks": "How it works",
         "theApp": "The app",
-        "faq": "FAQ"
+        "faq": "FAQ",
+        "sleepGuides": "Sleep guides"
       },
       "legal": {
         "heading": "Legal",
-        "sleepGuides": "Sleep Guides",
         "privacy": "Privacy",
         "terms": "Terms",
         "contact": "Contact"

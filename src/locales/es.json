@@ -694,7 +694,8 @@
       "ariaLabel": "Selector de idioma"
     },
     "header": {
-      "login": "Iniciar sesión"
+      "login": "Iniciar sesión",
+      "cta": "Empezar"
     },
     "mobile": {
       "home": "Inicio",
@@ -716,7 +717,7 @@
       "freeToStart": "Gratis para empezar"
     },
     "testimonials": {
-      "heading": "Confiado por decenas de familias",
+      "heading": "Lo que dicen los padres",
       "t1": {
         "quote": "Por fin, algo que me dice qué hacer después sin juzgar cómo llegué hasta aquí.",
         "author": "Mireia",
@@ -724,18 +725,18 @@
       },
       "t2": {
         "quote": "Lo uso a las 3am cuando mi cerebro no funciona. Un toque y me dice cuándo volver a intentarlo.",
-        "author": "Rosa",
-        "context": "mamá de gemelos"
+        "author": "Andreu",
+        "context": "papá de gemelos"
       },
       "t3": {
-        "quote": "Sin gráficas, sin puntuaciones. Solo “próxima siesta sobre las 14:10”. Eso era todo lo que necesitaba.",
-        "author": "Eva",
+        "quote": "Sin gráficas, sin puntuaciones. Solo 'próxima siesta sobre las 14:10'. Eso era todo lo que necesitaba.",
+        "author": "Laura",
         "context": "mamá de un bebé de 7 meses"
       },
       "t4": {
         "quote": "Mi pareja también registra las siestas. Por fin estamos en la misma página sin estar mandándonos mensajes sin parar.",
-        "author": "Marta",
-        "context": "mamá de un bebé de 10 meses"
+        "author": "David",
+        "context": "papá de un bebé de 10 meses"
       },
       "t5": {
         "quote": "Aprendió el ritmo de mi bebé en dos días. Ahora de verdad planeo mis mañanas.",
@@ -804,15 +805,10 @@
         "description": "Un relato amable del último mes para detectar patrones sin saturarte con gráficos."
       }
     },
-    "ageRange": {
-      "title": "Para 0–18 meses",
-      "description": "Desde siestas cortas de recién nacido hasta los últimos días de una sola siesta, NapNap adapta el ritmo sugerido a la edad de tu bebé y a su sueño reciente."
-    },
-    "ageTags": {
-      "newborn": "Recién nacido",
-      "3to6": "3–6 meses",
-      "6to12": "6–12 meses",
-      "12to18": "12–18 meses"
+    "sleepGuides": {
+      "title": "Guías de sueño por edad",
+      "description": "Desde siestas cortas de recién nacido hasta los últimos días de una sola siesta. Horarios, ventanas de vigilia y consejos por edad.",
+      "viewAll": "Ver todas las guías de sueño"
     },
     "faq": {
       "title": "Preguntas, respondidas con calma",
@@ -820,7 +816,7 @@
     },
     "faqs": {
       "q1": "¿Qué es NapNap?",
-      "a1": "NapNap es un rastreador del sueño para bebés (0–18 meses) que te ayuda a registrar siestas y el sueño nocturno y a obtener sugerencias sencillas basadas en la edad sobre cuándo tu bebé podría necesitar dormir después. Nos centramos en próximos pasos claros—como “Siguiente siesta sobre las 13:42” o “Hora de dormir sobre las 19:30”—con un tono tranquilo y nada juzgador.",
+      "a1": "NapNap es un rastreador del sueño para bebés (0–18 meses) que te ayuda a registrar siestas y el sueño nocturno y a obtener sugerencias sencillas basadas en la edad sobre cuándo tu bebé podría necesitar dormir después. Nos centramos en próximos pasos claros—como 'Siguiente siesta sobre las 13:42' o 'Hora de dormir sobre las 19:30'—con un tono tranquilo y nada juzgador.",
       "q2": "¿NapNap es un programa de entrenamiento del sueño?",
       "a2": "No. NapNap te ayuda con horarios y patrones. No prescribe un método específico. Tú eliges cómo acomodar a tu bebé.",
       "q3": "¿Qué es una ventana de vigilia?",
@@ -832,15 +828,19 @@
       "q6": "¿Cuánto cuesta NapNap?",
       "a6": "NapNap es gratis para empezar. Puedes registrar el sueño, obtener sugerencias de siesta y hora de dormir y compartir el acceso con una pareja sin coste."
     },
+    "builtBy": {
+      "label": "Hecho con cuidado",
+      "description": "NapNap lo construyen padres en Barcelona que saben lo que se siente a las 3am. Sin inversores, sin trucos de crecimiento — solo una herramienta que nos hubiese gustado tener."
+    },
     "emailCapture": {
-      "title": "¿Aún no estás listo/a? No pasa nada.",
-      "description": "Deja tu correo y te enviaremos una nota breve cuando algo importante esté listo. Sin campañas repetitivas.",
-      "submitted": "¡Perfecto! Te mantendremos informado con suavidad.",
+      "title": "Mantente al día",
+      "description": "Recibe una nota breve cuando lancemos algo nuevo. Sin spam, sin campañas — solo lo bueno.",
+      "submitted": "¡Estás dentro! Te escribiremos con suavidad.",
       "sectionAriaLabel": "Mantente al día",
       "placeholder": "tu@email.com",
       "emailAriaLabel": "Dirección de correo electrónico",
       "sending": "Enviando...",
-      "notifyMe": "Avísame",
+      "notifyMe": "Unirme",
       "invalidEmail": "Introduce un correo electrónico válido."
     },
     "footer": {
@@ -851,11 +851,11 @@
         "heading": "Producto",
         "howItWorks": "Cómo funciona",
         "theApp": "La app",
-        "faq": "Preguntas frecuentes"
+        "faq": "Preguntas frecuentes",
+        "sleepGuides": "Guías de sueño"
       },
       "legal": {
         "heading": "Legal",
-        "sleepGuides": "Guías de sueño",
         "privacy": "Privacidad",
         "terms": "Términos",
         "contact": "Contacto"

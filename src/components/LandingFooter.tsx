@@ -11,6 +11,7 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
     { id: 'how-it-works', labelKey: 'landing.footer.product.howItWorks' },
     { id: 'product-showcase', labelKey: 'landing.footer.product.theApp' },
     { id: 'faq', labelKey: 'landing.footer.product.faq' },
+    { id: 'sleep-guides', labelKey: 'landing.footer.product.sleepGuides', href: '/sleep-guides' },
   ];
 
   return (
@@ -33,8 +34,12 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
                 {t('landing.footer.product.heading')}
               </p>
               <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                {productLinks.map(({ id, labelKey }) =>
-                  onScrollToSection ? (
+                {productLinks.map(({ id, labelKey, href }) =>
+                  href ? (
+                    <a key={id} href={href} className="hover:text-[var(--text-secondary)] transition-colors">
+                      {t(labelKey)}
+                    </a>
+                  ) : onScrollToSection ? (
                     <button
                       key={id}
                       type="button"
@@ -56,9 +61,6 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
                 {t('landing.footer.legal.heading')}
               </p>
               <nav className="flex flex-col gap-2 text-sm text-[var(--text-muted)]">
-                <a href="/sleep-guides" className="hover:text-[var(--text-secondary)] transition-colors">
-                  {t('landing.footer.legal.sleepGuides')}
-                </a>
                 <a href="/privacy" className="hover:text-[var(--text-secondary)] transition-colors">
                   {t('landing.footer.legal.privacy')}
                 </a>
