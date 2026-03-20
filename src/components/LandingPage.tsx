@@ -142,7 +142,7 @@ function CyclingVideo({
 function HeroVideos() {
   return (
     <div
-      className="relative w-full h-[360px] sm:h-[440px]"
+      className="relative w-full h-[360px] sm:h-[440px] lg:h-[520px]"
       aria-label="Short clips of parents using NapNap"
       role="group"
     >

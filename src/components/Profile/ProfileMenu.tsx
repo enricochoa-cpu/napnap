@@ -63,7 +63,7 @@ export function ListRow({ icon, title, subtitle, onClick, iconColorClass, rightE
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl active:scale-[0.98] transition-all"
+      className="w-full flex items-center gap-4 px-5 py-5 rounded-2xl active:scale-[0.98] transition-all"
       style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconColorClass}`}>

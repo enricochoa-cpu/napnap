@@ -33,18 +33,7 @@ interface SleepEntrySheetProps {
   initialEndTimeOverride?: string;
 }
 
-// Icons
-const CloudIcon = () => (
-  <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-  </svg>
-);
-
-const MoonIcon = () => (
-  <svg className="w-12 h-12" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
+import { CloudIcon, MoonIcon } from './icons/SleepIcons';
 
 const TrashIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -513,7 +502,7 @@ export function SleepEntrySheet({
                     color: themeColor
                   }}
                 >
-                  {sleepType === 'nap' ? <CloudIcon /> : <MoonIcon />}
+                  {sleepType === 'nap' ? <CloudIcon className="w-12 h-12" /> : <MoonIcon className="w-12 h-12" />}
                 </motion.div>
                 <span
                   className="font-display font-semibold text-lg"
@@ -524,7 +513,7 @@ export function SleepEntrySheet({
 
                 {/* Date picker for new entries: log for today, yesterday, or another past day */}
                 {!isEditing && onDateChange && (
-                  <label className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer w-full max-w-[240px] mx-auto">
+                  <label htmlFor="sleep-entry-date" className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer w-full max-w-[240px] mx-auto">
                     <CalendarIcon />
                     <span className="text-[var(--text-primary)] font-display font-medium text-sm">
                       {isToday(selectedDate)
@@ -534,6 +523,7 @@ export function SleepEntrySheet({
                           : format(parseISO(selectedDate + 'T12:00:00'), 'EEE, MMM d', { locale: getDateFnsLocale() })}
                     </span>
                     <input
+                      id="sleep-entry-date"
                       type="date"
                       value={selectedDate}
                       max={getTodayStr()}

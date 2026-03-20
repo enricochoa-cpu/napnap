@@ -311,7 +311,7 @@ function CalendarModal({
                       key={i}
                       onClick={() => handleSelectDay(date)}
                       aria-label={t('dayNavigator.ariaDay', { date: format(date, 'EEEE, MMMM d, yyyy', { locale })})}
-                      className={`flex flex-col items-center justify-center py-1 rounded-xl min-h-[44px] transition-all ${
+                      className={`flex flex-col items-center justify-center py-1 rounded-xl min-h-[56px] transition-all ${
                         !isCurrentMonth ? 'opacity-20' : ''
                       }`}
                     >

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
+import { SunriseIcon } from './icons/SleepIcons';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface WakeUpSheetProps {
@@ -12,19 +13,6 @@ interface WakeUpSheetProps {
   onDelete?: () => void;
   bedtime: string; // ISO datetime string
 }
-
-const SunriseIcon = () => (
-  <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2v4" />
-    <path d="m4.93 4.93 2.83 2.83" />
-    <path d="M2 12h4" />
-    <path d="M12 12a4 4 0 0 0-4 4" />
-    <path d="M12 12a4 4 0 0 1 4 4" />
-    <path d="M20 12h2" />
-    <path d="m16.24 7.76 2.83-2.83" />
-    <path d="M2 20h20" />
-  </svg>
-);
 
 const TrashIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

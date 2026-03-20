@@ -43,17 +43,10 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
   const isActive = entry.endTime === null;
 
   return (
-    <div
-      className={`card-bedtime cursor-pointer active:opacity-90 transition-opacity ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
+    <button
+      type="button"
+      className={`card-bedtime cursor-pointer active:opacity-90 transition-opacity w-full text-left ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
       onClick={() => onEdit(entry)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onEdit(entry);
-        }
-      }}
     >
       <div className="flex items-center gap-4 p-5">
         {/* Icon */}
@@ -85,7 +78,7 @@ export function BedtimeEntry({ entry, onEdit, onEndSleep }: BedtimeEntryProps) {
         {/* Actions */}
         <EntryActions entry={entry} onEndSleep={onEndSleep} />
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -111,17 +104,10 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
           : t('stats.napOrdinal', { n: napNumber });
 
   return (
-    <div
-      className={`card-nap cursor-pointer active:opacity-90 transition-opacity ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
+    <button
+      type="button"
+      className={`card-nap cursor-pointer active:opacity-90 transition-opacity w-full text-left ${isActive ? 'ring-2 ring-[var(--success-color)]/30' : ''}`}
       onClick={() => onEdit(entry)}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onEdit(entry);
-        }
-      }}
     >
       <div className="flex items-center gap-4 p-5">
         {/* Icon - cloud for naps */}
@@ -150,7 +136,7 @@ export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps
         {/* Actions */}
         <EntryActions entry={entry} onEndSleep={onEndSleep} />
       </div>
-    </div>
+    </button>
   );
 }
 

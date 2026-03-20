@@ -22,7 +22,6 @@ export function useBabyShares() {
 
       if (error) {
         // Table might not exist yet - this is OK
-        console.log('Note: baby_shares table not available yet');
         return;
       }
 
@@ -41,7 +40,6 @@ export function useBabyShares() {
       }
     } catch {
       // Table doesn't exist yet - continue silently
-      console.log('Note: baby_shares feature not available yet');
     }
   }, []);
 
@@ -75,11 +73,9 @@ export function useBabyShares() {
 
       if (error) {
         // Table might not exist yet - this is OK
-        console.log('Note: baby_shares table not available yet');
         return;
       }
 
-      console.log('Pending invitations query result:', data, error);
       if (data) {
         const invitations: BabyShare[] = data.map((share) => {
           const profiles = share.profiles as { baby_name?: string; user_name?: string; baby_avatar_url?: string | null } | null;
@@ -97,12 +93,10 @@ export function useBabyShares() {
             babyAvatarUrl: profiles?.baby_avatar_url || undefined,
           };
         });
-        console.log('Parsed pending invitations:', invitations);
         setPendingInvitations(invitations);
       }
     } catch {
       // Table doesn't exist yet - continue silently
-      console.log('Note: baby_shares feature not available yet');
     }
   }, []);
 

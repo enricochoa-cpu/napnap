@@ -36,6 +36,7 @@ function mapMeasurementRow(row: {
 export function useGrowthLogs({ babyId }: UseGrowthLogsOptions) {
   const [measurementLogs, setMeasurementLogs] = useState<MeasurementLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchLogs = useCallback(async () => {
     if (!babyId) {
@@ -44,20 +45,23 @@ export function useGrowthLogs({ babyId }: UseGrowthLogsOptions) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('baby_measurement_logs')
         .select('id, baby_id, date, weight_kg, height_cm, head_cm, notes')
         .eq('baby_id', babyId)
         .order('date', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching measurement logs:', error);
+      if (fetchError) {
+        console.error('Error fetching measurement logs:', fetchError);
+        setError(fetchError.message);
       } else {
         setMeasurementLogs((data ?? []).map(mapMeasurementRow));
       }
     } catch (err) {
       console.error('Error fetching measurement logs:', err);
+      setError('Failed to load measurements');
     } finally {
       setLoading(false);
     }
@@ -242,6 +246,7 @@ export function useGrowthLogs({ babyId }: UseGrowthLogsOptions) {
     heightLogs,
     headLogs,
     loading,
+    error,
     fetchLogs,
     addMeasurementLog,
     updateMeasurementLog,

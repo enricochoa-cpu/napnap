@@ -24,6 +24,7 @@ interface UseSleepEntriesOptions {
 export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: null }) {
   const [entries, setEntries] = useState<SleepEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch entries when babyId changes
   useEffect(() => {
@@ -32,6 +33,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
 
   const fetchEntries = async () => {
     try {
+      setError(null);
       // If no babyId provided, try to use current user's id
       let targetBabyId = babyId;
 
@@ -44,14 +46,15 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
         targetBabyId = user.id;
       }
 
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('sleep_entries')
         .select('*')
         .eq('user_id', targetBabyId)
         .order('start_time', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching entries:', error);
+      if (fetchError) {
+        console.error('Error fetching entries:', fetchError);
+        setError(fetchError.message);
       }
 
       if (data) {
@@ -67,8 +70,9 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       } else {
         setEntries([]);
       }
-    } catch (error) {
-      console.error('Error fetching entries:', error);
+    } catch (err) {
+      console.error('Error fetching entries:', err);
+      setError('Failed to load sleep entries');
     } finally {
       setLoading(false);
     }
@@ -216,6 +220,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
   return {
     entries,
     loading,
+    error,
     addEntry,
     updateEntry,
     deleteEntry,

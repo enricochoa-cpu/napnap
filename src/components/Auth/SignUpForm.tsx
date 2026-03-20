@@ -213,7 +213,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
       {/* Terms of Service modal for sign-up consent */}
       {showTermsModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="terms-modal-title"
@@ -260,7 +260,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
       {/* Privacy Policy modal for sign-up consent */}
       {showPrivacyModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           role="dialog"
           aria-modal="true"
           aria-labelledby="privacy-modal-title"

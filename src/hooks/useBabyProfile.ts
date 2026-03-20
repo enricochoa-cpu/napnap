@@ -17,6 +17,7 @@ export function useBabyProfile() {
   const [sharedProfiles, setSharedProfiles] = useState<SharedBabyProfile[]>([]);
   const [activeBabyId, setActiveBabyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   /** Set active baby and persist so Today/History/Stats show this baby's data after refresh. */
   const setActiveBabyIdAndPersist = useCallback((id: string | null) => {
@@ -31,6 +32,7 @@ export function useBabyProfile() {
 
   const fetchProfile = async () => {
     try {
+      setError(null);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setLoading(false);
@@ -48,8 +50,6 @@ export function useBabyProfile() {
         console.error('Error fetching profile:', error);
         // Continue anyway - user might not have a profile yet
       }
-
-      console.log('Profile query result:', { data, error, userId: user.id });
 
       let ownProfile: BabyProfile | null = null;
 
@@ -74,7 +74,6 @@ export function useBabyProfile() {
       });
 
       if (data && data.baby_name) {
-        console.log('Profile data from DB:', data);
         ownProfile = {
           id: data.id,
           name: data.baby_name || '',
@@ -83,9 +82,6 @@ export function useBabyProfile() {
           avatarUrl: data.baby_avatar_url || undefined,
         };
         setProfile(ownProfile);
-        console.log('Parsed profile:', ownProfile);
-      } else {
-        console.log('No baby profile found for user');
       }
 
       // Fetch shared profiles (babies shared with me)
@@ -111,7 +107,6 @@ export function useBabyProfile() {
 
         if (sharesError) {
           // Table might not exist yet - this is OK
-          console.log('Note: baby_shares table not available yet');
         } else if (sharesData) {
           const staleShareIds: string[] = [];
 
@@ -147,19 +142,18 @@ export function useBabyProfile() {
 
           // Auto-clean stale shares in background (fire-and-forget)
           if (staleShareIds.length > 0) {
-            console.log('Cleaning stale shared baby rows:', staleShareIds);
-            supabase
-              .from('baby_shares')
-              .update({ status: 'revoked' })
-              .in('id', staleShareIds)
-              .then(({ error: cleanupError }) => {
-                if (cleanupError) console.error('Error cleaning stale shares:', cleanupError);
-              });
+            Promise.resolve(
+              supabase
+                .from('baby_shares')
+                .update({ status: 'revoked' })
+                .in('id', staleShareIds)
+            ).then(({ error: cleanupError }) => {
+              if (cleanupError) console.error('Error cleaning stale shares:', cleanupError);
+            }).catch(() => { /* fire-and-forget cleanup */ });
           }
         }
       } catch {
         // baby_shares table doesn't exist yet - continue without shared profiles
-        console.log('Note: baby_shares feature not available yet');
       }
 
       // Build list of all accessible babies
@@ -192,8 +186,9 @@ export function useBabyProfile() {
           setToStorage(STORAGE_KEYS.ACTIVE_BABY_ID, fallback);
         }
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      setError('Failed to load profile');
     } finally {
       setLoading(false);
     }
@@ -429,6 +424,7 @@ export function useBabyProfile() {
     isOwnerOfActiveBaby,
     hasMultipleBabies,
     loading,
+    error,
     createProfile,
     updateProfile,
     uploadBabyAvatar,

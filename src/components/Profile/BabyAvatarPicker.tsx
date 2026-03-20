@@ -178,6 +178,7 @@ export function BabyAvatarPicker({
           src={avatarUrl}
           alt={`${babyName}'s avatar`}
           className="w-full h-full object-cover"
+          loading="lazy"
         />
       ) : (
         <div className="w-full h-full bg-[var(--nap-color)]/20 flex items-center justify-center text-[var(--nap-color)]">

@@ -31,14 +31,14 @@ export function GoogleSignInButton({ onSignIn, disabled = false }: GoogleSignInB
         onClick={handleClick}
         disabled={loading || disabled}
         className="w-full min-h-[56px] flex items-center justify-center gap-3 px-4 py-3
-                   bg-white/10 hover:bg-white/15 active:bg-white/20
-                   border border-white/20 rounded-xl
+                   bg-[var(--glass-bg)] hover:brightness-110 active:brightness-120
+                   border border-[var(--glass-border)] rounded-xl
                    font-display font-medium text-[var(--text-primary)]
                    transition-colors duration-200
                    disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? (
-          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-[var(--text-muted)]/30 border-t-[var(--text-primary)] rounded-full animate-spin" />
         ) : (
           <>
             {/* Google "G" logo with brand colors */}

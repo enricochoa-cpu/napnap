@@ -294,7 +294,7 @@ export function AccountSettingsView({
       {showLogoutConfirm && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={() => setShowLogoutConfirm(false)}
             aria-hidden="true"
           />
@@ -341,7 +341,7 @@ export function AccountSettingsView({
       {showDeleteConfirm && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={() => !isDeletingAccount && setShowDeleteConfirm(false)}
             aria-hidden="true"
           />

@@ -75,6 +75,7 @@ function App() {
     deleteProfile,
     refreshProfile,
     loading: profileLoading,
+    error: profileError,
   } = useBabyProfile();
   const { t } = useTranslation();
 
@@ -127,9 +128,10 @@ function App() {
     lastCompletedSleep,
     entries,
     loading: entriesLoading,
+    error: entriesError,
   } = useSleepEntries({ babyId: activeBabyId });
 
-  const { weightLogs, heightLogs, headLogs } = useGrowthLogs({ babyId: activeBabyId });
+  const { weightLogs, heightLogs, headLogs, error: growthError } = useGrowthLogs({ babyId: activeBabyId });
 
   const hasPendingBabyInvite = pendingInvitations.length > 0;
 
@@ -594,17 +596,34 @@ function App() {
   return (
     <MotionConfig reducedMotion="user">
     <div className="min-h-[100dvh] bg-[var(--bg-deep)] transition-colors duration-[1500ms]">
+      {/* Skip to content link for keyboard navigation (WCAG 2.4.1) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-xl focus:bg-[var(--bg-card)] focus:text-[var(--text-primary)] focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--nap-color)] font-display font-medium"
+      >
+        Skip to content
+      </a>
+
       {/* Circadian Sky Background */}
       <SkyBackground theme={theme} />
 
       {/* Main Content with Slide Transitions */}
-      <main className="max-w-lg mx-auto relative z-0">
+      <main id="main-content" className="max-w-lg mx-auto relative z-0">
         {/* Inner scroll container: avoids Chrome bug where main+overflow + transformed child breaks document scroll. Scroll lives here so it works in all browsers. */}
         <div
           ref={mainScrollRef}
           className="min-h-[100dvh] overflow-y-auto overflow-x-hidden"
           style={{ height: '100dvh' }}
         >
+        {/* Error banner for data fetch failures */}
+        {(profileError || entriesError || growthError) && (
+          <div className="mx-4 mt-4 px-4 py-3 rounded-xl bg-[var(--danger-color)]/10 border border-[var(--danger-color)]/20" role="alert">
+            <p className="text-sm text-[var(--danger-color)] font-display font-medium">
+              {t('common.dataLoadError', 'Something went wrong loading your data. Pull down to refresh.')}
+            </p>
+          </div>
+        )}
+
         {/* Header avatar – shown only on Today and Sleep Log views */}
         {(currentView === 'home' || currentView === 'history') && (
           <div className="px-6 pt-6 w-fit">

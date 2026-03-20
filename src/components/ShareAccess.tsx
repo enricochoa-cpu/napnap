@@ -336,7 +336,7 @@ export function ShareAccess({
               transition={{ duration: 0.2 }}
               style={{ opacity: shareSheetBackdropOpacity }}
               onClick={() => !isUpdating && setSelectedShare(null)}
-              className="fixed inset-0 bg-black/60 z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             />
 
             {/* Sheet */}

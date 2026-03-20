@@ -108,32 +108,7 @@ function getExpectedWakeTime(
 // ============================================================================
 
 // Sun icon for morning wake up (Gold)
-const SunIcon = ({ className = "w-7 h-7" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="12" r="5" />
-    <path
-      d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      fill="none"
-    />
-  </svg>
-);
-
-// Cloud icon for naps (Teal)
-const CloudIcon = ({ className = "w-7 h-7" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-  </svg>
-);
-
-// Moon icon for night/bedtime (Lavender)
-const MoonIcon = ({ className = "w-7 h-7" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
+import { SunIcon, CloudIcon, MoonIcon } from './icons/SleepIcons';
 
 export function TodayView({
   profile,
@@ -776,21 +751,21 @@ export function TodayView({
                 <button
                   type="button"
                   onClick={() => onEdit?.(activeSleep)}
-                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--night-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)] animate-glow-night"
+                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--night-color)]/90 backdrop-blur-xl border border-[var(--glass-border)] shadow-[0_8px_30px_rgb(0,0,0,0.06)] animate-glow-night"
                 >
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
+                  <div className="w-10 h-10 rounded-full bg-[var(--text-on-accent)]/20 flex items-center justify-center text-[var(--text-on-accent)] flex-shrink-0 animate-pulse-soft z-10">
                     <MoonIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                    <p className="text-[var(--text-on-accent)]/70 font-display text-xs uppercase tracking-wider">
                       {t('today.nightSleep')}
                     </p>
-                    <p className="text-white font-display font-semibold text-base">
+                    <p className="text-[var(--text-on-accent)] font-display font-semibold text-base">
                       {formatTime(activeSleep.startTime)} — ...
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/80 font-display text-sm font-medium">
+                    <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
                       {formatDuration(currentSleepDuration)}
                     </p>
                   </div>
@@ -890,21 +865,21 @@ export function TodayView({
                 <button
                   type="button"
                   onClick={() => onEdit?.(activeSleep)}
-                  className="relative py-3 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-2xl bg-[var(--nap-color)]/90 backdrop-blur-xl border border-white/20 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                  className="relative py-3 px-4 flex items-center gap-3 animate-glow w-full text-left rounded-2xl bg-[var(--nap-color)]/90 backdrop-blur-xl border border-[var(--glass-border)] shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
                 >
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 animate-pulse-soft z-10">
+                  <div className="w-10 h-10 rounded-full bg-[var(--text-on-accent)]/20 flex items-center justify-center text-[var(--text-on-accent)] flex-shrink-0 animate-pulse-soft z-10">
                     <CloudIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                    <p className="text-[var(--text-on-accent)]/70 font-display text-xs uppercase tracking-wider">
                       {t('today.nappingNow')}
                     </p>
-                    <p className="text-white font-display font-semibold text-base">
+                    <p className="text-[var(--text-on-accent)] font-display font-semibold text-base">
                       {formatTime(activeSleep.startTime)} — ...
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/80 font-display text-sm font-medium">
+                    <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
                       {formatDuration(currentSleepDuration)}
                     </p>
                   </div>
@@ -921,21 +896,21 @@ export function TodayView({
                 <button
                   type="button"
                   onClick={() => onEdit?.(nap)}
-                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--nap-color)]/80 backdrop-blur-xl border border-white/15 shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl bg-[var(--nap-color)]/80 backdrop-blur-xl border border-[var(--glass-border)] shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
                 >
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white flex-shrink-0 z-10">
+                  <div className="w-10 h-10 rounded-full bg-[var(--text-on-accent)]/20 flex items-center justify-center text-[var(--text-on-accent)] flex-shrink-0 z-10">
                     <CloudIcon className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white/70 font-display text-xs uppercase tracking-wider">
+                    <p className="text-[var(--text-on-accent)]/70 font-display text-xs uppercase tracking-wider">
                       {t('today.napOrdinal', { n: todayNaps.length - index })}
                     </p>
-                    <p className="text-white font-display font-semibold text-base">
+                    <p className="text-[var(--text-on-accent)] font-display font-semibold text-base">
                       {formatTime(nap.startTime)} — {formatTime(nap.endTime!)}
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-white/80 font-display text-sm font-medium">
+                    <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
                       {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
                     </p>
                   </div>
