@@ -255,15 +255,16 @@ export function LandingPage() {
         className="fixed left-0 right-0 z-50 px-4 sm:px-6 flex items-center"
         style={{ top: 'calc(40px + env(safe-area-inset-top, 0px))' }}
       >
-        {/* Mobile: full wordmark fades to compact "NN" on scroll */}
+        {/* Mobile: wordmark fades on scroll */}
         <button
           type="button"
           onClick={scrollToTop}
-          className="sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded"
+          className={`sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded transition-opacity duration-200 ${
+            hideMobileWordmark ? 'opacity-0 pointer-events-none' : ''
+          }`}
           aria-label="Scroll to top"
         >
-          <span className={`text-display-lg text-[var(--text-primary)] transition-all duration-200 ${hideMobileWordmark ? 'hidden' : ''}`}>NapNap</span>
-          <span className={`text-display-sm text-[var(--text-primary)] font-bold transition-all duration-200 ${hideMobileWordmark ? '' : 'hidden'}`}>NN</span>
+          <span className="text-display-lg text-[var(--text-primary)]">NapNap</span>
         </button>
 
         {/* Desktop: glass pill nav */}
