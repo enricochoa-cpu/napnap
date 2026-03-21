@@ -818,17 +818,17 @@
     },
     "faqs": {
       "q1": "What is NapNap?",
-      "a1": "NapNap is a sleep tracker for babies (0–18 months) that helps you log naps and night sleep and get simple, age-based suggestions for when your baby might need to sleep next. We focus on clear next steps—like \"Next nap around 13:42\" or \"Bedtime around 19:30\"—with a calm, non-judgmental tone.",
+      "a1": "NapNap is a <strong>sleep tracker for babies (0–18 months)</strong> that helps you log naps and night sleep and get simple, <strong>age-based suggestions</strong> for when your baby might need to sleep next. We focus on clear next steps—like \"Next nap around 13:42\" or \"Bedtime around 19:30\"—with a calm, non-judgmental tone.",
       "q2": "Is NapNap a sleep training program?",
-      "a2": "No. NapNap helps you with timing and patterns. It does not prescribe a specific method. You choose how to settle your baby.",
+      "a2": "No. NapNap helps you with <strong>timing and patterns</strong>. It does not prescribe a specific method. <strong>You choose</strong> how to settle your baby.",
       "q3": "What is a wake window?",
-      "a3": "A wake window is the amount of time your baby can comfortably stay awake between sleep periods. They vary by age—from about 45–60 minutes for newborns to several hours for older babies. NapNap uses age-based wake windows to suggest when to offer the next nap or bedtime.",
+      "a3": "A <strong>wake window</strong> is the amount of time your baby can comfortably stay awake between sleep periods. They vary by age—from about <strong>45–60 minutes for newborns</strong> to several hours for older babies. NapNap uses <strong>age-based wake windows</strong> to suggest when to offer the next nap or bedtime.",
       "q4": "Do I have to log every single nap?",
-      "a4": "No. The app works best when you log regularly, but it is built to forgive gaps and late entries. Perfect data is not required.",
+      "a4": "No. The app works best when you log regularly, but it is <strong>built to forgive</strong> gaps and late entries. Perfect data is not required.",
       "q5": "Is my data private?",
-      "a5": "Yes. Sleep and growth data stays with your account. You control who has access through caregiver sharing.",
+      "a5": "Yes. Sleep and growth data <strong>stays with your account</strong>. You control who has access through caregiver sharing.",
       "q6": "How much does NapNap cost?",
-      "a6": "NapNap is free to start. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost."
+      "a6": "NapNap is <strong>free to start</strong>. You can track sleep, get nap and bedtime suggestions, and share access with a partner at no cost."
     },
     "builtBy": {
       "label": "Made with care",

@@ -816,17 +816,17 @@
     },
     "faqs": {
       "q1": "¿Qué es NapNap?",
-      "a1": "NapNap es un rastreador del sueño para bebés (0–18 meses) que te ayuda a registrar siestas y el sueño nocturno y a obtener sugerencias sencillas basadas en la edad sobre cuándo tu bebé podría necesitar dormir después. Nos centramos en próximos pasos claros—como 'Siguiente siesta sobre las 13:42' o 'Hora de dormir sobre las 19:30'—con un tono tranquilo y nada juzgador.",
+      "a1": "NapNap es un <strong>rastreador del sueño para bebés (0–18 meses)</strong> que te ayuda a registrar siestas y el sueño nocturno y a obtener <strong>sugerencias basadas en la edad</strong> sobre cuándo tu bebé podría necesitar dormir después. Nos centramos en próximos pasos claros—como 'Siguiente siesta sobre las 13:42' o 'Hora de dormir sobre las 19:30'—con un tono tranquilo y nada juzgador.",
       "q2": "¿NapNap es un programa de entrenamiento del sueño?",
-      "a2": "No. NapNap te ayuda con horarios y patrones. No prescribe un método específico. Tú eliges cómo acomodar a tu bebé.",
+      "a2": "No. NapNap te ayuda con <strong>horarios y patrones</strong>. No prescribe un método específico. <strong>Tú eliges</strong> cómo acomodar a tu bebé.",
       "q3": "¿Qué es una ventana de vigilia?",
-      "a3": "Una ventana de vigilia es el tiempo que tu bebé puede permanecer despierto de forma cómoda entre periodos de sueño. Varía según la edad—de unos 45–60 minutos para recién nacidos a varias horas para bebés mayores. NapNap usa ventanas de vigilia basadas en la edad para sugerirte cuándo ofrecer la próxima siesta o la hora de dormir.",
+      "a3": "Una <strong>ventana de vigilia</strong> es el tiempo que tu bebé puede permanecer despierto de forma cómoda entre periodos de sueño. Varía según la edad—de unos <strong>45–60 minutos para recién nacidos</strong> a varias horas para bebés mayores. NapNap usa <strong>ventanas de vigilia basadas en la edad</strong> para sugerirte cuándo ofrecer la próxima siesta o la hora de dormir.",
       "q4": "¿Tengo que registrar todas y cada una de las siestas?",
-      "a4": "No. La app funciona mejor si registras con regularidad, pero está hecha para perdonar huecos y entradas tardías. No hace falta que los datos sean perfectos.",
+      "a4": "No. La app funciona mejor si registras con regularidad, pero está <strong>hecha para perdonar</strong> huecos y entradas tardías. No hace falta que los datos sean perfectos.",
       "q5": "¿Mis datos son privados?",
-      "a5": "Sí. Los datos de sueño y crecimiento se quedan en tu cuenta. Tú controlas el acceso mediante compartir con cuidadores.",
+      "a5": "Sí. Los datos de sueño y crecimiento <strong>se quedan en tu cuenta</strong>. Tú controlas el acceso mediante compartir con cuidadores.",
       "q6": "¿Cuánto cuesta NapNap?",
-      "a6": "NapNap es gratis para empezar. Puedes registrar el sueño, obtener sugerencias de siesta y hora de dormir y compartir el acceso con una pareja sin coste."
+      "a6": "NapNap es <strong>gratis para empezar</strong>. Puedes registrar el sueño, obtener sugerencias de siesta y hora de dormir y compartir el acceso con una pareja sin coste."
     },
     "builtBy": {
       "label": "Hecho con cuidado",

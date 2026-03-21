@@ -814,17 +814,17 @@
     },
     "faqs": {
       "q1": "Què és NapNap?",
-      "a1": "NapNap és un rastrejador del son per a nadons (0–18 mesos) que t'ajuda a registrar les migdiades i el son nocturn, i a obtenir suggeriments senzills basats en l'edat sobre quan el teu nadó podria necessitar dormir després. Ens centrem en passos clars—com 'Proper son cap a les 13:42' o 'Hora de dormir cap a les 19:30'—amb un to tranquil i sense judicis.",
+      "a1": "NapNap és un <strong>rastrejador del son per a nadons (0–18 mesos)</strong> que t'ajuda a registrar les migdiades i el son nocturn, i a obtenir <strong>suggeriments basats en l'edat</strong> sobre quan el teu nadó podria necessitar dormir després. Ens centrem en passos clars—com 'Proper son cap a les 13:42' o 'Hora de dormir cap a les 19:30'—amb un to tranquil i sense judicis.",
       "q2": "NapNap és un programa d'entrenament del son?",
-      "a2": "No. NapNap t'ajuda amb horaris i patrons. No prescriu un mètode específic. Tu decideixes com acompanyar el teu nadó.",
+      "a2": "No. NapNap t'ajuda amb <strong>horaris i patrons</strong>. No prescriu un mètode específic. <strong>Tu decideixes</strong> com acompanyar el teu nadó.",
       "q3": "Què és una finestra de vetlla?",
-      "a3": "Una finestra de vetlla és el temps que el teu nadó pot mantenir-se despert de manera còmoda entre períodes de son. Variarà segons l'edat—d'uns 45–60 minuts per a nounats a diverses hores per a nadons més grans. NapNap fa servir finestres de vetlla basades en l'edat per suggerir-te quan oferir la propera migdiada o l'hora de dormir.",
+      "a3": "Una <strong>finestra de vetlla</strong> és el temps que el teu nadó pot mantenir-se despert de manera còmoda entre períodes de son. Variarà segons l'edat—d'uns <strong>45–60 minuts per a nounats</strong> a diverses hores per a nadons més grans. NapNap fa servir <strong>finestres de vetlla basades en l'edat</strong> per suggerir-te quan oferir la propera migdiada o l'hora de dormir.",
       "q4": "He de registrar totes i cada una de les migdiades?",
-      "a4": "No. L'app funciona millor si registres de manera regular, però està pensada per perdonar buits i entrades tardanes. No cal que les dades siguin perfectes.",
+      "a4": "No. L'app funciona millor si registres de manera regular, però està <strong>pensada per perdonar</strong> buits i entrades tardanes. No cal que les dades siguin perfectes.",
       "q5": "Les meves dades són privades?",
-      "a5": "Sí. Les dades de son i creixement es queden amb el teu compte. Tu controles qui hi té accés mitjançant la compartició amb cuidadors.",
+      "a5": "Sí. Les dades de son i creixement <strong>es queden amb el teu compte</strong>. Tu controles qui hi té accés mitjançant la compartició amb cuidadors.",
       "q6": "Quant costa NapNap?",
-      "a6": "NapNap és gratuït per començar. Pots registrar el son, obtenir suggeriments de migdiada i d'hora de dormir, i compartir l'accés amb una parella sense cost."
+      "a6": "NapNap és <strong>gratuït per començar</strong>. Pots registrar el son, obtenir suggeriments de migdiada i d'hora de dormir, i compartir l'accés amb una parella sense cost."
     },
     "builtBy": {
       "label": "Fet amb cura",

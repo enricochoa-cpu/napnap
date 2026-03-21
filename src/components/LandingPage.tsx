@@ -255,16 +255,15 @@ export function LandingPage() {
         className="fixed left-0 right-0 z-50 px-4 sm:px-6 flex items-center"
         style={{ top: 'calc(40px + env(safe-area-inset-top, 0px))' }}
       >
-        {/* Mobile: wordmark fades on scroll */}
+        {/* Mobile: full wordmark fades to compact "NN" on scroll */}
         <button
           type="button"
           onClick={scrollToTop}
-          className={`sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded transition-opacity duration-200 ${
-            hideMobileWordmark ? 'opacity-0 pointer-events-none' : ''
-          }`}
+          className="sm:hidden pressable p-0 border-0 bg-transparent text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--nap-color)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-deep)] rounded"
           aria-label="Scroll to top"
         >
-          <span className="text-display-lg text-[var(--text-primary)]">NapNap</span>
+          <span className={`text-display-lg text-[var(--text-primary)] transition-all duration-200 ${hideMobileWordmark ? 'hidden' : ''}`}>NapNap</span>
+          <span className={`text-display-sm text-[var(--text-primary)] font-bold transition-all duration-200 ${hideMobileWordmark ? '' : 'hidden'}`}>NN</span>
         </button>
 
         {/* Desktop: glass pill nav */}
@@ -357,7 +356,7 @@ export function LandingPage() {
         }`}
         style={{ height: '100dvh' }}
       >
-      <main className="main-below-landing-nav max-w-5xl mx-auto px-6 pb-20 space-y-16">
+      <main className="main-below-landing-nav max-w-5xl mx-auto px-6 pb-20">
 
         {/* ── Hero ── */}
         <section className="grid gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] items-center">
@@ -390,10 +389,11 @@ export function LandingPage() {
               ].map((key) => (
                 <span
                   key={key}
-                  className="inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)] bg-[var(--glass-bg,rgba(255,255,255,0.06))] border border-[var(--glass-border)] rounded-full px-3 py-1"
+                  className="inline-flex items-center gap-1.5 text-sm text-[var(--text-primary)] rounded-full px-3.5 py-1.5 border border-[var(--glass-border)]"
+                  style={{ background: 'color-mix(in srgb, var(--nap-color) 8%, transparent)' }}
                 >
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden>
-                    <path d="M2 6.5l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                    <path d="M2 6.5l3 3 5-5" stroke="var(--nap-color)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   {t(key)}
                 </span>
@@ -410,7 +410,7 @@ export function LandingPage() {
         {/* ── Social proof — testimonial grid ── */}
         <section
           aria-label="What parents say"
-          className="bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10"
+          className="mt-20 bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10"
         >
           <p className="text-center text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display mb-6">
             {t('landing.testimonials.heading')}
@@ -447,7 +447,7 @@ export function LandingPage() {
         </section>
 
         {/* ── How it works ── */}
-        <section id="how-it-works" className="space-y-8">
+        <section id="how-it-works" className="mt-16 space-y-8">
           <div className="space-y-2">
             <h2 className="text-display-md">{t('landing.howItWorks.title')}</h2>
             <p className="text-[var(--text-secondary)] max-w-xl">
@@ -486,7 +486,7 @@ export function LandingPage() {
         </section>
 
         {/* ── Product showcase — app in device frames ── */}
-        <section id="product-showcase" className="space-y-8">
+        <section id="product-showcase" className="mt-10 space-y-8">
           <div className="space-y-2 text-center">
             <h2 className="text-display-md">{t('landing.productShowcase.title')}</h2>
             <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
@@ -541,7 +541,10 @@ export function LandingPage() {
         </section>
 
         {/* ── Mid-page CTA ── */}
-        <section className="text-center space-y-4 py-4">
+        <section
+          className="mt-20 text-center space-y-4 py-10 px-6 rounded-3xl border border-[var(--glass-border)]"
+          style={{ background: 'linear-gradient(135deg, color-mix(in srgb, var(--nap-color) 6%, transparent), color-mix(in srgb, var(--night-color) 6%, transparent))' }}
+        >
           <h2 className="text-display-sm">{t('landing.midCta.title')}</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto">
             {t('landing.midCta.description')}
@@ -556,7 +559,7 @@ export function LandingPage() {
         </section>
 
         {/* ── What you get — feature showcase with icon tokens (tinted band) ── */}
-        <div className="bg-[var(--bg-mid)] -mx-6 px-6 py-12 rounded-none md:rounded-3xl md:mx-0 md:px-8">
+        <div className="mt-16 bg-[var(--bg-mid)] -mx-6 px-6 py-12 rounded-none md:rounded-3xl md:mx-0 md:px-8">
           <section className="space-y-8 max-w-5xl mx-auto">
             <div className="space-y-2">
               <h2 className="text-display-md">{t('landing.whatYouGet.title')}</h2>
@@ -617,7 +620,7 @@ export function LandingPage() {
         </div>
 
         {/* ── Sleep guides by age ── */}
-        <section className="space-y-6">
+        <section className="mt-16 space-y-6">
           <div className="space-y-2">
             <h2 className="text-display-md">{t('landing.sleepGuides.title')}</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
@@ -650,7 +653,7 @@ export function LandingPage() {
         </section>
 
         {/* ── FAQ ── */}
-        <section id="faq" aria-labelledby="faq-heading" className="space-y-6">
+        <section id="faq" aria-labelledby="faq-heading" className="mt-20 space-y-6">
           <div className="space-y-2">
             <h2 id="faq-heading" className="text-display-md">{t('landing.faq.title')}</h2>
             <p className="text-base text-[var(--text-secondary)] max-w-xl">
@@ -673,9 +676,10 @@ export function LandingPage() {
                 </button>
                 <div className={`grid transition-all duration-200 ease-in-out ${faqOpenId === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                   <div className="overflow-hidden">
-                    <p className="pb-4 pr-8 text-sm text-[var(--text-secondary)] leading-relaxed">
-                      {faq.answer}
-                    </p>
+                    <p
+                      className="pb-4 pr-8 text-sm text-[var(--text-secondary)] leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: faq.answer }}
+                    />
                   </div>
                 </div>
               </div>
@@ -684,7 +688,7 @@ export function LandingPage() {
         </section>
 
         {/* ── Email capture ── */}
-        <section aria-label={t('landing.emailCapture.sectionAriaLabel')} className="card p-6 sm:p-8 space-y-4 text-center">
+        <section aria-label={t('landing.emailCapture.sectionAriaLabel')} className="mt-16 card p-6 sm:p-8 space-y-4 text-center">
           <h2 className="text-display-sm">{t('landing.emailCapture.title')}</h2>
           <p className="text-sm text-[var(--text-secondary)] max-w-sm mx-auto">
             {t('landing.emailCapture.description')}
@@ -723,7 +727,7 @@ export function LandingPage() {
         </section>
 
         {/* ── Built by parents ── */}
-        <section className="text-center space-y-3 py-4">
+        <section className="mt-12 text-center space-y-3 py-4">
           <p className="text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display">
             {t('landing.builtBy.label')}
           </p>
