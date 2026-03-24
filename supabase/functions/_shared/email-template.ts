@@ -30,9 +30,6 @@ const T = {
     "'Plus Jakarta Sans',system-ui,-apple-system,sans-serif",
 } as const;
 
-// Hosted PNG logo — Gmail blocks data: URIs and inline SVGs in emails.
-// The PNG lives in public/ and is deployed with the app on Vercel.
-const LOGO_URL = "https://napnap.vercel.app/logo-email.png";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -133,11 +130,10 @@ export function buildEmailHtml(opts: EmailOptions): string {
       <td align="center" style="padding:40px 20px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;">
 
-          <!-- Logo: hosted PNG symbol + HTML wordmark -->
+          <!-- Wordmark -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <img src="${LOGO_URL}" width="56" height="56" alt="" style="display:block;margin:0 auto 10px;" />
-              <span style="font-size:24px;font-weight:700;color:#3D3529;letter-spacing:1px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;">NapNap</span>
+              <span style="font-size:28px;font-weight:700;color:#3D3529;letter-spacing:1px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;">NapNap</span>
             </td>
           </tr>
 
