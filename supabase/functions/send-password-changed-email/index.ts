@@ -2,23 +2,6 @@ import { jsonResponse, optionsResponse } from "../_shared/cors.ts";
 import { buildEmailHtml } from "../_shared/email-template.ts";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const NOTIFY_EMAIL = "getnapnap@gmail.com";
-
-function buildAdminNotificationHtml(subscriberEmail: string): string {
-  const now = new Date().toLocaleString("en-GB", { timeZone: "Europe/Madrid" });
-
-  return buildEmailHtml({
-    title: "New waitlist signup",
-    heading: "New waitlist signup",
-    subheading: "Someone wants to hear from NapNap.",
-    badge: {
-      label: "Email",
-      description: subscriberEmail,
-    },
-    instruction: `Signed up at ${now}`,
-    footer: "This is an automated notification from the NapNap landing page.",
-  });
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,7 +24,15 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "RESEND_API_KEY not configured" }, 500);
     }
 
-    const html = buildAdminNotificationHtml(email.trim().toLowerCase());
+    const html = buildEmailHtml({
+      title: "Your NapNap password was changed",
+      heading: "Password changed",
+      subheading:
+        "Your NapNap password was successfully updated. You can continue using the app as normal.",
+      instruction: `If you didn't make this change, please <a href="mailto:getnapnap@gmail.com" style="color:#9DBAB7;text-decoration:underline;">contact us</a> immediately.`,
+      footer:
+        "This is a security notification. No action is needed if this was you.",
+    });
 
     const resendRes = await fetch(RESEND_API_URL, {
       method: "POST",
@@ -51,8 +42,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         from: "NapNap <onboarding@resend.dev>",
-        to: [NOTIFY_EMAIL],
-        subject: `Waitlist signup: ${email}`,
+        to: [email],
+        subject: "Your NapNap password was changed",
         html,
       }),
     });
@@ -61,7 +52,7 @@ Deno.serve(async (req) => {
       const errorBody = await resendRes.text();
       console.error("Resend API error:", resendRes.status, errorBody);
       return jsonResponse(
-        { error: "Failed to send notification", details: errorBody },
+        { error: "Failed to send email", details: errorBody },
         502
       );
     }

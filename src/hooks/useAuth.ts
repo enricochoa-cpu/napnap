@@ -91,6 +91,24 @@ export function useAuth() {
     return null;
   }, []);
 
+  const updatePassword = useCallback(async (newPassword: string): Promise<AuthError | null> => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      return { message: error.message };
+    }
+
+    // Fire-and-forget: send password-changed confirmation email
+    const email = authState.user?.email;
+    if (email) {
+      supabase.functions.invoke('send-password-changed-email', {
+        body: { email },
+      }).catch((err) => console.warn('Password changed email failed:', err));
+    }
+
+    return null;
+  }, [authState.user?.email]);
+
   const signInWithGoogle = useCallback(async (): Promise<AuthError | null> => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -115,6 +133,7 @@ export function useAuth() {
     signIn,
     signOut,
     resetPassword,
+    updatePassword,
     signInWithGoogle,
   };
 }

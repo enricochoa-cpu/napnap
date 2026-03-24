@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { UserProfile } from '../../types';
 import { SubViewHeader } from './SubViewHeader';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useAuth } from '../../hooks/useAuth';
 
 interface AccountSettingsViewProps {
   userProfile: UserProfile | null;
@@ -43,10 +44,20 @@ export function AccountSettingsView({
   onNavigateToPrivacy,
 }: AccountSettingsViewProps) {
   const { t } = useTranslation();
+  const { user, updatePassword } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Password change state
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordUpdating, setPasswordUpdating] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const isOAuthUser = user?.app_metadata?.provider === 'google';
 
   const logoutDialogRef = useFocusTrap(showLogoutConfirm, () => setShowLogoutConfirm(false));
   const deleteDialogRef = useFocusTrap(showDeleteConfirm, () => setShowDeleteConfirm(false));
@@ -79,6 +90,34 @@ export function AccountSettingsView({
     setIsEditingProfile(false);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError(null);
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError(t('profile.passwordTooShort'));
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError(t('profile.passwordsNoMatch'));
+      return;
+    }
+
+    setPasswordUpdating(true);
+    const error = await updatePassword(passwordForm.newPassword);
+    setPasswordUpdating(false);
+
+    if (error) {
+      setPasswordError(error.message);
+      return;
+    }
+
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setIsChangingPassword(false);
+    setPasswordSuccess(true);
+    setTimeout(() => setPasswordSuccess(false), 3000);
   };
 
   const getRoleDisplay = (role: string) => {
@@ -246,6 +285,95 @@ export function AccountSettingsView({
           </p>
         )}
       </div>
+
+      {/* Change Password — hidden for OAuth users */}
+      {!isOAuthUser && (
+        <div className="card p-5">
+          <div className="flex justify-between items-center mb-1">
+            <h3 className="text-sm font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider">
+              {t('profile.changePassword')}
+            </h3>
+            {!isChangingPassword && (
+              <button
+                onClick={() => setIsChangingPassword(true)}
+                className="text-[var(--nap-color)] text-sm font-medium font-display min-h-[48px] px-3 flex items-center"
+              >
+                {t('common.edit')}
+              </button>
+            )}
+          </div>
+
+          {!isChangingPassword ? (
+            <p className="text-sm text-[var(--text-secondary)]">
+              {t('profile.changePasswordSubtitle')}
+            </p>
+          ) : (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-3">
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                  {t('profile.newPassword')}
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                  className="input"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                  {t('profile.confirmNewPassword')}
+                </label>
+                <input
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  className="input"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+              </div>
+
+              {passwordError && (
+                <p className="text-sm text-[var(--danger-color)] font-display" role="alert">
+                  {passwordError}
+                </p>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={passwordUpdating || !passwordForm.newPassword || !passwordForm.confirmPassword}
+                  className="btn btn-primary flex-1 disabled:opacity-50"
+                >
+                  {passwordUpdating ? t('profile.updating') : t('profile.updatePassword')}
+                </button>
+                <button
+                  type="button"
+                  disabled={passwordUpdating}
+                  onClick={() => {
+                    setPasswordForm({ newPassword: '', confirmPassword: '' });
+                    setPasswordError(null);
+                    setIsChangingPassword(false);
+                  }}
+                  className="btn btn-secondary"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {passwordSuccess && (
+            <p className="text-center text-sm text-[var(--success-color)] font-display mt-3 fade-in">
+              {t('profile.passwordUpdated')}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Sign Out - Prominent standalone card */}
       <button
