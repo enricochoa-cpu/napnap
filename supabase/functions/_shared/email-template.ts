@@ -133,10 +133,11 @@ export function buildEmailHtml(opts: EmailOptions): string {
       <td align="center" style="padding:40px 20px;">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:480px;">
 
-          <!-- Logo -->
+          <!-- Logo: hosted PNG symbol + HTML wordmark -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <img src="${LOGO_URL}" width="200" height="80" alt="NapNap" style="display:block;margin:0 auto;" />
+              <img src="${LOGO_URL}" width="56" height="56" alt="" style="display:block;margin:0 auto 10px;" />
+              <span style="font-size:24px;font-weight:700;color:#3D3529;letter-spacing:1px;font-family:'Plus Jakarta Sans',system-ui,-apple-system,sans-serif;">NapNap</span>
             </td>
           </tr>
 
