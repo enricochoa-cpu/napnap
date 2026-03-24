@@ -30,9 +30,9 @@ const T = {
     "'Plus Jakarta Sans',system-ui,-apple-system,sans-serif",
 } as const;
 
-// Inline SVG logo as a data URI — the NapNap "Rhythmic NN" symbol
-// Two N-shaped strokes: sage outer cradle + periwinkle inner nested shape
-const LOGO_DATA_URI = `data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 90V45C30 36.7157 36.7157 30 45 30C53.2843 30 60 36.7157 60 45V90' stroke='%239DBAB7' stroke-width='14' stroke-linecap='round'/%3E%3Cpath d='M60 90V75C60 66.7157 66.7157 60 75 60C83.2843 60 90 66.7157 90 75V90' stroke='%238A92B3' stroke-width='12' stroke-linecap='round' opacity='0.8'/%3E%3C/svg%3E`;
+// Hosted PNG logo — Gmail blocks data: URIs and inline SVGs in emails.
+// The PNG lives in public/ and is deployed with the app on Vercel.
+const LOGO_URL = "https://napnap.vercel.app/logo-email.png";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -136,7 +136,7 @@ export function buildEmailHtml(opts: EmailOptions): string {
           <!-- Logo: symbol + wordmark -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <img src="${LOGO_DATA_URI}" width="48" height="48" alt="NapNap" style="display:block;margin:0 auto 12px;" />
+              <img src="${LOGO_URL}" width="48" height="48" alt="NapNap" style="display:block;margin:0 auto 12px;" />
               <span style="font-size:24px;font-weight:700;color:#3D3529;letter-spacing:1px;">NapNap</span>
             </td>
           </tr>
