@@ -43,7 +43,7 @@ export function LandingFooter({ onScrollToSection }: LandingFooterProps) {
                     <button
                       key={id}
                       type="button"
-                      className="text-left hover:text-[var(--text-secondary)] transition-colors"
+                      className="text-left hover:text-[var(--text-secondary)] transition-colors cursor-pointer"
                       onClick={() => onScrollToSection(id)}
                     >
                       {t(labelKey)}

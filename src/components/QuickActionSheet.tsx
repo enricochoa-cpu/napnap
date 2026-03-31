@@ -1,6 +1,7 @@
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { SunIcon, CloudIcon, MoonIcon } from './icons/SleepIcons';
 
 interface QuickActionSheetProps {
   isOpen: boolean;
@@ -11,32 +12,6 @@ interface QuickActionSheetProps {
   hasActiveSleep: boolean;
   onEndSleep?: () => void;
 }
-
-// Icons
-const SunIcon = ({ className = "w-10 h-10" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="12" r="5" />
-    <path
-      d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      fill="none"
-    />
-  </svg>
-);
-
-const CloudIcon = ({ className = "w-10 h-10" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-  </svg>
-);
-
-const MoonIcon = ({ className = "w-10 h-10" }: { className?: string }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
 
 export function QuickActionSheet({
   isOpen,

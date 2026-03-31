@@ -59,7 +59,7 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
       description: guide.metaDescription,
       url: `https://napnap.app/sleep-guides/${guide.slug}`,
       datePublished: '2026-03-14',
-      dateModified: '2026-03-14',
+      dateModified: '2026-03-31',
       author: { '@type': 'Organization', name: 'NapNap' },
       publisher: { '@type': 'Organization', name: 'NapNap' },
     }, 'sleep-guide');

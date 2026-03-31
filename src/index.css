@@ -142,7 +142,7 @@
   /* Text colors - dark charcoal for perfect legibility */
   --text-primary: #1E293B;      /* Slate 800 - darker for contrast */
   --text-secondary: rgba(30, 41, 59, 0.7);
-  --text-muted: rgba(30, 41, 59, 0.55);
+  --text-muted: rgba(30, 41, 59, 0.62);
   --text-on-accent: #FFFFFF;
   --text-card-title: #1E293B;   /* Same as primary for consistency */
 
@@ -205,7 +205,7 @@
   /* Text colors - dark charcoal for perfect legibility */
   --text-primary: #1E293B;      /* Slate 800 - darker for contrast */
   --text-secondary: rgba(30, 41, 59, 0.7);
-  --text-muted: rgba(30, 41, 59, 0.55);
+  --text-muted: rgba(30, 41, 59, 0.62);
   --text-on-accent: #FFFFFF;
   --text-card-title: #1E293B;   /* Same as primary for consistency */
 

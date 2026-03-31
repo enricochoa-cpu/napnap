@@ -1,25 +1,13 @@
 import { useState, useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '../hooks/useFocusTrap';
+import { MoonIcon } from './icons/SleepIcons';
+import { CloseIcon } from './icons/ActionIcons';
 
 interface MissingBedtimeModalProps {
   onLogBedtime: (date: string) => void;
   onSkip: () => void;
 }
-
-// Moon icon for consistency with night sleep theming
-const MoonIcon = () => (
-  <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-);
-
-// Close X icon
-const CloseIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M18 6L6 18M6 6l12 12" />
-  </svg>
-);
 
 // Calendar icon
 const CalendarIcon = () => (

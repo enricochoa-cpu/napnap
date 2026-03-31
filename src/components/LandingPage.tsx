@@ -413,9 +413,9 @@ export function LandingPage() {
           aria-label="What parents say"
           className="mt-20 bg-[var(--bg-mid)] rounded-3xl py-12 px-6 md:px-10"
         >
-          <p className="text-center text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display mb-6">
+          <h2 className="text-center text-xs tracking-[0.15em] uppercase text-[var(--nap-color)] font-display mb-6">
             {t('landing.testimonials.heading')}
-          </p>
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
             {testimonials.map((item, idx) => (
               <figure key={idx} className="card p-5">
@@ -628,7 +628,7 @@ export function LandingPage() {
               {t('landing.sleepGuides.description')}
             </p>
           </div>
-          <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
             {sleepGuideConfigs.map((config) => (
               <a
                 key={config.slug}

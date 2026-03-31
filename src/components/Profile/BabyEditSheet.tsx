@@ -117,7 +117,7 @@ export function BabyEditSheet({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             style={{ opacity: backdropOpacity }}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -241,7 +241,7 @@ export function BabyEditSheet({
                   disabled={!isValid}
                   className={`w-full py-4 rounded-2xl font-display font-semibold text-base transition-all active:scale-[0.98] ${
                     isValid
-                      ? 'bg-[var(--nap-color)] text-white shadow-lg shadow-[var(--nap-color)]/20'
+                      ? 'bg-[var(--nap-color)] text-[var(--text-on-accent)] shadow-lg shadow-[var(--nap-color)]/20'
                       : 'bg-[var(--bg-soft)] text-[var(--text-muted)]/40 cursor-not-allowed'
                   }`}
                 >

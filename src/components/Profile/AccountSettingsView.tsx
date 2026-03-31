@@ -16,20 +16,13 @@ interface AccountSettingsViewProps {
   onNavigateToPrivacy?: () => void;
 }
 
+import { TrashIconDetailed } from '../icons/ActionIcons';
+
 const LogoutIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    <line x1="10" y1="11" x2="10" y2="17" />
-    <line x1="14" y1="11" x2="14" y2="17" />
   </svg>
 );
 
@@ -146,7 +139,7 @@ export function AccountSettingsView({
             onClick={() => currentLocale !== 'en' && onUpdateUser({ locale: 'en' })}
             className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'en'
-                ? 'bg-[var(--night-color)] text-white'
+                ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
             }`}
           >
@@ -157,7 +150,7 @@ export function AccountSettingsView({
             onClick={() => currentLocale !== 'es' && onUpdateUser({ locale: 'es' })}
             className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'es'
-                ? 'bg-[var(--night-color)] text-white'
+                ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
             }`}
           >
@@ -168,7 +161,7 @@ export function AccountSettingsView({
             onClick={() => currentLocale !== 'ca' && onUpdateUser({ locale: 'ca' })}
             className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
               currentLocale === 'ca'
-                ? 'bg-[var(--night-color)] text-white'
+                ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
                 : 'bg-[var(--bg-soft)] text-[var(--text-secondary)]'
             }`}
           >
@@ -455,7 +448,7 @@ export function AccountSettingsView({
                     setShowLogoutConfirm(false);
                     onSignOut();
                   }}
-                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-[var(--text-on-accent)] font-display font-semibold"
                 >
                   {t('profile.signOut')}
                 </button>
@@ -482,7 +475,7 @@ export function AccountSettingsView({
               className="card p-6"
             >
               <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--danger-color)]/20 flex items-center justify-center text-[var(--danger-color)]">
-                <TrashIcon />
+                <TrashIconDetailed />
               </div>
               <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
                 {t('profile.deleteConfirmTitle')}
@@ -528,7 +521,7 @@ export function AccountSettingsView({
                 <button
                   onClick={() => onDeleteAccount()}
                   disabled={isDeletingAccount}
-                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-white font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
+                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-[var(--text-on-accent)] font-display font-semibold disabled:opacity-70 disabled:cursor-wait"
                 >
                   {isDeletingAccount ? t('profile.deleting') : t('profile.deleteAccount')}
                 </button>

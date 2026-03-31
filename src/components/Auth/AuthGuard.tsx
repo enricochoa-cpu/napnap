@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useApplyCircadianTheme } from '../../hooks/useCircadianTheme';
 import { getFromStorage, STORAGE_KEYS } from '../../utils/storage';
@@ -19,6 +20,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   useApplyCircadianTheme(); // Apply morning/afternoon/night theme even when showing entry or onboarding
+  const { t } = useTranslation();
   const { isAuthenticated, loading, signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
   // Returning users (completed onboarding on this device) skip Entry choice and go straight to Login
   const [entryChoice, setEntryChoice] = useState<EntryChoiceState>(() =>
@@ -28,7 +30,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
   // Show loading screen while checking auth status
   if (loading) {
-    return <LoadingScreen message="Loading..." />;
+    return <LoadingScreen message={t('common.loading')} />;
   }
 
   // User is authenticated, show the app

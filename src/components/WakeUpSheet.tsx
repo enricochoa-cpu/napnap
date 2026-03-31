@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { SunriseIcon } from './icons/SleepIcons';
+import { TrashIcon, CloseIcon, CheckIcon } from './icons/ActionIcons';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface WakeUpSheetProps {
@@ -13,25 +14,6 @@ interface WakeUpSheetProps {
   onDelete?: () => void;
   bedtime: string; // ISO datetime string
 }
-
-const TrashIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
 
 const RotateCCWIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +61,7 @@ export function WakeUpSheet({ isOpen, onClose, onConfirm, onDelete, bedtime }: W
       setTimeValue(toTimeString(now));
       setRelativeLabel(formatRelativeTime(now, t));
     }
-  }, [isOpen]);
+  }, [isOpen, t]);
 
   // Build a Date from the current timeValue
   const wakeDate = useCallback(() => {

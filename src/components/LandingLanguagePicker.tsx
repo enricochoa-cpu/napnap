@@ -89,8 +89,8 @@ export function LandingLanguagePicker({ variant }: { variant?: 'compact' | 'stac
               aria-pressed={isActive}
               className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
                 isActive
-                  ? 'bg-white/20 text-white'
-                  : 'bg-white/[0.06] text-white/60'
+                  ? 'bg-[var(--glass-bg)] text-[var(--text-primary)]'
+                  : 'bg-[var(--bg-soft)]/10 text-[var(--text-muted)]'
               }`}
             >
               {label}

@@ -34,19 +34,7 @@ interface SleepEntrySheetProps {
 }
 
 import { CloudIcon, MoonIcon } from './icons/SleepIcons';
-
-const TrashIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
+import { TrashIcon, CloseIcon, CheckIcon } from './icons/ActionIcons';
 
 const PlayIcon = () => (
   <svg className="w-7 h-7 ml-1" viewBox="0 0 24 24" fill="currentColor">
@@ -57,12 +45,6 @@ const PlayIcon = () => (
 const StopIcon = () => (
   <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
     <rect x="6" y="6" width="12" height="12" rx="2" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M18 6L6 18M6 6l12 12" />
   </svg>
 );
 
