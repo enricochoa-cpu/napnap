@@ -110,7 +110,7 @@ export function SleepGuidePage({ slug }: SleepGuidePageProps) {
           {/* At a glance */}
           <div className="card p-5 mb-8">
             <h2 className="text-sm font-display font-semibold text-[var(--text-primary)] mb-4">
-              {t('sleepGuides.page.atAGlance')}
+              {t('sleepGuides.page.atAGlance.title')}
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
               <div>

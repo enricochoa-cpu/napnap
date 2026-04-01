@@ -842,7 +842,7 @@
     },
     "builtBy": {
       "label": "Made with care",
-      "description": "NapNap is built by parents in Barcelona who know what 3am feels like. No investors, no growth hacks — just a tool we wished we'd had."
+      "description": "NapNap is built by parents in Barcelona who know what 3am feels like."
     },
     "emailCapture": {
       "title": "Stay in the loop",
@@ -893,8 +893,8 @@
     "page": {
       "breadcrumbLink": "Sleep Guides",
       "breadcrumbAriaLabel": "Breadcrumb",
-      "atAGlance": "At a glance",
       "atAGlance": {
+        "title": "At a glance",
         "naps": "Naps",
         "wakeWindow": "Wake window",
         "bedtime": "Bedtime",

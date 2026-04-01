@@ -47,7 +47,7 @@ function changeLocale(value: LandingLocale) {
 /**
  * Compact globe dropdown for nav/footer, stacked buttons for mobile menu.
  */
-export function LandingLanguagePicker({ variant }: { variant?: 'compact' | 'stack' }) {
+export function LandingLanguagePicker({ variant, dropUp }: { variant?: 'compact' | 'stack'; dropUp?: boolean }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -90,7 +90,7 @@ export function LandingLanguagePicker({ variant }: { variant?: 'compact' | 'stac
               className={`flex-1 min-w-0 py-3 min-h-[48px] flex items-center justify-center rounded-xl font-display font-medium transition-all ${
                 isActive
                   ? 'bg-[var(--glass-bg)] text-[var(--text-primary)]'
-                  : 'bg-[var(--bg-soft)]/10 text-[var(--text-muted)]'
+                  : 'bg-[var(--bg-card)] text-[var(--text-secondary)]'
               }`}
             >
               {label}
@@ -114,14 +114,16 @@ export function LandingLanguagePicker({ variant }: { variant?: 'compact' | 'stac
         aria-haspopup="listbox"
       >
         <GlobeIcon />
-        <span className="hidden md:inline">{activeLabel}</span>
+        <span className={dropUp ? '' : 'hidden md:inline'}>{activeLabel}</span>
       </button>
 
       {open && (
         <div
           role="listbox"
           aria-label={t('landing.languagePicker.ariaLabel')}
-          className="absolute right-0 top-full mt-2 min-w-[140px] rounded-xl border border-[var(--glass-border)] bg-[var(--bg-card,#fff)] shadow-lg overflow-hidden z-50 animate-in fade-in slide-in-from-top-1"
+          className={`absolute min-w-[140px] rounded-xl border border-[var(--glass-border)] bg-[var(--bg-card,#fff)] shadow-lg overflow-hidden z-50 ${
+            dropUp ? 'left-0 bottom-full mb-2' : 'right-0 top-full mt-2'
+          }`}
           style={{
             background: 'var(--glass-nav-bg, rgba(255,255,255,0.95))',
             backdropFilter: 'blur(20px)',

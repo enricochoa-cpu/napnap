@@ -840,7 +840,7 @@
     },
     "builtBy": {
       "label": "Hecho con cuidado",
-      "description": "NapNap lo construyen padres en Barcelona que saben lo que se siente a las 3am. Sin inversores, sin trucos de crecimiento — solo una herramienta que nos hubiese gustado tener."
+      "description": "NapNap lo construyen padres en Barcelona que saben lo que se siente a las 3am."
     },
     "emailCapture": {
       "title": "Mantente al día",
@@ -891,8 +891,8 @@
     "page": {
       "breadcrumbLink": "Guías de sueño",
       "breadcrumbAriaLabel": "Migas de pan",
-      "atAGlance": "A simple vista",
       "atAGlance": {
+        "title": "A simple vista",
         "naps": "Siestas",
         "wakeWindow": "Ventana de vigilia",
         "bedtime": "Hora de dormir",

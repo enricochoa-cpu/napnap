@@ -499,9 +499,9 @@ input, textarea {
   box-shadow: var(--shadow-sm);
 }
 
-/* Full-screen mobile menu background (Napper-style): dark gradient, nothing else visible */
+/* Full-screen mobile menu background — respects circadian theme */
 .landing-mobile-menu-fullscreen {
-  background: linear-gradient(0deg, #0B0B0B 0%, #1B1A3D 100%);
+  background: var(--bg-deep);
 }
 
 /* Hide scrollbar for horizontal snap-scroll containers */

@@ -326,26 +326,43 @@ export function LandingPage() {
           mobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <nav className="flex flex-col justify-center min-h-full px-6 pt-24 pb-12 gap-2" aria-label="Page sections">
-          <span className="text-display-lg text-white mb-4 select-none" aria-hidden>NapNap</span>
-          <button type="button" onClick={() => { scrollToTop(); setMobileMenuOpen(false); }} className="text-left py-4 text-lg font-display text-white hover:opacity-90 transition-opacity">
-            {t('landing.mobile.home')}
-          </button>
-          <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            {t('landing.nav.howItWorks')}
-          </button>
-          <button type="button" onClick={() => scrollToSection('product-showcase')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            {t('landing.nav.theApp')}
-          </button>
-          <button type="button" onClick={() => scrollToSection('faq')} className="text-left py-4 text-lg font-display text-white/80 hover:text-white transition-colors">
-            {t('landing.nav.faq')}
-          </button>
-          <div className="pt-2 pb-2">
-            <LandingLanguagePicker variant="stack" />
+        <nav className="flex flex-col min-h-full px-6 pb-12" aria-label="Page sections">
+          {/* Top row: NapNap wordmark + close button */}
+          <div className="flex items-center justify-between pt-10 mb-12">
+            <span className="text-display-lg text-[var(--text-primary)] select-none" aria-hidden>NapNap</span>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-12 h-12 rounded-full flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] transition-all cursor-pointer"
+              aria-label="Close menu"
+            >
+              <MenuIcon open />
+            </button>
           </div>
-          <button type="button" onClick={() => { setMobileMenuOpen(false); handleLoginClick(); }} className="btn btn-primary w-full text-base py-3.5 mt-6 max-w-xs">
-            {t('landing.mobile.startFree')}
-          </button>
+
+          {/* Nav links */}
+          <div className="flex flex-col gap-1 flex-1">
+            <button type="button" onClick={() => { scrollToTop(); setMobileMenuOpen(false); }} className="text-left py-4 text-lg font-display text-[var(--text-primary)] hover:opacity-90 transition-opacity">
+              {t('landing.mobile.home')}
+            </button>
+            <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-left py-4 text-lg font-display text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              {t('landing.nav.howItWorks')}
+            </button>
+            <button type="button" onClick={() => scrollToSection('product-showcase')} className="text-left py-4 text-lg font-display text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              {t('landing.nav.theApp')}
+            </button>
+            <button type="button" onClick={() => scrollToSection('faq')} className="text-left py-4 text-lg font-display text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              {t('landing.nav.faq')}
+            </button>
+          </div>
+
+          {/* Bottom: language picker + CTA */}
+          <div className="mt-auto flex flex-col gap-4">
+            <LandingLanguagePicker variant="compact" dropUp />
+            <button type="button" onClick={() => { setMobileMenuOpen(false); handleLoginClick(); }} className="btn btn-primary w-full text-base py-3.5 max-w-xs">
+              {t('landing.mobile.startFree')}
+            </button>
+          </div>
         </nav>
       </div>
 

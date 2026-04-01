@@ -838,7 +838,7 @@
     },
     "builtBy": {
       "label": "Fet amb cura",
-      "description": "NapNap el construeixen pares a Barcelona que saben què es sent a les 3 de la matinada. Sense inversors, sense trucs de creixement — només una eina que ens hauria agradat tenir."
+      "description": "NapNap el construeixen pares a Barcelona que saben què es sent a les 3 de la matinada."
     },
     "emailCapture": {
       "title": "Mantén-te al dia",
@@ -889,8 +889,8 @@
     "page": {
       "breadcrumbLink": "Guies de son",
       "breadcrumbAriaLabel": "Breadcrumb",
-      "atAGlance": "A simple vista",
       "atAGlance": {
+        "title": "A simple vista",
         "naps": "Migdiades",
         "wakeWindow": "Finestra de vetlla",
         "bedtime": "Hora de dormir",
