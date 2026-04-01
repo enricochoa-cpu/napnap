@@ -25,12 +25,12 @@ const TESTIMONIAL_KEYS: Array<{
   initials: string;
   color: string; // CSS variable for avatar bg
 }> = [
-  { quoteKey: 'landing.testimonials.t1.quote', authorKey: 'landing.testimonials.t1.author', contextKey: 'landing.testimonials.t1.context', initials: 'MR', color: 'var(--nap-color)' },
-  { quoteKey: 'landing.testimonials.t2.quote', authorKey: 'landing.testimonials.t2.author', contextKey: 'landing.testimonials.t2.context', initials: 'AM', color: 'var(--night-color)' },
-  { quoteKey: 'landing.testimonials.t3.quote', authorKey: 'landing.testimonials.t3.author', contextKey: 'landing.testimonials.t3.context', initials: 'LS', color: 'var(--wake-color)' },
-  { quoteKey: 'landing.testimonials.t4.quote', authorKey: 'landing.testimonials.t4.author', contextKey: 'landing.testimonials.t4.context', initials: 'DG', color: 'var(--nap-color)' },
-  { quoteKey: 'landing.testimonials.t5.quote', authorKey: 'landing.testimonials.t5.author', contextKey: 'landing.testimonials.t5.context', initials: 'CR', color: 'var(--night-color)' },
-  { quoteKey: 'landing.testimonials.t6.quote', authorKey: 'landing.testimonials.t6.author', contextKey: 'landing.testimonials.t6.context', initials: 'PP', color: 'var(--wake-color)' },
+  { quoteKey: 'landing.testimonials.t1.quote', authorKey: 'landing.testimonials.t1.author', contextKey: 'landing.testimonials.t1.context', avatar: '/media/testimonials/t1.png', initials: 'MR', color: 'var(--nap-color)' },
+  { quoteKey: 'landing.testimonials.t2.quote', authorKey: 'landing.testimonials.t2.author', contextKey: 'landing.testimonials.t2.context', avatar: '/media/testimonials/t2.png', initials: 'AM', color: 'var(--night-color)' },
+  { quoteKey: 'landing.testimonials.t3.quote', authorKey: 'landing.testimonials.t3.author', contextKey: 'landing.testimonials.t3.context', avatar: '/media/testimonials/t3.png', initials: 'LS', color: 'var(--wake-color)' },
+  { quoteKey: 'landing.testimonials.t4.quote', authorKey: 'landing.testimonials.t4.author', contextKey: 'landing.testimonials.t4.context', avatar: '/media/testimonials/t4.png', initials: 'DG', color: 'var(--nap-color)' },
+  { quoteKey: 'landing.testimonials.t5.quote', authorKey: 'landing.testimonials.t5.author', contextKey: 'landing.testimonials.t5.context', avatar: '/media/testimonials/t5.png', initials: 'CR', color: 'var(--night-color)' },
+  { quoteKey: 'landing.testimonials.t6.quote', authorKey: 'landing.testimonials.t6.author', contextKey: 'landing.testimonials.t6.context', avatar: '/media/testimonials/t6.png', initials: 'PP', color: 'var(--wake-color)' },
 ];
 
 // Three video slots for the floating hero composition.
@@ -427,11 +427,11 @@ export function LandingPage() {
                     <img
                       src={item.avatar}
                       alt={item.author}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      className="w-11 h-11 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
                     <span
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-display font-semibold flex-shrink-0"
+                      className="w-11 h-11 rounded-full flex items-center justify-center text-xs font-display font-semibold flex-shrink-0"
                       style={{ background: `color-mix(in srgb, ${item.color} 20%, transparent)`, color: item.color }}
                       aria-hidden
                     >
