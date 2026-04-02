@@ -134,7 +134,8 @@
     "ariaLabel": "Accions ràpides",
     "wakeUp": "Despertar",
     "nap": "Migdiada",
-    "bedtime": "Hora de dormir"
+    "bedtime": "Hora de dormir",
+    "nightWaking": "Despertar nocturn"
   },
   "nav": {
     "today": "Avui",
@@ -405,7 +406,10 @@
     "night": "Nit",
     "napCount_one": "{{count}} migdiada",
     "napCount_other": "{{count}} migdiades",
-    "avgWake": "vetlla mitjana"
+    "avgWake": "vetlla mitjana",
+    "nightWakings": "{{count}} despertar nocturn",
+    "nightWakingsPlural": "{{count}} despertars nocturns",
+    "nightWakingsDuration": "({{duration}} en total)"
   },
   "dayNavigator": {
     "today": "Avui",
@@ -480,7 +484,11 @@
     "pauseOverlap": "Les pauses no es poden solapar",
     "pauseAction": "Pausar",
     "resumeAction": "Reprendre",
-    "pausedStatus": "En pausa"
+    "pausedStatus": "En pausa",
+    "nightWaking": "Despertar nocturn",
+    "nightWakingNumber": "Despertar nocturn {{number}}",
+    "addNightWaking": "Afegir despertar nocturn",
+    "nightWakingStatus": "Despertar nocturn"
   },
   "wakeUpSheet": {
     "title": "Despertar",

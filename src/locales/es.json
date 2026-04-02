@@ -136,7 +136,8 @@
     "ariaLabel": "Acciones rápidas",
     "wakeUp": "Despertar",
     "nap": "Siesta",
-    "bedtime": "Hora de dormir"
+    "bedtime": "Hora de dormir",
+    "nightWaking": "Despertar nocturno"
   },
   "nav": {
     "today": "Hoy",
@@ -407,7 +408,10 @@
     "night": "Noche",
     "napCount_one": "{{count}} siesta",
     "napCount_other": "{{count}} siestas",
-    "avgWake": "vigilia media"
+    "avgWake": "vigilia media",
+    "nightWakings": "{{count}} despertar nocturno",
+    "nightWakingsPlural": "{{count}} despertares nocturnos",
+    "nightWakingsDuration": "({{duration}} en total)"
   },
   "dayNavigator": {
     "today": "Hoy",
@@ -482,7 +486,11 @@
     "pauseOverlap": "Las pausas no pueden solaparse",
     "pauseAction": "Pausar",
     "resumeAction": "Reanudar",
-    "pausedStatus": "En pausa"
+    "pausedStatus": "En pausa",
+    "nightWaking": "Despertar nocturno",
+    "nightWakingNumber": "Despertar nocturno {{number}}",
+    "addNightWaking": "Añadir despertar nocturno",
+    "nightWakingStatus": "Despertar nocturno"
   },
   "wakeUpSheet": {
     "title": "Despertar",

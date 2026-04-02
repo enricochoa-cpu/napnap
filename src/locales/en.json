@@ -136,7 +136,8 @@
     "ariaLabel": "Quick actions",
     "wakeUp": "Wake Up",
     "nap": "Nap",
-    "bedtime": "Bedtime"
+    "bedtime": "Bedtime",
+    "nightWaking": "Night waking"
   },
   "nav": {
     "today": "Today",
@@ -409,7 +410,10 @@
     "night": "Night",
     "napCount_one": "{{count}} nap",
     "napCount_other": "{{count}} naps",
-    "avgWake": "avg wake"
+    "avgWake": "avg wake",
+    "nightWakings": "{{count}} night waking",
+    "nightWakingsPlural": "{{count}} night wakings",
+    "nightWakingsDuration": "({{duration}} total)"
   },
   "dayNavigator": {
     "today": "Today",
@@ -484,7 +488,11 @@
     "pauseOverlap": "Pauses cannot overlap",
     "pauseAction": "Pause",
     "resumeAction": "Resume",
-    "pausedStatus": "Paused"
+    "pausedStatus": "Paused",
+    "nightWaking": "Night waking",
+    "nightWakingNumber": "Night waking {{number}}",
+    "addNightWaking": "Add night waking",
+    "nightWakingStatus": "Night waking"
   },
   "wakeUpSheet": {
     "title": "Wake up",
