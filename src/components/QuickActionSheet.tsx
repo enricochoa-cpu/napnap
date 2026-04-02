@@ -3,6 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { SunIcon, CloudIcon, MoonIcon } from './icons/SleepIcons';
 
+const StormCloudIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
+    <path d="M13 16l-2 4m3-6l-2 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
 interface QuickActionSheetProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,6 +18,8 @@ interface QuickActionSheetProps {
   onSelectBedtime: () => void;
   hasActiveSleep: boolean;
   onEndSleep?: () => void;
+  hasNightEntry: boolean;
+  onNightWaking?: () => void;
 }
 
 export function QuickActionSheet({
@@ -21,6 +30,8 @@ export function QuickActionSheet({
   onSelectBedtime,
   hasActiveSleep,
   onEndSleep,
+  hasNightEntry,
+  onNightWaking,
 }: QuickActionSheetProps) {
   const { t } = useTranslation();
   const dialogRef = useFocusTrap(isOpen, onClose);
@@ -89,7 +100,8 @@ export function QuickActionSheet({
                   </button>
                 </div>
               ) : (
-                /* Quick Action Grid - 3 columns */
+                <>
+                {/* Quick Action Grid - 3 columns */}
                 <div className="grid grid-cols-3 gap-4">
                   {/* Wake Up */}
                   <button
@@ -131,6 +143,27 @@ export function QuickActionSheet({
                     </span>
                   </button>
                 </div>
+
+                {/* Night Waking — second row, only when a bedtime exists */}
+                {hasNightEntry && onNightWaking && (
+                  <div className="flex justify-center mt-4">
+                    <button
+                      onClick={() => {
+                        onNightWaking();
+                        onClose();
+                      }}
+                      className="flex flex-col items-center gap-3 p-4 rounded-3xl bg-[var(--wake-color)]/10 active:bg-[var(--wake-color)]/20 active:scale-95 transition-all"
+                    >
+                      <div className="w-14 h-14 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)]">
+                        <StormCloudIcon />
+                      </div>
+                      <span className="font-display font-semibold text-sm text-[var(--wake-color)]">
+                        {t('quickActions.nightWaking')}
+                      </span>
+                    </button>
+                  </div>
+                )}
+                </>
               )}
             </div>
           </motion.div>
