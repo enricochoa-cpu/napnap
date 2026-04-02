@@ -134,6 +134,8 @@ function App() {
     error: entriesError,
   } = useSleepEntries({ babyId: activeBabyId });
 
+  const hasNightEntry = !!(activeSleep?.type === 'night' || lastCompletedSleep?.type === 'night');
+
   const { weightLogs, heightLogs, headLogs, error: growthError } = useGrowthLogs({ babyId: activeBabyId });
 
   const hasPendingBabyInvite = pendingInvitations.length > 0;
@@ -355,6 +357,20 @@ function App() {
     setEditingEntryId(entry.id);
     setSelectedDate(entry.date);
     setShowEntrySheet(true);
+  };
+
+  const handleNightWaking = () => {
+    if (activeSleep?.type === 'night') {
+      // Active bedtime: start a live pause and open the sheet
+      setActivePauseStart(new Date());
+      setEditingEntryId(activeSleep.id);
+      setShowEntrySheet(true);
+    } else if (lastCompletedSleep?.type === 'night') {
+      // Last completed bedtime: open it for retrospective pause adding
+      setEditingEntryId(lastCompletedSleep.id);
+      setSelectedDate(lastCompletedSleep.date);
+      setShowEntrySheet(true);
+    }
   };
 
   const handleOpenNewEntry = (type: 'nap' | 'night') => {
@@ -847,6 +863,8 @@ function App() {
         onEndSleep={activeSleep ? () => {
           handleEndSleep(activeSleep.id);
         } : undefined}
+        hasNightEntry={hasNightEntry}
+        onNightWaking={handleNightWaking}
       />
 
       {/* Missing Bedtime Modal */}
