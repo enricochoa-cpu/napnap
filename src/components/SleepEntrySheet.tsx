@@ -759,8 +759,8 @@ export function SleepEntrySheet({
                 )}
               </div>
 
-              {/* Pause section — only for completed entries being edited */}
-              {isEditing && entry?.endTime && (
+              {/* Pause section — for completed entries or active entries with pauses */}
+              {isEditing && (entry?.endTime || pauseEntries.length > 0) && (
                 <div className="px-6 pb-4">
                   {/* Divider */}
                   <div className="h-px bg-[var(--text-muted)]/10 mb-4" />
@@ -878,8 +878,8 @@ export function SleepEntrySheet({
                     </div>
                   )}
 
-                  {/* Add pause button */}
-                  <button
+                  {/* Add pause button — only for completed entries (active entries use Pause/Play button) */}
+                  {entry?.endTime && <button
                     type="button"
                     onClick={handleAddPause}
                     disabled={pauseEntries.length >= 5}
@@ -891,7 +891,7 @@ export function SleepEntrySheet({
                   >
                     + {t('sleepEntrySheet.addPause')}
                     {pauseEntries.length >= 5 && ` (${t('sleepEntrySheet.maxPausesReached')})`}
-                  </button>
+                  </button>}
                 </div>
               )}
 
