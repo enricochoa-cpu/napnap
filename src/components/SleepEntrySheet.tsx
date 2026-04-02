@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
-import { formatDate, getNextDay, getPreviousDay } from '../utils/dateUtils';
+import { formatDate, getNextDay, getPreviousDay, calculateDuration as calculateDurationISO } from '../utils/dateUtils';
 import { getDateFnsLocale } from '../utils/dateFnsLocale';
 import { parseISO, format } from 'date-fns';
 import type { SleepEntry, SleepPause } from '../types';
@@ -34,6 +34,12 @@ interface SleepEntrySheetProps {
   onAddPause?: (entryId: string, data: { startTime: string; durationMinutes: number }) => Promise<SleepPause | null>;
   onUpdatePause?: (pauseId: string, data: { startTime?: string; durationMinutes?: number }) => Promise<boolean>;
   onDeletePause?: (pauseId: string) => Promise<boolean>;
+  /** When non-null, a pause is in-flight (started at this time). */
+  activePauseStart?: Date | null;
+  /** Called when user taps Pause — parent sets activePauseStart. */
+  onPauseStart?: () => void;
+  /** Called when pause ends (resume or stop) — parent clears activePauseStart. */
+  onPauseEnd?: () => void;
 }
 
 import { CloudIcon, MoonIcon } from './icons/SleepIcons';
@@ -48,6 +54,13 @@ const PlayIcon = () => (
 const StopIcon = () => (
   <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
     <rect x="6" y="6" width="12" height="12" rx="2" />
+  </svg>
+);
+
+const PauseIcon = () => (
+  <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="6" y="5" width="4" height="14" rx="1" />
+    <rect x="14" y="5" width="4" height="14" rx="1" />
   </svg>
 );
 
@@ -219,6 +232,9 @@ export function SleepEntrySheet({
   onAddPause,
   onUpdatePause,
   onDeletePause,
+  activePauseStart,
+  onPauseStart,
+  onPauseEnd,
 }: SleepEntrySheetProps) {
   const { t } = useTranslation();
   const isEditing = !!entry;
@@ -283,9 +299,25 @@ export function SleepEntrySheet({
 
   // Duration under start time: "29min long"; relative date under end time: "2h ago" | "Yesterday" | "Feb 10"
   const durationLabel = useMemo(() => {
+    // Active entry: show net elapsed time (gross minus completed pauses minus in-flight pause)
+    if (isActiveEntry && entry) {
+      const grossMinutes = calculateDurationISO(entry.startTime, null);
+      const completedPauseMins = pauseEntries.reduce((sum, p) => sum + p.durationMinutes, 0);
+      const inFlightMins = activePauseStart
+        ? Math.max(0, Math.round((now.getTime() - activePauseStart.getTime()) / 60000))
+        : 0;
+      const netMins = Math.max(0, grossMinutes - completedPauseMins - inFlightMins);
+      const hours = Math.floor(netMins / 60);
+      const mins = netMins % 60;
+      if (hours === 0) return `${mins}min`;
+      if (mins === 0) return `${hours}h`;
+      return `${hours}h ${mins}min`;
+    }
+
     const raw = formatDurationLong(startTime, endTime);
     if (!raw) return '';
 
+    // Completed entry with pauses: show net duration
     if (pauseEntries.length > 0 && entry?.endTime) {
       const totalPauseMins = pauseEntries.reduce((sum, p) => sum + p.durationMinutes, 0);
       const grossMins = computeDurationMinutes(startTime, endTime);
@@ -300,7 +332,7 @@ export function SleepEntrySheet({
     }
 
     return raw;
-  }, [startTime, endTime, pauseEntries, entry?.endTime]);
+  }, [startTime, endTime, pauseEntries, entry, isActiveEntry, activePauseStart, now]);
 
   const showNetSuffix = pauseEntries.length > 0 && !!entry?.endTime;
 
@@ -389,6 +421,16 @@ export function SleepEntrySheet({
     if (!validation.isValid) return;
     if (!hasChanges && isEditing && !isActiveEntry) return;
     if (isSaving) return;
+
+    // If paused, end the pause first before stopping
+    if (activePauseStart && onPauseEnd && onAddPause && entry) {
+      const pauseDuration = Math.max(1, Math.round((Date.now() - activePauseStart.getTime()) / 60000));
+      await onAddPause(entry.id, {
+        startTime: activePauseStart.toISOString(),
+        durationMinutes: pauseDuration,
+      });
+      onPauseEnd();
+    }
 
     const resolvedEndTime = (isActiveEntry && !endTime && !hasChanges) ? getCurrentTime() : endTime;
     let payload: Omit<SleepEntry, 'id' | 'date'>;
@@ -500,6 +542,21 @@ export function SleepEntrySheet({
       delete next[pauseId];
       return next;
     });
+  };
+
+  const handlePause = () => {
+    if (!onPauseStart) return;
+    onPauseStart();
+  };
+
+  const handleResume = async () => {
+    if (!activePauseStart || !onPauseEnd || !onAddPause || !entry) return;
+    const durationMinutes = Math.max(1, Math.round((Date.now() - activePauseStart.getTime()) / 60000));
+    await onAddPause(entry.id, {
+      startTime: activePauseStart.toISOString(),
+      durationMinutes,
+    });
+    onPauseEnd();
   };
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
@@ -675,6 +732,13 @@ export function SleepEntrySheet({
                   </p>
                 </div>
 
+                {/* Paused status indicator */}
+                {isActiveEntry && activePauseStart && (
+                  <p className="text-center text-sm font-display italic mt-2" style={{ color: 'var(--wake-color)' }}>
+                    {t('sleepEntrySheet.pausedStatus')}
+                  </p>
+                )}
+
                 {/* Validation messages */}
                 {validation.errorKey && (
                   <p className="text-xs text-center mt-3" style={{ color: 'var(--danger-color)' }}>
@@ -837,14 +901,39 @@ export function SleepEntrySheet({
                   {saveError}
                 </p>
               )}
-              {/* Save button - circular tick with spring animation */}
-              <div className="flex flex-col items-center pb-8 pt-4">
+              {/* Action buttons */}
+              <div className="flex items-center justify-center gap-6 pb-8 pt-4">
+                {/* Pause/Play button — only for active entries */}
+                {isActiveEntry && (
+                  <motion.button
+                    onClick={activePauseStart ? handleResume : handlePause}
+                    whileTap={{ scale: 0.9 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                    className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg relative"
+                    style={{
+                      backgroundColor: themeBg,
+                      color: sleepType === 'night' ? 'var(--text-on-accent)' : 'var(--bg-deep)',
+                    }}
+                    aria-label={activePauseStart ? t('sleepEntrySheet.resumeAction') : t('sleepEntrySheet.pauseAction')}
+                  >
+                    {/* Pulsing ring when paused */}
+                    {activePauseStart && (
+                      <span
+                        className="absolute inset-0 rounded-full animate-ping"
+                        style={{ border: '2px solid var(--wake-color)', opacity: 0.4 }}
+                      />
+                    )}
+                    {activePauseStart ? <PlayIcon /> : <PauseIcon />}
+                  </motion.button>
+                )}
+
+                {/* Stop / Save button */}
                 <motion.button
                   onClick={handleSave}
                   disabled={!validation.isValid || (isEditing && !hasChanges && !isActiveEntry) || isSaving}
                   whileTap={(validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving) ? { scale: 0.9 } : undefined}
                   transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-                  className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg ${
+                  className={`${isActiveEntry ? 'w-14 h-14' : 'w-16 h-16'} rounded-full flex items-center justify-center shadow-lg ${
                     (validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving)
                       ? ''
                       : 'opacity-40 cursor-not-allowed'
