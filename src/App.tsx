@@ -182,6 +182,7 @@ function App() {
     if (!editingEntryId) return null;
     return entries.find((e) => e.id === editingEntryId) ?? null;
   }, [editingEntryId, entries]);
+  const [activePauseStart, setActivePauseStart] = useState<Date | null>(null);
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -712,6 +713,7 @@ function App() {
                 }}
                 onStartPredictedNap={handlePredictedNapTap}
                 skippedNapIndices={skippedNapIndices}
+                activePauseStart={activePauseStart}
               />
             )}
             {currentView === 'history' && renderHistoryView()}
@@ -880,6 +882,7 @@ function App() {
           setLogWakeUpMode(false);
           setPredictedStartTime(undefined);
           setPredictedEndTime(undefined);
+          setActivePauseStart(null);
         }}
         onSave={handleAddEntry}
         onDelete={deleteEntry}
@@ -892,6 +895,9 @@ function App() {
         onAddPause={addPause}
         onUpdatePause={updatePause}
         onDeletePause={deletePause}
+        activePauseStart={activePauseStart}
+        onPauseStart={() => setActivePauseStart(new Date())}
+        onPauseEnd={() => setActivePauseStart(null)}
       />
 
       {/* Wake Up Sheet — Napper-style focused modal for ending night sleep */}
