@@ -1,6 +1,6 @@
 import type { SleepEntry as SleepEntryType } from '../types';
 import { useTranslation } from 'react-i18next';
-import { formatTime, calculateDuration, formatDuration } from '../utils/dateUtils';
+import { formatTime, formatDuration, getNetSleepMinutes } from '../utils/dateUtils';
 
 
 // Shared props for action buttons
@@ -93,7 +93,7 @@ interface NapEntryProps {
 export function NapEntry({ entry, napNumber, onEdit, onEndSleep }: NapEntryProps) {
   const { t } = useTranslation();
   const isActive = entry.endTime === null;
-  const duration = calculateDuration(entry.startTime, entry.endTime);
+  const duration = getNetSleepMinutes(entry);
   const napLabel =
     napNumber === 1
       ? t('stats.napFirst')

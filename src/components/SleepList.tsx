@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { SleepEntry } from '../types';
+import { getNetSleepMinutes } from '../utils/dateUtils';
 import {
   BedtimeEntry,
   NapEntry,
@@ -91,11 +92,8 @@ export function SleepList({ entries, allEntries, selectedDate, onEdit, onEndSlee
           sortTime: new Date(nightEntry.endTime!).getTime(),
         });
 
-        // Add night sleep summary (duration from bedtime to wake-up)
-        const nightDuration = calculateMinutesBetween(
-          nightEntry.startTime,
-          nightEntry.endTime!
-        );
+        // Add night sleep summary (net duration from bedtime to wake-up, minus pauses)
+        const nightDuration = getNetSleepMinutes(nightEntry);
         items.push({
           type: 'night-sleep-summary',
           durationMinutes: nightDuration,

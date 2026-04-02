@@ -5,6 +5,7 @@ import {
   formatTime,
   formatDuration,
   calculateDuration,
+  getNetSleepMinutes,
   calculateSuggestedNapTime,
   calculateSuggestedNapTimeWithMetadata,
   calculateAllNapWindows,
@@ -152,7 +153,7 @@ export function TodayView({
   // Calculate total daytime sleep for dynamic bedtime
   const totalDaytimeSleepMinutes = useMemo(() => {
     return todayNaps.reduce((total, nap) => {
-      return total + calculateDuration(nap.startTime, nap.endTime);
+      return total + getNetSleepMinutes(nap);
     }, 0);
   }, [todayNaps]);
 
@@ -463,7 +464,7 @@ export function TodayView({
     if (!profile?.dateOfBirth || !lastCompletedSleep?.endTime) return null;
 
     const lastNapDuration = lastCompletedSleep.type === 'nap'
-      ? calculateDuration(lastCompletedSleep.startTime, lastCompletedSleep.endTime)
+      ? getNetSleepMinutes(lastCompletedSleep)
       : null;
 
     const nextNapIndex = todayNaps.length;
@@ -911,7 +912,7 @@ export function TodayView({
                   </div>
                   <div className="text-right">
                     <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
-                      {formatDuration(calculateDuration(nap.startTime, nap.endTime))}
+                      {formatDuration(getNetSleepMinutes(nap))}
                     </p>
                   </div>
                 </button>
