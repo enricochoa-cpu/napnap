@@ -29,6 +29,8 @@ export interface SleepEntry {
   type: 'nap' | 'night';
   notes?: string;
   pauses?: SleepPause[];
+  onsetTags?: string[];     // e.g. ['long_onset', 'upset'] — multi-select
+  sleepMethod?: string;      // e.g. 'nursing' — single-select
 }
 
 export interface BabyShare {

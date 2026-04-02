@@ -29,6 +29,8 @@ export interface DbSleepEntry {
   type: 'nap' | 'night';
   notes: string | null;
   created_at: string;
+  onset_tags: string[] | null;
+  sleep_method: string | null;
 }
 
 export interface DbSleepPause {
