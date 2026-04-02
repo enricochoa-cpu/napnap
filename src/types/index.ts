@@ -14,6 +14,13 @@ export interface UserProfile {
   locale?: 'en' | 'es' | 'ca';
 }
 
+export interface SleepPause {
+  id: string;
+  sleepEntryId: string;
+  startTime: string;       // ISO datetime (UTC)
+  durationMinutes: number;  // always > 0
+}
+
 export interface SleepEntry {
   id: string;
   date: string; // ISO date (YYYY-MM-DD)
@@ -21,6 +28,7 @@ export interface SleepEntry {
   endTime: string | null; // null if still sleeping
   type: 'nap' | 'night';
   notes?: string;
+  pauses?: SleepPause[];
 }
 
 export interface BabyShare {

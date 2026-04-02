@@ -31,6 +31,14 @@ export interface DbSleepEntry {
   created_at: string;
 }
 
+export interface DbSleepPause {
+  id: string;
+  sleep_entry_id: string;
+  start_time: string;
+  duration_minutes: number;
+  created_at: string;
+}
+
 export interface DbBabyShare {
   id: string;
   baby_owner_id: string;
