@@ -64,6 +64,13 @@ const PauseIcon = () => (
   </svg>
 );
 
+const StormCloudIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
+    <path d="M13 16l-2 4m3-6l-2 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
 const CalendarIcon = () => (
   <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -296,6 +303,17 @@ export function SleepEntrySheet({
 
   // --- Pause entries (derived from entry prop) ---
   const pauseEntries = entry?.pauses ?? [];
+
+  const isNightEntry = entry?.type === 'night';
+  const pauseNumberLabel = (n: number) => isNightEntry
+    ? t('sleepEntrySheet.nightWakingNumber', { number: n })
+    : t('sleepEntrySheet.pauseNumber', { number: n });
+  const addPauseLabel = isNightEntry
+    ? t('sleepEntrySheet.addNightWaking')
+    : t('sleepEntrySheet.addPause');
+  const pausedStatusLabel = isNightEntry
+    ? t('sleepEntrySheet.nightWakingStatus')
+    : t('sleepEntrySheet.pausedStatus');
 
   // Duration under start time: "29min long"; relative date under end time: "2h ago" | "Yesterday" | "Feb 10"
   const durationLabel = useMemo(() => {
@@ -735,7 +753,7 @@ export function SleepEntrySheet({
                 {/* Paused status indicator */}
                 {isActiveEntry && activePauseStart && (
                   <p className="text-center text-sm font-display italic mt-2" style={{ color: 'var(--wake-color)' }}>
-                    {t('sleepEntrySheet.pausedStatus')}
+                    {pausedStatusLabel}
                   </p>
                 )}
 
@@ -786,10 +804,10 @@ export function SleepEntrySheet({
                               onClick={() => setExpandedPauseId(isExpanded ? null : pause.id)}
                             >
                               <div className="flex items-center gap-2.5">
-                                <span className="text-[var(--text-muted)] text-sm">⏸</span>
+                                {isNightEntry ? <StormCloudIcon className="w-4 h-4 text-[var(--wake-color)]" /> : <span className="text-[var(--text-muted)] text-sm">⏸</span>}
                                 <div>
-                                  <p className="text-[var(--text-primary)] text-sm font-medium">
-                                    {t('sleepEntrySheet.pauseNumber', { number: index + 1 })}
+                                  <p className={`${isNightEntry ? 'text-[var(--wake-color)]' : 'text-[var(--text-primary)]'} text-sm font-medium`}>
+                                    {pauseNumberLabel(index + 1)}
                                   </p>
                                   <p className="text-[var(--text-muted)] text-xs">
                                     {pauseStartLocal} · {pause.durationMinutes}{t('sleepEntrySheet.pauseDurationUnit')}
@@ -889,7 +907,7 @@ export function SleepEntrySheet({
                         : 'border-[var(--text-muted)]/20 text-[var(--text-muted)] hover:border-[var(--text-muted)]/40'
                     }`}
                   >
-                    + {t('sleepEntrySheet.addPause')}
+                    + {addPauseLabel}
                     {pauseEntries.length >= 5 && ` (${t('sleepEntrySheet.maxPausesReached')})`}
                   </button>}
                 </div>
@@ -914,7 +932,7 @@ export function SleepEntrySheet({
                       backgroundColor: themeBg,
                       color: sleepType === 'night' ? 'var(--text-on-accent)' : 'var(--bg-deep)',
                     }}
-                    aria-label={activePauseStart ? t('sleepEntrySheet.resumeAction') : t('sleepEntrySheet.pauseAction')}
+                    aria-label={activePauseStart ? t('sleepEntrySheet.resumeAction') : (isNightEntry ? t('sleepEntrySheet.nightWaking') : t('sleepEntrySheet.pauseAction'))}
                   >
                     {/* Pulsing ring when paused */}
                     {activePauseStart && (
