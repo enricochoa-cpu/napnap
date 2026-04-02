@@ -52,6 +52,7 @@ interface TodayViewProps {
   }) => void;
   /** Indices of naps that the user has skipped — those ghost cards are hidden. */
   skippedNapIndices?: Set<number>;
+  activePauseStart?: Date | null;
 }
 
 // Get today's completed naps
@@ -125,6 +126,7 @@ export function TodayView({
   onPendingInviteClick,
   onStartPredictedNap,
   skippedNapIndices,
+  activePauseStart,
 }: TodayViewProps) {
   const { t } = useTranslation();
   // Force re-render every minute for live countdowns
@@ -505,8 +507,13 @@ export function TodayView({
   // Duration of current sleep
   const currentSleepDuration = useMemo(() => {
     if (!activeSleep) return 0;
-    return calculateDuration(activeSleep.startTime, null);
-  }, [activeSleep]);
+    const gross = calculateDuration(activeSleep.startTime, null);
+    const completedPauseMins = (activeSleep.pauses ?? []).reduce((sum, p) => sum + p.durationMinutes, 0);
+    const inFlightMins = activePauseStart
+      ? Math.max(0, Math.round((now.getTime() - activePauseStart.getTime()) / 60000))
+      : 0;
+    return Math.max(0, gross - completedPauseMins - inFlightMins);
+  }, [activeSleep, activePauseStart, now]);
 
   // Check if there's any activity that "touches" today
   // Activity touches today if:
@@ -664,6 +671,11 @@ export function TodayView({
               <h1 className="hero-countdown text-[var(--nap-color)] mb-2 sm:mb-3">
                 {formatDuration(currentSleepDuration)}
               </h1>
+              {activePauseStart && (
+                <p className="text-sm font-display italic mb-2" style={{ color: 'var(--wake-color)' }}>
+                  {t('sleepEntrySheet.pausedStatus')}
+                </p>
+              )}
               {expectedWakeUp && (
                 <p className="text-[var(--text-secondary)] font-display text-sm">
                   {t('today.expectedWakeAt')} <span className={`font-semibold ${activeSleep.type === 'night' ? 'text-[var(--wake-color)]' : 'text-[var(--text-primary)]'}`}>{formatTime(expectedWakeUp)}</span>
@@ -883,6 +895,11 @@ export function TodayView({
                     <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
                       {formatDuration(currentSleepDuration)}
                     </p>
+                    {activePauseStart && (
+                      <p className="text-[var(--wake-color)] text-xs font-display italic">
+                        {t('sleepEntrySheet.pausedStatus')}
+                      </p>
+                    )}
                   </div>
                 </button>
               </motion.div>
