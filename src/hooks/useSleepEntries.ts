@@ -388,6 +388,16 @@ export function computeDailySummary(
     0,
   );
 
+  const nightWakingCount = nightEntries.reduce(
+    (sum, e) => sum + (e.pauses ?? []).length,
+    0,
+  );
+
+  const nightWakingMinutes = nightEntries.reduce(
+    (sum, e) => sum + (e.pauses ?? []).reduce((pSum, p) => pSum + p.durationMinutes, 0),
+    0,
+  );
+
   const wakeWindows: number[] = [];
 
   const nightEntriesWithWakeup = allEntries.filter(
@@ -450,5 +460,7 @@ export function computeDailySummary(
     napCount: napEntries.length,
     nightCount: nightEntries.length,
     averageWakeWindowMinutes,
+    nightWakingCount,
+    nightWakingMinutes,
   };
 }
