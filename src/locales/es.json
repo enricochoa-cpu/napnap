@@ -443,7 +443,19 @@
     "deleteConfirm": "¿Eliminar este registro de sueño?",
     "sleeping": "Durmiendo...",
     "ongoing": "(en curso)",
-    "nightSleep": "Sueño nocturno"
+    "nightSleep": "Sueño nocturno",
+    "onsetLabel": "Inicio",
+    "howLabel": "Cómo",
+    "longOnset": "Tardó en dormirse",
+    "upset": "Irritable",
+    "inBed": "En cama",
+    "nursing": "Lactancia",
+    "wornOrHeld": "En brazos",
+    "nextToMe": "A mi lado",
+    "bottleFeeding": "Biberón",
+    "stroller": "Cochecito",
+    "car": "Coche",
+    "swing": "Columpio"
   },
   "sleepEntrySheet": {
     "addNap": "Añadir siesta",

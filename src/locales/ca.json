@@ -441,7 +441,19 @@
     "deleteConfirm": "Eliminar aquest registre de son?",
     "sleeping": "Dormint...",
     "ongoing": "(en curs)",
-    "nightSleep": "Son nocturn"
+    "nightSleep": "Son nocturn",
+    "onsetLabel": "Inici",
+    "howLabel": "Com",
+    "longOnset": "Va tardar a adormir-se",
+    "upset": "Irritable",
+    "inBed": "Al llit",
+    "nursing": "Lactància",
+    "wornOrHeld": "En braços",
+    "nextToMe": "Al meu costat",
+    "bottleFeeding": "Biberó",
+    "stroller": "Cotxet",
+    "car": "Cotxe",
+    "swing": "Gronxador"
   },
   "sleepEntrySheet": {
     "addNap": "Afegir migdiada",

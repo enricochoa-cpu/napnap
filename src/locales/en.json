@@ -445,7 +445,19 @@
     "deleteConfirm": "Delete this sleep entry?",
     "sleeping": "Sleeping...",
     "ongoing": "(ongoing)",
-    "nightSleep": "Night sleep"
+    "nightSleep": "Night sleep",
+    "onsetLabel": "Start",
+    "howLabel": "How",
+    "longOnset": "Long time to fall asleep",
+    "upset": "Upset",
+    "inBed": "In bed",
+    "nursing": "Nursing",
+    "wornOrHeld": "Worn or held",
+    "nextToMe": "Next to me",
+    "bottleFeeding": "Bottle feeding",
+    "stroller": "Stroller",
+    "car": "Car",
+    "swing": "Swing"
   },
   "sleepEntrySheet": {
     "addNap": "Add nap",
