@@ -102,6 +102,17 @@ export function calculateDuration(startTime: string, endTime: string | null): nu
   return differenceInMinutes(parseISO(endTime), parseISO(startTime));
 }
 
+/**
+ * Net sleep duration in minutes: gross duration minus total pause time.
+ * Returns null for active entries (no endTime).
+ * Falls back to gross duration when there are no pauses.
+ */
+export function getNetSleepMinutes(entry: { startTime: string; endTime: string | null; pauses?: { durationMinutes: number }[] }): number {
+  const gross = calculateDuration(entry.startTime, entry.endTime);
+  const totalPauseMinutes = (entry.pauses ?? []).reduce((sum, p) => sum + p.durationMinutes, 0);
+  return Math.max(0, gross - totalPauseMinutes);
+}
+
 export function formatDuration(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
