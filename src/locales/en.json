@@ -481,7 +481,10 @@
     "pauseAfterEnd": "Pause must start before the entry ends",
     "pauseExceedsEnd": "Pause extends beyond the entry end",
     "pauseZeroDuration": "Pause must have a duration",
-    "pauseOverlap": "Pauses cannot overlap"
+    "pauseOverlap": "Pauses cannot overlap",
+    "pauseAction": "Pause",
+    "resumeAction": "Resume",
+    "pausedStatus": "Paused"
   },
   "wakeUpSheet": {
     "title": "Wake up",

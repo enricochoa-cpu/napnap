@@ -479,7 +479,10 @@
     "pauseAfterEnd": "La pausa debe empezar antes de que termine",
     "pauseExceedsEnd": "La pausa se extiende más allá del final",
     "pauseZeroDuration": "La pausa debe tener una duración",
-    "pauseOverlap": "Las pausas no pueden solaparse"
+    "pauseOverlap": "Las pausas no pueden solaparse",
+    "pauseAction": "Pausar",
+    "resumeAction": "Reanudar",
+    "pausedStatus": "En pausa"
   },
   "wakeUpSheet": {
     "title": "Despertar",
