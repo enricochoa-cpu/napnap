@@ -9,6 +9,8 @@ interface DailySummaryProps {
     napCount: number;
     nightCount: number;
     averageWakeWindowMinutes: number | null;
+    nightWakingCount: number;
+    nightWakingMinutes: number;
   };
 }
 
@@ -83,6 +85,22 @@ export function DailySummary({ summary }: DailySummaryProps) {
           </div>
         </div>
       </div>
+      {summary.nightWakingCount > 0 && (
+        <div className="flex items-center justify-center gap-2 mt-4 pt-3 border-t border-[var(--text-muted)]/10">
+          <svg className="w-4 h-4 text-[var(--wake-color)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
+            <path d="M13 16l-2 4m3-6l-2 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+          </svg>
+          <span className="text-sm text-[var(--wake-color)]">
+            {summary.nightWakingCount === 1
+              ? t('history.nightWakings', { count: summary.nightWakingCount })
+              : t('history.nightWakingsPlural', { count: summary.nightWakingCount })}
+          </span>
+          <span className="text-sm text-[var(--text-muted)]">
+            {t('history.nightWakingsDuration', { duration: formatDuration(summary.nightWakingMinutes) })}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
