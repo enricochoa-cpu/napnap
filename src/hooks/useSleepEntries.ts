@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { calculateDuration } from '../utils/dateUtils';
+import { getNetSleepMinutes } from '../utils/dateUtils';
 import { parseISO, format } from 'date-fns';
-import type { SleepEntry } from '../types';
+import type { SleepEntry, SleepPause } from '../types';
+import type { DbSleepPause } from '../lib/supabase';
 
 /**
  * Convert datetime string (local "YYYY-MM-DDTHH:mm" or ISO with Z) to UTC ISO for storage.
@@ -11,6 +12,14 @@ import type { SleepEntry } from '../types';
 const toSupabaseTimestamp = (datetime: string): string => {
   return parseISO(datetime).toISOString();
 };
+
+/** Map DB pause row to app type. */
+const mapDbPause = (row: DbSleepPause): SleepPause => ({
+  id: row.id,
+  sleepEntryId: row.sleep_entry_id,
+  startTime: row.start_time,
+  durationMinutes: row.duration_minutes,
+});
 
 /**
  * Entry startTime/endTime are stored as received from Supabase (UTC ISO).
@@ -57,7 +66,27 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
         setError(fetchError.message);
       }
 
-      if (data) {
+      if (data && data.length > 0) {
+        const entryIds = data.map((e) => e.id);
+
+        // Fetch all pauses for these entries in one query
+        const { data: pauseData } = await supabase
+          .from('sleep_pauses')
+          .select('*')
+          .in('sleep_entry_id', entryIds)
+          .order('start_time', { ascending: true });
+
+        // Group pauses by entry id
+        const pausesByEntry = new Map<string, SleepPause[]>();
+        if (pauseData) {
+          for (const row of pauseData) {
+            const pause = mapDbPause(row as DbSleepPause);
+            const list = pausesByEntry.get(pause.sleepEntryId) ?? [];
+            list.push(pause);
+            pausesByEntry.set(pause.sleepEntryId, list);
+          }
+        }
+
         const mappedEntries: SleepEntry[] = data.map((entry) => ({
           id: entry.id,
           date: format(parseISO(entry.start_time), 'yyyy-MM-dd'),
@@ -65,6 +94,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
           endTime: entry.end_time ?? null,
           type: entry.type as 'nap' | 'night',
           notes: entry.notes || undefined,
+          pauses: pausesByEntry.get(entry.id) ?? [],
         }));
         setEntries(mappedEntries);
       } else {
@@ -182,6 +212,109 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     await updateEntry(id, { endTime });
   }, [updateEntry]);
 
+  const addPause = useCallback(async (entryId: string, data: { startTime: string; durationMinutes: number }): Promise<SleepPause | null> => {
+    try {
+      const { data: inserted, error } = await supabase
+        .from('sleep_pauses')
+        .insert({
+          sleep_entry_id: entryId,
+          start_time: toSupabaseTimestamp(data.startTime),
+          duration_minutes: data.durationMinutes,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding pause:', error);
+        return null;
+      }
+
+      const newPause = mapDbPause(inserted as DbSleepPause);
+
+      // Optimistic update: add pause to the entry in local state
+      setEntries((prev) =>
+        prev.map((entry) => {
+          if (entry.id !== entryId) return entry;
+          const pauses = [...(entry.pauses ?? []), newPause].sort(
+            (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+          );
+          return { ...entry, pauses };
+        })
+      );
+
+      return newPause;
+    } catch (err) {
+      console.error('Error adding pause:', err);
+      return null;
+    }
+  }, []);
+
+  const updatePause = useCallback(async (pauseId: string, data: { startTime?: string; durationMinutes?: number }): Promise<boolean> => {
+    try {
+      const updateData: Record<string, unknown> = {};
+      if (data.startTime !== undefined) updateData.start_time = toSupabaseTimestamp(data.startTime);
+      if (data.durationMinutes !== undefined) updateData.duration_minutes = data.durationMinutes;
+
+      const { error } = await supabase
+        .from('sleep_pauses')
+        .update(updateData)
+        .eq('id', pauseId);
+
+      if (error) {
+        console.error('Error updating pause:', error);
+        return false;
+      }
+
+      // Optimistic update
+      setEntries((prev) =>
+        prev.map((entry) => {
+          const pauseIndex = (entry.pauses ?? []).findIndex((p) => p.id === pauseId);
+          if (pauseIndex === -1) return entry;
+          const updatedPauses = [...entry.pauses!];
+          updatedPauses[pauseIndex] = {
+            ...updatedPauses[pauseIndex],
+            ...(data.startTime !== undefined ? { startTime: toSupabaseTimestamp(data.startTime) } : {}),
+            ...(data.durationMinutes !== undefined ? { durationMinutes: data.durationMinutes } : {}),
+          };
+          updatedPauses.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+          return { ...entry, pauses: updatedPauses };
+        })
+      );
+
+      return true;
+    } catch (err) {
+      console.error('Error updating pause:', err);
+      return false;
+    }
+  }, []);
+
+  const deletePause = useCallback(async (pauseId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('sleep_pauses')
+        .delete()
+        .eq('id', pauseId);
+
+      if (error) {
+        console.error('Error deleting pause:', error);
+        return false;
+      }
+
+      // Optimistic removal
+      setEntries((prev) =>
+        prev.map((entry) => {
+          const pauses = (entry.pauses ?? []).filter((p) => p.id !== pauseId);
+          return { ...entry, pauses };
+        })
+      );
+
+      return true;
+    } catch (err) {
+      console.error('Error deleting pause:', err);
+      return false;
+    }
+  }, []);
+
   const getEntriesForDate = useCallback((date: string) => {
     return entries
       .filter((entry) => entry.date === date)
@@ -225,6 +358,9 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     updateEntry,
     deleteEntry,
     endSleep,
+    addPause,
+    updatePause,
+    deletePause,
     getEntriesForDate,
     activeSleep,
     lastCompletedSleep,
@@ -243,12 +379,12 @@ export function computeDailySummary(
   const nightEntries = dayEntries.filter((e) => e.type === 'night');
 
   const totalNapMinutes = napEntries.reduce(
-    (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
+    (sum, e) => sum + getNetSleepMinutes(e),
     0,
   );
 
   const totalNightMinutes = nightEntries.reduce(
-    (sum, e) => sum + calculateDuration(e.startTime, e.endTime),
+    (sum, e) => sum + getNetSleepMinutes(e),
     0,
   );
 
