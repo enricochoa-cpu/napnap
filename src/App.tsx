@@ -122,6 +122,9 @@ function App() {
     updateEntry,
     deleteEntry,
     endSleep,
+    addPause,
+    updatePause,
+    deletePause,
     getEntriesForDate,
     activeSleep,
     awakeMinutes,
@@ -881,6 +884,9 @@ function App() {
         defaultEndTimeToNow={logWakeUpMode}
         initialStartTimeOverride={predictedStartTime}
         initialEndTimeOverride={predictedEndTime}
+        onAddPause={addPause}
+        onUpdatePause={updatePause}
+        onDeletePause={deletePause}
       />
 
       {/* Wake Up Sheet — Napper-style focused modal for ending night sleep */}
