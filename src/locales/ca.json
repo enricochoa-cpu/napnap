@@ -464,7 +464,20 @@
     "napExceeds5h": "La migdiada supera les 5 hores",
     "nightExceeds14h": "El son nocturn supera les 14 hores",
     "pastDateRequiresEndTime": "Les dates passades necessiten hora de fi (el son ja ha acabat).",
-    "logForDate": "Registrar per a data"
+    "logForDate": "Registrar per a data",
+    "addPause": "Afegir pausa",
+    "pause": "Pausa",
+    "pauseNumber": "Pausa {{number}}",
+    "pauseStart": "Inici",
+    "pauseDuration": "Durada",
+    "pauseDurationUnit": "min",
+    "netSuffix": "(net)",
+    "maxPausesReached": "Màxim assolit",
+    "pauseBeforeStart": "La pausa ha de començar després de l'inici",
+    "pauseAfterEnd": "La pausa ha de començar abans que acabi",
+    "pauseExceedsEnd": "La pausa s'estén més enllà del final",
+    "pauseZeroDuration": "La pausa ha de tenir una durada",
+    "pauseOverlap": "Les pauses no es poden solapar"
   },
   "wakeUpSheet": {
     "title": "Despertar",

@@ -466,7 +466,20 @@
     "napExceeds5h": "La siesta supera las 5 horas",
     "nightExceeds14h": "El sueño nocturno supera las 14 horas",
     "pastDateRequiresEndTime": "Las fechas pasadas necesitan hora de fin (el sueño ya terminó).",
-    "logForDate": "Registrar para fecha"
+    "logForDate": "Registrar para fecha",
+    "addPause": "Añadir pausa",
+    "pause": "Pausa",
+    "pauseNumber": "Pausa {{number}}",
+    "pauseStart": "Inicio",
+    "pauseDuration": "Duración",
+    "pauseDurationUnit": "min",
+    "netSuffix": "(neto)",
+    "maxPausesReached": "Máximo alcanzado",
+    "pauseBeforeStart": "La pausa debe empezar después del inicio",
+    "pauseAfterEnd": "La pausa debe empezar antes de que termine",
+    "pauseExceedsEnd": "La pausa se extiende más allá del final",
+    "pauseZeroDuration": "La pausa debe tener una duración",
+    "pauseOverlap": "Las pausas no pueden solaparse"
   },
   "wakeUpSheet": {
     "title": "Despertar",

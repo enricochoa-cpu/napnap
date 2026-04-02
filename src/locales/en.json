@@ -468,7 +468,20 @@
     "napExceeds5h": "Nap duration exceeds 5 hours",
     "nightExceeds14h": "Night sleep exceeds 14 hours",
     "pastDateRequiresEndTime": "Past dates need an end time (sleep already finished).",
-    "logForDate": "Log for date"
+    "logForDate": "Log for date",
+    "addPause": "Add pause",
+    "pause": "Pause",
+    "pauseNumber": "Pause {{number}}",
+    "pauseStart": "Start",
+    "pauseDuration": "Duration",
+    "pauseDurationUnit": "min",
+    "netSuffix": "(net)",
+    "maxPausesReached": "Max reached",
+    "pauseBeforeStart": "Pause must start after the entry begins",
+    "pauseAfterEnd": "Pause must start before the entry ends",
+    "pauseExceedsEnd": "Pause extends beyond the entry end",
+    "pauseZeroDuration": "Pause must have a duration",
+    "pauseOverlap": "Pauses cannot overlap"
   },
   "wakeUpSheet": {
     "title": "Wake up",
