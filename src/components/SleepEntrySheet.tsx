@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -6,7 +6,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { formatDate, getNextDay, getPreviousDay } from '../utils/dateUtils';
 import { getDateFnsLocale } from '../utils/dateFnsLocale';
 import { parseISO, format } from 'date-fns';
-import type { SleepEntry } from '../types';
+import type { SleepEntry, SleepPause } from '../types';
 
 type TFunction = (key: string, options?: Record<string, string | number>) => string;
 
@@ -31,6 +31,9 @@ interface SleepEntrySheetProps {
   initialStartTimeOverride?: string;
   /** Override initial end time (HH:mm) — used when pre-filling from predicted nap times */
   initialEndTimeOverride?: string;
+  onAddPause?: (entryId: string, data: { startTime: string; durationMinutes: number }) => Promise<SleepPause | null>;
+  onUpdatePause?: (pauseId: string, data: { startTime?: string; durationMinutes?: number }) => Promise<boolean>;
+  onDeletePause?: (pauseId: string) => Promise<boolean>;
 }
 
 import { CloudIcon, MoonIcon } from './icons/SleepIcons';
@@ -213,6 +216,9 @@ export function SleepEntrySheet({
   defaultEndTimeToNow = false,
   initialStartTimeOverride,
   initialEndTimeOverride,
+  onAddPause,
+  onUpdatePause,
+  onDeletePause,
 }: SleepEntrySheetProps) {
   const { t } = useTranslation();
   const isEditing = !!entry;
@@ -226,6 +232,8 @@ export function SleepEntrySheet({
   const [endTime, setEndTime] = useState(initialEndTime);
   const [now, setNow] = useState(() => new Date());
   const [isSaving, setIsSaving] = useState(false);
+  const [expandedPauseId, setExpandedPauseId] = useState<string | null>(null);
+  const [pauseErrors, setPauseErrors] = useState<Record<string, string | null>>({});
 
   // Refresh "now" every 30 seconds while sheet is open
   useEffect(() => {
@@ -247,6 +255,8 @@ export function SleepEntrySheet({
         setStartTime(initialStartTimeOverride || getDefaultTime(selectedDate, sleepType));
         setEndTime(initialEndTimeOverride || (defaultEndTimeToNow ? getCurrentTime() : ''));
       }
+      setExpandedPauseId(null);
+      setPauseErrors({});
     }
   }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
 
@@ -266,8 +276,32 @@ export function SleepEntrySheet({
   // Is this an active (ongoing) entry? Has start but no end
   const isActiveEntry = isEditing && !entry?.endTime;
 
+  // --- Pause entries (derived from entry prop) ---
+  const pauseEntries = entry?.pauses ?? [];
+
   // Duration under start time: "29min long"; relative date under end time: "2h ago" | "Yesterday" | "Feb 10"
-  const durationLabel = useMemo(() => formatDurationLong(startTime, endTime), [startTime, endTime]);
+  const durationLabel = useMemo(() => {
+    const raw = formatDurationLong(startTime, endTime);
+    if (!raw) return '';
+
+    if (pauseEntries.length > 0 && entry?.endTime) {
+      const totalPauseMins = pauseEntries.reduce((sum, p) => sum + p.durationMinutes, 0);
+      const grossMins = computeDurationMinutes(startTime, endTime);
+      const netMins = Math.max(0, grossMins - totalPauseMins);
+      const hours = Math.floor(netMins / 60);
+      const mins = netMins % 60;
+      let netStr: string;
+      if (hours === 0) netStr = `${mins}min long`;
+      else if (mins === 0) netStr = `${hours}h long`;
+      else netStr = `${hours}h ${mins}min long`;
+      return netStr;
+    }
+
+    return raw;
+  }, [startTime, endTime, pauseEntries, entry?.endTime]);
+
+  const showNetSuffix = pauseEntries.length > 0 && !!entry?.endTime;
+
   const relativeDateLabel = useMemo(
     () => getRelativeDateLabel(t, selectedDate, endTime, now, isActiveEntry),
     [t, selectedDate, endTime, now, isActiveEntry]
@@ -318,6 +352,36 @@ export function SleepEntrySheet({
 
     return { isValid: true, warningKey: null, errorKey: null };
   }, [startTime, endTime, sleepType, defaultEndTimeToNow, isEditing, selectedDate]);
+
+  // --- Pause validation ---
+  /** Validate a single pause against the entry bounds and other pauses. Returns i18n error key or null. */
+  const validatePause = useCallback((pause: { startTime: string; durationMinutes: number }, pauseId: string): string | null => {
+    if (!entry || !startTime || !endTime) return null;
+
+    const entryStartDate = parseISO(entry.startTime);
+    const pauseStart = parseISO(pause.startTime);
+    const pauseEndMs = pauseStart.getTime() + pause.durationMinutes * 60 * 1000;
+
+    // Entry end as Date
+    const entryEnd = entry.endTime ? parseISO(entry.endTime) : null;
+
+    if (pause.durationMinutes <= 0) return 'sleepEntrySheet.pauseZeroDuration';
+    if (pauseStart.getTime() < entryStartDate.getTime()) return 'sleepEntrySheet.pauseBeforeStart';
+    if (entryEnd && pauseStart.getTime() >= entryEnd.getTime()) return 'sleepEntrySheet.pauseAfterEnd';
+    if (entryEnd && pauseEndMs > entryEnd.getTime()) return 'sleepEntrySheet.pauseExceedsEnd';
+
+    // Overlap check
+    for (const other of pauseEntries) {
+      if (other.id === pauseId) continue;
+      const otherStart = parseISO(other.startTime).getTime();
+      const otherEnd = otherStart + other.durationMinutes * 60 * 1000;
+      if (pauseStart.getTime() < otherEnd && pauseEndMs > otherStart) {
+        return 'sleepEntrySheet.pauseOverlap';
+      }
+    }
+
+    return null;
+  }, [entry, startTime, endTime, pauseEntries]);
 
   const handleSave = async () => {
     if (!validation.isValid) return;
@@ -383,6 +447,59 @@ export function SleepEntrySheet({
       setShowDeleteConfirm(false);
       onClose();
     }
+  };
+
+  const handleAddPause = async () => {
+    if (!entry || !onAddPause || !entry.endTime) return;
+    if (pauseEntries.length >= 5) return;
+
+    const entryStartMs = parseISO(entry.startTime).getTime();
+    const entryEndMs = parseISO(entry.endTime).getTime();
+
+    let defaultStartMs: number;
+    if (pauseEntries.length > 0) {
+      const lastPause = pauseEntries[pauseEntries.length - 1];
+      const lastPauseEnd = parseISO(lastPause.startTime).getTime() + lastPause.durationMinutes * 60 * 1000;
+      defaultStartMs = lastPauseEnd + Math.floor((entryEndMs - lastPauseEnd) / 2);
+    } else {
+      defaultStartMs = entryStartMs + Math.floor((entryEndMs - entryStartMs) / 2);
+    }
+
+    defaultStartMs = Math.max(entryStartMs, Math.min(defaultStartMs, entryEndMs - 5 * 60 * 1000));
+
+    const defaultStart = new Date(defaultStartMs).toISOString();
+    const result = await onAddPause(entry.id, { startTime: defaultStart, durationMinutes: 5 });
+    if (result) {
+      setExpandedPauseId(result.id);
+    }
+  };
+
+  const handleUpdatePause = async (pauseId: string, data: { startTime?: string; durationMinutes?: number }) => {
+    if (!onUpdatePause) return;
+
+    const currentPause = pauseEntries.find((p) => p.id === pauseId);
+    if (!currentPause) return;
+
+    const merged = {
+      startTime: data.startTime ?? currentPause.startTime,
+      durationMinutes: data.durationMinutes ?? currentPause.durationMinutes,
+    };
+
+    const errorKey = validatePause(merged, pauseId);
+    setPauseErrors((prev) => ({ ...prev, [pauseId]: errorKey }));
+    if (errorKey) return;
+
+    await onUpdatePause(pauseId, data);
+  };
+
+  const handleDeletePause = async (pauseId: string) => {
+    if (!onDeletePause) return;
+    await onDeletePause(pauseId);
+    setPauseErrors((prev) => {
+      const next = { ...prev };
+      delete next[pauseId];
+      return next;
+    });
   };
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
@@ -544,6 +661,9 @@ export function SleepEntrySheet({
                 <div className="flex justify-center items-baseline gap-4 mt-5">
                   <p className="min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap">
                     {durationLabel}
+                    {showNetSuffix && (
+                      <span className="text-xs ml-1 opacity-60">{t('sleepEntrySheet.netSuffix')}</span>
+                    )}
                   </p>
                   {durationLabel && relativeDateLabel ? (
                     <p className="text-center text-sm text-[var(--text-muted)] italic shrink-0" aria-hidden="true">
@@ -574,6 +694,135 @@ export function SleepEntrySheet({
                   </p>
                 )}
               </div>
+
+              {/* Pause section — only for completed entries being edited */}
+              {isEditing && entry?.endTime && (
+                <div className="px-6 pb-4">
+                  {/* Divider */}
+                  <div className="h-px bg-[var(--text-muted)]/10 mb-4" />
+
+                  {/* Pause cards */}
+                  {pauseEntries.length > 0 && (
+                    <div className="flex flex-col gap-2 mb-3">
+                      {pauseEntries.map((pause, index) => {
+                        const isExpanded = expandedPauseId === pause.id;
+                        const pauseStartLocal = format(parseISO(pause.startTime), 'HH:mm');
+                        const errorKey = pauseErrors[pause.id];
+
+                        return (
+                          <div
+                            key={pause.id}
+                            className="rounded-xl"
+                            style={{ background: 'var(--glass-bg)' }}
+                          >
+                            {/* Collapsed header */}
+                            <button
+                              type="button"
+                              className="w-full flex items-center justify-between p-3 text-left"
+                              onClick={() => setExpandedPauseId(isExpanded ? null : pause.id)}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <span className="text-[var(--text-muted)] text-sm">⏸</span>
+                                <div>
+                                  <p className="text-[var(--text-primary)] text-sm font-medium">
+                                    {t('sleepEntrySheet.pauseNumber', { number: index + 1 })}
+                                  </p>
+                                  <p className="text-[var(--text-muted)] text-xs">
+                                    {pauseStartLocal} · {pause.durationMinutes}{t('sleepEntrySheet.pauseDurationUnit')}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeletePause(pause.id);
+                                  }}
+                                  className="p-1.5 rounded-full text-[var(--text-muted)] hover:text-[var(--danger-color)] transition-colors"
+                                  aria-label={t('common.ariaDelete')}
+                                >
+                                  <TrashIcon />
+                                </button>
+                                <span className="text-[var(--text-muted)] text-xs">
+                                  {isExpanded ? '▲' : '▼'}
+                                </span>
+                              </div>
+                            </button>
+
+                            {/* Expanded: start time + duration inputs */}
+                            {isExpanded && (
+                              <div className="px-3 pb-3">
+                                <div className="flex gap-3">
+                                  <div className="flex-1">
+                                    <label className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1 block">
+                                      {t('sleepEntrySheet.pauseStart')}
+                                    </label>
+                                    <input
+                                      type="time"
+                                      value={pauseStartLocal}
+                                      onChange={(e) => {
+                                        if (!e.target.value) return;
+                                        const newStartTime = combineDateTime(entry.date, e.target.value);
+                                        handleUpdatePause(pause.id, { startTime: newStartTime });
+                                      }}
+                                      className="input w-full text-center text-sm"
+                                    />
+                                  </div>
+                                  <div className="flex-1">
+                                    <label className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-1 block">
+                                      {t('sleepEntrySheet.pauseDuration')}
+                                    </label>
+                                    <div className="flex items-center gap-1">
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        max="120"
+                                        value={pause.durationMinutes}
+                                        onChange={(e) => {
+                                          const val = parseInt(e.target.value, 10);
+                                          if (!isNaN(val) && val > 0) {
+                                            handleUpdatePause(pause.id, { durationMinutes: val });
+                                          }
+                                        }}
+                                        className="input w-full text-center text-sm"
+                                      />
+                                      <span className="text-[var(--text-muted)] text-xs shrink-0">
+                                        {t('sleepEntrySheet.pauseDurationUnit')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* Pause validation error */}
+                                {errorKey && (
+                                  <p className="text-xs mt-2" style={{ color: 'var(--danger-color)' }}>
+                                    {t(errorKey)}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Add pause button */}
+                  <button
+                    type="button"
+                    onClick={handleAddPause}
+                    disabled={pauseEntries.length >= 5}
+                    className={`w-full py-2.5 rounded-xl text-sm font-medium border border-dashed transition-colors ${
+                      pauseEntries.length >= 5
+                        ? 'border-[var(--text-muted)]/10 text-[var(--text-muted)]/30 cursor-not-allowed'
+                        : 'border-[var(--text-muted)]/20 text-[var(--text-muted)] hover:border-[var(--text-muted)]/40'
+                    }`}
+                  >
+                    + {t('sleepEntrySheet.addPause')}
+                    {pauseEntries.length >= 5 && ` (${t('sleepEntrySheet.maxPausesReached')})`}
+                  </button>
+                </div>
+              )}
 
               {/* Save error from parent (e.g. network failure) */}
               {saveError && (
