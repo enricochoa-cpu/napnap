@@ -40,6 +40,7 @@ import {
 import type { SleepEntry, WeightLog, HeightLog, HeadLog } from '../types';
 import type { BabyProfile } from '../types';
 import { getDateFnsLocale } from '../utils/dateFnsLocale';
+import { getNetSleepMinutes } from '../utils/dateUtils';
 // [S-03] Report section temporarily disabled — will be redesigned in a future iteration.
 // import { SleepReportView } from './SleepReportView';
 
@@ -201,12 +202,7 @@ function heightAxisTicks(domain: [number, number]): number[] {
   return ticks.length > 0 ? ticks : [low, high];
 }
 
-// Calculate duration in minutes
-const calculateDuration = (startTime: string, endTime: string | null): number => {
-  const start = new Date(startTime).getTime();
-  const end = endTime ? new Date(endTime).getTime() : Date.now();
-  return Math.round((end - start) / (1000 * 60));
-};
+
 
 // Format minutes to hours string
 const formatHours = (minutes: number): string => {
@@ -703,11 +699,11 @@ export function StatsView({ entries, weightLogs = [], heightLogs = [], headLogs 
 
       const napMinutes = dayEntries
         .filter((e) => e.type === 'nap')
-        .reduce((sum, e) => sum + calculateDuration(e.startTime, e.endTime), 0);
+        .reduce((sum, e) => sum + getNetSleepMinutes(e), 0);
 
       const nightMinutes = dayEntries
         .filter((e) => e.type === 'night')
-        .reduce((sum, e) => sum + calculateDuration(e.startTime, e.endTime), 0);
+        .reduce((sum, e) => sum + getNetSleepMinutes(e), 0);
 
       return {
         day: format(date, 'd/M'),
@@ -788,7 +784,7 @@ export function StatsView({ entries, weightLogs = [], heightLogs = [], headLogs 
 
       dayNaps.forEach((nap, idx) => {
         const napIndex = idx + 1;
-        const mins = calculateDuration(nap.startTime, nap.endTime!);
+        const mins = getNetSleepMinutes(nap);
         byIndex[napIndex] = (byIndex[napIndex] ?? 0) + mins;
       });
     }

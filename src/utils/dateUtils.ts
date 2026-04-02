@@ -104,7 +104,6 @@ export function calculateDuration(startTime: string, endTime: string | null): nu
 
 /**
  * Net sleep duration in minutes: gross duration minus total pause time.
- * Returns null for active entries (no endTime).
  * Falls back to gross duration when there are no pauses.
  */
 export function getNetSleepMinutes(entry: { startTime: string; endTime: string | null; pauses?: { durationMinutes: number }[] }): number {

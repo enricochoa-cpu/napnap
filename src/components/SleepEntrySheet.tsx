@@ -763,7 +763,13 @@ export function SleepEntrySheet({
                                       value={pauseStartLocal}
                                       onChange={(e) => {
                                         if (!e.target.value) return;
-                                        const newStartTime = combineDateTime(entry.date, e.target.value);
+                                        // For night entries crossing midnight, if the pause time is before the entry start time,
+                                        // the pause is post-midnight and should use the next day
+                                        const entryStartTime = extractTime(entry.startTime);
+                                        const pauseDate = isTimeBefore(e.target.value, entryStartTime)
+                                          ? nextDayStr(entry.date)
+                                          : entry.date;
+                                        const newStartTime = combineDateTime(pauseDate, e.target.value);
                                         handleUpdatePause(pause.id, { startTime: newStartTime });
                                       }}
                                       className="input w-full text-center text-sm"

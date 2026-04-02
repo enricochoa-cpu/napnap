@@ -17,16 +17,11 @@ import {
 import { getDateFnsLocale } from './dateFnsLocale';
 import type { SleepEntry } from '../types';
 import type { BabyProfile } from '../types';
-import { calculateAge } from './dateUtils';
+import { calculateAge, getNetSleepMinutes } from './dateUtils';
 import { extractWakeWindowsFromEntries } from './dateUtils';
 
 const MIN_DAYS_FOR_ENOUGH_DATA = 3;
 
-function calculateDuration(startTime: string, endTime: string | null): number {
-  const start = new Date(startTime).getTime();
-  const end = endTime ? new Date(endTime).getTime() : Date.now();
-  return Math.round((end - start) / (1000 * 60));
-}
 
 /** Minutes since midnight from ISO datetime string */
 function toMinutesSinceMidnight(iso: string): number {
@@ -127,10 +122,10 @@ export function getReportData(
     });
     const napMinutes = dayEntries
       .filter((e) => e.type === 'nap')
-      .reduce((s, e) => s + calculateDuration(e.startTime, e.endTime), 0);
+      .reduce((s, e) => s + getNetSleepMinutes(e), 0);
     const nightMinutes = dayEntries
       .filter((e) => e.type === 'night')
-      .reduce((s, e) => s + calculateDuration(e.startTime, e.endTime), 0);
+      .reduce((s, e) => s + getNetSleepMinutes(e), 0);
     return {
       date,
       total: napMinutes + nightMinutes,
