@@ -243,7 +243,8 @@ export function SleepEntrySheet({
     return () => clearInterval(interval);
   }, [isOpen]);
 
-  // Reset when entry changes or sheet opens
+  // Reset time fields when the sheet opens or a different entry is selected
+  const entryId = entry?.id ?? null;
   useEffect(() => {
     if (isOpen) {
       if (entry) {
@@ -258,7 +259,8 @@ export function SleepEntrySheet({
       setExpandedPauseId(null);
       setPauseErrors({});
     }
-  }, [entry, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on entry identity change (not reference), sheet open, or date/type change
+  }, [entryId, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
 
   // Check if values have changed
   const hasChanges = useMemo(() => {
@@ -453,19 +455,17 @@ export function SleepEntrySheet({
     if (!entry || !onAddPause || !entry.endTime) return;
     if (pauseEntries.length >= 5) return;
 
+    // Default: right after the last pause, or at entry start if no pauses yet
     const entryStartMs = parseISO(entry.startTime).getTime();
-    const entryEndMs = parseISO(entry.endTime).getTime();
 
     let defaultStartMs: number;
     if (pauseEntries.length > 0) {
       const lastPause = pauseEntries[pauseEntries.length - 1];
       const lastPauseEnd = parseISO(lastPause.startTime).getTime() + lastPause.durationMinutes * 60 * 1000;
-      defaultStartMs = lastPauseEnd + Math.floor((entryEndMs - lastPauseEnd) / 2);
+      defaultStartMs = lastPauseEnd;
     } else {
-      defaultStartMs = entryStartMs + Math.floor((entryEndMs - entryStartMs) / 2);
+      defaultStartMs = entryStartMs;
     }
-
-    defaultStartMs = Math.max(entryStartMs, Math.min(defaultStartMs, entryEndMs - 5 * 60 * 1000));
 
     const defaultStart = new Date(defaultStartMs).toISOString();
     const result = await onAddPause(entry.id, { startTime: defaultStart, durationMinutes: 5 });
@@ -784,10 +784,11 @@ export function SleepEntrySheet({
                                         type="number"
                                         min="1"
                                         max="120"
-                                        value={pause.durationMinutes}
-                                        onChange={(e) => {
+                                        key={`${pause.id}-${pause.durationMinutes}`}
+                                        defaultValue={pause.durationMinutes}
+                                        onBlur={(e) => {
                                           const val = parseInt(e.target.value, 10);
-                                          if (!isNaN(val) && val > 0) {
+                                          if (!isNaN(val) && val > 0 && val !== pause.durationMinutes) {
                                             handleUpdatePause(pause.id, { durationMinutes: val });
                                           }
                                         }}

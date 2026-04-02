@@ -176,7 +176,12 @@ function App() {
     scrollMainToTop();
     window.scrollTo(0, 0);
   };
-  const [editingEntry, setEditingEntry] = useState<SleepEntry | null>(null);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  // Derive editingEntry from the live entries array so it stays in sync (e.g. when pauses are added)
+  const editingEntry = useMemo(() => {
+    if (!editingEntryId) return null;
+    return entries.find((e) => e.id === editingEntryId) ?? null;
+  }, [editingEntryId, entries]);
   const [collisionEntry, setCollisionEntry] = useState<SleepEntry | null>(null);
   const [pendingEntry, setPendingEntry] = useState<Omit<SleepEntry, 'id' | 'date'> | null>(null);
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -310,7 +315,7 @@ function App() {
         throw new Error('Save failed');
       }
     }
-    setEditingEntry(null);
+    setEditingEntryId(null);
     setShowEntrySheet(false);
     setLogWakeUpMode(false);
   };
@@ -338,7 +343,7 @@ function App() {
         setPredictedEndTime(undefined);
       }
       setNewEntryType(pendingEntry.type);
-      setEditingEntry(null);
+      setEditingEntryId(null);
       setShowEntrySheet(true);
     }
     setCollisionEntry(null);
@@ -346,7 +351,7 @@ function App() {
   };
 
   const handleEdit = (entry: SleepEntry) => {
-    setEditingEntry(entry);
+    setEditingEntryId(entry.id);
     setSelectedDate(entry.date);
     setShowEntrySheet(true);
   };
@@ -363,7 +368,7 @@ function App() {
     if (currentView === 'home') {
       setSelectedDate(formatDate(new Date()));
     }
-    setEditingEntry(null);
+    setEditingEntryId(null);
     setNewEntryType(type);
     setPredictedStartTime(undefined);
     setPredictedEndTime(undefined);
@@ -374,7 +379,7 @@ function App() {
   // Handle "Log bedtime" from missing bedtime modal
   const handleLogMissingBedtime = (date: string) => {
     setShowMissingBedtimeModal(false);
-    setEditingEntry(null);
+    setEditingEntryId(null);
     setNewEntryType('night');
     setSelectedDate(date);
     setShowEntrySheet(true);
@@ -478,7 +483,7 @@ function App() {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     setSelectedDate(formatDate(yesterday));
-    setEditingEntry(null);
+    setEditingEntryId(null);
     setNewEntryType('night');
     setLogWakeUpMode(true);
     setShowEntrySheet(true);
@@ -870,7 +875,7 @@ function App() {
         isOpen={showEntrySheet}
         onClose={() => {
           setShowEntrySheet(false);
-          setEditingEntry(null);
+          setEditingEntryId(null);
           setEntrySheetError(null);
           setLogWakeUpMode(false);
           setPredictedStartTime(undefined);
