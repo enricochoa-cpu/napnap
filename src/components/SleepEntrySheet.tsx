@@ -64,6 +64,38 @@ const PauseIcon = () => (
   </svg>
 );
 
+const ONSET_OPTIONS = [
+  { key: 'long_onset', icon: '⏳' },
+  { key: 'upset', icon: '😢' },
+] as const;
+
+const METHOD_OPTIONS = [
+  { key: 'in_bed', icon: '🛏' },
+  { key: 'nursing', icon: '🤱' },
+  { key: 'worn_or_held', icon: '🤲' },
+  { key: 'next_to_me', icon: '👤' },
+  { key: 'bottle_feeding', icon: '🍼' },
+  { key: 'stroller', icon: '🚼' },
+  { key: 'car', icon: '🚗' },
+  { key: 'swing', icon: '🎠' },
+] as const;
+
+const ONSET_I18N: Record<string, string> = {
+  long_onset: 'sleepEntry.longOnset',
+  upset: 'sleepEntry.upset',
+};
+
+const METHOD_I18N: Record<string, string> = {
+  in_bed: 'sleepEntry.inBed',
+  nursing: 'sleepEntry.nursing',
+  worn_or_held: 'sleepEntry.wornOrHeld',
+  next_to_me: 'sleepEntry.nextToMe',
+  bottle_feeding: 'sleepEntry.bottleFeeding',
+  stroller: 'sleepEntry.stroller',
+  car: 'sleepEntry.car',
+  swing: 'sleepEntry.swing',
+};
+
 const StormCloudIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
@@ -257,6 +289,9 @@ export function SleepEntrySheet({
   const [isSaving, setIsSaving] = useState(false);
   const [expandedPauseId, setExpandedPauseId] = useState<string | null>(null);
   const [pauseErrors, setPauseErrors] = useState<Record<string, string | null>>({});
+  const [onsetTags, setOnsetTags] = useState<string[]>([]);
+  const [sleepMethod, setSleepMethod] = useState<string | undefined>();
+  const [entryNotes, setEntryNotes] = useState('');
 
   // Refresh "now" every 30 seconds while sheet is open
   useEffect(() => {
@@ -281,6 +316,9 @@ export function SleepEntrySheet({
       }
       setExpandedPauseId(null);
       setPauseErrors({});
+      setOnsetTags(entry?.onsetTags ?? []);
+      setSleepMethod(entry?.sleepMethod);
+      setEntryNotes(entry?.notes ?? '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on entry identity change (not reference), sheet open, or date/type change
   }, [entryId, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
@@ -295,8 +333,11 @@ export function SleepEntrySheet({
       return !!startTime;
     }
 
-    return startTime !== currentInitialStart || endTime !== currentInitialEnd;
-  }, [entry, startTime, endTime]);
+    const tagsChanged = JSON.stringify(onsetTags) !== JSON.stringify(entry?.onsetTags ?? []);
+    const methodChanged = sleepMethod !== (entry?.sleepMethod ?? undefined);
+    const notesChanged = entryNotes !== (entry?.notes ?? '');
+    return startTime !== currentInitialStart || endTime !== currentInitialEnd || tagsChanged || methodChanged || notesChanged;
+  }, [entry, startTime, endTime, onsetTags, sleepMethod, entryNotes]);
 
   // Is this an active (ongoing) entry? Has start but no end
   const isActiveEntry = isEditing && !entry?.endTime;
@@ -466,6 +507,9 @@ export function SleepEntrySheet({
         startTime: combineDateTime(selectedDate, startTime),
         endTime: endDateTime,
         type: 'nap',
+        onsetTags: onsetTags.length > 0 ? onsetTags : undefined,
+        sleepMethod: sleepMethod ?? undefined,
+        notes: entryNotes.trim() || undefined,
       };
     } else {
       const [startHour] = startTime.split(':').map(Number);
@@ -485,6 +529,9 @@ export function SleepEntrySheet({
         startTime: combineDateTime(bedtimeDate, startTime),
         endTime: endDateTime,
         type: 'night',
+        onsetTags: onsetTags.length > 0 ? onsetTags : undefined,
+        sleepMethod: sleepMethod ?? undefined,
+        notes: entryNotes.trim() || undefined,
       };
     }
 
@@ -575,6 +622,16 @@ export function SleepEntrySheet({
       durationMinutes,
     });
     onPauseEnd();
+  };
+
+  const toggleOnsetTag = (key: string) => {
+    setOnsetTags((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const toggleSleepMethod = (key: string) => {
+    setSleepMethod((prev) => (prev === key ? undefined : key));
   };
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
@@ -912,6 +969,77 @@ export function SleepEntrySheet({
                   </button>}
                 </div>
               )}
+
+              {/* Qualitative info — onset tags, sleep method, notes */}
+              <div className="px-6 pb-4">
+                {/* Divider */}
+                <div className="h-px bg-[var(--text-muted)]/10 mb-4" />
+
+                {/* Onset quality — multi-select */}
+                <div className="mb-4">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-2">
+                    {t('sleepEntry.onsetLabel')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {ONSET_OPTIONS.map(({ key, icon }) => {
+                      const selected = onsetTags.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => toggleOnsetTag(key)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            selected
+                              ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
+                              : 'text-[var(--text-muted)] border border-[var(--text-muted)]/20 hover:border-[var(--text-muted)]/40'
+                          }`}
+                        >
+                          <span>{icon}</span>
+                          <span>{t(ONSET_I18N[key]!)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Sleep method — single-select */}
+                <div className="mb-4">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-2">
+                    {t('sleepEntry.howLabel')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {METHOD_OPTIONS.map(({ key, icon }) => {
+                      const selected = sleepMethod === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => toggleSleepMethod(key)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            selected
+                              ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
+                              : 'text-[var(--text-muted)] border border-[var(--text-muted)]/20 hover:border-[var(--text-muted)]/40'
+                          }`}
+                        >
+                          <span>{icon}</span>
+                          <span>{t(METHOD_I18N[key]!)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Notes textarea */}
+                <div>
+                  <textarea
+                    rows={2}
+                    value={entryNotes}
+                    onChange={(e) => setEntryNotes(e.target.value)}
+                    placeholder={t('sleepEntry.notesPlaceholder')}
+                    className="input w-full text-sm resize-none"
+                  />
+                </div>
+              </div>
 
               {/* Save error from parent (e.g. network failure) */}
               {saveError && (
