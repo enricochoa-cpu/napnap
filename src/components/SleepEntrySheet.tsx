@@ -686,8 +686,8 @@ export function SleepEntrySheet({
             className="fixed bottom-0 left-0 right-0 z-50 touch-none"
           >
             <div
-              className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)]"
-              style={{ minHeight: '50dvh' }}
+              className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
+              style={{ maxHeight: '75dvh' }}
             >
               {/* Handle bar — drag to dismiss */}
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
@@ -721,6 +721,8 @@ export function SleepEntrySheet({
                 </button>
               </div>
 
+              {/* Scrollable content area */}
+              <div className="flex-1 overflow-y-auto min-h-0">
               {/* Center: Type icon and label */}
               <div className="flex flex-col items-center pb-6">
                 <motion.div
@@ -1047,6 +1049,7 @@ export function SleepEntrySheet({
                   {saveError}
                 </p>
               )}
+              </div>{/* end scrollable content */}
               {/* Action buttons */}
               <div className="flex items-center justify-center gap-6 pb-8 pt-4">
                 {/* Pause/Play button — only for active entries */}
