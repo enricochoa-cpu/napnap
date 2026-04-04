@@ -1020,19 +1020,26 @@ export function SleepEntrySheet({
                   )}
 
                   {/* Add pause button — only for completed entries (active entries use Pause/Play button) */}
-                  {entry?.endTime && <button
-                    type="button"
-                    onClick={handleAddPause}
-                    disabled={pauseEntries.length >= 5}
-                    className={`w-full py-2.5 rounded-xl text-sm font-medium border border-dashed transition-colors ${
-                      pauseEntries.length >= 5
-                        ? 'border-[var(--text-muted)]/10 text-[var(--text-muted)]/30 cursor-not-allowed'
-                        : 'border-[var(--text-muted)]/20 text-[var(--text-muted)] hover:border-[var(--text-muted)]/40'
-                    }`}
-                  >
-                    + {addPauseLabel}
-                    {pauseEntries.length >= 5 && ` (${t('sleepEntrySheet.maxPausesReached')})`}
-                  </button>}
+                  {entry?.endTime && <div className="flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleAddPause}
+                      disabled={pauseEntries.length >= 5}
+                      className={`py-2 px-5 rounded-full text-sm font-medium transition-colors ${
+                        pauseEntries.length >= 5
+                          ? 'opacity-30 cursor-not-allowed'
+                          : 'hover:brightness-110'
+                      }`}
+                      style={{
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--glass-border)',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      {addPauseLabel} +
+                      {pauseEntries.length >= 5 && ` (${t('sleepEntrySheet.maxPausesReached')})`}
+                    </button>
+                  </div>}
                 </div>
               )}
 
@@ -1135,6 +1142,13 @@ export function SleepEntrySheet({
                 </p>
               )}
               </div>{/* end scrollable content */}
+              {/* Gradient blur hint — signals more content above */}
+              <div
+                className="h-6 -mt-6 pointer-events-none relative z-10"
+                style={{
+                  background: 'linear-gradient(transparent, var(--bg-card))',
+                }}
+              />
               {/* Action buttons */}
               <div className="flex items-center justify-center gap-6 pb-8 pt-4">
                 {/* Pause/Play button — only for active entries */}
