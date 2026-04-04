@@ -96,6 +96,28 @@ const METHOD_I18N: Record<string, string> = {
   swing: 'sleepEntry.swing',
 };
 
+const END_OPTIONS = [
+  { key: 'woke_up_child', icon: '🔔' },
+  { key: 'woke_up_naturally', icon: '🌤' },
+] as const;
+
+const END_I18N: Record<string, string> = {
+  woke_up_child: 'sleepEntry.wokeUpChild',
+  woke_up_naturally: 'sleepEntry.wokeUpNaturally',
+};
+
+const MOOD_OPTIONS = [
+  { key: 'bad', icon: '😟' },
+  { key: 'neutral', icon: '😐' },
+  { key: 'good', icon: '😊' },
+] as const;
+
+const MOOD_I18N: Record<string, string> = {
+  bad: 'sleepEntry.badMood',
+  neutral: 'sleepEntry.neutralMood',
+  good: 'sleepEntry.goodMood',
+};
+
 const StormCloudIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor">
     <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
@@ -245,6 +267,30 @@ const getRelativeAgo = (t: TFunction, timeStr: string, dateStr: string, now: Dat
   return t('time.daysAgo', { count: Math.floor(diffHours / 24) });
 };
 
+/** Napper-style tall card button for qualitative tags */
+function TagCard({ icon, label, selected, onClick }: {
+  icon: string;
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl text-xs font-medium transition-colors ${
+        selected
+          ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
+          : 'border border-[var(--glass-border)] text-[var(--text-muted)]'
+      }`}
+      style={!selected ? { background: 'var(--glass-bg)' } : undefined}
+    >
+      <span className="text-2xl">{icon}</span>
+      <span className="leading-tight text-center px-1">{label}</span>
+    </button>
+  );
+}
+
 /**
  * SleepEntrySheet — add or edit a single sleep entry (nap or night).
  *
@@ -292,6 +338,8 @@ export function SleepEntrySheet({
   const [onsetTags, setOnsetTags] = useState<string[]>([]);
   const [sleepMethod, setSleepMethod] = useState<string | undefined>();
   const [entryNotes, setEntryNotes] = useState('');
+  const [wakeMethod, setWakeMethod] = useState<string | undefined>();
+  const [wakeMood, setWakeMood] = useState<string | undefined>();
 
   // Refresh "now" every 30 seconds while sheet is open
   useEffect(() => {
@@ -319,6 +367,8 @@ export function SleepEntrySheet({
       setOnsetTags(entry?.onsetTags ?? []);
       setSleepMethod(entry?.sleepMethod);
       setEntryNotes(entry?.notes ?? '');
+      setWakeMethod(entry?.wakeMethod);
+      setWakeMood(entry?.wakeMood);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on entry identity change (not reference), sheet open, or date/type change
   }, [entryId, isOpen, selectedDate, sleepType, defaultEndTimeToNow, initialStartTimeOverride, initialEndTimeOverride]);
@@ -336,8 +386,10 @@ export function SleepEntrySheet({
     const tagsChanged = JSON.stringify(onsetTags) !== JSON.stringify(entry?.onsetTags ?? []);
     const methodChanged = sleepMethod !== (entry?.sleepMethod ?? undefined);
     const notesChanged = entryNotes !== (entry?.notes ?? '');
-    return startTime !== currentInitialStart || endTime !== currentInitialEnd || tagsChanged || methodChanged || notesChanged;
-  }, [entry, startTime, endTime, onsetTags, sleepMethod, entryNotes]);
+    const wakeMethodChanged = wakeMethod !== (entry?.wakeMethod ?? undefined);
+    const wakeMoodChanged = wakeMood !== (entry?.wakeMood ?? undefined);
+    return startTime !== currentInitialStart || endTime !== currentInitialEnd || tagsChanged || methodChanged || notesChanged || wakeMethodChanged || wakeMoodChanged;
+  }, [entry, startTime, endTime, onsetTags, sleepMethod, entryNotes, wakeMethod, wakeMood]);
 
   // Is this an active (ongoing) entry? Has start but no end
   const isActiveEntry = isEditing && !entry?.endTime;
@@ -510,6 +562,8 @@ export function SleepEntrySheet({
         onsetTags: onsetTags.length > 0 ? onsetTags : undefined,
         sleepMethod: sleepMethod ?? undefined,
         notes: entryNotes.trim() || undefined,
+        wakeMethod: wakeMethod ?? undefined,
+        wakeMood: wakeMood ?? undefined,
       };
     } else {
       const [startHour] = startTime.split(':').map(Number);
@@ -532,6 +586,8 @@ export function SleepEntrySheet({
         onsetTags: onsetTags.length > 0 ? onsetTags : undefined,
         sleepMethod: sleepMethod ?? undefined,
         notes: entryNotes.trim() || undefined,
+        wakeMethod: wakeMethod ?? undefined,
+        wakeMood: wakeMood ?? undefined,
       };
     }
 
@@ -632,6 +688,14 @@ export function SleepEntrySheet({
 
   const toggleSleepMethod = (key: string) => {
     setSleepMethod((prev) => (prev === key ? undefined : key));
+  };
+
+  const toggleWakeMethod = (key: string) => {
+    setWakeMethod((prev) => (prev === key ? undefined : key));
+  };
+
+  const toggleWakeMood = (key: string) => {
+    setWakeMood((prev) => (prev === key ? undefined : key));
   };
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
@@ -972,67 +1036,88 @@ export function SleepEntrySheet({
                 </div>
               )}
 
-              {/* Qualitative info — onset tags, sleep method, notes */}
+              {/* Qualitative info — Napper-style card grids */}
               <div className="px-6 pb-4">
                 {/* Divider */}
                 <div className="h-px bg-[var(--text-muted)]/10 mb-4" />
 
-                {/* Onset quality — multi-select */}
-                <div className="mb-4">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-2">
+                {/* Start (onset quality) — multi-select, 2×1 */}
+                <div className="mb-5">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.onsetLabel')}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {ONSET_OPTIONS.map(({ key, icon }) => {
-                      const selected = onsetTags.includes(key);
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => toggleOnsetTag(key)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                            selected
-                              ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
-                              : 'text-[var(--text-muted)] border border-[var(--text-muted)]/20 hover:border-[var(--text-muted)]/40'
-                          }`}
-                        >
-                          <span>{icon}</span>
-                          <span>{t(ONSET_I18N[key]!)}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="grid grid-cols-2 gap-2">
+                    {ONSET_OPTIONS.map(({ key, icon }) => (
+                      <TagCard
+                        key={key}
+                        icon={icon}
+                        label={t(ONSET_I18N[key]!)}
+                        selected={onsetTags.includes(key)}
+                        onClick={() => toggleOnsetTag(key)}
+                      />
+                    ))}
                   </div>
                 </div>
 
-                {/* Sleep method — single-select */}
-                <div className="mb-4">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider mb-2">
+                {/* How (sleep method) — single-select, 3×3 */}
+                <div className="mb-5">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.howLabel')}
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {METHOD_OPTIONS.map(({ key, icon }) => {
-                      const selected = sleepMethod === key;
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          onClick={() => toggleSleepMethod(key)}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                            selected
-                              ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
-                              : 'text-[var(--text-muted)] border border-[var(--text-muted)]/20 hover:border-[var(--text-muted)]/40'
-                          }`}
-                        >
-                          <span>{icon}</span>
-                          <span>{t(METHOD_I18N[key]!)}</span>
-                        </button>
-                      );
-                    })}
+                  <div className="grid grid-cols-3 gap-2">
+                    {METHOD_OPTIONS.map(({ key, icon }) => (
+                      <TagCard
+                        key={key}
+                        icon={icon}
+                        label={t(METHOD_I18N[key]!)}
+                        selected={sleepMethod === key}
+                        onClick={() => toggleSleepMethod(key)}
+                      />
+                    ))}
                   </div>
                 </div>
 
-                {/* Notes textarea */}
+                {/* End (wake method) — single-select, 2×1 */}
+                <div className="mb-5">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                    {t('sleepEntry.endLabel')}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {END_OPTIONS.map(({ key, icon }) => (
+                      <TagCard
+                        key={key}
+                        icon={icon}
+                        label={t(END_I18N[key]!)}
+                        selected={wakeMethod === key}
+                        onClick={() => toggleWakeMethod(key)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Wake up mood — single-select, 3×1 */}
+                <div className="mb-5">
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                    {t('sleepEntry.wakeMoodLabel')}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {MOOD_OPTIONS.map(({ key, icon }) => (
+                      <TagCard
+                        key={key}
+                        icon={icon}
+                        label={t(MOOD_I18N[key]!)}
+                        selected={wakeMood === key}
+                        onClick={() => toggleWakeMood(key)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Notes */}
                 <div>
+                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                    {t('sleepEntry.notesLabel')}
+                  </p>
                   <textarea
                     rows={2}
                     value={entryNotes}
