@@ -31,6 +31,8 @@ export interface DbSleepEntry {
   created_at: string;
   onset_tags: string[] | null;
   sleep_method: string | null;
+  wake_method: string | null;
+  wake_mood: string | null;
 }
 
 export interface DbSleepPause {

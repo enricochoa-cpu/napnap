@@ -31,6 +31,8 @@ export interface SleepEntry {
   pauses?: SleepPause[];
   onsetTags?: string[];     // e.g. ['long_onset', 'upset'] — multi-select
   sleepMethod?: string;      // e.g. 'nursing' — single-select
+  wakeMethod?: string;   // 'woke_up_child' | 'woke_up_naturally'
+  wakeMood?: string;     // 'bad' | 'neutral' | 'good'
 }
 
 export interface BabyShare {

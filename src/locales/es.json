@@ -455,7 +455,15 @@
     "bottleFeeding": "Biberón",
     "stroller": "Cochecito",
     "car": "Coche",
-    "swing": "Columpio"
+    "swing": "Columpio",
+    "endLabel": "Final",
+    "wakeMoodLabel": "Humor al despertar",
+    "wokeUpChild": "Lo despertaron",
+    "wokeUpNaturally": "Se despertó solo",
+    "badMood": "Mal humor",
+    "neutralMood": "Neutral",
+    "goodMood": "Buen humor",
+    "notesLabel": "Notas"
   },
   "sleepEntrySheet": {
     "addNap": "Añadir siesta",

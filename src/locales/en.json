@@ -457,7 +457,15 @@
     "bottleFeeding": "Bottle feeding",
     "stroller": "Stroller",
     "car": "Car",
-    "swing": "Swing"
+    "swing": "Swing",
+    "endLabel": "End",
+    "wakeMoodLabel": "Wake up mood",
+    "wokeUpChild": "Woke up child",
+    "wokeUpNaturally": "Woke up naturally",
+    "badMood": "Bad mood",
+    "neutralMood": "Neutral",
+    "goodMood": "Good mood",
+    "notesLabel": "Notes"
   },
   "sleepEntrySheet": {
     "addNap": "Add nap",

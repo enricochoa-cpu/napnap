@@ -97,6 +97,8 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
           pauses: pausesByEntry.get(entry.id) ?? [],
           onsetTags: entry.onset_tags ?? undefined,
           sleepMethod: entry.sleep_method ?? undefined,
+          wakeMethod: entry.wake_method ?? undefined,
+          wakeMood: entry.wake_mood ?? undefined,
         }));
         setEntries(mappedEntries);
       } else {
@@ -131,6 +133,8 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
           notes: data.notes || null,
           onset_tags: data.onsetTags ?? null,
           sleep_method: data.sleepMethod ?? null,
+          wake_method: data.wakeMethod ?? null,
+          wake_mood: data.wakeMood ?? null,
         })
         .select()
         .single();
@@ -149,6 +153,8 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
         notes: inserted.notes || undefined,
         onsetTags: inserted.onset_tags ?? undefined,
         sleepMethod: inserted.sleep_method ?? undefined,
+        wakeMethod: inserted.wake_method ?? undefined,
+        wakeMood: inserted.wake_mood ?? undefined,
       };
 
       setEntries((prev) => [newEntry, ...prev]);
@@ -168,6 +174,8 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       if (data.notes !== undefined) updateData.notes = data.notes || null;
       if (data.onsetTags !== undefined) updateData.onset_tags = data.onsetTags ?? null;
       if (data.sleepMethod !== undefined) updateData.sleep_method = data.sleepMethod ?? null;
+      if (data.wakeMethod !== undefined) updateData.wake_method = data.wakeMethod ?? null;
+      if (data.wakeMood !== undefined) updateData.wake_mood = data.wakeMood ?? null;
 
       const { error } = await supabase
         .from('sleep_entries')

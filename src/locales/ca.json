@@ -453,7 +453,15 @@
     "bottleFeeding": "Biberó",
     "stroller": "Cotxet",
     "car": "Cotxe",
-    "swing": "Gronxador"
+    "swing": "Gronxador",
+    "endLabel": "Final",
+    "wakeMoodLabel": "Humor al despertar",
+    "wokeUpChild": "El van despertar",
+    "wokeUpNaturally": "Es va despertar sol",
+    "badMood": "Mal humor",
+    "neutralMood": "Neutral",
+    "goodMood": "Bon humor",
+    "notesLabel": "Notes"
   },
   "sleepEntrySheet": {
     "addNap": "Afegir migdiada",
