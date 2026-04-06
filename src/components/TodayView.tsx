@@ -215,7 +215,8 @@ export function TodayView({
         activeNapIndex,
         napDurationHistory.byIndex[activeNapIndex],
         napDurationHistory.todaysCountByIndex[activeNapIndex],
-        false
+        false,
+        entries.length
       );
       activeNapExpectedEnd = getExpectedWakeTime(activeSleep, profile, entries, activeNapExpectedDuration);
 
@@ -262,7 +263,8 @@ export function TodayView({
           const dur = getLearnedNapDurationMinutes(
             profile.dateOfBirth, activeNapIndex,
             napDurationHistory.byIndex[activeNapIndex],
-            napDurationHistory.todaysCountByIndex[activeNapIndex], false
+            napDurationHistory.todaysCountByIndex[activeNapIndex], false,
+            entries.length
           );
           return getExpectedWakeTime(activeSleep!, profile!, entries, dur);
         })()
@@ -323,7 +325,8 @@ export function TodayView({
         const learnedDuration = getLearnedNapDurationMinutes(
           profile.dateOfBirth, activeNapIndex,
           napDurationHistory.byIndex[activeNapIndex],
-          napDurationHistory.todaysCountByIndex[activeNapIndex], false
+          napDurationHistory.todaysCountByIndex[activeNapIndex], false,
+          entries.length
         );
         const expectedWake = getExpectedWakeTime(activeSleep, profile, entries, learnedDuration);
         if (expectedWake) {
@@ -428,7 +431,8 @@ export function TodayView({
         activeNapIndex,
         napDurationHistory.byIndex[activeNapIndex],
         napDurationHistory.todaysCountByIndex[activeNapIndex],
-        false
+        false,
+        entries.length
       );
       return getExpectedWakeTime(activeSleep, profile, entries, learned);
     }

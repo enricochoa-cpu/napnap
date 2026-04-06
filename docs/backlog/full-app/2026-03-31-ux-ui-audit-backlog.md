@@ -52,15 +52,6 @@ Sources:
 - **Problem**: File picker triggers immediately with no crop/preview step. Auto-compresses to 400x400 JPEG via Canvas API. **Loading spinner already exists** (`uploading` prop → spinner overlay). Only the crop UI is missing.
 - **Fix**: Add circular crop overlay after file selection (like WhatsApp profile photo) so user can adjust framing before upload.
 
-### U-56 — Minutes-from-midnight → Date objects in simulateDay (§6.5)
-
-- **Effort**: Medium-High
-- **Impact**: Medium
-- **Location**: `dateUtils` (`simulateDay` internals)
-- **Problem**: `simulateDay` still works entirely in minutes-from-midnight (0-1439) internally. `predictDaySchedule` already converts to Date objects at the boundary (U-40 done), so the external API is safe. The risk is limited to midnight-crossing edge cases inside `simulateDay` itself (e.g. night wakings at 23:30→00:15).
-- **Fix**: Refactor `simulateDay` internals to use Date objects. Lower priority now that `predictDaySchedule` handles boundary conversion.
-- **Dependencies**: U-40 done. Can be done independently.
-
 ### U-57 — Auto-overdue nap silent skip (§6.2)
 
 - **Effort**: Medium
@@ -68,23 +59,7 @@ Sources:
 - **Location**: `TodayView`
 - **Problem**: After 60min overdue (`OVERDUE_NAP_PERSISTENCE_MINUTES`), nap silently drops from predictions. **Note:** visual feedback exists for explicitly-skipped naps (via `skippedNapIndices` — dimmed, muted label), but auto-overdue naps simply vanish with no indicator. No "Recalculate day" button.
 - **Fix**: When a nap auto-expires at 60min, show a transient "nap skipped" card or indicator + discreet "Recalculate day" button. Avoid modals (one-handed use at night).
-
-### U-58 — Dynamic blending 70/30 by maturity (§6.4)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `dateUtils`
-- **Problem**: Fixed 70% config / 30% history weight regardless of data maturity. Doesn't leverage existing `getAlgorithmStatusTier()` tiers.
-- **Fix**: Dynamic weight: 90/10 learning → 70/30 calibrating → 50/50 optimized. Gradual curve, not abrupt steps. Use existing calibration thresholds.
-
-### U-59 — Accumulated wake time factor for bedtime (§6.6)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `dateUtils`
-- **Problem**: Bedtime calculation ignores total daytime wake time. Baby with many fragmented micro-naps accumulates more fatigue than algorithm predicts.
-- **Fix**: Factor in accumulated wake time (sum of awake intervals since morning). If exceeding age threshold, reduce final wake window. Coordinate with U-41 (§6.1) as a single "fatigue state."
-- **Dependencies**: After U-41 and U-40.
+- **Note**: Product decision — not a bug or algorithm improvement. Independent of other prediction tasks.
 
 ---
 
@@ -161,9 +136,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 10 | Prediction refinements, low-priority polish |
+| P2 | 7 | UX polish, low-priority fixes |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **16** | |
+| **Total** | **13** | |
 
 ## Completed (2026-04-06)
 
@@ -184,14 +159,17 @@ Sources:
 - U-48 (P2): Gantt dot size — wake/bed dots 7px→12px, nap bars 7px→10px, row height 28px→32px, legend updated
 - U-49 (P2): Segmented date control — 7d/14d pill toggle replacing static badge, calendar button kept for custom range
 - U-52 (P2): Save toast — framer-motion spring toast with checkmark, auto-dismiss 2s, i18n en/es/ca
+- U-58 (P2): Dynamic blending — getBlendingWeights() helper; 90/10 learning → 70/30 calibrating → 50/50 optimized at all 3 blending sites
+- U-59 (P2): Accumulated wake time — unified fatigue state (sleep debt + wake excess); takes larger shift, capped at 25min for wake excess
+- U-56 (P2): Midnight safety — minutesToDate() helper, modular arithmetic in calculateAllNapWindows, documented >1440 support in interfaces
 
 ## Recommended execution order
 
 **Phase 1 — Quick wins** (P2):
 U-51 (report button)
 
-**Phase 2 — Prediction refinements** (P2):
-U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
+**Phase 2 — Product decisions** (P2):
+U-57 (overdue nap UX — needs product review)
 
 ### Phase 2 — Detailed implementation plan
 

@@ -635,6 +635,20 @@ export function getAlgorithmStatusTier(totalEntries: number): AlgorithmStatusTie
 }
 
 /**
+ * Maturity-adaptive blending weights for config vs. historical data.
+ * Learning (few entries): trust config heavily.
+ * Optimized (many entries): trust the baby's actual patterns more.
+ */
+export function getBlendingWeights(totalEntries: number): { config: number; learned: number } {
+  const tier = getAlgorithmStatusTier(totalEntries);
+  switch (tier) {
+    case 'learning':    return { config: 0.90, learned: 0.10 };
+    case 'calibrating': return { config: 0.70, learned: 0.30 };
+    case 'optimized':   return { config: 0.50, learned: 0.50 };
+  }
+}
+
+/**
  * Short nap penalty factor - reduces next wake window by 20%
  * when previous nap was non-restorative.
  */
@@ -892,10 +906,10 @@ export function calculateSuggestedNapTimeWithMetadata(
       todaysWakeWindowCount
     );
 
-    // Blend base window with weighted historical average (70% config, 30% learned)
-    // This prevents wild swings while still adapting
+    // Blend base window with weighted historical average (maturity-adaptive weights)
     if (weightedAverage > 0) {
-      baseWindowMinutes = Math.round(baseWindowMinutes * 0.7 + weightedAverage * 0.3);
+      const weights = getBlendingWeights(totalEntriesCount);
+      baseWindowMinutes = Math.round(baseWindowMinutes * weights.config + weightedAverage * weights.learned);
     }
   }
 
@@ -1101,7 +1115,8 @@ export function getLearnedNapDurationMinutes(
   _napIndex: NapIndex,
   durations: number[],
   todaysCount: number,
-  useMicro: boolean = false
+  useMicro: boolean = false,
+  totalEntries: number = 10 // default to calibrating-tier for backward compat
 ): number {
   const config = getSleepConfigForAge(dateOfBirth);
   const configMinutes = useMicro
@@ -1110,8 +1125,9 @@ export function getLearnedNapDurationMinutes(
 
   if (durations.length === 0) return configMinutes;
 
+  const weights = getBlendingWeights(totalEntries);
   const learned = calculateWeightedWakeWindowAverage(durations, todaysCount);
-  const blended = Math.round(configMinutes * 0.7 + learned * 0.3);
+  const blended = Math.round(configMinutes * weights.config + learned * weights.learned);
   const maxMinutes = useMicro
     ? config.napDurations.micro + 15
     : config.napDurations.standard + 30;
@@ -1140,7 +1156,7 @@ export function getRecommendedSchedule(dateOfBirth: string): DailySchedule {
  * A projected nap in the simulated day.
  */
 export interface ProjectedNap {
-  /** Nap start time in minutes from midnight */
+  /** Nap start time in minutes from midnight (may exceed 1440 for post-midnight) */
   startMinutes: number;
   /** Nap end time in minutes from midnight */
   endMinutes: number;
@@ -1164,7 +1180,7 @@ export interface DaySimulation {
   wakeTimeMinutes: number;
   /** All projected naps */
   projectedNaps: ProjectedNap[];
-  /** Calculated bedtime in minutes from midnight */
+  /** Calculated bedtime in minutes from midnight (may exceed 1440 for post-midnight) */
   bedtimeMinutes: number;
   /** Final wake window (last nap end → bedtime) */
   finalWakeWindow: number;
@@ -1178,6 +1194,13 @@ export interface DaySimulation {
   totalDaytimeSleep: number;
   /** Age-appropriate config used */
   config: AgeSleepConfig;
+}
+
+/** Convert minutes-from-midnight to a Date on the given reference day. Handles >1440 (next day). */
+export function minutesToDate(minutesFromMidnight: number, referenceDate: Date): Date {
+  const d = new Date(referenceDate);
+  d.setHours(0, 0, 0, 0);
+  return new Date(d.getTime() + minutesFromMidnight * 60_000);
 }
 
 /** Catnap cutoff hour (naps after this are automatically short) */
@@ -1355,19 +1378,24 @@ const BEDTIME_EXTREME_CAP_MINUTES = 40;
 const SLEEP_DEBT_THRESHOLD_MINUTES = 30;
 /** Deficit threshold for extreme tier (roughly one full nap skipped) */
 const EXTREME_DEBT_THRESHOLD_MINUTES = 60;
+/** Min accumulated wake excess (minutes over expected) before we shift bedtime */
+const WAKE_EXCESS_THRESHOLD_MINUTES = 30;
+/** Max minutes to shift bedtime earlier due to excessive accumulated wake time */
+const WAKE_EXCESS_CAP_MINUTES = 25;
 
 /**
  * Calculate dynamic bedtime based on actual day's sleep.
- * Uses elastic formula: Last_nap_end + Final_wake_window, adjusted for sleep debt.
+ * Uses elastic formula: Last_nap_end + Final_wake_window, adjusted for fatigue.
  *
- * If the baby has slept noticeably less than age-appropriate daytime sleep (debt >= 30 min),
- * we shorten the final wake window by up to 20 minutes so bedtime is earlier and they
- * can catch up. Excess daytime sleep does not shift bedtime (avoid overcorrecting).
+ * Two fatigue axes (take the larger shift, don't stack):
+ * 1. Sleep debt — baby slept less than target daytime sleep
+ * 2. Wake excess — baby has been awake longer than expected for their age
  */
 export function calculateDynamicBedtime(
   dateOfBirth: string,
   lastNapEndTime: string,
-  totalDaytimeSleepMinutes: number
+  totalDaytimeSleepMinutes: number,
+  totalAwakeMinutes: number = 0
 ): Date {
   const config = getSleepConfigForAge(dateOfBirth);
   const lastNapEnd = parseISO(lastNapEndTime);
@@ -1376,25 +1404,31 @@ export function calculateDynamicBedtime(
     config.targetNaps * config.napDurations.standard;
   const deficit = targetDaytimeSleepMinutes - totalDaytimeSleepMinutes;
 
-  let finalWindowMinutes = config.wakeWindows.final;
+  // Axis 1: Sleep debt shift
+  let sleepDebtShift = 0;
   if (deficit >= EXTREME_DEBT_THRESHOLD_MINUTES) {
-    // Extreme debt (full nap skipped): more aggressive shift, non-linear curve
-    const shiftEarlier = Math.min(
-      BEDTIME_EXTREME_CAP_MINUTES,
-      Math.round(deficit / 2.5)
-    );
-    finalWindowMinutes = config.wakeWindows.final - shiftEarlier;
+    sleepDebtShift = Math.min(BEDTIME_EXTREME_CAP_MINUTES, Math.round(deficit / 2.5));
   } else if (deficit >= SLEEP_DEBT_THRESHOLD_MINUTES) {
-    // Moderate debt: gentle shift
-    const shiftEarlier = Math.min(
-      BEDTIME_EARLIER_CAP_MINUTES,
-      Math.round(deficit / 2)
-    );
-    finalWindowMinutes = config.wakeWindows.final - shiftEarlier;
+    sleepDebtShift = Math.min(BEDTIME_EARLIER_CAP_MINUTES, Math.round(deficit / 2));
   }
 
+  // Axis 2: Accumulated wake excess shift
+  // Expected awake = total elapsed since morning - target daytime sleep
+  // If actual awake exceeds expected by threshold, shift bedtime earlier
+  let wakeExcessShift = 0;
+  if (totalAwakeMinutes > 0) {
+    const expectedAwakeMinutes = (totalAwakeMinutes + totalDaytimeSleepMinutes) - targetDaytimeSleepMinutes;
+    const wakeExcess = totalAwakeMinutes - Math.max(0, expectedAwakeMinutes);
+    if (wakeExcess >= WAKE_EXCESS_THRESHOLD_MINUTES) {
+      wakeExcessShift = Math.min(WAKE_EXCESS_CAP_MINUTES, Math.round(wakeExcess / 3));
+    }
+  }
+
+  // Unified fatigue: take the larger shift (don't double-stack)
+  const totalShift = Math.max(sleepDebtShift, wakeExcessShift);
+  let finalWindowMinutes = config.wakeWindows.final - totalShift;
+
   // Safety floor: never reduce wake window below age-appropriate minimum
-  // (first wake window is the shortest the baby can handle)
   finalWindowMinutes = Math.max(finalWindowMinutes, config.wakeWindows.first);
 
   const bedtime = new Date(
@@ -1464,14 +1498,15 @@ export function calculateAllNapWindows(
   // Run simulation
   const simulation = simulateDay(dateOfBirth, wakeTimeMinutes, completedInMinutes);
 
-  // Convert projected naps to NapWindow format
+  // Convert projected naps to NapWindow format (handle >1440 min for post-midnight)
   return simulation.projectedNaps.map((nap) => {
     const napIndex: NapIndex =
       nap.index === 0 ? 'first' : nap.index === 1 ? 'second' : 'third_plus';
+    const normalizedMinutes = nap.startMinutes % 1440;
 
     return {
-      hour: Math.floor(nap.startMinutes / 60),
-      minute: nap.startMinutes % 60,
+      hour: Math.floor(normalizedMinutes / 60),
+      minute: normalizedMinutes % 60,
       isCatnap: nap.isCatnap,
       isMicroNap: nap.isMicroNap,
       napIndex,
@@ -1579,7 +1614,8 @@ export function predictDaySchedule(params: {
     if (historicalWakeWindows.length > 0) {
       const weightedAvg = calculateWeightedWakeWindowAverage(historicalWakeWindows, todaysWakeWindowCount);
       if (weightedAvg > 0) {
-        wakeWindow = Math.round(wakeWindow * 0.7 + weightedAvg * 0.3);
+        const weights = getBlendingWeights(totalEntriesCount);
+        wakeWindow = Math.round(wakeWindow * weights.config + weightedAvg * weights.learned);
       }
     }
 
@@ -1604,7 +1640,8 @@ export function predictDaySchedule(params: {
         napIndex,
         napDurationHistory.byIndex[napIndex] || [],
         napDurationHistory.todaysCountByIndex[napIndex] || 0,
-        projected.isCatnap
+        projected.isCatnap,
+        totalEntriesCount
       );
     } else {
       expectedDuration = projected.isCatnap ? config.napDurations.micro : config.napDurations.standard;
@@ -1649,10 +1686,15 @@ export function predictDaySchedule(params: {
   }
 
   // --- Step 3: Compute bedtime ---
+  // Total elapsed time since morning wake, minus sleep = accumulated awake time
+  const totalElapsedMinutes = Math.round((lastEndTime.getTime() - morningWakeTime.getTime()) / 60_000);
+  const totalAwakeMinutes = Math.max(0, totalElapsedMinutes - accumulatedSleepMinutes);
+
   const bedtime = calculateDynamicBedtime(
     dateOfBirth,
     lastEndTime.toISOString(),
-    accumulatedSleepMinutes
+    accumulatedSleepMinutes,
+    totalAwakeMinutes
   );
 
   return { naps, bedtime, firstCalibration };
