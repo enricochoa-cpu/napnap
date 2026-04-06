@@ -1485,6 +1485,8 @@ export function calculateAllNapWindows(
 // UNIFIED DAY PREDICTION (single source of truth)
 // ============================================================================
 
+type CalibrationReason = 'insufficient_data' | 'high_variability' | 'first_nap_of_day';
+
 export interface DaySchedulePrediction {
   naps: {
     time: Date;
@@ -1494,13 +1496,13 @@ export interface DaySchedulePrediction {
     isMicroNap: boolean;
     confidenceScore: number;
     isCalibrating: boolean;
-    calibrationReason?: string;
+    calibrationReason?: CalibrationReason;
   }[];
   bedtime: Date;
   firstCalibration: {
     confidenceScore: number;
     isCalibrating: boolean;
-    calibrationReason?: string;
+    calibrationReason?: CalibrationReason;
   } | null;
 }
 
@@ -1523,8 +1525,8 @@ export function predictDaySchedule(params: {
   todaysWakeWindowCount?: number;
   totalEntriesCount?: number;
   napDurationHistory?: {
-    byIndex: Record<NapIndex, number[]>;
-    todaysCountByIndex: Record<NapIndex, number>;
+    byIndex: Partial<Record<NapIndex, number[]>>;
+    todaysCountByIndex: Partial<Record<NapIndex, number>>;
   };
 }): DaySchedulePrediction {
   const {
@@ -1552,7 +1554,6 @@ export function predictDaySchedule(params: {
 
   // --- Step 2: Compute blended clock times for each projected nap ---
   const effectiveNapCount = completedNaps.length;
-  const today = morningWakeTime;
   const naps: DaySchedulePrediction['naps'] = [];
   let firstCalibration: DaySchedulePrediction['firstCalibration'] = null;
 

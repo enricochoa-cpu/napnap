@@ -266,7 +266,7 @@ export function TodayView({
         predictedTime: nap.time,
         confidenceScore: nap.confidenceScore,
         isCalibrating: nap.isCalibrating,
-        calibrationReason: nap.calibrationReason,
+        calibrationReason: nap.calibrationReason as NapPrediction['calibrationReason'],
       };
 
       const minPredictionTime = hasActiveNap && activeNapExpectedEnd ? activeNapExpectedEnd : now;
@@ -286,7 +286,12 @@ export function TodayView({
     }
 
     const calibrationInfo: NapPrediction | null = daySchedule.firstCalibration
-      ? { predictedTime: predictions[0]?.time ?? null, ...daySchedule.firstCalibration }
+      ? {
+          predictedTime: predictions[0]?.time ?? null,
+          confidenceScore: daySchedule.firstCalibration.confidenceScore,
+          isCalibrating: daySchedule.firstCalibration.isCalibrating,
+          calibrationReason: daySchedule.firstCalibration.calibrationReason as NapPrediction['calibrationReason'],
+        }
       : null;
 
     return { predictions, calibrationInfo };
