@@ -1413,12 +1413,15 @@ export function calculateDynamicBedtime(
   }
 
   // Axis 2: Accumulated wake excess shift
-  // Expected awake = total elapsed since morning - target daytime sleep
-  // If actual awake exceeds expected by threshold, shift bedtime earlier
+  // Compare actual total awake time against what's expected for this age's schedule.
+  // This captures fragmentation fatigue: a baby with 6 micro-naps is awake more
+  // (due to extra transition time) than one with 3 solid naps, even if total sleep is equal.
   let wakeExcessShift = 0;
   if (totalAwakeMinutes > 0) {
-    const expectedAwakeMinutes = (totalAwakeMinutes + totalDaytimeSleepMinutes) - targetDaytimeSleepMinutes;
-    const wakeExcess = totalAwakeMinutes - Math.max(0, expectedAwakeMinutes);
+    const expectedTotalAwake = config.wakeWindows.first
+      + Math.max(0, config.targetNaps - 1) * config.wakeWindows.mid
+      + config.wakeWindows.final;
+    const wakeExcess = totalAwakeMinutes - expectedTotalAwake;
     if (wakeExcess >= WAKE_EXCESS_THRESHOLD_MINUTES) {
       wakeExcessShift = Math.min(WAKE_EXCESS_CAP_MINUTES, Math.round(wakeExcess / 3));
     }
