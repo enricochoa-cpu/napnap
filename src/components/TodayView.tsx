@@ -29,7 +29,8 @@ interface TodayViewProps {
   entries: SleepEntry[];
   activeSleep: SleepEntry | null;
   lastCompletedSleep: SleepEntry | null;
-  awakeMinutes: number | null;
+  /** @deprecated Computed locally from lastCompletedSleep + live now. Prop kept for backward compat but ignored. */
+  awakeMinutes?: number | null;
   onEdit?: (entry: SleepEntry) => void;
   loading?: boolean;
   totalEntries?: number;
@@ -116,7 +117,7 @@ export function TodayView({
   entries,
   activeSleep,
   lastCompletedSleep,
-  awakeMinutes,
+  awakeMinutes: _awakeMinutesProp,
   onEdit,
   loading = false,
   hasNoBaby = false,
@@ -136,6 +137,14 @@ export function TodayView({
   }, []);
 
   const now = new Date();
+
+  // Live awake-since timer — computed locally so it ticks every 60s with the setTick interval
+  const awakeMinutes = (() => {
+    if (activeSleep) return 0;
+    if (!lastCompletedSleep?.endTime) return null;
+    const lastWakeTime = new Date(lastCompletedSleep.endTime);
+    return Math.max(0, Math.floor((now.getTime() - lastWakeTime.getTime()) / (1000 * 60)));
+  })();
 
   // Morning wake up entry (night sleep that ended today)
   const morningWakeUpEntry = useMemo(() => getMorningWakeUpEntry(entries), [entries]);

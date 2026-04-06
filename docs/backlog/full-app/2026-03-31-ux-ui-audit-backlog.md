@@ -12,13 +12,13 @@ Sources:
 
 ## P2 — Nice to have
 
-### U-32 — No retry mechanism for data fetch errors
+### U-32 — No retry button in error banner
 
 - **Effort**: Medium
 - **Impact**: Low
-- **Location**: `App.tsx:619-624`
-- **Problem**: Global error banner shows "Something went wrong" but provides no way to retry. Only recovery is a full page refresh.
-- **Fix**: Add "Tap to retry" button in error banner that calls refresh/refetch from data hooks. May need to expose retry functions from `useSleepEntries`, `useBabyProfile`, `useGrowthLogs`.
+- **Location**: `App.tsx:644-650`
+- **Problem**: Global error banner shows "Something went wrong loading your data. Pull down to refresh." — text-only, no interactive retry button. User must manually pull-to-refresh or reload the page.
+- **Fix**: Add a "Tap to retry" button in the banner that calls refresh/refetch from data hooks.
 
 ### U-33 — Week strip day buttons narrower than standard
 
@@ -36,14 +36,6 @@ Sources:
 - **Problem**: No `lg:` breakpoint layouts. App works on larger screens but doesn't use extra space. Low priority given mobile-first target user.
 - **Fix**: Add `lg:` breakpoints for wider viewports (two-column Stats, wider cards, centered containers).
 
-### U-35 — LandingLanguagePicker uses white/ tokens
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `LandingLanguagePicker.tsx:92-93`
-- **Problem**: Stacked variant uses `bg-white/20` and `text-white/60`. Works visually (always-dark menu) but violates project rule of never using `white/` values.
-- **Fix**: Replace with `bg-[var(--glass-bg)]` and `text-[var(--text-muted)]`.
-
 ### U-42 — Chips missing `aria-pressed` state (§8.1)
 
 - **Effort**: Low
@@ -51,22 +43,6 @@ Sources:
 - **Location**: `SleepEntrySheet`
 - **Problem**: Onset, method, wake method, and wake mood chip buttons communicate selection only via CSS. No `aria-pressed` attribute. WCAG 4.1.2 violation.
 - **Fix**: Add `aria-pressed={isSelected}` to all chip buttons. Consider subtle scale + spring animation on toggle.
-
-### U-43 — Frozen "awake since" timer (§8.2)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `TodayView`
-- **Problem**: "Despert des de fa Xm" stayed at "7m" across several minutes. Likely frozen by ref snapshot logic (see `frozenPredictionsRef` pattern).
-- **Fix**: Ensure awake-since label uses live `now` value, not frozen ref. Must tick at least every 30s.
-
-### U-44 — Playwright click timeouts on all buttons (§8.3)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: App-wide
-- **Problem**: Every Playwright `click()` times out after 5s. All clicks need `page.evaluate()` workaround. Likely framer-motion drag handlers or touch event listeners intercepting pointer events.
-- **Fix**: Review `touch-action` CSS and framer-motion drag configs. Ensure buttons within draggable sheets have proper event isolation.
 
 ### U-45 — Nested `<button>` in pause card header (§9.3)
 
@@ -76,13 +52,13 @@ Sources:
 - **Problem**: Pause card's collapsible header is a `<button>` containing the delete `<button>` — invalid HTML nesting. Tap targets overlap on phones.
 - **Fix**: Use `<div role="button" tabIndex={0}>` for the header, or move delete button outside toggle hit area (e.g. swipe-to-reveal).
 
-### U-46 — Pause default start = nap start (§9.4)
+### U-46 — First pause default start = nap start (§9.4)
 
 - **Effort**: Low
-- **Impact**: Low-Medium
-- **Location**: `SleepEntrySheet`
-- **Problem**: New pause defaults to start=nap start time. Pauses happen mid-nap, not at the start. Extra taps at 3AM.
-- **Fix**: Smart default: pause start = midpoint (if completed) or current time (if active). If existing pauses, start after the last one ends.
+- **Impact**: Low
+- **Location**: `SleepEntrySheet:617-638`
+- **Problem**: Only the **first** pause defaults to nap start time. Subsequent pauses already default to end-of-last-pause (smart default implemented). Nap start is a reasonable but not ideal first-pause default.
+- **Fix**: Optional minor polish: default first pause to midpoint of nap (if completed) or current time (if active). Low value since nap start is already a sensible starting point.
 
 ### U-47 — Today's incomplete data looks alarming in charts (§10.3)
 
@@ -132,13 +108,13 @@ Sources:
 - **Problem**: After "Desar canvis", button silently greys out. No toast, no animation. User must infer success from header updating. Silent save feels broken.
 - **Fix**: Add native-style toast/snackbar: "Changes saved ✓" — auto-dismiss 2s. Use framer-motion spring.
 
-### U-53 — No unsaved changes warning on back navigation (§11.2)
+### U-53 — Valid changes auto-save silently on back (§11.2)
 
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `BabyDetailView`
-- **Problem**: Editing fields and tapping back silently discards changes. No confirmation prompt. Silent data loss breaks trust.
-- **Fix**: Detect dirty form state. Show bottom sheet on back: "You have unsaved changes" with "Discard" / "Keep editing".
+- **Effort**: Low
+- **Impact**: Low-Medium
+- **Location**: `BabyDetailView:145-165`
+- **Problem**: Partially addressed — a discard dialog exists for **invalid** changes (via `ConfirmationModal` + `showDiscardConfirm`). However, **valid** changes auto-save silently when tapping back, with no confirmation. User may not intend to save edits they were still reviewing.
+- **Fix**: Show "Save changes?" confirmation on back for valid dirty state, instead of auto-saving. Or add the missing save toast (U-52) so at least the auto-save is communicated.
 
 ### U-54 — Header doesn't preview edits live (§11.3)
 
@@ -148,30 +124,30 @@ Sources:
 - **Problem**: Header shows old name and age while editing. Changes appear only after save.
 - **Fix**: Bind header name to form input value for live preview.
 
-### U-55 — Avatar picker has no preview/crop step (§11.4)
+### U-55 — Avatar picker has no crop step (§11.4)
 
 - **Effort**: Medium
-- **Impact**: Low-Medium
+- **Impact**: Low
 - **Location**: `BabyAvatarPicker`
-- **Problem**: File picker triggers immediately. No preview, crop circle overlay, or loading indicator. Image just "pops" into place.
-- **Fix**: Add circular crop overlay after selection (like WhatsApp profile photo). Show loading spinner during upload.
+- **Problem**: File picker triggers immediately with no crop/preview step. Auto-compresses to 400x400 JPEG via Canvas API. **Loading spinner already exists** (`uploading` prop → spinner overlay). Only the crop UI is missing.
+- **Fix**: Add circular crop overlay after file selection (like WhatsApp profile photo) so user can adjust framing before upload.
 
-### U-56 — Minutes-from-midnight → Date objects (§6.5)
+### U-56 — Minutes-from-midnight → Date objects in simulateDay (§6.5)
 
-- **Effort**: High
+- **Effort**: Medium-High
 - **Impact**: Medium
-- **Location**: `dateUtils` (`simulateDay`, `calculateAllNapWindows`)
-- **Problem**: Simulation uses minutes-from-midnight (0-1439). Intervals near 00:00 may be treated incorrectly for night wakings or shifted schedules.
-- **Fix**: Use `Date` objects throughout simulation chain. Requires tests for midnight-crossing cases.
-- **Dependencies**: Best after U-40 (§6.3 unification) to avoid double refactor.
+- **Location**: `dateUtils` (`simulateDay` internals)
+- **Problem**: `simulateDay` still works entirely in minutes-from-midnight (0-1439) internally. `predictDaySchedule` already converts to Date objects at the boundary (U-40 done), so the external API is safe. The risk is limited to midnight-crossing edge cases inside `simulateDay` itself (e.g. night wakings at 23:30→00:15).
+- **Fix**: Refactor `simulateDay` internals to use Date objects. Lower priority now that `predictDaySchedule` handles boundary conversion.
+- **Dependencies**: U-40 done. Can be done independently.
 
-### U-57 — Overdue nap / "skipped" UX transition (§6.2)
+### U-57 — Auto-overdue nap silent skip (§6.2)
 
 - **Effort**: Medium
 - **Impact**: Medium
 - **Location**: `TodayView`
-- **Problem**: After 60min overdue, system silently treats nap as skipped and anchors on original time. No user feedback or recalculation option.
-- **Fix**: Show "nap very overdue" indicator + discreet "Recalculate day" button that re-anchors from now. Avoid modals (one-handed use at night).
+- **Problem**: After 60min overdue (`OVERDUE_NAP_PERSISTENCE_MINUTES`), nap silently drops from predictions. **Note:** visual feedback exists for explicitly-skipped naps (via `skippedNapIndices` — dimmed, muted label), but auto-overdue naps simply vanish with no indicator. No "Recalculate day" button.
+- **Fix**: When a nap auto-expires at 60min, show a transient "nap skipped" card or indicator + discreet "Recalculate day" button. Avoid modals (one-handed use at night).
 
 ### U-58 — Dynamic blending 70/30 by maturity (§6.4)
 
@@ -245,15 +221,29 @@ Sources:
 
 ---
 
+## Removed
+
+### ~~U-35 — LandingLanguagePicker uses white/ tokens~~
+
+- **Status**: Fixed — all `white/` values replaced with `var(--glass-bg)`, `var(--text-primary)`, `var(--text-secondary)` tokens.
+
+### ~~U-44 — Playwright click timeouts on all buttons (§8.3)~~
+
+- **Status**: Removed — not an app code bug.
+- **Root cause**: Playwright MCP's synthetic pointer simulation doesn't complete through framer-motion's drag listeners + `touch-action: none` CSS. App buttons use standard `onClick`, drag is scoped to `motion.div` containers, no global event hijacking. Real device taps work fine. `page.evaluate()` workaround bypasses the pointer layer entirely.
+- **Action**: Test tooling config issue. Address in Playwright test setup if E2E automation is needed.
+
+---
+
 ## Summary counts
 
 | Priority | Count | Key themes |
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 24 | QA fixes, Stats polish, profile UX, prediction refinements |
+| P2 | 20 | QA fixes, Stats polish, profile UX, prediction refinements |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **30** | |
+| **Total** | **26** | |
 
 ## Completed (2026-04-06)
 
@@ -263,20 +253,24 @@ Sources:
 - U-39 (P1): Warm narrative — insight cards per section with i18n (en/es/ca)
 - U-40 (P1): Unified prediction — `predictDaySchedule()` single source of truth
 - U-41 (P1): Bedtime flexibility — two-tier debt system (moderate 20min / extreme 40min)
+- U-43 (P1): Frozen awake timer — compute locally in TodayView using live 60s tick instead of stale hook prop
 
 ## Recommended execution order
 
 **Phase 1 — Native polish** (P2 UX):
-U-42 (aria-pressed), U-43 (frozen timer), U-44 (Playwright clicks), U-45 (nested button), U-46 (pause defaults)
+U-42 (aria-pressed), U-45 (nested button)
 
 **Phase 2 — Stats polish** (P2):
 U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-50 (sticky chips), U-51 (report button)
 
 **Phase 3 — Profile polish** (P2):
-U-52 (save toast), U-53 (unsaved warning), U-54 (live preview), U-55 (avatar crop)
+U-52 (save toast), U-54 (live preview)
 
 **Phase 4 — Prediction refinements** (P2):
-U-56 (Date objects) → U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake)
+U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
 
-**Phase 5 — Infrastructure** (P3):
+**Phase 5 — Low priority polish** (P2):
+U-32 (retry banner), U-33 (day buttons), U-34 (tablet), U-46 (first pause default), U-53 (auto-save confirmation), U-55 (avatar crop)
+
+**Phase 6 — Infrastructure** (P3):
 U-62 (base schema) → U-63 (multi-baby) → U-65 (age brackets)
