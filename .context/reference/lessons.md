@@ -563,3 +563,19 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Two independent models: simulateDay (deterministic, config-driven) and calculateSuggestedNapTimeWithMetadata (adaptive, history-blended) weren't coordinated.
 - **Permanent Fix:** Created `predictDaySchedule()` — single function that gets structure from `simulateDay`, then sequentially computes blended clock times for each projected nap, chains them, and includes bedtime. TodayView replaced ~160 lines of dual-path logic with a single call.
 - **Reusable rule:** When two functions independently compute aspects of the same result, unify them. Sequential chaining (each output feeds the next input) must happen in one place to prevent cascading drift.
+
+### 21.3 Wake Excess Formula Algebraic Collapse
+**Date:** 2026-04-06
+
+- **Problem:** U-59 added a "wake excess" fatigue axis to `calculateDynamicBedtime` intended to catch fragmentation fatigue (baby awake too long due to many short naps). The formula was `wakeExcess = totalAwake - (totalElapsed - targetSleep)`. Arithmetic audit revealed this simplifies to `targetSleep - actualSleep` — identical to the sleep deficit axis. The two "independent" axes were measuring the same thing.
+- **Root Cause:** Deriving expected awake time from `totalElapsed - targetSleep` uses the same data as deficit. The expected awake time should come from the age config (sum of wake windows), not from elapsed time.
+- **Permanent Fix:** `expectedTotalAwake = WW.first + (targetNaps-1) * WW.mid + WW.final`. Now `wakeExcess = actualAwake - expectedTotalAwake` measures whether the baby's day has stretched beyond what the age config expects — truly independent of sleep deficit.
+- **Reusable rule:** When adding a "second axis" to a multi-factor formula, verify algebraically that it's independent from the first. Substitute variables and simplify — if terms cancel to produce the same expression, the axis is redundant.
+
+### 21.4 Blended Times Can Diverge from Structural Decisions
+**Date:** 2026-04-06
+
+- **Problem:** `simulateDay` decides day structure (nap count, rescue naps) using config-only wake windows. `predictDaySchedule` then overrides those wake windows with history-blended values. In extreme cases (short naps + aggressive blending), the blended schedule produces wake gaps exceeding `config.wakeWindows.max`, which `simulateDay` would have caught with a rescue nap.
+- **Root Cause:** Structural decisions (rescue nap? compression?) are made before blending is applied. The two layers don't communicate.
+- **Current mitigation:** Bedtime floor at `config.bedtime.earliest` and wake window floor at `config.wakeWindows.first` prevent dangerous outputs. The gap only occurs in extreme scenarios (consecutive very short naps + optimized-tier blending).
+- **Future fix:** Post-hoc check in `predictDaySchedule` after all blended naps + bedtime: if any wake gap exceeds `config.wakeWindows.max`, flag or insert a rescue nap. Documented as BUG-2 in `docs/audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md`.

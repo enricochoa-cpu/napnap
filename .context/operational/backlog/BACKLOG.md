@@ -356,35 +356,35 @@ Findings from Playwright-driven QA of the baby profile edit flow (Profile → El
 | Multi-baby (add 2+ own babies, e.g. siblings) | Partial | Schema + app |
 | Invitation emails production | N/A | Resend domain |
 | **Prediction (see §6)** | | |
-| 6.1 Bedtime flexibility (sleep debt) | — | dateUtils |
-| 6.2 Overdue nap / "saltada" UX | TodayView | — |
-| 6.3 Unify double nap calculation | TodayView + dateUtils | — |
-| 6.4 Dynamic 70/30 blending | — | dateUtils |
-| 6.5 Minutes-from-midnight → Date | — | dateUtils |
-| 6.6 Accumulated wake time | — | dateUtils |
+| ~~6.1 Bedtime flexibility (sleep debt)~~ | ~~Done (U-41)~~ | ~~dateUtils~~ |
+| 6.2 Overdue nap / "saltada" UX | TodayView | — (product decision, not a bug) |
+| ~~6.3 Unify double nap calculation~~ | ~~Done (U-40)~~ | ~~dateUtils~~ |
+| ~~6.4 Dynamic 70/30 blending~~ | ~~Done (U-58)~~ | ~~dateUtils~~ |
+| ~~6.5 Minutes-from-midnight → Date~~ | ~~Done (U-56)~~ | ~~dateUtils~~ |
+| ~~6.6 Accumulated wake time~~ | ~~Done (U-59)~~ | ~~dateUtils~~ |
 | 7. Weekly newborn + monthly age brackets | — | dateUtils (SLEEP_DEVELOPMENT_MAP) |
 | **QA — SleepEntrySheet (§8)** | | |
-| 8.1 Chips missing `aria-pressed` | SleepEntrySheet | — |
-| 8.2 Frozen "awake since" timer | TodayView | — |
-| 8.3 Playwright click timeouts (touch events) | App-wide | — |
+| ~~8.1 Chips missing `aria-pressed`~~ | ~~Done (U-42)~~ | — |
+| ~~8.2 Frozen "awake since" timer~~ | ~~Done (U-43)~~ | — |
+| ~~8.3 Playwright click timeouts~~ | ~~Removed (not app bug)~~ | — |
 | **QA — Pause & validation bugs (§9)** | | |
-| 9.1 Pause validation stuck after edit | SleepEntrySheet | — |
-| 9.2 Negative "awake since" time | TodayView | — |
-| 9.3 Nested `<button>` in pause card | SleepEntrySheet | — |
-| 9.4 Pause default start = nap start | SleepEntrySheet | — |
+| ~~9.1 Pause validation stuck after edit~~ | ~~Done (U-36)~~ | — |
+| ~~9.2 Negative "awake since" time~~ | ~~Done (U-37)~~ | — |
+| ~~9.3 Nested `<button>` in pause card~~ | ~~Done (U-45)~~ | — |
+| ~~9.4 Pause default start = nap start~~ | ~~Done (U-46)~~ | — |
 | **Stats UX overhaul — native warm data (§10)** | | |
-| 10.1 No reference ranges / "is this normal?" | StatsView | dateUtils (age ranges) |
-| 10.2 Cold data — no narrative or warmth | StatsView | — |
-| 10.3 Today's incomplete data looks alarming | StatsView (charts) | — |
-| 10.4 HORARI DIARI too small for mobile | StatsView (Gantt) | — |
-| 10.5 Date range needs native segmented control | StatsView (picker) | — |
-| 10.6 Chip bar should be sticky | StatsView (nav) | — |
+| ~~10.1 No reference ranges~~ | ~~Done (U-38)~~ | — |
+| ~~10.2 Cold data — no narrative~~ | ~~Done (U-39)~~ | — |
+| ~~10.3 Today's incomplete data~~ | ~~Done (U-47)~~ | — |
+| ~~10.4 HORARI DIARI too small~~ | ~~Done (U-48)~~ | — |
+| ~~10.5 Date range needs segmented control~~ | ~~Done (U-49)~~ | — |
+| ~~10.6 Chip bar should be sticky~~ | ~~Done (U-50)~~ | — |
 | 10.7 Missing "Generate report" button | StatsView | — |
 | **Baby profile edit — native polish (§11)** | | |
-| 11.1 No save confirmation toast | BabyDetailView | — |
-| 11.2 No unsaved changes warning on back | BabyDetailView | — |
-| 11.3 Header doesn't preview edits live | BabyDetailView | — |
-| 11.4 Avatar picker: no crop/loading UI | BabyAvatarPicker | — |
+| ~~11.1 No save confirmation toast~~ | ~~Done (U-52)~~ | — |
+| 11.2 No unsaved changes warning on back | BabyDetailView | — (partially: auto-saves valid, warns invalid) |
+| ~~11.3 Header doesn't preview edits live~~ | ~~Done (U-54)~~ | — |
+| 11.4 Avatar picker: no crop UI | BabyAvatarPicker | — (loading spinner exists) |
 
 ---
 
@@ -394,11 +394,8 @@ Findings from Playwright-driven QA of the baby profile edit flow (Profile → El
 2. **Multi-baby** — Only if required for launch: schema change first (babies table, profiles user-only), then app alignment.
 3. **Production emails** — Resend domain verification when sending real invitation emails.
 
-**Prediction system (§6) — recommended sequence**
+**Prediction system (§6) — status (2026-04-06)**
 
-1. **6.3 Unificació doble càlcul** — Un sol motor (estructura + hora + metadades). Base per a 6.4–6.6 i menys bugs de prioritat.
-2. **6.1 Flexibilitat deute de son** — Cap més alt dinàmic per bedtime en deute extrem (impacte directe UX).
-3. **6.5 Minuts des de mitjanit → Date** — Correctesa tècnica; fer després de 6.3 per no refactorar dues vegades.
-4. **6.2 Overdue / salt de migdiades** — Transició suau o "Recalcular dia" sense modal excessiu.
-5. **6.4 Blending dinàmic 70/30** — Pes segons maduresa (learning vs optimized); aprofita `getAlgorithmStatusTier`.
-6. **6.6 Vigília acumulada** — Factor fatiga del dia; coordinar amb 6.1 (un sol "estat de fatiga" si és possible).
+All core prediction improvements done: unified engine (6.3), bedtime flexibility (6.1), dynamic blending (6.4), midnight safety (6.5), accumulated wake time (6.6). Arithmetic audit completed with 6 scenarios — see `docs/audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md`. Known limitation BUG-2 (blended times can diverge from structural decisions in extreme short-nap scenarios) documented in lessons.md §21.4.
+
+Remaining: 6.2 (overdue nap UX) — product decision, not algorithm improvement.
