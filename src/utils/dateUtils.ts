@@ -513,6 +513,57 @@ export function getSleepConfigForAge(dateOfBirth: string): AgeSleepConfig {
   return SLEEP_DEVELOPMENT_MAP[SLEEP_DEVELOPMENT_MAP.length - 1];
 }
 
+/**
+ * Reference data for Stats charts — derived from SLEEP_DEVELOPMENT_MAP for the baby's age.
+ * All time values in minutes-since-midnight for Recharts compatibility.
+ */
+export interface AgeReferenceData {
+  /** Recommended total daily sleep (night + naps) in minutes */
+  totalSleepMinutes: number;
+  /** ±range for total sleep band in minutes */
+  totalSleepRangeMinutes: number;
+  /** Standard nap duration in minutes */
+  napDurationMinutes: number;
+  /** Target number of naps per day */
+  targetNaps: number;
+  /** Ideal bedtime as minutes since midnight */
+  bedtimeIdealMinutes: number;
+  /** Earliest bedtime as minutes since midnight */
+  bedtimeEarliestMinutes: number;
+  /** Latest bedtime as minutes since midnight */
+  bedtimeLatestMinutes: number;
+  /** Default wake time as minutes since midnight */
+  wakeTimeMinutes: number;
+  /** Regression info if applicable */
+  regression?: { type: string; note: string };
+}
+
+export function getAgeReferenceData(dateOfBirth: string): AgeReferenceData {
+  const config = getSleepConfigForAge(dateOfBirth);
+
+  const bedtimeIdeal = config.bedtime.ideal.hour * 60 + config.bedtime.ideal.minute;
+  const bedtimeEarliest = config.bedtime.earliest.hour * 60 + config.bedtime.earliest.minute;
+  const bedtimeLatest = config.bedtime.latest.hour * 60 + config.bedtime.latest.minute;
+  const wakeTime = config.defaultWakeTime.hour * 60 + config.defaultWakeTime.minute;
+
+  // Gross night sleep = wake time next day - bedtime ideal
+  const nightMinutes = (24 * 60 - bedtimeIdeal) + wakeTime;
+  const napMinutes = config.targetNaps * config.napDurations.standard;
+  const totalSleep = nightMinutes + napMinutes;
+
+  return {
+    totalSleepMinutes: totalSleep,
+    totalSleepRangeMinutes: 60, // ±1h is typical variation
+    napDurationMinutes: config.napDurations.standard,
+    targetNaps: config.targetNaps,
+    bedtimeIdealMinutes: bedtimeIdeal,
+    bedtimeEarliestMinutes: bedtimeEarliest,
+    bedtimeLatestMinutes: bedtimeLatest,
+    wakeTimeMinutes: wakeTime,
+    regression: config.regression,
+  };
+}
+
 // ============================================================================
 // LEGACY COMPATIBILITY LAYER
 // ============================================================================
@@ -1296,10 +1347,14 @@ export function simulateDay(
   };
 }
 
-/** Max minutes to shift bedtime earlier when baby has significant sleep debt */
+/** Max minutes to shift bedtime earlier for moderate sleep debt (30-59min deficit) */
 const BEDTIME_EARLIER_CAP_MINUTES = 20;
+/** Max minutes to shift bedtime earlier for extreme sleep debt (>=60min, ~1 full nap skipped) */
+const BEDTIME_EXTREME_CAP_MINUTES = 40;
 /** Min daytime sleep deficit (minutes) before we suggest earlier bedtime */
 const SLEEP_DEBT_THRESHOLD_MINUTES = 30;
+/** Deficit threshold for extreme tier (roughly one full nap skipped) */
+const EXTREME_DEBT_THRESHOLD_MINUTES = 60;
 
 /**
  * Calculate dynamic bedtime based on actual day's sleep.
@@ -1322,13 +1377,25 @@ export function calculateDynamicBedtime(
   const deficit = targetDaytimeSleepMinutes - totalDaytimeSleepMinutes;
 
   let finalWindowMinutes = config.wakeWindows.final;
-  if (deficit >= SLEEP_DEBT_THRESHOLD_MINUTES) {
+  if (deficit >= EXTREME_DEBT_THRESHOLD_MINUTES) {
+    // Extreme debt (full nap skipped): more aggressive shift, non-linear curve
+    const shiftEarlier = Math.min(
+      BEDTIME_EXTREME_CAP_MINUTES,
+      Math.round(deficit / 2.5)
+    );
+    finalWindowMinutes = config.wakeWindows.final - shiftEarlier;
+  } else if (deficit >= SLEEP_DEBT_THRESHOLD_MINUTES) {
+    // Moderate debt: gentle shift
     const shiftEarlier = Math.min(
       BEDTIME_EARLIER_CAP_MINUTES,
       Math.round(deficit / 2)
     );
     finalWindowMinutes = config.wakeWindows.final - shiftEarlier;
   }
+
+  // Safety floor: never reduce wake window below age-appropriate minimum
+  // (first wake window is the shortest the baby can handle)
+  finalWindowMinutes = Math.max(finalWindowMinutes, config.wakeWindows.first);
 
   const bedtime = new Date(
     lastNapEnd.getTime() + finalWindowMinutes * 60 * 1000
@@ -1412,6 +1479,182 @@ export function calculateAllNapWindows(
       wakeWindowBeforeMinutes: nap.wakeWindowBefore,
     };
   });
+}
+
+// ============================================================================
+// UNIFIED DAY PREDICTION (single source of truth)
+// ============================================================================
+
+export interface DaySchedulePrediction {
+  naps: {
+    time: Date;
+    expectedDurationMinutes: number;
+    napIndex: NapIndex;
+    isCatnap: boolean;
+    isMicroNap: boolean;
+    confidenceScore: number;
+    isCalibrating: boolean;
+    calibrationReason?: string;
+  }[];
+  bedtime: Date;
+  firstCalibration: {
+    confidenceScore: number;
+    isCalibrating: boolean;
+    calibrationReason?: string;
+  } | null;
+}
+
+/**
+ * Single entry point for day prediction. Replaces the dual path of
+ * calculateAllNapWindows (structure) + calculateSuggestedNapTimeWithMetadata (timing).
+ *
+ * 1. simulateDay() decides nap count, compression, rescue naps (structure)
+ * 2. For each nap, blends 70% config + 30% historical wake windows (timing)
+ * 3. Chains naps sequentially so no desync between structure and clock times
+ * 4. Computes bedtime via calculateDynamicBedtime with aligned data
+ */
+export function predictDaySchedule(params: {
+  dateOfBirth: string;
+  morningWakeTime: Date;
+  completedNaps: { endTime: string; durationMinutes: number }[];
+  /** Last completed nap's duration (for short nap penalty on first projected nap) */
+  lastNapDurationMinutes?: number | null;
+  historicalWakeWindows?: number[];
+  todaysWakeWindowCount?: number;
+  totalEntriesCount?: number;
+  napDurationHistory?: {
+    byIndex: Record<NapIndex, number[]>;
+    todaysCountByIndex: Record<NapIndex, number>;
+  };
+}): DaySchedulePrediction {
+  const {
+    dateOfBirth,
+    morningWakeTime,
+    completedNaps,
+    lastNapDurationMinutes = null,
+    historicalWakeWindows = [],
+    todaysWakeWindowCount = 0,
+    totalEntriesCount = 0,
+    napDurationHistory,
+  } = params;
+
+  const config = getSleepConfigForAge(dateOfBirth);
+  const wakeTimeMinutes = morningWakeTime.getHours() * 60 + morningWakeTime.getMinutes();
+
+  // --- Step 1: Get day structure from simulateDay ---
+  const completedInMinutes = completedNaps.map((nap) => {
+    const endTime = parseISO(nap.endTime);
+    const endMinutes = endTime.getHours() * 60 + endTime.getMinutes();
+    return { startMinutes: endMinutes - nap.durationMinutes, endMinutes };
+  });
+
+  const simulation = simulateDay(dateOfBirth, wakeTimeMinutes, completedInMinutes);
+
+  // --- Step 2: Compute blended clock times for each projected nap ---
+  const effectiveNapCount = completedNaps.length;
+  const today = morningWakeTime;
+  const naps: DaySchedulePrediction['naps'] = [];
+  let firstCalibration: DaySchedulePrediction['firstCalibration'] = null;
+
+  // Anchor: last completed nap end or morning wake
+  let lastEndTime: Date;
+  if (completedNaps.length > 0) {
+    lastEndTime = parseISO(completedNaps[completedNaps.length - 1].endTime);
+  } else {
+    lastEndTime = morningWakeTime;
+  }
+  let prevNapDuration = lastNapDurationMinutes;
+
+  let accumulatedSleepMinutes = completedNaps.reduce((sum, n) => sum + n.durationMinutes, 0);
+
+  for (let i = 0; i < simulation.projectedNaps.length; i++) {
+    const projected = simulation.projectedNaps[i];
+    const napIdx = effectiveNapCount + i;
+    const napIndex: NapIndex = napIdx === 0 ? 'first' : napIdx === 1 ? 'second' : 'third_plus';
+
+    // --- Blended wake window (70% config + 30% historical) ---
+    let wakeWindow = getProgressiveWakeWindow(dateOfBirth, napIndex);
+
+    if (historicalWakeWindows.length > 0) {
+      const weightedAvg = calculateWeightedWakeWindowAverage(historicalWakeWindows, todaysWakeWindowCount);
+      if (weightedAvg > 0) {
+        wakeWindow = Math.round(wakeWindow * 0.7 + weightedAvg * 0.3);
+      }
+    }
+
+    // Short nap penalty
+    if (prevNapDuration !== null) {
+      wakeWindow = Math.round(wakeWindow * getShortNapCompensation(prevNapDuration));
+    }
+
+    // First nap of day cap
+    if (napIndex === 'first') {
+      wakeWindow = Math.min(wakeWindow, config.wakeWindows.first);
+    }
+
+    // Clock time
+    const time = new Date(lastEndTime.getTime() + wakeWindow * 60_000);
+
+    // Learned nap duration
+    let expectedDuration: number;
+    if (napDurationHistory) {
+      expectedDuration = getLearnedNapDurationMinutes(
+        dateOfBirth,
+        napIndex,
+        napDurationHistory.byIndex[napIndex] || [],
+        napDurationHistory.todaysCountByIndex[napIndex] || 0,
+        projected.isCatnap
+      );
+    } else {
+      expectedDuration = projected.isCatnap ? config.napDurations.micro : config.napDurations.standard;
+    }
+
+    // Confidence + calibration
+    const calibrationState = determineCalibrationState(
+      totalEntriesCount,
+      historicalWakeWindows.slice(0, todaysWakeWindowCount),
+      config.wakeWindows.mid
+    );
+    const todayVariability =
+      todaysWakeWindowCount > 1
+        ? calculateStandardDeviation(historicalWakeWindows.slice(0, todaysWakeWindowCount)) / config.wakeWindows.mid
+        : 0;
+    const isFirstNapCalibrating = napIndex === 'first' && todaysWakeWindowCount === 0;
+    let confidenceScore = calculateConfidenceScore(totalEntriesCount, todayVariability);
+    if (isFirstNapCalibrating) confidenceScore *= 0.8;
+
+    const isCalibrating = calibrationState.isCalibrating || isFirstNapCalibrating;
+    const calibrationReason = isFirstNapCalibrating ? 'first_nap_of_day' : calibrationState.reason;
+
+    if (i === 0) {
+      firstCalibration = { confidenceScore, isCalibrating, calibrationReason };
+    }
+
+    naps.push({
+      time,
+      expectedDurationMinutes: expectedDuration,
+      napIndex,
+      isCatnap: projected.isCatnap,
+      isMicroNap: projected.isMicroNap,
+      confidenceScore,
+      isCalibrating,
+      calibrationReason,
+    });
+
+    // Chain to next nap
+    lastEndTime = new Date(time.getTime() + expectedDuration * 60_000);
+    prevNapDuration = expectedDuration;
+    accumulatedSleepMinutes += expectedDuration;
+  }
+
+  // --- Step 3: Compute bedtime ---
+  const bedtime = calculateDynamicBedtime(
+    dateOfBirth,
+    lastEndTime.toISOString(),
+    accumulatedSleepMinutes
+  );
+
+  return { naps, bedtime, firstCalibration };
 }
 
 // ============================================================================

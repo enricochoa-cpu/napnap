@@ -612,7 +612,18 @@
     "ariaWokeUpTrend": "Tendencia de despertar: hora de despertar por día con media",
     "ariaBedtimeTrend": "Tendencia de hora de dormir: hora de dormir por día con media",
     "ariaWeightOverTime": "Peso en el tiempo",
-    "ariaHeightOverTime": "Altura en el tiempo"
+    "ariaHeightOverTime": "Altura en el tiempo",
+    "typicalRange": "Rango típico",
+    "recommended": "Recomendado",
+    "insightSummaryOnTrack": "Las horas de sueño se ven saludables para la edad de {{name}} — lo estás haciendo genial",
+    "insightSummaryBelow": "Un poco menos de sueño de lo habitual — totalmente normal durante estirones o saltos de desarrollo",
+    "insightSummaryAbove": "Mucho descanso este período — {{name}} está durmiendo bien",
+    "insightNapsConsistent": "Las siestas han sido constantes — una rutina encantadora",
+    "insightNapsVariable": "La duración de las siestas varía de un día a otro — es normal a esta edad",
+    "insightNightSteady": "Las horas de dormir han sido estables — gran consistencia",
+    "insightNightVariable": "La hora de dormir varió un poco este período — común durante cambios de desarrollo",
+    "insightWakeSteady": "Los despertares son consistentes — buena señal de sueño estable",
+    "insightWakeVariable": "Los despertares por la mañana han variado — suele estabilizarse solo"
   },
   "report": {
     "title": "Informe de sueño",

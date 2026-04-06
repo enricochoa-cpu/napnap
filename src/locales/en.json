@@ -614,7 +614,18 @@
     "ariaWokeUpTrend": "Woke up time trend: morning wake-up time per day with average",
     "ariaBedtimeTrend": "Bedtime trend: bedtime per day with average",
     "ariaWeightOverTime": "Weight over time",
-    "ariaHeightOverTime": "Height over time"
+    "ariaHeightOverTime": "Height over time",
+    "typicalRange": "Typical range",
+    "recommended": "Recommended",
+    "insightSummaryOnTrack": "Sleep totals look healthy for {{name}}'s age — you're doing great",
+    "insightSummaryBelow": "A little less sleep than usual — completely normal during growth spurts or developmental leaps",
+    "insightSummaryAbove": "Plenty of rest this period — {{name}} is sleeping well",
+    "insightNapsConsistent": "Nap times have been consistent — lovely routine",
+    "insightNapsVariable": "Nap lengths vary day to day — that's normal at this age",
+    "insightNightSteady": "Bedtimes have been steady — great consistency",
+    "insightNightVariable": "Bedtime varied a bit this period — common during developmental changes",
+    "insightWakeSteady": "Wake-up times are consistent — a good sign of settled sleep",
+    "insightWakeVariable": "Morning wake times have varied — this usually settles on its own"
   },
   "report": {
     "title": "Sleep report",

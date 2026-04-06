@@ -652,6 +652,11 @@ export function SleepEntrySheet({
     setPauseErrors((prev) => ({ ...prev, [pauseId]: errorKey }));
     if (errorKey) return;
 
+    // Skip DB call if nothing actually changed (e.g. user reverted to original value)
+    const hasChange = (data.startTime !== undefined && data.startTime !== currentPause.startTime) ||
+                      (data.durationMinutes !== undefined && data.durationMinutes !== currentPause.durationMinutes);
+    if (!hasChange) return;
+
     await onUpdatePause(pauseId, data);
   };
 
@@ -993,7 +998,7 @@ export function SleepEntrySheet({
                                         defaultValue={pause.durationMinutes}
                                         onBlur={(e) => {
                                           const val = parseInt(e.target.value, 10);
-                                          if (!isNaN(val) && val > 0 && val !== pause.durationMinutes) {
+                                          if (!isNaN(val) && val > 0) {
                                             handleUpdatePause(pause.id, { durationMinutes: val });
                                           }
                                         }}

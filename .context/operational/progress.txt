@@ -1,6 +1,25 @@
 # Progress
 
-**Last updated:** 2026-03-07 — UX audit implementation (38/44 items done), glass-bg opacity fix, report section deferred. See logs/2026-03-07.md.
+**Last updated:** 2026-04-06 — P0/P1 backlog execution (6 tasks).
+
+## P0/P1 Backlog Execution (2026-04-06) [COMPLETED]
+
+- [x] U-36 (P0): Pause validation stuck — onBlur now always re-validates; skip DB write only when value unchanged
+- [x] U-37 (P1): Negative "awake since" — clamped awakeMinutes to `Math.max(0, ...)` in useSleepEntries
+- [x] U-38 (P1): Stats reference ranges — `getAgeReferenceData()` in dateUtils; ReferenceArea bands on daily sleep & bedtime; ReferenceLine on wake & avg nap charts
+- [x] U-39 (P1): Stats warm narrative — insight cards per section (summary/naps/night) with data-driven messaging; i18n en/es/ca
+- [x] U-40 (P1): Unified prediction engine — new `predictDaySchedule()` replaces dual path (simulateDay structure + calculateSuggestedNapTimeWithMetadata timing); TodayView simplified to single call
+- [x] U-41 (P1): Bedtime flexibility — two-tier sleep debt: moderate (30-59min deficit → 20min cap), extreme (≥60min → 40min cap, non-linear /2.5 curve); safety floor at config.wakeWindows.first
+
+## Sleep Log Enrichment (2026-04-02) [COMPLETED]
+
+- [x] Phase 1: sleep_pauses table + RLS, SleepPause type, pause CRUD in useSleepEntries, getNetSleepMinutes, net sleep in all displays, pause edit UI in SleepEntrySheet (collapsible cards)
+- [x] Phase 2: Live pause/resume — Pause/Play+Stop buttons on active entries, activePauseStart state in App, timer freeze, "Paused" badge in TodayView
+- [x] Phase 3: Night waking — contextual labels ("Night waking" + storm cloud icon for night entries), QuickActionSheet night waking button (2nd row), DailySummary nightWakingCount/nightWakingMinutes
+- [x] Phase 4: Qualitative info — onset_tags (text[]) + sleep_method (text) columns, onset chips (multi-select), method chips (single-select), notes textarea visible
+- [x] Supabase migrations: 20260402000000_sleep_pauses.sql, 20260402000001_sleep_qualitative.sql
+- [x] i18n: all new keys in en/es/ca
+- [ ] Future: Qualitative patterns in SleepReportView (backlog: docs/backlog/qualitative-report-integration.md)
 
 ## Code Audit Applied (2026-02-15) [COMPLETED]
 

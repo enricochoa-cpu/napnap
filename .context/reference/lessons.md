@@ -545,3 +545,21 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** Save button in BabyDetailView was positioned after the Measures and Share navigation rows — easy to miss, and logically confusing (save profile data appears after navigation actions).
 - **Permanent Fix:** Moved Save button to appear immediately after the form fields (before Measures row). Order: Profile fields → Gender → **Save button** → Measures row → Share row → Delete.
 - **Reusable rule:** Save/submit buttons should appear directly after the form fields they save, before any navigation rows that lead to other views.
+
+## 21. Prediction Engine — Dual Path Desync (2026-04-06)
+
+### 21.1 Uncontrolled Input onBlur Skipping Validation
+**Date:** 2026-04-06
+
+- **Problem:** Pause duration input in SleepEntrySheet used `defaultValue` (uncontrolled) with `onBlur` that had guard `val !== pause.durationMinutes`. After a failed validation (error persisted in `pauseErrors`), if user reverted to the original DB value, the guard skipped `handleUpdatePause`, leaving the stale error forever.
+- **Root Cause:** Uncontrolled input + "no-change" guard + validation state stored separately from DB state = stale error never cleared.
+- **Permanent Fix:** Always call `handleUpdatePause` on blur (remove the `!== pause.durationMinutes` guard). Added `hasChange` check inside `handleUpdatePause` to skip the actual DB write when nothing changed, while still running validation to clear/set errors.
+- **Reusable rule:** When using uncontrolled inputs with validation state, always re-validate on blur regardless of value change. Gate the DB write, not the validation.
+
+### 21.2 Dual Prediction Path Drift
+**Date:** 2026-04-06
+
+- **Problem:** TodayView called `calculateAllNapWindows()` (structure via `simulateDay`, config-only wake windows) then looped calling `calculateSuggestedNapTimeWithMetadata()` (clock times with 70/30 historical blending). Each nap's end became the anchor for the next, creating compounding drift between structure and timing.
+- **Root Cause:** Two independent models: simulateDay (deterministic, config-driven) and calculateSuggestedNapTimeWithMetadata (adaptive, history-blended) weren't coordinated.
+- **Permanent Fix:** Created `predictDaySchedule()` — single function that gets structure from `simulateDay`, then sequentially computes blended clock times for each projected nap, chains them, and includes bedtime. TodayView replaced ~160 lines of dual-path logic with a single call.
+- **Reusable rule:** When two functions independently compute aspects of the same result, unify them. Sequential chaining (each output feeds the next input) must happen in one place to prevent cascading drift.

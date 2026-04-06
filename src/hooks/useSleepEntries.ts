@@ -355,7 +355,7 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
     if (!lastCompletedSleep?.endTime) return null; // No sleep data yet
     const now = new Date();
     const lastWakeTime = new Date(lastCompletedSleep.endTime);
-    return Math.floor((now.getTime() - lastWakeTime.getTime()) / (1000 * 60));
+    return Math.max(0, Math.floor((now.getTime() - lastWakeTime.getTime()) / (1000 * 60)));
   }, [activeSleep, lastCompletedSleep]);
 
   const getDailySummary = useCallback(

@@ -610,7 +610,18 @@
     "ariaWokeUpTrend": "Tendència de despertar: hora de despertar per dia amb mitjana",
     "ariaBedtimeTrend": "Tendència d'hora de dormir: hora de dormir per dia amb mitjana",
     "ariaWeightOverTime": "Pes al llarg del temps",
-    "ariaHeightOverTime": "Alçada al llarg del temps"
+    "ariaHeightOverTime": "Alçada al llarg del temps",
+    "typicalRange": "Rang típic",
+    "recommended": "Recomanat",
+    "insightSummaryOnTrack": "Les hores de son es veuen saludables per l'edat de {{name}} — ho esteu fent genial",
+    "insightSummaryBelow": "Una mica menys de son de l'habitual — totalment normal durant estirades o salts de desenvolupament",
+    "insightSummaryAbove": "Molt de descans aquest període — {{name}} està dormint bé",
+    "insightNapsConsistent": "Les migdiades han estat constants — una rutina encantadora",
+    "insightNapsVariable": "La durada de les migdiades varia d'un dia a l'altre — és normal a aquesta edat",
+    "insightNightSteady": "Les hores de dormir han estat estables — gran consistència",
+    "insightNightVariable": "L'hora de dormir va variar una mica aquest període — habitual durant canvis de desenvolupament",
+    "insightWakeSteady": "Els despertars són constants — bon senyal de son estable",
+    "insightWakeVariable": "Els despertars al matí han variat — sol estabilitzar-se sol"
   },
   "report": {
     "title": "Informe de son",
