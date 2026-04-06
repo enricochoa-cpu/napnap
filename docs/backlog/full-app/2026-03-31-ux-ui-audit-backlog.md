@@ -36,14 +36,6 @@ Sources:
 - **Problem**: "Generate report (last 30 days)" entry point not visible during audit. Feature exists in code but may be unreachable.
 - **Fix**: Verify if removed or hidden by condition. Restore as prominent CTA card at bottom of "Resum de son" tab.
 
-### U-52 — No save confirmation toast in baby profile (§11.1)
-
-- **Effort**: Low
-- **Impact**: Medium
-- **Location**: `BabyDetailView`
-- **Problem**: After "Desar canvis", button silently greys out. No toast, no animation. User must infer success from header updating. Silent save feels broken.
-- **Fix**: Add native-style toast/snackbar: "Changes saved ✓" — auto-dismiss 2s. Use framer-motion spring.
-
 ### U-53 — Valid changes auto-save silently on back (§11.2)
 
 - **Effort**: Low
@@ -169,9 +161,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 11 | Profile UX, prediction refinements, low-priority polish |
+| P2 | 10 | Prediction refinements, low-priority polish |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **17** | |
+| **Total** | **16** | |
 
 ## Completed (2026-04-06)
 
@@ -191,11 +183,12 @@ Sources:
 - U-47 (P2): Today's bar dashed — custom TodayAwareBar shape with dashed outline + reduced opacity for incomplete day
 - U-48 (P2): Gantt dot size — wake/bed dots 7px→12px, nap bars 7px→10px, row height 28px→32px, legend updated
 - U-49 (P2): Segmented date control — 7d/14d pill toggle replacing static badge, calendar button kept for custom range
+- U-52 (P2): Save toast — framer-motion spring toast with checkmark, auto-dismiss 2s, i18n en/es/ca
 
 ## Recommended execution order
 
 **Phase 1 — Quick wins** (P2):
-U-51 (report button), U-52 (save toast)
+U-51 (report button)
 
 **Phase 2 — Prediction refinements** (P2):
 U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)

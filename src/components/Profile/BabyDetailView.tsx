@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile, BabyShare } from '../../types';
 import { formatAge, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
@@ -61,6 +62,12 @@ export function BabyDetailView({
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
+
+  const flashSavedToast = useCallback(() => {
+    setShowSavedToast(true);
+    setTimeout(() => setShowSavedToast(false), 2000);
+  }, []);
 
   const { measurementLogs } = useGrowthLogs({ babyId: baby.id });
 
@@ -128,6 +135,7 @@ export function BabyDetailView({
     setIsSaving(true);
     try {
       await Promise.resolve(onUpdate(formData));
+      flashSavedToast();
     } finally {
       setIsSaving(false);
     }
@@ -353,6 +361,25 @@ export function BabyDetailView({
         title={t('babyDetail.discardChangesTitle')}
         description={t('babyDetail.discardChangesDescription')}
       />
+
+      {/* Save confirmation toast */}
+      <AnimatePresence>
+        {showSavedToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl flex items-center gap-2 shadow-lg"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)' }}
+          >
+            <span className="text-[var(--success-color)] text-base" aria-hidden="true">&#x2713;</span>
+            <span className="text-sm font-display font-medium text-[var(--text-primary)]">
+              {t('common.changesSaved')}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

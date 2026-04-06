@@ -14,6 +14,7 @@
     "loading": "Cargando...",
     "saving": "Guardando…",
     "saved": "Guardado",
+    "changesSaved": "Cambios guardados",
     "ariaGoBack": "Volver",
     "ariaDelete": "Eliminar",
     "ariaClose": "Cerrar",

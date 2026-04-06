@@ -14,6 +14,7 @@
     "loading": "Loading...",
     "saving": "Saving…",
     "saved": "Saved",
+    "changesSaved": "Changes saved",
     "ariaGoBack": "Go back",
     "ariaDelete": "Delete",
     "ariaClose": "Close",
