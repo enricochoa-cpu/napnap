@@ -22,9 +22,18 @@ dist-ssr
 
 # Claude/Cursor local and generated
 .claude/settings.local.json
+.claude/worktrees
 .agents
 .claude/skills
 supabase/.temp
+
+# Tool artifacts (Playwright MCP, Superpowers brainstorm)
+.playwright-mcp/
+.superpowers/
+
+# QA screenshots (ephemeral, use docs/ for persistent assets)
+*.png
+!public/**/*.png
 *.suo
 *.ntvs*
 *.njsproj

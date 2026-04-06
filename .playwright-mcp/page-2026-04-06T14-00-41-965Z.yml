@@ -1,7 +1,0 @@
-- generic [ref=e3]:
-  - heading "NapNap" [level=1] [ref=e4]
-  - img [ref=e6]
-  - paragraph [ref=e9]: Calm guidance for your baby's sleep
-  - generic [ref=e10]:
-    - button "Get started" [ref=e11] [cursor=pointer]
-    - button "I have an account" [ref=e12] [cursor=pointer]
