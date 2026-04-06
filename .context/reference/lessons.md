@@ -578,4 +578,28 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Problem:** `simulateDay` decides day structure (nap count, rescue naps) using config-only wake windows. `predictDaySchedule` then overrides those wake windows with history-blended values. In extreme cases (short naps + aggressive blending), the blended schedule produces wake gaps exceeding `config.wakeWindows.max`, which `simulateDay` would have caught with a rescue nap.
 - **Root Cause:** Structural decisions (rescue nap? compression?) are made before blending is applied. The two layers don't communicate.
 - **Current mitigation:** Bedtime floor at `config.bedtime.earliest` and wake window floor at `config.wakeWindows.first` prevent dangerous outputs. The gap only occurs in extreme scenarios (consecutive very short naps + optimized-tier blending).
-- **Future fix:** Post-hoc check in `predictDaySchedule` after all blended naps + bedtime: if any wake gap exceeds `config.wakeWindows.max`, flag or insert a rescue nap. Documented as BUG-2 in `docs/audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md`.
+- **Future fix:** Post-hoc check in `predictDaySchedule` after all blended naps + bedtime: if any wake gap exceeds `config.wakeWindows.max`, flag or insert a rescue nap. Documented as BUG-2 / U-69 in `docs/audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md`.
+
+### 21.5 Safety Floor Inverts Bedtime for 1-Nap Toddlers
+**Date:** 2026-04-06
+
+- **Problem:** `calculateDynamicBedtime` used `Math.max(finalWindow, config.wakeWindows.first)` as a safety floor to prevent dangerously short final wake windows. For 1-nap configs (15-18mo, 18-24mo), `first` (300/330 min) is the long morning-to-nap window — larger than `final` (270/300 min). The floor silently overrode the configured final window, pushed bedtime 30min later, and absorbed all sleep debt shifts.
+- **Root Cause:** The `first` wake window has different semantics across nap counts. For multi-nap schedules it's the tightest (shortest) window. For 1-nap schedules it's the longest. Using it as a universal floor is only correct for multi-nap.
+- **Permanent Fix:** Age-aware floor: `config.targetNaps === 1 ? Math.round(config.wakeWindows.final * 0.75) : config.wakeWindows.first`. Allows up to 25% reduction for debt in 1-nap schedules.
+- **Reusable rule:** When a config field has different meanings across age brackets (e.g. `first` = "shortest gap" for 3-nap but "longest gap" for 1-nap), any formula that assumes one meaning will break for the other. Test safety mechanisms with every bracket, not just the most common one.
+
+### 21.6 No Latest Bedtime Ceiling
+**Date:** 2026-04-06
+
+- **Problem:** `calculateDynamicBedtime` had an earliest bedtime floor but no latest ceiling. A late-waking baby (e.g. 10:00 AM) could get a bedtime suggestion past 22:00 with no cap.
+- **Root Cause:** Only one boundary was implemented. The `config.bedtime.latest` value existed but was never enforced.
+- **Permanent Fix:** Soft ceiling at `config.bedtime.latest + 60min`. Caps late bedtimes while allowing some natural flexibility beyond the ideal window.
+- **Reusable rule:** When implementing a floor, always consider whether a ceiling is also needed. Asymmetric bounds hide bugs on the unchecked side.
+
+### 21.7 Learned Nap Duration Overrides Structural Micro-Nap Decision
+**Date:** 2026-04-06
+
+- **Problem:** `simulateDay` marks certain naps as micro/catnap (20-30min) for structural reasons (catnap cutoff, compression). But `predictDaySchedule` called `getLearnedNapDurationMinutes()` which could return a learned duration (e.g. 50min), silently overriding the structural decision and shifting the bedtime anchor.
+- **Root Cause:** Learned duration blending didn't respect the simulation's structural constraints.
+- **Permanent Fix:** When `projected.isCatnap || projected.isMicroNap`, cap learned duration to `config.napDurations.micro`: `expectedDuration = Math.min(expectedDuration, config.napDurations.micro)`.
+- **Reusable rule:** When one layer makes a structural decision and another layer refines values, the refinement must respect the structure's constraints. Learned/blended values should be capped by structural bounds, not free to override them.

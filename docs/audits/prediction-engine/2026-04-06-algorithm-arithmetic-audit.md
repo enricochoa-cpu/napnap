@@ -6,6 +6,31 @@
 
 ---
 
+## Glossary
+
+These are common algorithm/programming terms used throughout this document:
+
+| Term | Meaning | Example in our engine |
+|------|---------|----------------------|
+| **Floor** | A minimum value — the result can never go **below** this number. Like a physical floor you can't fall through. `max(value, floor)` | Earliest bedtime floor: bedtime can never be before 18:30, no matter what the formula says |
+| **Ceiling** | A maximum value — the result can never go **above** this number. Like a physical ceiling you can't rise past. `min(value, ceiling)` | Latest bedtime ceiling: bedtime can never exceed latest + 60min |
+| **Cap** | Same as ceiling but typically applied to a **shift/adjustment** rather than the final result. Limits how much a correction can move the output. | Sleep debt shift is capped at 40min — even if the baby missed 3 hours of sleep, we only move bedtime 40min earlier |
+| **Soft** (soft cap, soft ceiling) | The limit exists but isn't absolute — it's a reasonable default that could be overridden in extreme cases, or it degrades gracefully rather than being a hard wall. Opposite of "hard". | Soft ceiling at latest + 60min: we don't hard-block at 19:30, we allow up to 20:30 as a gentle boundary |
+| **Hard** (hard floor, hard cap) | The limit is absolute — no exceptions, never crossed. | Earliest bedtime is a hard floor: we never suggest putting a baby to sleep before 18:30 |
+| **Safety floor** | A floor specifically designed to prevent dangerous/nonsensical values. A guardrail. | The wake window safety floor prevents reducing the final wake window to something dangerously short (e.g., 30 minutes before bed) |
+| **Clamp** | Apply both a floor AND a ceiling at once: `clamp(value, min, max)` = `max(min, min(value, max))`. Keeps the value inside a safe range. | Bedtime is clamped between earliest and latest+60min |
+| **Shift** | An adjustment added to or subtracted from a base value. The amount the algorithm "shifts" a result in one direction. | A 31-minute sleep debt shift moves bedtime 31 minutes earlier |
+| **Threshold** | A boundary that triggers a different behavior when crossed. Below it: nothing happens. Above it: a rule activates. | Sleep debt threshold at 30min: below 30min deficit → no adjustment. At 30+ → shift kicks in |
+| **Tier** | A named level/bracket in a graduated system. Each tier has different rules. | Learning (0-5 entries), Calibrating (6-15), Optimized (16+) — each tier trusts historical data differently |
+| **Blending** | Mixing two values with weights that sum to 1.0. `result = A × weight₁ + B × weight₂`. | Wake window blending: `120 × 0.70 + 100 × 0.30 = 114` — 70% config, 30% learned |
+| **Penalty** | A multiplier < 1.0 applied to reduce a value as a consequence of something. | Short nap penalty: multiply next wake window by 0.80 (reduce by 20%) because a short nap is less restorative |
+| **Compensation** | The inverse concept of penalty — adjusting for something that went wrong. In our code, `getShortNapCompensation` returns the penalty multiplier (the name is slightly misleading — it "compensates" for poor sleep by shortening the next window). | After a 25min nap, compensation = 0.80, meaning the baby needs sleep sooner |
+| **Anchor** | The reference point from which a calculation starts. Everything chains from the anchor. | Last nap end time is the anchor for bedtime calculation: bedtime = anchor + finalWindow |
+| **Drift** | Gradual deviation from a reference value over time or across steps. Small drifts are expected; large drifts signal a problem. | 10-12min nap time drift between Learning and Optimized tiers — acceptable and natural |
+| **Stacking** | Applying multiple adjustments cumulatively (adding them together). Our engine explicitly avoids stacking: `max(shift₁, shift₂)` instead of `shift₁ + shift₂`. | Sleep debt shift (31min) and wake excess shift (10min) don't stack — we take the larger one (31min) |
+
+---
+
 ## Test baby profiles
 
 | Baby | Age | Config bracket | targetNaps | WW first/mid/final/max | Nap standard/micro | Bedtime earliest/ideal/latest |
@@ -16,7 +41,67 @@
 
 ---
 
-## Scenario 1 — Happy path: Luna (6mo), normal day, new user (3 entries)
+## Key formulas reference
+
+### Blending weights (`getBlendingWeights`)
+
+| Tier | Entries | Config weight | Learned weight |
+|------|---------|---------------|----------------|
+| Learning | 0-5 | 0.90 | 0.10 |
+| Calibrating | 6-15 | 0.70 | 0.30 |
+| Optimized | 16+ | 0.50 | 0.50 |
+
+### Short nap compensation (`getShortNapCompensation`)
+
+| Nap duration | Multiplier on next WW |
+|---|---|
+| < 30 min | 0.80 |
+| 30-44 min | 0.85 |
+| 45-59 min | 0.90 |
+| 60+ min | 1.00 |
+
+### Sleep debt shift (`calculateDynamicBedtime` — Axis 1)
+
+```
+deficit = (targetNaps × standardDuration) - actualDaytimeSleep
+
+Extreme (deficit ≥ 60): shift = min(40, round(deficit / 2.5))
+Moderate (deficit ≥ 30): shift = min(20, round(deficit / 2))
+None (deficit < 30):     shift = 0
+```
+
+### Wake excess shift (`calculateDynamicBedtime` — Axis 2)
+
+```
+expectedTotalAwake = first + max(0, targetNaps - 1) × mid + final
+wakeExcess = actualTotalAwake - expectedTotalAwake
+
+If wakeExcess ≥ 30: shift = min(25, round(wakeExcess / 3))
+Else:               shift = 0
+```
+
+### Unified fatigue → bedtime
+
+```
+totalShift = max(sleepDebtShift, wakeExcessShift)   // don't stack
+finalWindow = config.wakeWindows.final - totalShift
+
+// Safety floor (age-aware):
+//   1-nap schedules: floor = round(final × 0.75)
+//   multi-nap:       floor = config.wakeWindows.first
+finalWindow = max(finalWindow, safetyFloor)
+
+bedtime = lastNapEnd + finalWindow
+bedtime = clamp(bedtime, earliest, latest + 60min)
+```
+
+### Micro/catnap duration cap
+
+When `simulateDay` marks a nap as catnap or micro, `predictDaySchedule` caps the learned duration to `config.napDurations.micro`. This prevents learned history from overriding structural decisions.
+
+---
+
+## Scenario 1 — Happy path: Luna (6mo), normal day, learning tier
 
 **Inputs**:
 - Morning wake: 07:00
@@ -41,23 +126,22 @@ Bedtime: 990 + 150 = 1140 (19:00) = ideal ✓
 Weighted avg of `[115, 130, 125]` ≈ 123 min (no today's data, equal weights)
 
 **Nap 1** (index=first):
-- Base WW: `getProgressiveWakeWindow` → config.wakeWindows.first = 120
-- Blended: `round(120 * 0.90 + 123 * 0.10)` = `round(108 + 12.3)` = **120**
+- Base WW: config.wakeWindows.first = 120
+- Blended: `round(120 × 0.90 + 123 × 0.10)` = `round(108 + 12.3)` = **120**
 - First nap cap: `min(120, 120)` = **120**
 - Start: 07:00 + 120min = **09:00**
-- Duration: config standard = 60min
-- End: **10:00**
+- Duration: config standard = 60min → End: **10:00**
 
 **Nap 2** (index=second):
 - Base WW: config.wakeWindows.mid = 135
-- Blended: `round(135 * 0.90 + 123 * 0.10)` = `round(121.5 + 12.3)` = **134**
+- Blended: `round(135 × 0.90 + 123 × 0.10)` = `round(121.5 + 12.3)` = **134**
 - No short nap penalty (prev=60min → 1.0)
 - Start: 10:00 + 134min = **12:14**
 - Duration: 60min → End: **13:14**
 
 **Nap 3** (index=third_plus):
 - Base WW: config.wakeWindows.mid = 135
-- Blended: `round(135 * 0.90 + 123 * 0.10)` = **134**
+- Blended: `round(135 × 0.90 + 123 × 0.10)` = **134**
 - Start: 13:14 + 134min = **15:28**
 - Duration: 60min → End: **16:28**
 
@@ -68,16 +152,17 @@ Weighted avg of `[115, 130, 125]` ≈ 123 min (no today's data, equal weights)
 - deficit: 180 - 180 = **0** → no sleep debt shift
 - totalElapsed: 16:28 - 07:00 = 568 min
 - totalAwake: 568 - 180 = 388 min
-- expectedAwake: 568 - 180 = 388 (see BUG below)
-- wakeExcess: 388 - 388 = **0** → no wake excess shift
+- expectedTotalAwake: 120 + 2×135 + 150 = 540 min
+- wakeExcess: 388 - 540 = **-152** → no wake excess shift
 - finalWindow: 150 - 0 = **150**
+- safetyFloor: config.wakeWindows.first = 120 → max(150, 120) = **150**
 - Bedtime: 16:28 + 150min = **18:58** ≈ 19:00
 
 **Result**: ✅ Perfect day. Bedtime at 18:58, just 2 min before ideal 19:00.
 
 ---
 
-## Scenario 2 — Short naps: Luna (6mo), two 25min naps, optimized user (20 entries)
+## Scenario 2 — Short naps: Luna (6mo), two 25min naps, optimized tier
 
 **Inputs**:
 - Morning wake: 07:00
@@ -89,14 +174,14 @@ Weighted avg of `[115, 130, 125]` ≈ 123 min (no today's data, equal weights)
 
 **Nap 3** (only remaining):
 - Base WW: config.wakeWindows.mid = 135
-- Blended (50/50): `round(135 * 0.50 + 118 * 0.50)` = `round(67.5 + 59)` = **127**
-- Short nap penalty (prev=25min < 30 → 0.80): `round(127 * 0.80)` = **102**
+- Blended (50/50): `round(135 × 0.50 + 118 × 0.50)` = `round(67.5 + 59)` = **127**
+- Short nap penalty (prev=25min < 30 → 0.80): `round(127 × 0.80)` = **102**
 - Start: 11:35 + 102min = **13:17**
 
 Nap duration (learned, 50/50):
 - Config standard: 60
 - Learned avg for third_plus: 45
-- Blended: `round(60 * 0.50 + 45 * 0.50)` = **53** (capped above minimum 45) → **53**
+- Blended: `round(60 × 0.50 + 45 × 0.50)` = **53** (above minimum 45) → **53**
 - End: 13:17 + 53min = **14:10**
 
 ### Step 3: Bedtime
@@ -107,16 +192,17 @@ Nap duration (learned, 50/50):
 - sleepDebtShift: `min(40, round(77/2.5))` = `min(40, 31)` = **31**
 - totalElapsed: 14:10 - 07:00 = 430 min
 - totalAwake: 430 - 103 = 327 min
-- (wake excess formula → same as deficit, see BUG)
-- finalWindow: 150 - 31 = **119** (floor check: 119 > first=120? NO → **120**)
+- expectedTotalAwake: 120 + 2×135 + 150 = 540 min
+- wakeExcess: 327 - 540 = **-213** → no wake excess shift
+- finalWindow: 150 - 31 = **119**
+- safetyFloor: config.wakeWindows.first = 120 → max(119, 120) = **120**
 - Bedtime: 14:10 + 120min = **16:10**
 
-**Wait** — 16:10 is before `earliest` (18:30)! So the floor kicks in:
-- Bedtime = **18:30** (earliest)
+16:10 is before `earliest` (18:30) → bedtime floor kicks in → **bedtime = 18:30**
 
-**Result**: ⚠️ Bedtime is floored at 18:30, which is 30 min before ideal. Reasonable — baby has a sleep deficit so going earlier than ideal makes sense. But the raw computed bedtime (16:10) was wildly early, which means the floor caught a runaway. This is OK thanks to U-41's `wakeWindows.first` floor + the earliest-bedtime floor.
+**Result**: ⚠️ Bedtime is floored at 18:30, which is 30 min before ideal. Reasonable — baby has a sleep deficit so going earlier makes sense. The raw computed bedtime (16:10) was wildly early, but the earliest floor caught it.
 
-**Concern**: The baby is awake from 14:10 to 18:30 = 260min. Max wake window for 6mo is 180min. This baby will be overtired. The `simulateDay` rescue nap logic should have caught this, but it runs on structure (config-only), not on the blended times. **This is a gap**: the unified engine's blended times can diverge from simulateDay's structural decisions.
+**Known limitation**: The baby is awake from 14:10 to 18:30 = 260min. Max wake window for 6mo is 180min. This baby will be overtired. See **open issue BUG-2** below.
 
 ---
 
@@ -138,7 +224,7 @@ simulateDay targets 2 naps. 1 completed. Projects **nap 2**:
 - Start: 10:30 + 195min = **13:45**
 - Duration: config standard = 90min → End: **15:15**
 
-### Step 3: Bedtime (if nap 2 is taken)
+### Step 3a: Bedtime (if nap 2 is taken)
 
 - accumulatedSleep: 75 + 90 = 165 min
 - targetDaytimeSleep: 2 × 90 = 180 min
@@ -146,9 +232,9 @@ simulateDay targets 2 naps. 1 completed. Projects **nap 2**:
 - finalWindow: **210**
 - Bedtime: 15:15 + 210min = **18:45** (between earliest 18:30 and ideal 19:00) ✓
 
-### What if parent skips nap 2 entirely?
+### Step 3b: Bedtime (if parent skips nap 2 entirely)
 
-If the parent doesn't log nap 2, `predictDaySchedule` runs with 1 completed nap → still projects nap 2 at 13:45. After 60min overdue (14:45), the nap silently drops (U-57 product decision). Then:
+After 60min overdue (14:45), the nap silently drops (U-57 product decision). Then:
 
 - No projected naps left
 - Last activity: nap 1 end at 10:30
@@ -170,9 +256,9 @@ Same setup: Luna (6mo), morning wake 07:00, historical WW avg = 100min (baby nat
 
 | Tier | Entries | Weights | Nap 1 WW | Nap 2 WW |
 |------|---------|---------|----------|----------|
-| Learning | 3 | 90/10 | `round(120*0.90 + 100*0.10)` = **118** | `round(135*0.90 + 100*0.10)` = **132** |
-| Calibrating | 10 | 70/30 | `round(120*0.70 + 100*0.30)` = **114** | `round(135*0.70 + 100*0.30)` = **125** |
-| Optimized | 20 | 50/50 | `round(120*0.50 + 100*0.50)` = **110** | `round(135*0.50 + 100*0.50)` = **118** |
+| Learning | 3 | 90/10 | `round(120×0.90 + 100×0.10)` = **118** | `round(135×0.90 + 100×0.10)` = **132** |
+| Calibrating | 10 | 70/30 | `round(120×0.70 + 100×0.30)` = **114** | `round(135×0.70 + 100×0.30)` = **125** |
+| Optimized | 20 | 50/50 | `round(120×0.50 + 100×0.50)` = **110** | `round(135×0.50 + 100×0.50)` = **118** |
 
 **Nap 1 time**: 07:00 + WW → 08:58 / 08:54 / 08:50
 **Nap 2 time** (after 60min nap): 09:58+WW → 12:10 / 12:05 / 11:58
@@ -196,22 +282,48 @@ Config: 1 nap, WW first=300 (5h), final=270 (4.5h)
 |-----|----|-------------|----------|-----------|
 | #1 | 300 | 420+300=720 (12:00) | 120 | 840 (14:00) |
 
-Bedtime: 840 + 270 = 1110 (18:30) — hits earliest floor. Ideal is 19:30.
+Bedtime: 840 + 270 = 1110 (18:30). `simulateDay` checks: is 1110 < earliest (19:00 = 1140)? YES → rescue nap logic. But `targetNaps=1` and rescue only triggers for 2-3 nap configs. So no rescue nap.
 
-But wait — `simulateDay` checks: is bedtime < earliest (19:00 = 1140)? 1110 < 1140 → YES → rescue nap logic. But `targetNaps=1` and rescue only triggers for 2-3 nap configs. So no rescue nap.
-
-Final bedtime after floor: **19:00** (earliest)
-
-### predictDaySchedule
+### predictDaySchedule → calculateDynamicBedtime
 
 - Nap 1 at 12:00, duration 120min, end 14:00
-- finalWindow: 270
-- accumulatedSleep: 120
+- accumulatedSleep: 120 min
 - targetSleep: 1 × 120 = 120 → deficit = 0 → no shift
+- finalWindow: 270 - 0 = **270**
+- safetyFloor (1-nap): `round(270 × 0.75)` = **203** → max(270, 203) = **270**
 - Bedtime: 14:00 + 270min = **18:30**
-- Floor: 19:00 → **bedtime = 19:00**
+- Earliest floor: 19:00 → **bedtime = 19:00**
 
-**Result**: ✅ Correct. 1-nap toddler bedtime at 19:00 (earliest), 30min before ideal. The long afternoon wake window (5h) is within max (330min = 5.5h).
+**Result**: ✅ Correct. 1-nap toddler bedtime at 19:00 (earliest), 30min before ideal. The long afternoon wake window (5h from 14:00 to 19:00) is within max (330min = 5.5h).
+
+---
+
+## Scenario 5b — Noa (16mo), short nap (60min instead of 120min)
+
+**Inputs**: Same as Scenario 5, but nap is only 60min (12:00→13:00).
+
+### Bedtime with sleep debt
+
+- accumulatedSleep: 60 min
+- targetDaytimeSleep: 1 × 120 = 120 min
+- deficit: 120 - 60 = **60** → extreme tier (≥60)
+- sleepDebtShift: `min(40, round(60/2.5))` = `min(40, 24)` = **24**
+- finalWindow: 270 - 24 = **246**
+- safetyFloor (1-nap): `round(270 × 0.75)` = **203** → max(246, 203) = **246**
+- Bedtime: 13:00 + 246min = **17:06**
+- Earliest floor: 19:00 → **bedtime = 19:00**
+
+The earliest floor still dominates here. But with a later nap (e.g. 13:00→14:00 end), the debt shift actually changes the result:
+
+- Bedtime: 14:00 + 246min = **18:06** → earliest floor → **19:00**
+
+And with an even later nap end (14:30):
+
+- Bedtime: 14:30 + 246min = **18:36** → earliest floor → **19:00**
+
+Vs. without debt (full 120min nap ending 14:30): 14:30 + 270min = **19:00** (exact).
+
+**Result**: ✅ The sleep debt shift (24min) is correctly applied and not absorbed by the safety floor. The earliest bedtime floor still dominates in most toddler cases because the afternoon window is so long, but the shift is preserved for edge cases where the nap runs later.
 
 ---
 
@@ -234,99 +346,39 @@ Even if bedtime were 1500 (01:00 next day):
 - `minutesToDate(1500, refDate)` = refDate midnight + 1500min = next day 01:00 ✓
 - `calculateAllNapWindows`: `1500 % 1440` = 60 → hour=1, minute=0 ✓
 
-**Result**: ✅ Midnight safety works correctly.
+### Latest bedtime ceiling
+
+Config latest: 19:30. Ceiling = latest + 60min = **20:30**.
+Raw bedtime: 22:00 > 20:30 → capped to **20:30**.
+
+**Result**: ✅ Midnight arithmetic is safe. Late schedule is capped at latest + 60min.
 
 ---
 
-## 🐛 BUG FOUND — U-59 wake excess formula is algebraically equivalent to sleep deficit
+## Scenario 7 — Micro-nap duration cap: Luna (6mo), late catnap
 
-### The formula (dateUtils.ts:1420-1421)
+**Inputs**:
+- Morning wake: 07:00
+- Completed naps: [09:00→10:00 (60min), 12:15→13:15 (60min)]
+- Nap 3 projected at 15:28 — simulateDay marks it as micro (starts near 16:00 catnap cutoff)
+- Nap duration history: avg third_plus = 50min
 
-```javascript
-const expectedAwakeMinutes = (totalAwakeMinutes + totalDaytimeSleepMinutes) - targetDaytimeSleepMinutes;
-const wakeExcess = totalAwakeMinutes - Math.max(0, expectedAwakeMinutes);
-```
+### Without duration cap (old behavior)
 
-### Algebraic reduction
+- `getLearnedNapDurationMinutes` returns blended: `round(60 × 0.50 + 50 × 0.50)` = **55**
+- Nap 3 end: 15:28 + 55min = **16:23**
+- Bedtime: 16:23 + 150min = **18:53**
 
-Let:
-- `A` = totalAwakeMinutes
-- `S` = totalDaytimeSleepMinutes
-- `T` = targetDaytimeSleepMinutes
-- `E` = totalElapsed = A + S (from `predictDaySchedule`)
+But simulateDay said this should be a 20min micro to preserve the bedtime window. The structural decision is overridden.
 
-Then:
-```
-expectedAwake = (A + S) - T = E - T
-wakeExcess = A - max(0, E - T)
-           = A - max(0, (A + S) - T)
-           = A - (A + S - T)        [since E - T > 0 in normal cases]
-           = T - S
-           = deficit
-```
+### With duration cap (current behavior)
 
-**`wakeExcess` is mathematically identical to `deficit`**. The two axes of the unified fatigue state measure the same thing. The `max(sleepDebtShift, wakeExcessShift)` always picks `sleepDebtShift` because it has a higher cap (40 vs 25).
+- `getLearnedNapDurationMinutes` returns 55, but `projected.isCatnap = true`
+- Cap: `min(55, config.napDurations.micro)` = `min(55, 20)` = **20**
+- Nap 3 end: 15:28 + 20min = **15:48**
+- Bedtime: 15:48 + 150min = **18:18** → earliest floor → **18:30**
 
-### Why this matters
-
-The intent of U-59 was: "a baby with many fragmented micro-naps accumulates more fatigue even when total sleep minutes look OK." But the formula doesn't capture this. Consider:
-
-**Baby A**: 3 solid naps of 60min each = 180min sleep, 3 wake windows
-**Baby B**: 6 micro-naps of 30min each = 180min sleep, 6 wake windows
-
-Both have identical `totalDaytimeSleepMinutes` (180) and identical `deficit` (0). Both would have identical `wakeExcess` (0). Baby B should feel more tired due to fragmented sleep, but the algorithm treats them identically.
-
-### Correct formula
-
-The wake excess should measure: **total time spent awake vs. what's expected for this age's schedule**. The expected awake time for a given age is:
-
-```
-expectedTotalAwake = sum of all age-appropriate wake windows
-                   = config.wakeWindows.first + (targetNaps - 1) * config.wakeWindows.mid + config.wakeWindows.final
-```
-
-Then:
-```
-wakeExcess = actualTotalAwake - expectedTotalAwake
-```
-
-This is **independent** of sleep deficit. Baby B (6 micro-naps, more transitions) would have more cumulative awake time between naps than Baby A (3 solid naps), because each additional wake-up adds transition time.
-
-### Fix
-
-Replace lines 1419-1425 with:
-
-```javascript
-let wakeExcessShift = 0;
-if (totalAwakeMinutes > 0) {
-  // Expected total awake time for this age's schedule
-  const expectedTotalAwake = config.wakeWindows.first
-    + Math.max(0, config.targetNaps - 1) * config.wakeWindows.mid
-    + config.wakeWindows.final;
-  const wakeExcess = totalAwakeMinutes - expectedTotalAwake;
-  if (wakeExcess >= WAKE_EXCESS_THRESHOLD_MINUTES) {
-    wakeExcessShift = Math.min(WAKE_EXCESS_CAP_MINUTES, Math.round(wakeExcess / 3));
-  }
-}
-```
-
----
-
-## 🐛 BUG FOUND — Scenario 2 gap: blended nap times can exceed max wake window
-
-In Scenario 2, after three 25min short naps + short nap penalties + aggressive blending, the last nap ends at 14:10 and the next "event" is bedtime at 18:30. That's a **260min** gap — well above the 6mo `config.wakeWindows.max` of 180min.
-
-### Root cause
-
-`simulateDay` (structure) uses config-only wake windows and can trigger rescue naps when wake windows exceed max. But `predictDaySchedule` (blended times) can produce different nap end times than `simulateDay` projected. The structural decision (no rescue nap needed) was made with config times, but the actual blended schedule has longer gaps.
-
-### Impact
-
-Low in practice — this only happens with extreme short naps + high optimization + high blending divergence. But technically the baby would be overtired by bedtime.
-
-### Potential fix (future)
-
-After computing all blended nap times + bedtime, add a post-hoc check: if any wake gap exceeds `config.wakeWindows.max`, flag it (or insert a rescue nap). This is a structural improvement for a future iteration.
+**Result**: ✅ Micro-nap cap preserves the structural decision. Bedtime stays within expected range.
 
 ---
 
@@ -335,36 +387,43 @@ After computing all blended nap times + bedtime, add a post-hoc check: if any wa
 | # | Scenario | Result | Notes |
 |---|----------|--------|-------|
 | 1 | Luna 6mo, normal day, learning | ✅ Bedtime 18:58 | Perfect alignment with ideal |
-| 2 | Luna 6mo, short naps, optimized | ⚠️ Bedtime 18:30 (floor) | Floor saves from 16:10 runaway. Gap 260min > max 180 |
+| 2 | Luna 6mo, short naps, optimized | ⚠️ Bedtime 18:30 (floor) | Floor saves from 16:10 runaway. Gap 260min > max 180 (BUG-2) |
 | 3 | Marc 9mo, skipped nap 2 | ✅ Bedtime 18:30 (floor) | Extreme deficit correctly detected, floor catches |
 | 4 | Blending tiers comparison | ✅ Gradual 10-12min drift | Natural adaptation, no wild swings |
-| 5 | Noa 16mo, 1-nap toddler | ✅ Bedtime 19:00 (floor) | Correct for toddler schedule |
-| 6 | Midnight crossing | ✅ minutesToDate handles >1440 | No overflow risk |
+| 5 | Noa 16mo, 1-nap toddler | ✅ Bedtime 19:00 | Age-aware safety floor preserves configured final window |
+| 5b | Noa 16mo, short nap (60min) | ✅ Bedtime 19:00 | 24min debt shift applied, earliest floor still dominates |
+| 6 | Midnight crossing / late schedule | ✅ No overflow, capped at 20:30 | minutesToDate handles >1440; latest ceiling prevents runaway |
+| 7 | Micro-nap duration cap | ✅ 20min micro preserved | Learned duration capped when simulation says catnap |
 
-## Bugs found
+---
 
-| ID | Severity | Description | Fix |
-|----|----------|-------------|-----|
-| **BUG-1** | Medium | U-59 wake excess formula algebraically equals sleep deficit — measures same axis, not fragmentation | Replace with config-based expected wake total |
-| **BUG-2** | Low | Blended times can diverge from simulateDay structure, causing wake gaps > max | Post-hoc rescue nap check (future iteration) |
+## Open issues
 
-## BUG-1 fix applied
+### BUG-2 — Blended nap times can exceed max wake window (LOW)
 
-Formula replaced with config-based expected wake total:
-```javascript
-const expectedTotalAwake = config.wakeWindows.first
-  + Math.max(0, config.targetNaps - 1) * config.wakeWindows.mid
-  + config.wakeWindows.final;
-const wakeExcess = totalAwakeMinutes - expectedTotalAwake;
-```
+**Backlog**: U-69 (P3)
 
-This correctly measures an **independent axis** from sleep deficit: a baby whose day has stretched longer than expected (late morning, shifted schedule, extra wake-ups) now triggers an earlier bedtime even if total sleep minutes look normal.
+In Scenario 2, after short naps + penalties + aggressive blending, the last nap ends at 14:10 and the next event is bedtime at 18:30. That's a **260min** gap — well above the 6mo `config.wakeWindows.max` of 180min.
 
-**Limitation acknowledged**: True sleep fragmentation (many short naps vs. few long ones with same total) is not captured by total awake time alone. Fragmentation fatigue would require counting wake-up transitions × a fatigue cost per transition. This is a future refinement — the current formula is still a meaningful improvement over the previous version (which was a no-op alias of deficit).
+**Root cause**: `simulateDay` (structure) uses config-only wake windows and can trigger rescue naps when gaps exceed max. But `predictDaySchedule` (blended times) produces different nap end times. The structural decision (no rescue nap needed) was made with config times, but the actual blended schedule has longer gaps.
 
-## Next steps
+**Impact**: Low — only triggers with extreme short naps + high optimization + high blending divergence. Earliest bedtime floor prevents absurd outputs, but the baby would be overtired.
 
-1. ~~**Fix BUG-1 now**~~ ✅ Done — formula replaced
-2. **Document BUG-2** as a known limitation in the backlog — only triggers in extreme scenarios, floors prevent harm
-3. **Consider adding unit tests** for Scenarios 1-6 to prevent regressions in future prediction changes
-4. **Future**: Fragmentation fatigue (wake-up count × transition cost) as a third fatigue axis
+**Fix**: Post-hoc check after computing all blended nap times + bedtime: if any wake gap exceeds `config.wakeWindows.max`, insert a rescue micro-nap or flag the gap.
+
+---
+
+## Known limitations
+
+**Fragmentation fatigue**: True sleep fragmentation (many short naps vs. few long ones with the same total sleep) is not captured. A baby with 6 × 30min naps and a baby with 3 × 60min naps have identical `totalDaytimeSleep` and identical `totalAwakeMinutes`, so both get the same bedtime. Fragmentation fatigue would require counting wake-up transitions × a fatigue cost per transition. Future refinement.
+
+---
+
+## Fixes applied during this audit
+
+| Bug | Severity | Description | Fix | Backlog |
+|-----|----------|-------------|-----|---------|
+| BUG-1 | Medium | Wake excess formula was algebraically identical to sleep deficit (measured same axis) | Replaced with config-based `expectedTotalAwake = first + (targetNaps-1)×mid + final` | — |
+| BUG-3 | High | Safety floor `Math.max(final, first)` inverted bedtime for 1-nap toddlers (15-24mo) — all debt shifts absorbed | Age-aware floor: `targetNaps === 1 ? round(final × 0.75) : first` | U-66 |
+| BUG-4 | Low | No latest bedtime ceiling — late-waking babies got uncapped 22:00+ bedtime | Soft cap at `config.bedtime.latest + 60min` | U-68 |
+| BUG-5 | Low | Learned nap duration overrode simulation's micro/catnap structural decision | Cap to `config.napDurations.micro` when `isCatnap \|\| isMicroNap` | U-67 |

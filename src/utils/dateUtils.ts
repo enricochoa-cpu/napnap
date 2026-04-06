@@ -1431,8 +1431,15 @@ export function calculateDynamicBedtime(
   const totalShift = Math.max(sleepDebtShift, wakeExcessShift);
   let finalWindowMinutes = config.wakeWindows.final - totalShift;
 
-  // Safety floor: never reduce wake window below age-appropriate minimum
-  finalWindowMinutes = Math.max(finalWindowMinutes, config.wakeWindows.first);
+  // Safety floor: never reduce wake window below age-appropriate minimum.
+  // For 1-nap schedules, `first` is the long morning-to-nap window (300-330 min),
+  // which is larger than `final` (270-300 min). Using `first` as the floor would
+  // absorb all sleep debt shifts and push bedtime later than configured.
+  // Instead, allow up to 25% reduction from `final` for 1-nap schedules.
+  const safetyFloor = config.targetNaps === 1
+    ? Math.round(config.wakeWindows.final * 0.75)
+    : config.wakeWindows.first;
+  finalWindowMinutes = Math.max(finalWindowMinutes, safetyFloor);
 
   const bedtime = new Date(
     lastNapEnd.getTime() + finalWindowMinutes * 60 * 1000
@@ -1450,6 +1457,21 @@ export function calculateDynamicBedtime(
   if (bedtime.getTime() < earliestToday.getTime()) {
     return earliestToday;
   }
+
+  // Soft ceiling: never suggest bedtime more than 60min past age-appropriate latest.
+  // Catches late-waking babies whose schedule drifts past 22:00+.
+  const latestToday = new Date(lastNapEnd);
+  latestToday.setHours(
+    config.bedtime.latest.hour,
+    config.bedtime.latest.minute,
+    0,
+    0
+  );
+  const latestCeiling = new Date(latestToday.getTime() + 60 * 60 * 1000);
+  if (bedtime.getTime() > latestCeiling.getTime()) {
+    return latestCeiling;
+  }
+
   return bedtime;
 }
 
@@ -1648,6 +1670,13 @@ export function predictDaySchedule(params: {
       );
     } else {
       expectedDuration = projected.isCatnap ? config.napDurations.micro : config.napDurations.standard;
+    }
+
+    // Cap learned duration when simulation decided this should be a micro/catnap.
+    // Without this, learned history (e.g. 50min) can override a structural
+    // decision (e.g. 20min micro), shifting the bedtime anchor.
+    if ((projected.isCatnap || projected.isMicroNap) && expectedDuration > config.napDurations.micro) {
+      expectedDuration = config.napDurations.micro;
     }
 
     // Confidence + calibration
