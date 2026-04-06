@@ -1,0 +1,93 @@
+<h2>Testimonial Section Layout</h2>
+<p class="subtitle">How should the expanded social proof section look? Currently it's a carousel with 3 quotes. We're going to 6+ quotes.</p>
+
+<div class="cards">
+  <div class="card" data-choice="carousel" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1c2a;">
+      <!-- Carousel mockup -->
+      <div style="text-align: center; color: #e8e8e8; font-family: system-ui;">
+        <div style="font-size: 11px; color: #9DBAB7; margin-bottom: 8px;">TRUSTED BY DOZENS OF FAMILIES</div>
+        <div style="background: #1E2230; border-radius: 16px; padding: 24px 20px; margin: 0 auto; max-width: 360px;">
+          <div style="font-size: 36px; color: #9DBAB7; opacity: 0.15; margin-bottom: 8px;">&ldquo;</div>
+          <div style="font-size: 15px; line-height: 1.5; color: #e8e8e8; font-style: italic;">&ldquo;Finally, something that tells me what to do next without judging how I got here.&rdquo;</div>
+          <div style="margin-top: 12px; font-size: 13px; color: #8a8fa0;">Mireia, mum of a 4-month-old</div>
+          <div style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;">
+            <span style="width: 24px; height: 6px; border-radius: 3px; background: #9DBAB7;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #8a8fa0; opacity: 0.3;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #8a8fa0; opacity: 0.3;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #8a8fa0; opacity: 0.3;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #8a8fa0; opacity: 0.3;"></span>
+            <span style="width: 6px; height: 6px; border-radius: 3px; background: #8a8fa0; opacity: 0.3;"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Enhanced Carousel (Current style, more quotes)</h3>
+      <p>Keep the existing carousel pattern but add 6 quotes + a "Trusted by dozens of families" header. Auto-rotates, swipe to navigate. Minimal change, proven pattern.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="grid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1c2a;">
+      <!-- Grid mockup -->
+      <div style="color: #e8e8e8; font-family: system-ui;">
+        <div style="text-align: center; font-size: 11px; color: #9DBAB7; margin-bottom: 12px;">TRUSTED BY DOZENS OF FAMILIES</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 380px; margin: 0 auto;">
+          <div style="background: #1E2230; border-radius: 12px; padding: 14px;">
+            <div style="font-size: 12px; color: #d8d8d8; line-height: 1.4;">&ldquo;Tells me what to do next without judging.&rdquo;</div>
+            <div style="font-size: 11px; color: #8a8fa0; margin-top: 8px;">Mireia</div>
+          </div>
+          <div style="background: #1E2230; border-radius: 12px; padding: 14px;">
+            <div style="font-size: 12px; color: #d8d8d8; line-height: 1.4;">&ldquo;One tap at 3am. That's all I need.&rdquo;</div>
+            <div style="font-size: 11px; color: #8a8fa0; margin-top: 8px;">Rosa</div>
+          </div>
+          <div style="background: #1E2230; border-radius: 12px; padding: 14px;">
+            <div style="font-size: 12px; color: #d8d8d8; line-height: 1.4;">&ldquo;No charts. Just 'next nap at 14:10'.&rdquo;</div>
+            <div style="font-size: 11px; color: #8a8fa0; margin-top: 8px;">Eva</div>
+          </div>
+          <div style="background: #1E2230; border-radius: 12px; padding: 14px;">
+            <div style="font-size: 12px; color: #d8d8d8; line-height: 1.4;">&ldquo;My partner logs too. Same page.&rdquo;</div>
+            <div style="font-size: 11px; color: #8a8fa0; margin-top: 8px;">Marta</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Testimonial Grid (Napper-inspired)</h3>
+      <p>2-column card grid showing all quotes at once. More visual impact, shows volume. Scrolls on mobile (2 visible, rest below). Napper uses a similar pattern with photos.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1c2a;">
+      <!-- Hybrid mockup -->
+      <div style="color: #e8e8e8; font-family: system-ui; text-align: center;">
+        <div style="font-size: 11px; color: #9DBAB7; margin-bottom: 4px;">TRUSTED BY DOZENS OF FAMILIES</div>
+        <div style="display: flex; justify-content: center; gap: 2px; margin-bottom: 12px;">
+          <span style="color: #E8D3A3;">&#9733;</span>
+          <span style="color: #E8D3A3;">&#9733;</span>
+          <span style="color: #E8D3A3;">&#9733;</span>
+          <span style="color: #E8D3A3;">&#9733;</span>
+          <span style="color: #E8D3A3;">&#9733;</span>
+        </div>
+        <div style="background: #1E2230; border-radius: 16px; padding: 20px; max-width: 360px; margin: 0 auto;">
+          <div style="font-size: 15px; color: #e8e8e8; font-style: italic; line-height: 1.5;">&ldquo;Finally, something that tells me what to do next without judging how I got here.&rdquo;</div>
+          <div style="margin-top: 10px; font-size: 13px; color: #8a8fa0;">Mireia, mum of a 4-month-old</div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; max-width: 300px; margin-left: auto; margin-right: auto;">
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #9DBAB7; border: 1px solid rgba(157,186,183,0.2);">Mireia</span>
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #8a8fa0;">Rosa</span>
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #8a8fa0;">Eva</span>
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #8a8fa0;">Marta</span>
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #8a8fa0;">Cristina</span>
+          <span style="background: #1E2230; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #8a8fa0;">Pepi</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Hybrid (Featured quote + name pills)</h3>
+      <p>One prominent quote with star rating, plus clickable name pills below that swap the featured quote. Shows volume via pills while keeping the calm, focused feel. Stars add trust signal.</p>
+    </div>
+  </div>
+</div>

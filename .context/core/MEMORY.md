@@ -61,6 +61,24 @@ Las wake windows se expanden a lo largo del día:
 - **Early Bedtime Trigger**: Si sueño diurno acumulado < mínimo, adelanta al límite inferior del rango
 - **Bedtime window constraint (2026-02-24):** La hora de dormir proyectada nunca puede ser anterior a `config.bedtime.earliest` (p. ej. 18:30). Si el motor sale del bucle con 2–3 siestas y el bedtime quedaría antes de ese mínimo (ej. 16:30 en un 8‑mes que aún necesita 3ª siesta), `simulateDay()` añade una **rescue catnap** para que el bedtime caiga en [earliest, latest]. Para 1 siesta (toddler) no se añade 2ª siesta; `calculateDynamicBedtime()` hace **floor** al earliest. Ver lessons.md §1.7 y `.context/reference/docs/BEDTIME_WINDOW_RESEARCH_AND_SCENARIOS.md`.
 
+### Sleep Pauses & Net Sleep (2026-04-02)
+El sistema soporta **pausas** (interrupciones) dentro de un registro de sueño. Cada pausa tiene `start_time` + `duration_minutes`. El sueño neto = duración total − suma de pausas.
+
+- **Tabla:** `sleep_pauses` (FK → `sleep_entries`, CASCADE delete). RLS mirrors sleep_entries (owner, caregiver, viewer).
+- **Tipo:** `SleepPause { id, sleepEntryId, startTime, durationMinutes }`
+- **Net sleep:** `getNetSleepMinutes()` en `dateUtils.ts` — usado en TODOS los displays de duración (TodayView, SleepList, DailySummary, StatsView, ReportView).
+- **Live pause:** Estado `activePauseStart: Date | null` en App.tsx, pasado a SleepEntrySheet (botones Pause/Play + Stop) y TodayView (badge "Paused", timer congelado).
+- **Night waking:** Pausa en entry type `night` se muestra como "Night waking" con icono storm cloud y `--wake-color`. Mismos datos, label contextual.
+- **QuickActionSheet:** Botón "Night waking" en segunda fila, solo visible cuando hay bedtime activo o reciente.
+- **DailySummary:** `nightWakingCount` + `nightWakingMinutes` calculados en `computeDailySummary`.
+
+### Qualitative Sleep Metadata (2026-04-02)
+Metadatos opcionales por entry:
+- **onset_tags** (`text[]`): Multi-select chips — `long_onset`, `upset`
+- **sleep_method** (`text`): Single-select chips — `in_bed`, `nursing`, `worn_or_held`, `next_to_me`, `bottle_feeding`, `stroller`, `car`, `swing`
+- **notes** (`text`): Campo existente, ahora con textarea visible en SleepEntrySheet
+- Chips en SleepEntrySheet debajo de la sección de pausas. Todos opcionales, nunca requeridos.
+
 ### Predicciones Durante Nap Activa
 Cuando hay una nap en curso:
 1. Se cuenta como "consumida" en el total (`effectiveNapCount = completedNaps + 1`)
@@ -82,6 +100,7 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 ### Quick Actions (FAB → Bottom Sheet)
 - Botón "+" central en nav bar abre `QuickActionSheet` — **único punto de entrada** para añadir entradas (Nap, Bedtime, Wake Up). Sleep Log (History) ya no tiene botón "+ Add Entry".
 - Grid 3 columnas: Wake Up, Nap, Bedtime
+- **Segunda fila:** "Night waking" (storm cloud icon, `--wake-color`) — solo visible cuando hay bedtime activo o completado reciente. Tap: si bedtime activo → inicia live pause; si completado → abre sheet para añadir pausa retrospectiva.
 - Si hay sleep activo: solo muestra "Wake Up"
 - **Loading guard:** No tratar como "no baby" mientras `profileLoading`. FAB abre sheet cuando `profileLoading || hasAnyBaby`; solo navega a add-baby cuando `!profileLoading && !hasAnyBaby`. Nunca deshabilitar el FAB (comportamiento optimista). En `handleOpenNewEntry`, si ya cargó y no hay baby, cerrar sheet y redirigir a add baby. Ver lessons.md §14.
 
@@ -95,8 +114,10 @@ Cuando una predicción de nap está en el pasado ("overdue"):
 - Bottom sheet desde abajo (50dvh)
 - **Drag-to-dismiss**: Swipe down para cerrar
 - **Header:** solo icono de tipo (nube/luna) + label "Nap"/"Bedtime" — sin fecha en el header
-- **Debajo de start time:** duración "Xmin long" / "Xh Ymin long" (o "—" si no hay end). **Debajo de end time:** hoy = "Xh Y min ago"; ayer = "Yesterday"; más viejo = "Feb 10" (mes + día). "Sleeping..." si entry activa sin end. Labels en una sola línea (whitespace-nowrap, min-w-[7ch])
-- Botón save con iconos contextuales: Play (nueva sin fin), Stop (entry activa), Check (completada)
+- **Debajo de start time:** duración neta (gross − pausas) "Xmin long" / "Xh Ymin long". Sufijo "(net)" cuando hay pausas. **Debajo de end time:** hoy = "Xh Y min ago"; ayer = "Yesterday"; más viejo = "Feb 10". "Sleeping..." / "Paused" / "Night waking" si entry activa.
+- **Botones activos:** Dos botones lado a lado para entries activas: Pause/Play (izquierda, con anillo pulsante cuando paused) + Stop (derecha). Botón único Check para entries completadas.
+- **Sección de pausas:** Cards colapsables ("Pause 1" / "Night waking 1") con start time + duration. "+ Add pause" / "+ Add night waking" (dashed button, max 5). Solo visible en entries completadas o activas con pausas.
+- **Sección cualitativa:** Chips de onset (multi-select: Long time to fall asleep, Upset) + chips de método (single-select: In bed, Nursing, etc.) + textarea de notas. Todo opcional.
 - **Temporal Validation**: bloquea duración 0, nap > 5h, night > 14h. Warn: nap > 4h, night > 13h, cross-midnight nap
 - Trash icon gris sutil, opacidad completa (era /60, ahora full)
 
@@ -149,8 +170,8 @@ Cambio automático basado en hora del día:
 | `App.tsx` | Router, AnimatePresence transitions, collision detection |
 | `TodayView.tsx` | Smart dashboard, predictions, skeleton loading |
 | `StatsView.tsx` | Sleep statistics with Recharts; section chips (Summary, Naps, Night sleep, Growth) switch content; single date range picker; weight/height area charts in Growth section only (or no-sleep block) with adaptive Y-axis; chip scroll-into-view keeps selected chip centered |
-| `SleepEntrySheet.tsx` | Add/edit entries, temporal validation, dynamic labels, Framer Motion drag-to-dismiss |
-| `QuickActionSheet.tsx` | 3-column quick actions grid; bottom sheet with drag-to-dismiss |
+| `SleepEntrySheet.tsx` | Add/edit entries, temporal validation, dynamic labels, pause section (add/edit/delete cards), live Pause/Play+Stop buttons, qualitative chips (onset + method) + notes textarea, Framer Motion drag-to-dismiss |
+| `QuickActionSheet.tsx` | 3-column quick actions grid + Night waking button (2nd row); bottom sheet with drag-to-dismiss |
 | `DayNavigator.tsx` | Napper-style week strip + calendar modal (date selection for History view) |
 | `SleepList.tsx` | History view, uses SleepEntry variants |
 | `SleepEntry.tsx` | NapEntry, BedtimeEntry, WakeUpEntry components |
@@ -160,7 +181,7 @@ Cambio automático basado en hora del día:
 ### Hooks
 | Hook | Purpose |
 |------|---------|
-| `useSleepEntries` | CRUD entries, activeSleep, awakeMinutes |
+| `useSleepEntries` | CRUD entries + pause CRUD (addPause, updatePause, deletePause), activeSleep, awakeMinutes, net sleep via getNetSleepMinutes. computeDailySummary includes nightWakingCount/nightWakingMinutes |
 | `useBabyProfile` | Baby/user profiles, multi-baby switching, delete baby (no client anonymization; only full account delete anonymizes via Edge Function) |
 | `useBabyShares` | Sharing/invitations between caregivers |
 | `useGrowthLogs` | Weight/height timeline per baby (fetch, add, update, delete; warning when past value &lt; later value) |
@@ -175,7 +196,7 @@ Cambio automático basado en hora del día:
 | `waitlist-notify` | Send notification to getnapnap@gmail.com when landing page visitor submits email (verify_jwt = false, public endpoint) |
 
 ### Key Utilities
-- `dateUtils.ts`: Prediction algorithms, duration formatting, age calculations
+- `dateUtils.ts`: Prediction algorithms, duration formatting, age calculations, `getNetSleepMinutes()` (net sleep = gross − pauses)
 - `storage.ts`: localStorage helpers; sessionStorage helpers for onboarding draft (ONBOARDING_DRAFT key)
 
 ---
@@ -257,6 +278,8 @@ El proyecto usa un sistema de memoria persistente para mantener contexto entre s
 | 2026-03-06 | Waitlist email notification: Edge Function `waitlist-notify` sends styled email to getnapnap@gmail.com via Resend when visitor submits email on landing page. |
 | 2026-03-06 | Fix: createProfile .insert() → .upsert() to avoid 23505 duplicate key error for returning users. |
 | 2026-03-07 | UX/UI audit: 44 issues identified, 38 resolved, 3 deferred (report redesign). Touch targets, i18n, error states, save feedback, sign-out shortcut, ghost predictions tappable, nap wake-up time picker, collision "Adjust times", contact fallback. Glass-bg opacity fix (0.85 → 0.55 in light themes). Full audit in `.context/reference/ux-audit.md`. |
+
+| 2026-04-02 | Sleep Log Enrichment (4 phases): Phase 1 — sleep_pauses table + pause CRUD + net sleep everywhere + pause edit UI in SleepEntrySheet. Phase 2 — live Pause/Play+Stop buttons on active entries, timer freeze, activePauseStart state in App.tsx. Phase 3 — Night waking = pause on night entry with contextual labels (storm cloud icon, --wake-color), QuickActionSheet night waking button, DailySummary nightWakingCount. Phase 4 — onset_tags (text[]) + sleep_method (text) columns, chip UI (onset multi-select, method single-select), notes textarea promoted to visible. |
 
 ---
 

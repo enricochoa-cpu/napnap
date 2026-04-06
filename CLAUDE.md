@@ -42,7 +42,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 - **Hooks** (`src/hooks/`) manage state and Supabase persistence
 - **Components** are presentational and receive data/callbacks via props
 - `useAuth` handles user authentication (sign up, sign in, sign out, password reset)
-- `useSleepEntries` handles all sleep CRUD operations and provides computed values (active sleep, daily summaries)
+- `useSleepEntries` handles all sleep CRUD operations, pause CRUD (addPause, updatePause, deletePause), and provides computed values (active sleep, daily summaries with nightWakingCount/nightWakingMinutes). Fetches pauses in batch and merges into entries
 - `useBabyProfile` handles baby and user profile CRUD via Supabase (including `locale` for i18n; syncs to `i18n.changeLanguage` and localStorage)
 - `useBabyShares` handles multi-user sharing (invitations, access management)
 - `useGrowthLogs` handles measurement logs per baby (weight, height, head; one row per date); returns measurementLogs plus derived weightLogs/heightLogs for Stats; add/update/delete; past-value warning
@@ -54,26 +54,28 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 ### Key Types (`src/types/index.ts`)
 - `BabyProfile`: Baby info (name, DOB, gender, avatarUrl). Weight/height/head are timeline logs per baby (useGrowthLogs → Measures), not on profile.
 - `UserProfile`: User info (email, userName, userRole: dad/mum/other, locale: en|es for app language)
-- `SleepEntry`: Individual sleep record with start/end times, type (nap/night), and optional notes
+- `SleepEntry`: Individual sleep record with start/end times, type (nap/night), optional notes, pauses (`SleepPause[]`), onset tags (`string[]`), and sleep method (`string`)
+- `SleepPause`: Interruption within a sleep entry (start time + duration in minutes). Night entry pauses display as "Night wakings"
 - `BabyShare`: Multi-user sharing (babyOwnerId, sharedWithEmail, status, role: caregiver/viewer). When populated from pending-invites query: babyName, ownerName, babyAvatarUrl for invite cards.
 
 ### Database Types (`src/lib/supabase.ts`)
 - `DbProfile`: Supabase profiles table schema
-- `DbSleepEntry`: Supabase sleep_entries table schema
+- `DbSleepEntry`: Supabase sleep_entries table schema (includes onset_tags text[], sleep_method text)
+- `DbSleepPause`: sleep_pauses table (sleep_entry_id FK, start_time, duration_minutes)
 - `DbMeasurementLog`: baby_measurement_logs (weight_kg, height_cm, head_cm, notes; one row per baby+date)
 - `baby_shares` table: Multi-user sharing with invitation workflow
 
 ### Component Responsibilities
 - `App.tsx`: Tab-based navigation (home, history, profile, add), collision detection, bottom action bar; add entry is FAB-only (no add-entry button on Sleep Log). **Floating nav** is hidden when any modal/sheet registers via `useNavHiddenWhenModal()` (e.g. MeasureLogSheet) so primary actions stay visible. **Header avatar** (top-left): shown only on **Today and Sleep Log (history)** views; Napper-style circle with baby photo (darkened) + initial, nap-color ring; tap opens Profile → My Babies. **Pending-invite dot** (wake-color) on avatar and on Profile tab when `pendingInvitations.length > 0`. Profile section accepts `initialView` so avatar can open directly on My Babies. **Uses AnimatePresence for slide transitions** between views with spring physics (stiffness: 300, damping: 30). Floating nav bar has stable width when switching tabs (html overflow-y: scroll, body overflow-x: hidden, fixed .floating-nav-inner width at 500px+; see lessons.md §6.6).
 - `TodayView`: Smart dashboard showing predicted nap times, bedtime, and current status. **Empty state:** when user has no baby and has pending invite, shows "You have a baby invite" + "Review invite" CTA (navigates to Profile menu). Hero card uses `var(--bg-card)` and no border (softer than bento). Uses compact horizontal card layout (~48px height) with timeline river for mobile. **Shows skeleton loading states** via `SkeletonTimelineCard` during data fetch. Predictions shown alongside active naps; bedtime updates in real-time based on active nap's expected wake time
-- `QuickActionSheet`: Napper-style bottom sheet with 3-column quick action grid (Wake Up, Nap, Bedtime). Uses framer-motion spring animations. Opens SleepEntrySheet with current time pre-loaded
-- `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates
+- `QuickActionSheet`: Napper-style bottom sheet with 3-column quick action grid (Wake Up, Nap, Bedtime) + **second row** "Night waking" button (storm cloud icon, `--wake-color`) shown only when a bedtime exists. Uses framer-motion spring animations. Opens SleepEntrySheet with current time pre-loaded
+- `SleepEntrySheet`: Bottom sheet modal for adding/editing sleep entries with time pickers. **Uses Framer Motion with drag-to-dismiss** (swipe down to close with elastic physics). Shows selected date and uses smart defaults (12:00 for naps, 20:00 for bedtime) when adding entries for past dates. **Pause section:** collapsible cards for completed pauses (add/edit/delete); contextual labels ("Pause" for naps, "Night waking" for bedtime with storm cloud icon). **Active entries:** two buttons (Pause/Play + Stop) with pulsing ring when paused, timer freezes showing net sleep. **Qualitative section:** onset chips (multi-select: Long time to fall asleep, Upset), sleep method chips (single-select: In bed, Nursing, etc.), notes textarea. All optional.
 - `SkeletonTimelineCard`: Loading placeholder cards matching exact dimensions of Compact Cards (48px height) to prevent layout shift. Includes `SkeletonTimeline` and `SkeletonHero` variants
 - `MissingBedtimeModal`: Prompts user to log forgotten bedtime with date picker to select which night to log (not just yesterday)
 - `BabyProfile`: Profile display/edit form
 - `SleepList`/`SleepEntry`: Display entries with edit/delete/wake actions (NapEntry, BedtimeEntry, WakeUpEntry variants)
 - `DayNavigator`: Date selection for viewing past entries
-- `DailySummary`: Aggregated sleep statistics
+- `DailySummary`: Aggregated sleep statistics. Shows net sleep (minus pauses). When night entries have pauses, shows "X night wakings (Ym total)" row with storm cloud icon
 - `ConfirmationModal`: Reusable themed confirmation dialog (`role="alertdialog"`, focus trap). Used by SleepEntrySheet, WakeUpSheet, BabyEditSheet for delete confirmations
 - `ActivityCollisionModal`: Modal for handling overlapping sleep entries
 - `ShareAccess`: Invite caregivers with role selector (caregiver/viewer), manage sharing via bottom sheet (edit role, remove access)
@@ -109,7 +111,7 @@ Baby Sleep Tracker is a React + TypeScript app for tracking infant sleep pattern
 **Google OAuth Setup:** Requires configuration in Google Cloud Console (OAuth client ID) and Supabase Dashboard (enable Google provider, add redirect URLs). See `.context/logs/2026-02-03.md` for setup steps.
 
 ### Utilities (`src/utils/`)
-- `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns. Includes prediction algorithms:
+- `dateUtils.ts`: Date formatting, duration calculations, age calculation using date-fns. `getNetSleepMinutes()` computes net duration (gross minus pauses) — used everywhere durations display. Includes prediction algorithms:
   - `getRecommendedSchedule(dateOfBirth)`: Age-based nap count and wake windows
   - `calculateSuggestedNapTime()`: Next nap prediction based on wake windows
   - `calculateAllNapWindows()`: Full day nap schedule prediction

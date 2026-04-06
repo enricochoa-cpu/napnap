@@ -1,0 +1,160 @@
+<h2>Pause Section in SleepEntrySheet</h2>
+<p class="subtitle">Always-visible section below time inputs. Two states: empty (just "Add pause +") and populated (collapsible cards).</p>
+
+<div class="split">
+  <!-- State A: No pauses -->
+  <div class="mockup">
+    <div class="mockup-header">Empty State (no pauses)</div>
+    <div class="mockup-body" style="background: #1E2230; padding: 24px; border-radius: 24px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+
+      <!-- Sheet handle -->
+      <div style="width: 40px; height: 4px; background: rgba(199,210,254,0.3); border-radius: 2px; margin: 0 auto 20px;"></div>
+
+      <!-- Type icon + label -->
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 28px; margin-bottom: 4px;">☁️</div>
+        <div style="color: #9DBAB7; font-weight: 600; font-size: 14px;">Nap</div>
+      </div>
+
+      <!-- Time inputs -->
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 4px;">
+        <div style="background: rgba(255,255,255,0.06); border-radius: 16px; padding: 12px 20px; min-width: 90px; text-align: center;">
+          <div style="color: #F1F5F9; font-size: 24px; font-weight: 700;">14:30</div>
+        </div>
+        <div style="color: rgba(199,210,254,0.5); font-size: 18px;">—</div>
+        <div style="background: rgba(255,255,255,0.06); border-radius: 16px; padding: 12px 20px; min-width: 90px; text-align: center;">
+          <div style="color: #F1F5F9; font-size: 24px; font-weight: 700;">16:00</div>
+        </div>
+      </div>
+
+      <!-- Duration label -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="color: rgba(199,210,254,0.5); font-size: 13px;">1h 30min</span>
+      </div>
+
+      <!-- Divider -->
+      <div style="height: 1px; background: rgba(199,210,254,0.1); margin-bottom: 16px;"></div>
+
+      <!-- Add pause button -->
+      <button style="background: none; border: 1px dashed rgba(199,210,254,0.2); border-radius: 12px; padding: 10px 16px; color: rgba(199,210,254,0.5); font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; text-align: center; font-family: inherit;">
+        + Add pause
+      </button>
+
+    </div>
+  </div>
+
+  <!-- State B: With pauses -->
+  <div class="mockup">
+    <div class="mockup-header">With Pauses (2 logged)</div>
+    <div class="mockup-body" style="background: #1E2230; padding: 24px; border-radius: 24px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;">
+
+      <!-- Sheet handle -->
+      <div style="width: 40px; height: 4px; background: rgba(199,210,254,0.3); border-radius: 2px; margin: 0 auto 20px;"></div>
+
+      <!-- Type icon + label -->
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 28px; margin-bottom: 4px;">☁️</div>
+        <div style="color: #9DBAB7; font-weight: 600; font-size: 14px;">Nap</div>
+      </div>
+
+      <!-- Time inputs -->
+      <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 4px;">
+        <div style="background: rgba(255,255,255,0.06); border-radius: 16px; padding: 12px 20px; min-width: 90px; text-align: center;">
+          <div style="color: #F1F5F9; font-size: 24px; font-weight: 700;">14:30</div>
+        </div>
+        <div style="color: rgba(199,210,254,0.5); font-size: 18px;">—</div>
+        <div style="background: rgba(255,255,255,0.06); border-radius: 16px; padding: 12px 20px; min-width: 90px; text-align: center;">
+          <div style="color: #F1F5F9; font-size: 24px; font-weight: 700;">16:00</div>
+        </div>
+      </div>
+
+      <!-- NET duration label -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="color: rgba(199,210,254,0.5); font-size: 13px;">1h 15min</span>
+        <span style="color: rgba(199,210,254,0.3); font-size: 12px; margin-left: 4px;">(net)</span>
+      </div>
+
+      <!-- Divider -->
+      <div style="height: 1px; background: rgba(199,210,254,0.1); margin-bottom: 16px;"></div>
+
+      <!-- Pause cards -->
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;">
+
+        <!-- Pause 1 - collapsed -->
+        <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="color: rgba(199,210,254,0.4); font-size: 14px;">⏸</div>
+            <div>
+              <div style="color: #F1F5F9; font-size: 13px; font-weight: 500;">Pause 1</div>
+              <div style="color: rgba(199,210,254,0.5); font-size: 12px;">14:45 · 5min</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="color: rgba(199,210,254,0.3); font-size: 12px; cursor: pointer;">🗑</div>
+            <div style="color: rgba(199,210,254,0.3); font-size: 10px;">▼</div>
+          </div>
+        </div>
+
+        <!-- Pause 2 - expanded -->
+        <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 10px 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="color: rgba(199,210,254,0.4); font-size: 14px;">⏸</div>
+              <div>
+                <div style="color: #F1F5F9; font-size: 13px; font-weight: 500;">Pause 2</div>
+                <div style="color: rgba(199,210,254,0.5); font-size: 12px;">15:20 · 10min</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="color: rgba(199,210,254,0.3); font-size: 12px; cursor: pointer;">🗑</div>
+              <div style="color: rgba(199,210,254,0.3); font-size: 10px;">▲</div>
+            </div>
+          </div>
+          <!-- Expanded: start time + duration pickers -->
+          <div style="display: flex; gap: 12px;">
+            <div style="flex: 1;">
+              <div style="color: rgba(199,210,254,0.4); font-size: 11px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Start</div>
+              <div style="background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; color: #F1F5F9; font-size: 14px; text-align: center;">15:20</div>
+            </div>
+            <div style="flex: 1;">
+              <div style="color: rgba(199,210,254,0.4); font-size: 11px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Duration</div>
+              <div style="background: rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; color: #F1F5F9; font-size: 14px; text-align: center;">10 min</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Add another pause -->
+      <button style="background: none; border: 1px dashed rgba(199,210,254,0.2); border-radius: 12px; padding: 10px 16px; color: rgba(199,210,254,0.5); font-size: 13px; font-weight: 500; cursor: pointer; width: 100%; text-align: center; font-family: inherit;">
+        + Add pause
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<h3 style="margin-top: 32px;">Design Notes</h3>
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">?</div>
+    <div class="content">
+      <h3>Duration label shows "net" hint</h3>
+      <p>When pauses exist, the duration label shows the net value with a subtle "(net)" suffix so parents know pauses were subtracted. When no pauses, no suffix — just the plain duration.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">?</div>
+    <div class="content">
+      <h3>Collapsed card = one-line summary</h3>
+      <p>Each pause card shows "Pause N" + start time + duration on one line. Tap to expand and edit the start time and duration inputs. Delete icon always visible.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">?</div>
+    <div class="content">
+      <h3>Duration picker (not end time)</h3>
+      <p>Matches Napper's pattern and the spec — parents think "baby woke for 10 minutes" not "woke at 15:20, slept again at 15:30." Simpler mental model at 3AM.</p>
+    </div>
+  </div>
+</div>
