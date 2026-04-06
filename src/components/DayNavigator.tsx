@@ -114,7 +114,7 @@ function WeekStrip({
                 key={dayStr}
                 onClick={() => handleDayTap(day)}
                 aria-label={format(day, 'EEEE, MMMM d')}
-                className="flex flex-col items-center py-1.5 rounded-2xl transition-all min-h-[56px] min-w-[44px]"
+                className="flex flex-col items-center py-1.5 rounded-2xl transition-all min-h-[56px] min-w-[48px]"
               >
                 {/* Day letter */}
                 <span className={`text-xs font-medium mb-1 ${

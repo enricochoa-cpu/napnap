@@ -20,14 +20,6 @@ Sources:
 - **Problem**: Global error banner shows "Something went wrong loading your data. Pull down to refresh." — text-only, no interactive retry button. User must manually pull-to-refresh or reload the page.
 - **Fix**: Add a "Tap to retry" button in the banner that calls refresh/refetch from data hooks.
 
-### U-33 — Week strip day buttons narrower than standard
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `DayNavigator.tsx:117`
-- **Problem**: `min-w-[44px]` while other touch targets are 56px+. Height meets minimum (56px), width is narrower. Acceptable in 7-column grid but not ideal.
-- **Fix**: Increase to `min-w-[48px]` if layout allows on 375px viewports.
-
 ### U-34 — No tablet/desktop responsive layouts
 
 - **Effort**: High
@@ -83,14 +75,6 @@ Sources:
 - **Location**: `BabyDetailView:145-165`
 - **Problem**: Partially addressed — a discard dialog exists for **invalid** changes (via `ConfirmationModal` + `showDiscardConfirm`). However, **valid** changes auto-save silently when tapping back, with no confirmation. User may not intend to save edits they were still reviewing.
 - **Fix**: Show "Save changes?" confirmation on back for valid dirty state, instead of auto-saving. Or add the missing save toast (U-52) so at least the auto-save is communicated.
-
-### U-54 — Header doesn't preview edits live (§11.3)
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `BabyDetailView`
-- **Problem**: Header shows old name and age while editing. Changes appear only after save.
-- **Fix**: Bind header name to form input value for live preview.
 
 ### U-55 — Avatar picker has no crop step (§11.4)
 
@@ -209,9 +193,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 16 | Stats polish, profile UX, prediction refinements |
+| P2 | 14 | Stats polish, profile UX, prediction refinements |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **22** | |
+| **Total** | **20** | |
 
 ## Completed (2026-04-06)
 
@@ -226,6 +210,8 @@ Sources:
 - U-42 (P2): Chips aria-pressed — added `aria-pressed={selected}` to TagCard component
 - U-45 (P2): Nested button — replaced outer `<button>` with `<div role="button">` + keyboard handler + aria-expanded
 - U-46 (P2): First pause default — midpoint of nap instead of nap start
+- U-33 (P2): Day button width — min-w-[44px] → min-w-[48px] for better touch targets
+- U-54 (P2): Live header preview — bound to formData.name instead of saved baby.name
 
 ## Recommended execution order
 
@@ -234,13 +220,13 @@ Sources:
 U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-51 (report button)
 
 **Phase 2 — Profile polish** (P2):
-U-52 (save toast), U-54 (live preview)
+U-52 (save toast)
 
 **Phase 3 — Prediction refinements** (P2):
 U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
 
 **Phase 4 — Low priority polish** (P2):
-U-32 (retry banner), U-33 (day buttons), U-34 (tablet), U-53 (auto-save confirmation), U-55 (avatar crop)
+U-32 (retry banner), U-34 (tablet), U-53 (auto-save confirmation), U-55 (avatar crop)
 
 **Phase 5 — Infrastructure** (P3):
 U-62 (base schema) → U-63 (multi-baby) → U-65 (age brackets)

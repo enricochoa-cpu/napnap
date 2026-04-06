@@ -167,7 +167,7 @@ export function BabyDetailView({
   return (
     <div className="space-y-6">
       <SubViewHeader
-        title={baby.name || t('common.baby')}
+        title={formData.name || baby.name || t('common.baby')}
         subtitle={subtitle}
         onBack={handleBack}
       />
