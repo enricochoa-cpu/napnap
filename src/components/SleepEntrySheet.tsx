@@ -278,6 +278,7 @@ function TagCard({ icon, label, selected, onClick }: {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl text-xs font-medium transition-colors ${
         selected
           ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
@@ -618,8 +619,9 @@ export function SleepEntrySheet({
     if (!entry || !onAddPause || !entry.endTime) return;
     if (pauseEntries.length >= 5) return;
 
-    // Default: right after the last pause, or at entry start if no pauses yet
+    // Default: right after the last pause, or midpoint of nap if no pauses yet
     const entryStartMs = parseISO(entry.startTime).getTime();
+    const entryEndMs = parseISO(entry.endTime).getTime();
 
     let defaultStartMs: number;
     if (pauseEntries.length > 0) {
@@ -627,7 +629,8 @@ export function SleepEntrySheet({
       const lastPauseEnd = parseISO(lastPause.startTime).getTime() + lastPause.durationMinutes * 60 * 1000;
       defaultStartMs = lastPauseEnd;
     } else {
-      defaultStartMs = entryStartMs;
+      // First pause: default to midpoint of the nap (more likely than nap start)
+      defaultStartMs = entryStartMs + Math.floor((entryEndMs - entryStartMs) / 2);
     }
 
     const defaultStart = new Date(defaultStartMs).toISOString();
@@ -925,11 +928,14 @@ export function SleepEntrySheet({
                             className="rounded-xl"
                             style={{ background: 'var(--glass-bg)' }}
                           >
-                            {/* Collapsed header */}
-                            <button
-                              type="button"
-                              className="w-full flex items-center justify-between p-3 text-left"
+                            {/* Collapsed header — div[role=button] to avoid nesting <button> inside <button> */}
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              className="w-full flex items-center justify-between p-3 text-left cursor-pointer"
                               onClick={() => setExpandedPauseId(isExpanded ? null : pause.id)}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedPauseId(isExpanded ? null : pause.id); } }}
+                              aria-expanded={isExpanded}
                             >
                               <div className="flex items-center gap-2.5">
                                 {isNightEntry ? <StormCloudIcon className="w-4 h-4 text-[var(--wake-color)]" /> : <span className="text-[var(--text-muted)] text-sm">⏸</span>}
@@ -958,7 +964,7 @@ export function SleepEntrySheet({
                                   {isExpanded ? '▲' : '▼'}
                                 </span>
                               </div>
-                            </button>
+                            </div>
 
                             {/* Expanded: start time + duration inputs */}
                             {isExpanded && (

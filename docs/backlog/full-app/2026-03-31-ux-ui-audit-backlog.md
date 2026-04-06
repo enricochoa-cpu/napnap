@@ -36,30 +36,6 @@ Sources:
 - **Problem**: No `lg:` breakpoint layouts. App works on larger screens but doesn't use extra space. Low priority given mobile-first target user.
 - **Fix**: Add `lg:` breakpoints for wider viewports (two-column Stats, wider cards, centered containers).
 
-### U-42 — Chips missing `aria-pressed` state (§8.1)
-
-- **Effort**: Low
-- **Impact**: Medium
-- **Location**: `SleepEntrySheet`
-- **Problem**: Onset, method, wake method, and wake mood chip buttons communicate selection only via CSS. No `aria-pressed` attribute. WCAG 4.1.2 violation.
-- **Fix**: Add `aria-pressed={isSelected}` to all chip buttons. Consider subtle scale + spring animation on toggle.
-
-### U-45 — Nested `<button>` in pause card header (§9.3)
-
-- **Effort**: Low
-- **Impact**: Medium
-- **Location**: `SleepEntrySheet`
-- **Problem**: Pause card's collapsible header is a `<button>` containing the delete `<button>` — invalid HTML nesting. Tap targets overlap on phones.
-- **Fix**: Use `<div role="button" tabIndex={0}>` for the header, or move delete button outside toggle hit area (e.g. swipe-to-reveal).
-
-### U-46 — First pause default start = nap start (§9.4)
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `SleepEntrySheet:617-638`
-- **Problem**: Only the **first** pause defaults to nap start time. Subsequent pauses already default to end-of-last-pause (smart default implemented). Nap start is a reasonable but not ideal first-pause default.
-- **Fix**: Optional minor polish: default first pause to midpoint of nap (if completed) or current time (if active). Low value since nap start is already a sensible starting point.
-
 ### U-47 — Today's incomplete data looks alarming in charts (§10.3)
 
 - **Effort**: Medium
@@ -233,9 +209,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 19 | QA fixes, Stats polish, profile UX, prediction refinements |
+| P2 | 16 | Stats polish, profile UX, prediction refinements |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **25** | |
+| **Total** | **22** | |
 
 ## Completed (2026-04-06)
 
@@ -247,23 +223,24 @@ Sources:
 - U-41 (P1): Bedtime flexibility — two-tier debt system (moderate 20min / extreme 40min)
 - U-43 (P1): Frozen awake timer — compute locally in TodayView using live 60s tick instead of stale hook prop
 - U-50 (P2): Sticky chip bar — sticky positioning with bg gradient + trailing fade overflow hint
+- U-42 (P2): Chips aria-pressed — added `aria-pressed={selected}` to TagCard component
+- U-45 (P2): Nested button — replaced outer `<button>` with `<div role="button">` + keyboard handler + aria-expanded
+- U-46 (P2): First pause default — midpoint of nap instead of nap start
 
 ## Recommended execution order
 
-**Phase 1 — Native polish** (P2 UX):
-U-42 (aria-pressed), U-45 (nested button)
+**Phase 1 — Stats polish** (P2):
 
-**Phase 2 — Stats polish** (P2):
 U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-51 (report button)
 
-**Phase 3 — Profile polish** (P2):
+**Phase 2 — Profile polish** (P2):
 U-52 (save toast), U-54 (live preview)
 
-**Phase 4 — Prediction refinements** (P2):
+**Phase 3 — Prediction refinements** (P2):
 U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
 
-**Phase 5 — Low priority polish** (P2):
-U-32 (retry banner), U-33 (day buttons), U-34 (tablet), U-46 (first pause default), U-53 (auto-save confirmation), U-55 (avatar crop)
+**Phase 4 — Low priority polish** (P2):
+U-32 (retry banner), U-33 (day buttons), U-34 (tablet), U-53 (auto-save confirmation), U-55 (avatar crop)
 
-**Phase 6 — Infrastructure** (P3):
+**Phase 5 — Infrastructure** (P3):
 U-62 (base schema) → U-63 (multi-baby) → U-65 (age brackets)
