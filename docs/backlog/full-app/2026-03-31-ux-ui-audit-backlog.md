@@ -28,30 +28,6 @@ Sources:
 - **Problem**: No `lg:` breakpoint layouts. App works on larger screens but doesn't use extra space. Low priority given mobile-first target user.
 - **Fix**: Add `lg:` breakpoints for wider viewports (two-column Stats, wider cards, centered containers).
 
-### U-47 — Today's incomplete data looks alarming in charts (§10.3)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `StatsView` (charts)
-- **Problem**: Today shows a tiny sliver / sharp drop in bar and area charts because the day isn't over yet. Looks like "something went wrong."
-- **Fix**: Mark today's bar with dashed outline + "in progress" pill badge. Or exclude today from trend calculations and show separately as "Today so far."
-
-### U-48 — HORARI DIARI too small for mobile (§10.4)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `StatsView` (Gantt)
-- **Problem**: Gantt-style daily schedule chart has small colored dots. 6-item legend. Dots too small for comfortable phone reading on 390px screens.
-- **Fix**: Increase dot/bar size to min 8px (ideally 12px). Add one-line insight card above. Add time-of-day background bands. Consider tappable rows.
-
-### U-49 — Date range picker needs native segmented control (§10.5)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `StatsView` (picker)
-- **Problem**: Max 15-day range with no indication. No presets. "7d" badge looks like a label, not interactive.
-- **Fix**: Replace with native-style segmented control (7d / 14d pill toggle). Auto-disable dates beyond max range. Add "Max 15 days" hint.
-
 ### U-51 — Missing "Generate report" button (§10.7)
 
 - **Effort**: Low
@@ -193,9 +169,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 14 | Stats polish, profile UX, prediction refinements |
+| P2 | 11 | Profile UX, prediction refinements, low-priority polish |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **20** | |
+| **Total** | **17** | |
 
 ## Completed (2026-04-06)
 
@@ -212,20 +188,19 @@ Sources:
 - U-46 (P2): First pause default — midpoint of nap instead of nap start
 - U-33 (P2): Day button width — min-w-[44px] → min-w-[48px] for better touch targets
 - U-54 (P2): Live header preview — bound to formData.name instead of saved baby.name
+- U-47 (P2): Today's bar dashed — custom TodayAwareBar shape with dashed outline + reduced opacity for incomplete day
+- U-48 (P2): Gantt dot size — wake/bed dots 7px→12px, nap bars 7px→10px, row height 28px→32px, legend updated
+- U-49 (P2): Segmented date control — 7d/14d pill toggle replacing static badge, calendar button kept for custom range
 
 ## Recommended execution order
 
-**Phase 1 — Stats polish** (P2):
+**Phase 1 — Quick wins** (P2):
+U-51 (report button), U-52 (save toast)
 
-U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-51 (report button)
-
-**Phase 2 — Profile polish** (P2):
-U-52 (save toast)
-
-**Phase 3 — Prediction refinements** (P2):
+**Phase 2 — Prediction refinements** (P2):
 U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
 
-**Phase 4 — Low priority polish** (P2):
+**Phase 3 — Low priority polish** (P2):
 U-32 (retry banner), U-34 (tablet), U-53 (auto-save confirmation), U-55 (avatar crop)
 
 **Phase 5 — Infrastructure** (P3):

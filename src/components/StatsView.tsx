@@ -264,6 +264,32 @@ function CustomTooltip({ active, payload, label }: TooltipProps) {
   );
 }
 
+/** Custom bar shape: renders dashed outline + reduced opacity for today's incomplete data */
+function TodayAwareBar(props: {
+  x?: number; y?: number; width?: number; height?: number;
+  fill?: string; radius?: number | number[];
+  payload?: { isToday?: boolean };
+  dataKey?: string;
+}) {
+  const { x = 0, y = 0, width = 0, height = 0, fill = '#ccc', payload } = props;
+  if (height <= 0) return null;
+  const isToday = payload?.isToday;
+  // Top radius for 'nap' (top of stack), bottom radius for 'night' (bottom of stack)
+  const isTop = props.dataKey === 'nap';
+  const r = 4;
+  // Build a path with selective rounded corners
+  const path = isTop
+    ? `M${x},${y + r} Q${x},${y} ${x + r},${y} L${x + width - r},${y} Q${x + width},${y} ${x + width},${y + r} L${x + width},${y + height} L${x},${y + height} Z`
+    : `M${x},${y} L${x + width},${y} L${x + width},${y + height - r} Q${x + width},${y + height} ${x + width - r},${y + height} L${x + r},${y + height} Q${x},${y + height} ${x},${y + height - r} Z`;
+
+  if (isToday) {
+    return (
+      <path d={path} fill={fill} fillOpacity={0.3} stroke={fill} strokeWidth={1.5} strokeDasharray="4 3" />
+    );
+  }
+  return <path d={path} fill={fill} />;
+}
+
 function BarTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload || !payload.length) return null;
 
@@ -1181,34 +1207,48 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
         </div>
       )} */}
 
-      {/* Date range picker — single tappable control opens range sheet */}
-      <div className="rounded-2xl backdrop-blur-xl p-3 mb-6" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}>
+      {/* Date range: segmented preset toggle + calendar button */}
+      <div className="flex items-center gap-3 mb-6">
+        {/* 7d / 14d segmented control */}
+        <div className="flex rounded-full p-0.5" style={{ background: 'var(--bg-soft)' }}>
+          {[7, 14].map((days) => {
+            const isActive = daysInRange === days;
+            return (
+              <button
+                key={days}
+                type="button"
+                onClick={() => {
+                  const newStart = subDays(today, days - 1);
+                  handleRangeChange(newStart, today);
+                }}
+                className={`px-4 py-2 rounded-full text-xs font-display font-semibold transition-colors ${
+                  isActive
+                    ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
+                    : 'text-[var(--text-muted)]'
+                }`}
+              >
+                {days}d
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Calendar picker for custom range */}
         <button
           type="button"
           onClick={() => setIsRangePickerOpen(true)}
           aria-label={t('stats.ariaChangeDateRange')}
-          className="w-full flex items-center gap-3 text-left"
+          className="flex-1 flex items-center gap-2.5 rounded-2xl backdrop-blur-xl p-3"
+          style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}
         >
           <span className="text-[var(--text-muted)] flex-shrink-0">
             <CalendarIcon />
           </span>
-          <div className="flex-1 min-w-0 flex items-baseline gap-2 flex-wrap">
-            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-              {formatDateParts(startDate).dayMonth}
-            </span>
-            <span className="text-[var(--text-muted)]">–</span>
-            <span className="text-sm font-display font-semibold text-[var(--text-primary)]">
-              {formatDateParts(endDate).dayMonth}
-            </span>
-            <span className="text-xs text-[var(--text-muted)]">
-              {format(startDate, 'yyyy') === format(endDate, 'yyyy') ? format(endDate, 'yyyy') : `${format(startDate, 'yyyy')} – ${format(endDate, 'yyyy')}`}
-            </span>
-          </div>
+          <span className="flex-1 text-sm font-display font-semibold text-[var(--text-primary)] truncate">
+            {formatDateParts(startDate).dayMonth} – {formatDateParts(endDate).dayMonth}
+          </span>
           <span className="text-[var(--text-muted)] flex-shrink-0" aria-hidden="true">
             <ChevronDownIcon />
-          </span>
-          <span className="text-xs text-[var(--text-muted)] bg-[var(--bg-soft)] px-2 py-1 rounded-full flex-shrink-0">
-            {daysInRange}d
           </span>
         </button>
       </div>
@@ -1386,8 +1426,8 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                       strokeDasharray="4 3"
                     />
                   )}
-                  <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
-                  <Bar dataKey="nap" stackId="sleep" fill={napColor} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="night" stackId="sleep" fill={nightColor} shape={<TodayAwareBar dataKey="night" />} />
+                  <Bar dataKey="nap" stackId="sleep" fill={napColor} shape={<TodayAwareBar dataKey="nap" />} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1481,7 +1521,7 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                 <div className="w-10 flex-shrink-0">
                   <div className="h-5" />
                   {scheduleData.days.map((day) => (
-                    <div key={day.day} className="h-7 flex items-center">
+                    <div key={day.day} className="h-8 flex items-center">
                       <span className="text-[10px] text-[var(--text-muted)]">{day.day}</span>
                     </div>
                   ))}
@@ -1513,14 +1553,14 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                       );
                     })}
                     {scheduleData.days.map((day) => (
-                      <div key={day.day} className="h-7 relative flex items-center">
+                      <div key={day.day} className="h-8 relative flex items-center">
                         {day.events.map((event, i) => {
                           if (event.type === 'wake') {
                             const pct = ((event.startMin - scheduleData.minTime) / scheduleData.range) * 100;
                             return (
                               <div
                                 key={`wake-${i}`}
-                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                className="absolute w-[12px] h-[12px] rounded-sm"
                                 style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--wake-color)' }}
                               />
                             );
@@ -1530,7 +1570,7 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                             return (
                               <div
                                 key={`bed-${i}`}
-                                className="absolute w-[7px] h-[7px] rounded-sm"
+                                className="absolute w-[12px] h-[12px] rounded-sm"
                                 style={{ left: `${pct}%`, transform: 'translateX(-50%)', background: 'var(--night-color)' }}
                               />
                             );
@@ -1542,7 +1582,7 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                             return (
                               <div
                                 key={`nap-${i}`}
-                                className="absolute h-[7px] rounded-full"
+                                className="absolute h-[10px] rounded-full"
                                 style={{ left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`, background: color }}
                               />
                             );
@@ -1556,19 +1596,19 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
               </div>
               <div className="flex flex-wrap justify-center gap-4 mt-4">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
+                  <div className="w-[10px] h-[10px] rounded-sm" style={{ background: 'var(--wake-color)' }} />
                   <span className="text-[10px] text-[var(--text-muted)]">{t('stats.wokeUp')}</span>
                 </div>
                 {Array.from({ length: scheduleData.maxNapIndex }, (_, i) => (
                   <div key={i} className="flex items-center gap-1.5">
-                    <div className="w-3 h-[7px] rounded-full" style={{ background: getNapColor(i + 1) }} />
+                    <div className="w-4 h-[10px] rounded-full" style={{ background: getNapColor(i + 1) }} />
                     <span className="text-[10px] text-[var(--text-muted)]">
                       {i === 0 ? t('stats.napFirst') : i === 1 ? t('stats.napSecond') : i === 2 ? t('stats.napThird') : t('stats.napOrdinal', { n: i + 1 })}
                     </span>
                   </div>
                 ))}
                 <div className="flex items-center gap-1.5">
-                  <div className="w-[7px] h-[7px] rounded-sm" style={{ background: 'var(--night-color)' }} />
+                  <div className="w-[10px] h-[10px] rounded-sm" style={{ background: 'var(--night-color)' }} />
                   <span className="text-[10px] text-[var(--text-muted)]">{t('stats.bedtime')}</span>
                 </div>
               </div>
@@ -1692,8 +1732,8 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
                     <XAxis dataKey="day" tick={<DayDateTick data={rangeData} />} tickLine={false} axisLine={false} interval={daysInRange > 8 ? 1 : 0} padding={{ left: 0, right: 0 }} />
                     <YAxis width={Y_AXIS_WIDTH_SHORT} domain={dailySleepAxis.domain} ticks={dailySleepAxis.ticks} tick={{ fill: 'var(--text-secondary)', fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={formatDurationAxis} />
                     <Tooltip content={<BarTooltip />} cursor={{ fill: 'var(--bg-soft)', opacity: 0.5 }} />
-                    <Bar dataKey="night" stackId="sleep" fill={nightColor} radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="nap" stackId="sleep" fill={napColor} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="night" stackId="sleep" fill={nightColor} shape={<TodayAwareBar dataKey="night" />} />
+                    <Bar dataKey="nap" stackId="sleep" fill={napColor} shape={<TodayAwareBar dataKey="nap" />} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
