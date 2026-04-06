@@ -193,6 +193,114 @@ U-51 (report button)
 **Phase 2 — Prediction refinements** (P2):
 U-57 (overdue UX) → U-58 (dynamic blending) → U-59 (accumulated wake) → U-56 (Date internals)
 
+### Phase 2 — Detailed implementation plan
+
+---
+
+#### U-57 — Auto-overdue nap visual indicator + recalculate
+
+**Goal**: When a nap auto-expires (>60min overdue), show a muted "skipped" card instead of silently removing it. Add a "Recalculate" action to re-anchor from now.
+
+**Current state**: `predictedNapsWithMetadata` (TodayView.tsx:281-294) drops overdue naps by simply not adding them to `predictions[]`. The `skippedNapIndices` system exists in App.tsx for *user*-skipped naps but is never populated by auto-expiry.
+
+**Implementation steps**:
+
+1. **TodayView.tsx — track auto-skipped naps**: In the overdue loop (line 289), when `overdueMinutes > OVERDUE_NAP_PERSISTENCE_MINUTES`, instead of silently dropping, push to a new `autoSkippedNaps` array with the nap data + original predicted time. Return it alongside `predictions`.
+
+2. **TodayView.tsx — render auto-skipped cards**: In the timeline render section (around line 743), render auto-skipped naps as muted cards (reuse the existing skipped nap visual: `opacity-50`, dashed border, muted bg). Show the original predicted time with a label like "Skipped" (reuse `t('predictedNap.skippedNap')`).
+
+3. **TodayView.tsx — "Recalculate" button**: Below the auto-skipped card, add a small text button "Recalculate day" that calls a new `onRecalculate` callback. This callback (in App.tsx) simply adds the skipped nap index to `skippedNapIndices`, which forces `predictDaySchedule` to re-run with the nap excluded from the simulation input.
+
+**Files**: `TodayView.tsx` (overdue logic + render), no i18n needed (reuses existing keys).
+**Risk**: Low — additive change, no existing behavior altered for non-overdue naps.
+
+---
+
+#### U-58 — Dynamic blending weights by algorithm maturity
+
+**Goal**: Replace fixed 70/30 config/history ratio with maturity-adaptive weights: 90/10 (learning) → 70/30 (calibrating) → 50/50 (optimized).
+
+**Current state**: 0.7/0.3 hardcoded in 3 places. `getAlgorithmStatusTier(totalEntries)` exists (line 631) and returns `'learning'|'calibrating'|'optimized'` based on thresholds (5/15), but is never used for blending.
+
+**Implementation steps**:
+
+1. **dateUtils.ts — add `getBlendingWeights()` helper** (new function, ~10 lines):
+   ```
+   getBlendingWeights(totalEntries: number): { config: number; learned: number }
+   ```
+   - `learning` (0-5 entries): `{ config: 0.90, learned: 0.10 }`
+   - `calibrating` (6-15 entries): `{ config: 0.70, learned: 0.30 }`
+   - `optimized` (16+ entries): `{ config: 0.50, learned: 0.50 }`
+
+2. **dateUtils.ts — update `predictDaySchedule()`** (line 1582): Replace `0.7`/`0.3` with `weights.config`/`weights.learned`. `totalEntriesCount` is already available in params.
+
+3. **dateUtils.ts — update `calculateSuggestedNapTimeWithMetadata()`** (line 898): Same replacement. `totalEntriesCount` is already a parameter.
+
+4. **dateUtils.ts — update `getLearnedNapDurationMinutes()`** (line 1114): This function doesn't have `totalEntries` as a param. **Add it as an optional param** with default that preserves current 70/30 behaviour. Callers in `predictDaySchedule` and TodayView already have `entries.length` available.
+
+**Files**: `dateUtils.ts` only. Update 3 blending call sites + 1 new helper.
+**Risk**: Low — gradual weight change. Learning users barely notice (90/10 ≈ current config-dominated). Optimized users get better personalization.
+
+---
+
+#### U-59 — Accumulated wake time factor for bedtime
+
+**Goal**: If baby has been awake for significantly more total minutes than expected for their age, reduce the final wake window (earlier bedtime). Coordinates with the existing sleep-debt mechanism (U-41) as a unified "fatigue state."
+
+**Current state**: `calculateDynamicBedtime` only considers *sleep deficit* (how much less the baby slept vs target). It doesn't consider *total awake time* (sum of all awake intervals since morning). A baby with many fragmented micro-naps can accumulate excessive fatigue even when total sleep minutes look OK.
+
+**Implementation steps**:
+
+1. **dateUtils.ts — compute expected vs actual wake time**: Add an optional `totalAwakeMinutes` param to `calculateDynamicBedtime`. Calculate expected wake time per age:
+   ```
+   expectedWakeMinutes = (minutesSinceMorningWake) - targetDaytimeSleep
+   ```
+   If `totalAwakeMinutes` exceeds expected by a threshold (e.g. 30+ min over), apply an additional bedtime shift (capped, non-linear, same pattern as sleep debt).
+
+2. **dateUtils.ts — unified fatigue state**: Combine sleep deficit + wake surplus into a single `fatigueScore`. Apply the larger of the two shifts (don't double-stack):
+   ```
+   sleepDebtShift = existing logic (U-41)
+   wakeExcessShift = min(cap, excess / 3)
+   finalShift = max(sleepDebtShift, wakeExcessShift)
+   ```
+
+3. **dateUtils.ts — update `predictDaySchedule()`**: Compute `totalAwakeMinutes` from the nap chain (it already tracks `lastEndTime` and `accumulatedSleepMinutes`, so awake time = elapsed - sleep). Pass to `calculateDynamicBedtime`.
+
+**Files**: `dateUtils.ts` only. Backward-compatible — new param is optional with default 0 (no change).
+**Risk**: Medium — needs careful capping to avoid excessively early bedtimes. Floor at `config.wakeWindows.first` already exists from U-41.
+
+---
+
+#### U-56 — Minutes-from-midnight → Date objects in simulateDay
+
+**Goal**: Eliminate the theoretical midnight-crossing bug in `simulateDay` by using Date objects internally instead of minute integers.
+
+**Current state**: `simulateDay` works in minutes-from-midnight (0-1440). No explicit bounds checking. In practice, bedtime maxes at ~1425 min (23:45) which is safe. The risk is theoretical (shifted-schedule babies with very late mornings).
+
+**Implementation steps**:
+
+1. **dateUtils.ts — refactor `simulateDay` signature**: Change from `morningWakeMinutes: number` to `morningWakeTime: Date`. Internally use Date arithmetic instead of minute addition.
+
+2. **dateUtils.ts — refactor `ProjectedNap`**: Replace `startMinutes`/`endMinutes` with `startTime: Date`/`endTime: Date`. Keep `durationMinutes` and `wakeWindowBefore` as integers.
+
+3. **dateUtils.ts — update `DaySimulation`**: Replace `wakeTimeMinutes`/`bedtimeMinutes` with Date objects.
+
+4. **dateUtils.ts — update callers**: `calculateAllNapWindows` (still used by StatsView for schedule data) and `predictDaySchedule` both call `simulateDay`. Update their conversion logic.
+
+5. **StatsView.tsx — update scheduleData**: The Gantt chart consumes `simulateDay` via `calculateAllNapWindows`. Update to extract hours/minutes from Date objects instead of minute integers.
+
+**Files**: `dateUtils.ts` (core), `StatsView.tsx` (Gantt consumer), potentially `TodayView.tsx` if any direct `simulateDay` references remain.
+**Risk**: Medium-High — largest refactor. Many internal calculations to convert. Recommend doing last so all other prediction work is stable first. Consider adding a few unit tests for midnight edge cases.
+
+---
+
+### Execution order rationale
+
+1. **U-57 first**: Pure UI addition, no algorithm changes. Quick confidence-building win.
+2. **U-58 second**: Self-contained algorithm change (3 call sites + 1 helper). No UI changes.
+3. **U-59 third**: Extends `calculateDynamicBedtime` with optional param. Depends on U-41 (done) and benefits from U-58's dynamic weights being in place.
+4. **U-56 last**: Largest refactor, touches interfaces consumed by multiple callers. All other prediction logic should be stable first.
+
 **Phase 3 — Low priority polish** (P2):
 U-32 (retry banner), U-34 (tablet), U-53 (auto-save confirmation), U-55 (avatar crop)
 
