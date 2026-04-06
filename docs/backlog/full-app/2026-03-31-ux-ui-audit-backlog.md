@@ -84,14 +84,6 @@ Sources:
 - **Problem**: Max 15-day range with no indication. No presets. "7d" badge looks like a label, not interactive.
 - **Fix**: Replace with native-style segmented control (7d / 14d pill toggle). Auto-disable dates beyond max range. Add "Max 15 days" hint.
 
-### U-50 — Chip bar should be sticky with scroll affordance (§10.6)
-
-- **Effort**: Low-Medium
-- **Impact**: Low-Medium
-- **Location**: `StatsView` (nav)
-- **Problem**: Section chips scroll with page. "Creixement" off-screen on smaller phones. No overflow hint.
-- **Fix**: Make chip bar sticky below date range picker. Add fade gradient on trailing edge. Consider snap-scroll.
-
 ### U-51 — Missing "Generate report" button (§10.7)
 
 - **Effort**: Low
@@ -241,9 +233,9 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 20 | QA fixes, Stats polish, profile UX, prediction refinements |
+| P2 | 19 | QA fixes, Stats polish, profile UX, prediction refinements |
 | P3 | 6 | Infrastructure, multi-baby, algorithm granularity |
-| **Total** | **26** | |
+| **Total** | **25** | |
 
 ## Completed (2026-04-06)
 
@@ -254,6 +246,7 @@ Sources:
 - U-40 (P1): Unified prediction — `predictDaySchedule()` single source of truth
 - U-41 (P1): Bedtime flexibility — two-tier debt system (moderate 20min / extreme 40min)
 - U-43 (P1): Frozen awake timer — compute locally in TodayView using live 60s tick instead of stale hook prop
+- U-50 (P2): Sticky chip bar — sticky positioning with bg gradient + trailing fade overflow hint
 
 ## Recommended execution order
 
@@ -261,7 +254,7 @@ Sources:
 U-42 (aria-pressed), U-45 (nested button)
 
 **Phase 2 — Stats polish** (P2):
-U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-50 (sticky chips), U-51 (report button)
+U-47 (incomplete today), U-48 (Gantt size), U-49 (date picker), U-51 (report button)
 
 **Phase 3 — Profile polish** (P2):
 U-52 (save toast), U-54 (live preview)

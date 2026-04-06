@@ -1223,27 +1223,33 @@ export function StatsView({ entries, profile, weightLogs = [], heightLogs = [], 
         maxDate={today}
       />
 
-      {/* Section chips (Napper-style): switch dataviz by category */}
+      {/* Section chips (Napper-style): sticky bar that stays visible while scrolling */}
       {hasData && (
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {(['summary', 'naps', 'night', 'growth'] as const).map((section, idx) => (
-            <button
-              key={section}
-              ref={(el) => { chipRefs.current[idx] = el; }}
-              type="button"
-              onClick={() => setStatsSection(section)}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-display font-medium transition-colors ${
-                statsSection === section
-                  ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
-                  : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border border-[var(--glass-border)]'
-              }`}
-            >
-              {section === 'summary' && t('stats.chipSummary')}
-              {section === 'naps' && t('stats.chipNaps')}
-              {section === 'night' && t('stats.chipNight')}
-              {section === 'growth' && t('stats.chipGrowth')}
-            </button>
-          ))}
+        <div className="sticky top-0 z-10 -mx-6 px-6 pb-4 pt-2" style={{ background: 'linear-gradient(to bottom, var(--bg-deep) 80%, transparent)' }}>
+          <div className="relative">
+            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-none" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {(['summary', 'naps', 'night', 'growth'] as const).map((section, idx) => (
+                <button
+                  key={section}
+                  ref={(el) => { chipRefs.current[idx] = el; }}
+                  type="button"
+                  onClick={() => setStatsSection(section)}
+                  className={`flex-shrink-0 px-4 py-2.5 rounded-full text-sm font-display font-medium transition-colors ${
+                    statsSection === section
+                      ? 'bg-[var(--night-color)] text-[var(--text-on-accent)]'
+                      : 'bg-[var(--bg-soft)] text-[var(--text-muted)] border border-[var(--glass-border)]'
+                  }`}
+                >
+                  {section === 'summary' && t('stats.chipSummary')}
+                  {section === 'naps' && t('stats.chipNaps')}
+                  {section === 'night' && t('stats.chipNight')}
+                  {section === 'growth' && t('stats.chipGrowth')}
+                </button>
+              ))}
+            </div>
+            {/* Trailing fade gradient to hint more chips */}
+            <div className="absolute right-0 top-0 bottom-1 w-8 pointer-events-none" style={{ background: 'linear-gradient(to left, var(--bg-deep), transparent)' }} />
+          </div>
         </div>
       )}
 
