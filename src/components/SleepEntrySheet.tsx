@@ -279,7 +279,7 @@ function TagCard({ icon, label, selected, onClick }: {
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl text-xs font-medium transition-colors ${
+      className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-lg text-xs font-medium transition-colors ${
         selected
           ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
           : 'border border-[var(--glass-border)] text-[var(--text-muted)]'
@@ -856,7 +856,7 @@ export function SleepEntrySheet({
 
                 {/* Date picker for new entries: log for today, yesterday, or another past day */}
                 {!isEditing && onDateChange && (
-                  <label htmlFor="sleep-entry-date" className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer w-full max-w-[240px] mx-auto">
+                  <label htmlFor="sleep-entry-date" className="mt-4 flex items-center justify-center gap-2 py-2 px-4 rounded-lg bg-[var(--bg-soft)] border border-[var(--glass-border)] cursor-pointer w-full max-w-[240px] mx-auto">
                     <CalendarIcon />
                     <span className="text-[var(--text-primary)] font-display font-medium text-sm">
                       {isToday(selectedDate)
@@ -965,7 +965,7 @@ export function SleepEntrySheet({
                         return (
                           <div
                             key={pause.id}
-                            className="rounded-xl"
+                            className="rounded-lg"
                             style={{ background: 'var(--glass-bg)' }}
                           >
                             {/* Collapsed header — div[role=button] to avoid nesting <button> inside <button> */}
@@ -1202,7 +1202,7 @@ export function SleepEntrySheet({
                     value={entryNotes}
                     onChange={(e) => setEntryNotes(e.target.value)}
                     placeholder={t('sleepEntry.notesPlaceholderEmpty')}
-                    className="w-full text-sm resize-none rounded-xl border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--nap-color)]/30"
+                    className="w-full text-sm resize-none rounded-lg border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--nap-color)]/30"
                     style={{ background: 'var(--glass-bg)' }}
                   />
                 </div>
