@@ -279,7 +279,7 @@ function TagCard({ icon, label, selected, onClick }: {
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-2xl text-xs font-medium transition-colors ${
+      className={`flex flex-col items-center justify-center gap-1.5 py-4 rounded-xl text-xs font-medium transition-colors ${
         selected
           ? 'bg-[var(--nap-color)]/20 text-[var(--nap-color)] border border-[var(--nap-color)]/30'
           : 'border border-[var(--glass-border)] text-[var(--text-muted)]'
@@ -791,7 +791,7 @@ export function SleepEntrySheet({
             className="fixed bottom-0 left-0 right-0 z-50 touch-none"
           >
             <div
-              className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
+              className="bg-[var(--bg-card)] rounded-t-[1.25rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
               style={{ maxHeight: isDetailExpanded ? '90dvh' : '75dvh', transition: 'max-height 0.3s ease' }}
             >
               {/* Handle bar — drag to dismiss only (no tap action; ⋯ button handles expand) */}
@@ -1202,7 +1202,7 @@ export function SleepEntrySheet({
                     value={entryNotes}
                     onChange={(e) => setEntryNotes(e.target.value)}
                     placeholder={t('sleepEntry.notesPlaceholderEmpty')}
-                    className="w-full text-sm resize-none rounded-2xl border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--nap-color)]/30"
+                    className="w-full text-sm resize-none rounded-xl border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--nap-color)]/30"
                     style={{ background: 'var(--glass-bg)' }}
                   />
                 </div>
