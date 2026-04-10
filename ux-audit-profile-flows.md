@@ -217,6 +217,20 @@ Playwright MCP walkthrough of Sleep Logging + Night Waking Pauses for baby Lulu 
 7. **Qualitative sections** — rich tagging (onset, method, wake reason, mood, notes) without cluttering the primary flow
 8. **Sleep Log (History)** — clean vertical timeline with awake gaps calculated and displayed between entries
 
+### Fixes applied (2026-04-10, session 3)
+
+- **U-89**: Saving active bedtime with pauses no longer terminates it — early return closes sheet, preserves active state
+- **U-90**: Pause duration edit now uses controlled input with local drafts, flushed on blur/collapse/save
+- **U-91**: Collapsed pause header reads from draft state, updates live during editing
+- **U-92**: Added space before "(net)" in duration label
+- **iOS picker dismiss**: Froze 30s `now` tick while a pause card is expanded, preventing React re-render from closing native pickers
+- **Compact sheet (Napper-style)**: Sheet opens in compact mode (type, times, duration, actions only). ⋯ button and drag handle tap toggle expand to show qualitative sections + pauses
+- **Backdrop**: Replaced blur with subtle 40% black opacity overlay; fixed glitchy blur-on-drag on iOS
+- **Section labels**: Normalized case (Start, How, Notes) with `text-sm font-display` for readability; changed from muted to primary colour
+- **Notes textarea**: Glass border matching tag cards, placeholder "No notes added yet" (en/es/ca)
+- **Border radii**: Tightened to `rounded-lg` (8px) on tag cards, notes, pause cards, date picker; sheet top 20px. Matches Napper's sharper style
+- **Drag handle**: Tap (< 5px movement) toggles expand/collapse; press-and-drag dismisses sheet. Thicker (h-1.5) and more opaque (/60)
+
 ---
 
 ## What Works Well
@@ -246,7 +260,7 @@ Playwright MCP walkthrough of Sleep Logging + Night Waking Pauses for baby Lulu 
 | 7 | No read-only indicator on shared views | Low | ~~Done (U-88)~~ |
 | 8 | Password form obscured by nav | Low | Low (same as #1) |
 | 9 | Gender display inconsistency | Low | Low (add indicator) |
-| 10 | **Saving active bedtime with pauses terminates it** | **High** | Medium (investigate save logic) |
-| 11 | **Pause duration edit not persisted** | **High** | Medium (investigate state binding) |
-| 12 | Collapsed pause card header shows stale values | Medium | Low (derive from form state) |
-| 13 | Missing space in "(net)" duration label | Low | Low (add space) |
+| 10 | Saving active bedtime with pauses terminates it | High | ~~Done (U-89)~~ |
+| 11 | Pause duration edit not persisted | High | ~~Done (U-90)~~ |
+| 12 | Collapsed pause card header shows stale values | Medium | ~~Done (U-91)~~ |
+| 13 | Missing space in "(net)" duration label | Low | ~~Done (U-92)~~ |

@@ -235,6 +235,7 @@ Sources:
 - U-90 (P1): Pause duration edit — changed from uncontrolled defaultValue+onBlur to controlled value+onChange with local drafts; flush on blur, collapse, and save
 - U-91 (P1): Pause header stale — collapsed card header now reads from draft state, updates live as user edits duration
 - U-92 (P2): Net suffix spacing — added literal space before "(net)" in duration label
+- SleepEntrySheet UX redesign (Napper-style): compact sheet with ⋯ expand toggle, drag handle tap/drag dual gesture, subtle backdrop, white section labels, glass-bordered notes, rounded-lg (8px) card corners, iOS picker fix (freeze now tick)
 - U-88 (P2): View-only indicator — added "View only" badge with eye icon on BabyDetailView and MeasuresView for shared babies (en/es/ca)
 - U-73 (P2): Personalise DOB step — "When was Luna born?" using baby name from step 2; falls back to generic if empty
 - U-74 (P2): Relationship subtitle — added "This helps us personalise your experience" subtitle to step 5 (en/es/ca)
