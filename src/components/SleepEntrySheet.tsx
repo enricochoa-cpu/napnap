@@ -794,11 +794,8 @@ export function SleepEntrySheet({
               className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
               style={{ maxHeight: isDetailExpanded ? '90dvh' : '75dvh', transition: 'max-height 0.3s ease' }}
             >
-              {/* Handle bar — drag to dismiss, tap to expand/collapse */}
-              <div
-                className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
-                onClick={() => setIsDetailExpanded((v) => !v)}
-              >
+              {/* Handle bar — drag to dismiss only (no tap action; ⋯ button handles expand) */}
+              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
                 <div className="w-10 h-1.5 bg-[var(--text-muted)]/60 rounded-full" />
               </div>
 
@@ -1205,7 +1202,8 @@ export function SleepEntrySheet({
                     value={entryNotes}
                     onChange={(e) => setEntryNotes(e.target.value)}
                     placeholder={t('sleepEntry.notesPlaceholderEmpty')}
-                    className="input w-full text-sm resize-none rounded-xl border border-[var(--glass-border)]"
+                    className="w-full text-sm resize-none rounded-2xl border border-[var(--glass-border)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:ring-1 focus:ring-[var(--nap-color)]/30"
+                    style={{ background: 'var(--glass-bg)' }}
                   />
                 </div>
               </div>
