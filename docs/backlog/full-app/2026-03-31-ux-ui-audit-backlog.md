@@ -12,6 +12,93 @@ Sources:
 
 ## P2 — Nice to have
 
+### U-73 — Personalise Step 3 with baby name (U2)
+
+- **Effort**: Low
+- **Impact**: Medium
+- **Location**: `OnboardingFlow` — Step 3 ("When was your baby born?")
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: User enters baby name "Luna" in Step 2, but Step 3 still says generic "When was your baby born?" Missing an easy personalisation win that would make the parent feel heard.
+- **Fix**: Use the baby name from Step 2 in the heading: "When was Luna born?" Falls back to "your baby" if name is empty.
+
+### U-74 — Add subtitle to relationship step (U4)
+
+- **Effort**: Low
+- **Impact**: Low
+- **Location**: `OnboardingFlow` — Step 5 ("You're their...")
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: The relationship step has no subtitle explaining why we ask. The heading is playful but bare.
+- **Fix**: Add a subtitle like "So we know how to talk to you" or "This helps us personalise your experience."
+
+### U-75 — Real-time password strength feedback (S3)
+
+- **Effort**: Medium
+- **Impact**: Medium
+- **Location**: `SignUpForm` — password field
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: "At least 6 characters" is a static hint below the password field. No real-time visual feedback (colour change, strength bar, checkmark). A tired parent at 3AM may submit, get rejected, and feel frustrated.
+- **Fix**: Add inline validation: red/green colour on the hint text as the user types (e.g. "At least 6 characters" turns green with a checkmark when met). Optionally show password match indicator on Confirm Password. Keep it simple — no complex strength meters.
+
+### U-76 — Improve Terms & Privacy Policy visibility (S4)
+
+- **Effort**: Low
+- **Impact**: Low-Medium
+- **Location**: `SignUpForm` — T&C checkbox area
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: The checkbox is small and below the fold on smaller screens. The Terms/Privacy links are `<button>` elements — unclear if clicking them navigates away and loses form data.
+- **Fix**: (1) Ensure the checkbox area is always visible without scrolling on common mobile viewports. (2) Open Terms/Privacy in a modal or new tab (not in-page navigation) so form state is preserved. (3) Consider slightly larger checkbox hit area.
+
+### U-77 — Carry baby name into signup screen (B3)
+
+- **Effort**: Low
+- **Impact**: Medium
+- **Location**: `SignUpForm` / `OnboardingFlow` — Step 6 (Create Account)
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: After 5 warm, personalised onboarding steps, the user hits a generic "Create account / Start tracking your baby's sleep" form. The baby's name is not mentioned anywhere. It feels like a different app — the emotional thread is broken.
+- **Fix**: Personalise the subtitle: "Start tracking Luna's sleep" instead of "Start tracking your baby's sleep." Pass baby name from onboarding state to the signup form.
+
+### U-78 — Add gentle micro-animations to onboarding transitions (B2)
+
+- **Effort**: Medium
+- **Impact**: Medium
+- **Location**: `OnboardingFlow` — all steps
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: Completing each step just slides to the next with no celebration. The progress dots update but there's no encouraging feedback — no checkmark, no subtle pulse, no micro-copy. The flow feels mechanical.
+- **Fix**: Add framer-motion micro-animations: (1) gentle scale/fade on step content entry, (2) progress dot fills with a spring animation, (3) optional soft checkmark or pulse when a step completes. Keep animations under 300ms — calm, not flashy. Match the app's existing spring physics (stiffness: 300, damping: 30).
+
+### U-81 — Merge parent name + relationship into one onboarding step (U5)
+
+- **Effort**: Medium
+- **Impact**: Medium
+- **Location**: `OnboardingFlow` — Steps 4 and 5
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: 6 steps before the user sees any value feels long. Steps 4 (parent name) and 5 (relationship) are both about the parent and could live on one screen.
+- **Fix**: Combine into a single step: "Tell us about you" with name field + Mum/Dad/Other selector. Reduces flow from 6 to 5 steps. Do NOT remove Step 1 (welcome).
+
+### U-79 — Add illustrations to onboarding + auth screens (B1 + B5)
+
+- **Effort**: High
+- **Impact**: High
+- **Location**: `EntryChoice`, `OnboardingFlow` (Steps 1-6), `LoginForm`, `ForgotPasswordForm`
+- **Source**: 2026-04-10 Registration flow audit (Playwright)
+- **Problem**: Onboarding steps 2-5 are ~70% whitespace. The entry choice screen is emotionally flat. The calming brand personality from the landing page disappears across the entire registration flow. Napper uses soft illustrations on each onboarding step to maintain warmth.
+- **Fix**: Add a unique soft illustration per screen. Style: muted pastels (sage, periwinkle, parchment palette), rounded shapes, sleeping/calm motifs. Placed between heading and input to fill the dead space.
+- **Status**: Blocked — illustrations need to be created first. Exploring Nano Banana or similar tool.
+
+- **Illustration brief per screen:**
+
+  | Screen | Illustration idea | Mood |
+  |--------|-------------------|------|
+  | **Entry Choice** | A small sleeping baby curled on a crescent moon, soft stars around. Conveys "we're the calm place for nighttime." | Peaceful, inviting |
+  | **Step 1 — Welcome** | Already has icon cards; could add a soft scene of a parent holding a baby looking at the night sky together. Wraps the value props in warmth. | Reassuring, togetherness |
+  | **Step 2 — Baby name** | A baby onesie or crib with a blank name tag, soft bunting flags above. "This is your baby's space." | Playful, personal |
+  | **Step 3 — Baby DOB** | A small birthday cake with one candle, or a stork carrying a bundle with a tiny calendar. Celebration of arrival. | Celebratory, gentle |
+  | **Step 4 — Parent name** (or merged Step 4+5) | Two hands cradling a small heart or a parent silhouette with a baby. "You matter too." | Warm, inclusive |
+  | **Step 5 — Relationship** | A family constellation — simple abstract figures (mum/dad/other) around a crib. Non-gendered, inclusive shapes. | Inclusive, connected |
+  | **Step 6 — Create Account** | A small door slightly ajar with warm light spilling out, or a key with a sleeping-baby keychain. "Almost there, come in." | Safe, welcoming |
+  | **Login** | A house with a lit window at night. "Welcome home." Matches the "Welcome back" heading. | Familiar, cosy |
+  | **Forgot Password** | Already has a key icon; could enhance with a soft scene of someone finding a key under a doormat or pillow. | Reassuring, low-stress |
+
 ### U-32 — No retry button in error banner
 
 - **Effort**: Medium
@@ -145,9 +232,15 @@ Sources:
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
-| P2 | 6 | UX polish, overdue nap UX |
+| P2 | 12 | UX polish, overdue nap UX, onboarding warmth, registration flow, step merge |
 | P3 | 7 | Infrastructure, multi-baby, algorithm granularity, rescue nap gap |
-| **Total** | **13** | |
+| **Total** | **21** | |
+
+## Completed (2026-04-10)
+
+- U-70 (P1): Passive consent — replaced T&C checkbox with "By creating an account, you agree to..." text; Google OAuth always enabled
+- U-71 (P1): Signup routing — "Sign up" from login now routes through full onboarding flow
+- U-72 (P2): Step 4 subtitle — added "So we know how to greet you in the app."
 
 ## Completed (2026-04-06)
 
