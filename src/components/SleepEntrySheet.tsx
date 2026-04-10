@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -750,6 +750,22 @@ export function SleepEntrySheet({
   // Motion values for drag-to-dismiss
   const y = useMotionValue(0);
 
+  // Distinguish tap from drag on the handle bar: track pointer start position,
+  // if movement < 5px on release → tap (toggle expand); otherwise → drag (framer handles it)
+  const handlePointerStart = useRef<{ x: number; y: number } | null>(null);
+  const handleBarPointerDown = (e: React.PointerEvent) => {
+    handlePointerStart.current = { x: e.clientX, y: e.clientY };
+  };
+  const handleBarPointerUp = (e: React.PointerEvent) => {
+    if (!handlePointerStart.current) return;
+    const dx = Math.abs(e.clientX - handlePointerStart.current.x);
+    const dy = Math.abs(e.clientY - handlePointerStart.current.y);
+    handlePointerStart.current = null;
+    if (dx < 5 && dy < 5) {
+      setIsDetailExpanded((v) => !v);
+    }
+  };
+
   const handleDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
     // Dismiss if dragged down far enough or with enough velocity
     if (info.offset.y > 150 || info.velocity.y > 500) {
@@ -794,8 +810,12 @@ export function SleepEntrySheet({
               className="bg-[var(--bg-card)] rounded-t-[1.25rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
               style={{ maxHeight: isDetailExpanded ? '90dvh' : '75dvh', transition: 'max-height 0.3s ease' }}
             >
-              {/* Handle bar — drag to dismiss only (no tap action; ⋯ button handles expand) */}
-              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
+              {/* Handle bar — drag to dismiss OR tap to expand/collapse */}
+              <div
+                className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+                onPointerDown={handleBarPointerDown}
+                onPointerUp={handleBarPointerUp}
+              >
                 <div className="w-10 h-1.5 bg-[var(--text-muted)]/60 rounded-full" />
               </div>
 
