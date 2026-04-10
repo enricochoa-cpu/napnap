@@ -6,7 +6,6 @@ import { getFromStorage, STORAGE_KEYS } from '../../utils/storage';
 import { EntryChoice } from '../Onboarding';
 import { OnboardingFlow } from '../Onboarding';
 import { LoginForm } from './LoginForm';
-import { SignUpForm } from './SignUpForm';
 import { ForgotPasswordForm } from './ForgotPasswordForm';
 import { LoadingScreen } from '../LoadingScreen';
 
@@ -61,14 +60,20 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // User chose "I have an account" — show auth screens as before
+  // User chose "I have an account" — show auth screens
   switch (authView) {
     case 'signup':
+      // Route new signups through full onboarding so baby profile data is collected
       return (
-        <SignUpForm
-          onSubmit={signUp}
-          onGoogleSignIn={signInWithGoogle}
-          onSwitchToLogin={() => setAuthView('login')}
+        <OnboardingFlow
+          signUp={signUp}
+          signIn={signIn}
+          signInWithGoogle={signInWithGoogle}
+          resetPassword={resetPassword}
+          onBackFromWelcome={() => {
+            setAuthView('login');
+            // Stay in 'account' flow so back goes to login, not entry choice
+          }}
         />
       );
 
