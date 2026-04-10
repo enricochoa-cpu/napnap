@@ -344,13 +344,16 @@ export function SleepEntrySheet({
   const [wakeMethod, setWakeMethod] = useState<string | undefined>();
   const [wakeMood, setWakeMood] = useState<string | undefined>();
 
-  // Refresh "now" every 30 seconds while sheet is open
+  // Refresh "now" every 30 seconds while sheet is open — but pause the tick
+  // when a pause card is expanded (user is editing a native picker/spinner that
+  // would be dismissed by the React re-render on iOS Safari).
   useEffect(() => {
     if (!isOpen) return;
+    if (expandedPauseId) return; // freeze while editing a pause
     setNow(new Date());
     const interval = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(interval);
-  }, [isOpen]);
+  }, [isOpen, expandedPauseId]);
 
   // Reset time fields when the sheet opens or a different entry is selected
   const entryId = entry?.id ?? null;
