@@ -471,7 +471,8 @@
     "badMood": "Mal humor",
     "neutralMood": "Neutral",
     "goodMood": "Bon humor",
-    "notesLabel": "Notes"
+    "notesLabel": "Notes",
+    "notesPlaceholderEmpty": "Sense notes encara"
   },
   "sleepEntrySheet": {
     "addNap": "Afegir migdiada",

@@ -473,7 +473,8 @@
     "badMood": "Mal humor",
     "neutralMood": "Neutral",
     "goodMood": "Buen humor",
-    "notesLabel": "Notas"
+    "notesLabel": "Notas",
+    "notesPlaceholderEmpty": "Sin notas todavía"
   },
   "sleepEntrySheet": {
     "addNap": "Añadir siesta",

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { formatDate, getNextDay, getPreviousDay, calculateDuration as calculateDurationISO } from '../utils/dateUtils';
@@ -749,7 +749,6 @@ export function SleepEntrySheet({
 
   // Motion values for drag-to-dismiss
   const y = useMotionValue(0);
-  const backdropOpacity = useTransform(y, [0, 300], [1, 0]);
 
   const handleDragEnd = (_: unknown, info: { offset: { y: number }; velocity: { y: number } }) => {
     // Dismiss if dragged down far enough or with enough velocity
@@ -763,14 +762,13 @@ export function SleepEntrySheet({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop with blur - fades based on drag position */}
+          {/* Backdrop — subtle dark overlay (no blur), fades on drag */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            animate={{ opacity: 0.4 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            style={{ opacity: backdropOpacity }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black z-50"
             onClick={onClose}
             aria-hidden="true"
           />
@@ -1127,7 +1125,7 @@ export function SleepEntrySheet({
 
                 {/* Start (onset quality) — multi-select, 2×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-sm font-display font-semibold mb-2">
                     {t('sleepEntry.onsetLabel')}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1145,7 +1143,7 @@ export function SleepEntrySheet({
 
                 {/* How (sleep method) — single-select, 3×3 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-sm font-display font-semibold mb-2">
                     {t('sleepEntry.howLabel')}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
@@ -1163,7 +1161,7 @@ export function SleepEntrySheet({
 
                 {/* End (wake method) — single-select, 2×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-sm font-display font-semibold mb-2">
                     {t('sleepEntry.endLabel')}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1181,7 +1179,7 @@ export function SleepEntrySheet({
 
                 {/* Wake up mood — single-select, 3×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-sm font-display font-semibold mb-2">
                     {t('sleepEntry.wakeMoodLabel')}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
@@ -1199,15 +1197,15 @@ export function SleepEntrySheet({
 
                 {/* Notes */}
                 <div>
-                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-sm font-display font-semibold mb-2">
                     {t('sleepEntry.notesLabel')}
                   </p>
                   <textarea
                     rows={2}
                     value={entryNotes}
                     onChange={(e) => setEntryNotes(e.target.value)}
-                    placeholder={t('sleepEntry.notesPlaceholder')}
-                    className="input w-full text-sm resize-none"
+                    placeholder={t('sleepEntry.notesPlaceholderEmpty')}
+                    className="input w-full text-sm resize-none rounded-xl border border-[var(--glass-border)]"
                   />
                 </div>
               </div>

@@ -475,7 +475,8 @@
     "badMood": "Bad mood",
     "neutralMood": "Neutral",
     "goodMood": "Good mood",
-    "notesLabel": "Notes"
+    "notesLabel": "Notes",
+    "notesPlaceholderEmpty": "No notes added yet"
   },
   "sleepEntrySheet": {
     "addNap": "Add nap",
