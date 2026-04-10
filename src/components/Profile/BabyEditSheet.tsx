@@ -161,11 +161,6 @@ export function BabyEditSheet({
                     uploading={avatarUploading}
                   />
                 </motion.div>
-                {onUploadAvatar && (
-                  <p className="text-xs text-[var(--text-muted)] mt-3">
-                    {t('babyEdit.tapPhotoToChange')}
-                  </p>
-                )}
               </div>
 
               {/* Form Fields - Grouped in Soft Cards */}

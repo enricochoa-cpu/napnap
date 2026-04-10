@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { BabyProfile, BabyShare } from '../../types';
+import { format, parseISO } from 'date-fns';
 import { formatAge, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
+import { getDateFnsLocale } from '../../utils/dateFnsLocale';
 import { BabyAvatarPicker } from './BabyAvatarPicker';
 import { SubViewHeader } from './SubViewHeader';
 import { ConfirmationModal } from '../ConfirmationModal';
@@ -180,6 +182,19 @@ export function BabyDetailView({
         onBack={handleBack}
       />
 
+      {/* View-only badge for shared babies */}
+      {!isOwner && (
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--night-color)]/15 text-[var(--night-color)] text-xs font-display font-medium">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            {t('babyDetail.viewOnly')}
+          </span>
+        </div>
+      )}
+
       {/* Avatar */}
       <div className="flex flex-col items-center pt-2 pb-2">
         <BabyAvatarPicker
@@ -190,11 +205,6 @@ export function BabyDetailView({
           onUpload={handleAvatarUpload}
           uploading={avatarUploading}
         />
-        {isOwner && onUploadAvatar && (
-          <p className="text-xs text-[var(--text-muted)] mt-3">
-            {t('babyEdit.tapPhotoToChange')}
-          </p>
-        )}
       </div>
 
       {/* Section 1 — Baby Profile */}
@@ -220,25 +230,34 @@ export function BabyDetailView({
             <label className="block text-[11px] font-medium text-[var(--text-muted)] mb-1.5 font-display uppercase tracking-wider">
               {t('babyEdit.dateOfBirth')}
             </label>
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              disabled={!isOwner}
-              min={getDateOfBirthInputBounds().min}
-              max={getDateOfBirthInputBounds().max}
-              className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0 disabled:opacity-60"
-              aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
-              aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-detail-dob-error' : undefined}
-            />
-            {isOwner && formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
-              <p id="baby-detail-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5" role="alert">
-                {dobValidation.errorKey === 'babyEdit.dobFuture'
-                  ? t('babyEdit.dobFuture')
-                  : dobValidation.errorKey === 'babyEdit.dobTooOld'
-                    ? t('babyEdit.dobTooOld')
-                    : t('babyEdit.dobInvalid')}
+            {isOwner ? (
+              <>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={formData.dateOfBirth}
+                  onChange={handleChange}
+                  min={getDateOfBirthInputBounds().min}
+                  max={getDateOfBirthInputBounds().max}
+                  className="w-full bg-transparent border-none text-[var(--text-primary)] text-base font-display focus:outline-none focus:ring-0"
+                  aria-invalid={formData.dateOfBirth.trim() !== '' && !dobValidation.valid}
+                  aria-describedby={formData.dateOfBirth.trim() !== '' && dobValidation.errorKey ? 'baby-detail-dob-error' : undefined}
+                />
+                {formData.dateOfBirth.trim() !== '' && dobValidation.errorKey && (
+                  <p id="baby-detail-dob-error" className="text-xs text-[var(--danger-color)] mt-1.5" role="alert">
+                    {dobValidation.errorKey === 'babyEdit.dobFuture'
+                      ? t('babyEdit.dobFuture')
+                      : dobValidation.errorKey === 'babyEdit.dobTooOld'
+                        ? t('babyEdit.dobTooOld')
+                        : t('babyEdit.dobInvalid')}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-[var(--text-primary)] text-base font-display">
+                {formData.dateOfBirth
+                  ? format(parseISO(formData.dateOfBirth), 'dd/MM/yyyy', { locale: getDateFnsLocale() })
+                  : '—'}
               </p>
             )}
           </div>

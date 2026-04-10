@@ -96,16 +96,18 @@ export function ProfileMenu({
     hour < 6 ? t('profile.encouragementNight') :
     hour < 12 ? t('profile.encouragementMorning') :
     hour < 18 ? t('profile.encouragementDay') : t('profile.encouragementEvening');
-  const parentName = userProfile?.userName || t('profile.there');
+  const parentName = userProfile?.userName;
 
   return (
     <div className="space-y-6">
       {/* Identity Header */}
       <div className="text-center pt-2 pb-2">
         <h1 className="text-2xl font-display font-bold text-[var(--text-primary)] mb-1">
-          {greeting}, {parentName}
+          {parentName ? `${greeting}, ${parentName}` : greeting}
         </h1>
-        <p className="text-[var(--text-muted)] text-sm">{encouragement}</p>
+        <p className="text-[var(--text-muted)] text-sm">
+          {parentName ? encouragement : t('profile.setNameNudge')}
+        </p>
       </div>
 
       {/* Navigation List */}

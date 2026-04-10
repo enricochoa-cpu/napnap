@@ -11,9 +11,11 @@ interface SignUpFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
   onGoogleSignIn: () => Promise<{ message: string } | null>;
   onSwitchToLogin: () => void;
+  /** Baby name from onboarding draft, used to personalise the subtitle. */
+  babyName?: string;
 }
 
-export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName }: SignUpFormProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,7 +87,11 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
             <Logo size={64} />
           </div>
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.createAccount')}</h1>
-          <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.createAccountSubtitle')}</p>
+          <p className="text-[var(--text-muted)] font-display mt-2">
+            {babyName?.trim()
+              ? t('auth.createAccountSubtitlePersonalised', { name: babyName.trim() })
+              : t('auth.createAccountSubtitle')}
+          </p>
         </div>
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}

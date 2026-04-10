@@ -430,7 +430,6 @@ export function ProfileSection({
             <AccountSettingsView
               userProfile={userProfile}
               onBack={handleBack}
-              onSignOut={onSignOut}
               onUpdateUser={onUpdate}
               onDeleteAccount={onDeleteAccount}
               isDeletingAccount={isDeletingAccount}

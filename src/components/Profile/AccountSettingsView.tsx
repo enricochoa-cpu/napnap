@@ -8,7 +8,6 @@ import { useAuth } from '../../hooks/useAuth';
 interface AccountSettingsViewProps {
   userProfile: UserProfile | null;
   onBack: () => void;
-  onSignOut: () => void;
   onUpdateUser: (data: Partial<Omit<UserProfile, 'email'>>) => void;
   onDeleteAccount: () => Promise<void>;
   isDeletingAccount: boolean;
@@ -18,18 +17,9 @@ interface AccountSettingsViewProps {
 
 import { TrashIconDetailed } from '../icons/ActionIcons';
 
-const LogoutIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
-  </svg>
-);
-
 export function AccountSettingsView({
   userProfile,
   onBack,
-  onSignOut,
   onUpdateUser,
   onDeleteAccount,
   isDeletingAccount,
@@ -39,7 +29,6 @@ export function AccountSettingsView({
   const { t } = useTranslation();
   const { user, updatePassword } = useAuth();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -52,7 +41,6 @@ export function AccountSettingsView({
 
   const isOAuthUser = user?.app_metadata?.provider === 'google';
 
-  const logoutDialogRef = useFocusTrap(showLogoutConfirm, () => setShowLogoutConfirm(false));
   const deleteDialogRef = useFocusTrap(showDeleteConfirm, () => setShowDeleteConfirm(false));
 
   const [formData, setFormData] = useState({
@@ -368,27 +356,6 @@ export function AccountSettingsView({
         </div>
       )}
 
-      {/* Sign Out - Prominent standalone card */}
-      <button
-        onClick={() => setShowLogoutConfirm(true)}
-        className="w-full flex items-center gap-4 p-5 rounded-3xl active:scale-[0.98] transition-all"
-        style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm)' }}
-      >
-        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-[var(--danger-color)]/15">
-          <span className="text-[var(--danger-color)]">
-            <LogoutIcon />
-          </span>
-        </div>
-        <div className="flex-1 text-left">
-          <p className="font-display font-semibold text-[var(--danger-color)] text-[17px]">
-            {t('profile.signOut')}
-          </p>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5">
-            {t('profile.signOutSubtitle')}
-          </p>
-        </div>
-      </button>
-
       {/* Footer links — grouped */}
       <div className="mt-8 flex flex-col items-center gap-0 rounded-2xl bg-[var(--bg-soft)] py-1">
         {onNavigateToPrivacy && (
@@ -410,53 +377,6 @@ export function AccountSettingsView({
           {t('profile.deleteAccount')}
         </button>
       </div>
-
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
-            onClick={() => setShowLogoutConfirm(false)}
-            aria-hidden="true"
-          />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 max-w-sm mx-auto">
-            <div
-              ref={logoutDialogRef}
-              role="alertdialog"
-              aria-modal="true"
-              aria-label={t('profile.signOutConfirmTitle')}
-              className="card p-6"
-            >
-              <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--text-muted)]/20 flex items-center justify-center text-[var(--text-muted)]">
-                <LogoutIcon />
-              </div>
-              <h3 className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
-                {t('profile.signOutConfirmTitle')}
-              </h3>
-              <p className="text-[var(--text-muted)] text-sm text-center mb-6">
-                {t('profile.signOutConfirmBody')}
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--bg-soft)] text-[var(--text-primary)] font-display font-medium"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  onClick={() => {
-                    setShowLogoutConfirm(false);
-                    onSignOut();
-                  }}
-                  className="flex-1 px-4 py-4 min-h-[48px] rounded-xl bg-[var(--danger-color)] text-[var(--text-on-accent)] font-display font-semibold"
-                >
-                  {t('profile.signOut')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (

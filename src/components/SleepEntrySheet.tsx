@@ -336,6 +336,8 @@ export function SleepEntrySheet({
   const [isSaving, setIsSaving] = useState(false);
   const [expandedPauseId, setExpandedPauseId] = useState<string | null>(null);
   const [pauseErrors, setPauseErrors] = useState<Record<string, string | null>>({});
+  // Local draft durations for pause edits — committed to DB on blur/collapse/save
+  const [pauseDurationDrafts, setPauseDurationDrafts] = useState<Record<string, number>>({});
   const [onsetTags, setOnsetTags] = useState<string[]>([]);
   const [sleepMethod, setSleepMethod] = useState<string | undefined>();
   const [entryNotes, setEntryNotes] = useState('');
@@ -365,6 +367,7 @@ export function SleepEntrySheet({
       }
       setExpandedPauseId(null);
       setPauseErrors({});
+      setPauseDurationDrafts({});
       setOnsetTags(entry?.onsetTags ?? []);
       setSleepMethod(entry?.sleepMethod);
       setEntryNotes(entry?.notes ?? '');
@@ -456,9 +459,11 @@ export function SleepEntrySheet({
   // Icon state: Play (new, no end), Stop (active + no changes = end sleep), Check (save edits)
   const saveIcon = useMemo(() => {
     if (!isEditing && !endTime) return 'play';
-    if (isActiveEntry && !endTime && !hasChanges) return 'stop';
+    // Show stop icon only when no changes AND no pauses — user intends to end the sleep.
+    // If pauses exist, show check icon — user is saving night waking edits, not ending sleep.
+    if (isActiveEntry && !endTime && !hasChanges && pauseEntries.length === 0) return 'stop';
     return 'check';
-  }, [isEditing, endTime, isActiveEntry, hasChanges]);
+  }, [isEditing, endTime, isActiveEntry, hasChanges, pauseEntries.length]);
 
   // Temporal validation — returns i18n keys for error/warning so component can translate
   const validation = useMemo((): { isValid: boolean; warningKey: string | null; errorKey: string | null } => {
@@ -544,7 +549,20 @@ export function SleepEntrySheet({
       onPauseEnd();
     }
 
-    const resolvedEndTime = (isActiveEntry && !endTime && !hasChanges) ? getCurrentTime() : endTime;
+    // Flush any pending pause duration edits before saving
+    await flushPauseDurationDrafts();
+
+    // Active entry with pauses but no other changes: pauses are already persisted to DB,
+    // so just close the sheet without re-saving the entry (which would be a no-op).
+    if (isActiveEntry && !endTime && !hasChanges && pauseEntries.length > 0) {
+      onClose();
+      return;
+    }
+
+    // Only auto-fill end time (stop sleep) when the user explicitly wants to end it:
+    // active entry + no end time + no metadata changes + no pauses.
+    const shouldAutoStop = isActiveEntry && !endTime && !hasChanges && pauseEntries.length === 0;
+    const resolvedEndTime = shouldAutoStop ? getCurrentTime() : endTime;
     let payload: Omit<SleepEntry, 'id' | 'date'>;
 
     if (sleepType === 'nap') {
@@ -661,6 +679,18 @@ export function SleepEntrySheet({
     if (!hasChange) return;
 
     await onUpdatePause(pauseId, data);
+  };
+
+  // Flush any pending draft duration edits to the DB (called before save and on card collapse)
+  const flushPauseDurationDrafts = async () => {
+    const drafts = { ...pauseDurationDrafts };
+    for (const [pauseId, duration] of Object.entries(drafts)) {
+      const pause = pauseEntries.find((p) => p.id === pauseId);
+      if (pause && duration !== pause.durationMinutes && duration > 0) {
+        await handleUpdatePause(pauseId, { durationMinutes: duration });
+      }
+    }
+    setPauseDurationDrafts({});
   };
 
   const handleDeletePause = async (pauseId: string) => {
@@ -868,7 +898,7 @@ export function SleepEntrySheet({
                   <p className="min-w-[7ch] text-center text-sm tracking-wide text-[var(--text-muted)] whitespace-nowrap">
                     {durationLabel}
                     {showNetSuffix && (
-                      <span className="text-xs ml-1 opacity-60">{t('sleepEntrySheet.netSuffix')}</span>
+                      <span className="text-xs ml-1 opacity-60"> {t('sleepEntrySheet.netSuffix')}</span>
                     )}
                   </p>
                   {durationLabel && relativeDateLabel ? (
@@ -933,7 +963,17 @@ export function SleepEntrySheet({
                               role="button"
                               tabIndex={0}
                               className="w-full flex items-center justify-between p-3 text-left cursor-pointer"
-                              onClick={() => setExpandedPauseId(isExpanded ? null : pause.id)}
+                              onClick={() => {
+                                if (isExpanded) {
+                                  // Flush draft duration on collapse
+                                  const draft = pauseDurationDrafts[pause.id];
+                                  if (draft !== undefined && draft > 0 && draft !== pause.durationMinutes) {
+                                    handleUpdatePause(pause.id, { durationMinutes: draft });
+                                    setPauseDurationDrafts((prev) => { const next = { ...prev }; delete next[pause.id]; return next; });
+                                  }
+                                }
+                                setExpandedPauseId(isExpanded ? null : pause.id);
+                              }}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedPauseId(isExpanded ? null : pause.id); } }}
                               aria-expanded={isExpanded}
                             >
@@ -944,7 +984,7 @@ export function SleepEntrySheet({
                                     {pauseNumberLabel(index + 1)}
                                   </p>
                                   <p className="text-[var(--text-muted)] text-xs">
-                                    {pauseStartLocal} · {pause.durationMinutes}{t('sleepEntrySheet.pauseDurationUnit')}
+                                    {pauseStartLocal} · {pauseDurationDrafts[pause.id] ?? pause.durationMinutes}{t('sleepEntrySheet.pauseDurationUnit')}
                                   </p>
                                 </div>
                               </div>
@@ -1000,12 +1040,23 @@ export function SleepEntrySheet({
                                         type="number"
                                         min="1"
                                         max="120"
-                                        key={`${pause.id}-${pause.durationMinutes}`}
-                                        defaultValue={pause.durationMinutes}
+                                        value={pauseDurationDrafts[pause.id] ?? pause.durationMinutes}
+                                        onChange={(e) => {
+                                          const val = parseInt(e.target.value, 10);
+                                          setPauseDurationDrafts((prev) => ({
+                                            ...prev,
+                                            [pause.id]: isNaN(val) ? pause.durationMinutes : val,
+                                          }));
+                                        }}
                                         onBlur={(e) => {
                                           const val = parseInt(e.target.value, 10);
                                           if (!isNaN(val) && val > 0) {
                                             handleUpdatePause(pause.id, { durationMinutes: val });
+                                            setPauseDurationDrafts((prev) => {
+                                              const next = { ...prev };
+                                              delete next[pause.id];
+                                              return next;
+                                            });
                                           }
                                         }}
                                         className="input w-full text-center text-sm"

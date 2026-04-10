@@ -3,32 +3,34 @@
 Sources:
 - [2026-03-31 Full App Audit](../../audits/full-app/2026-03-31-full-app-ux-ui-horizontal-audit.md)
 - [BACKLOG.md](../../../.context/operational/backlog/BACKLOG.md) — §1-11 (consolidated 2026-04-06)
+- [2026-04-10 Profile Flows Audit](../../../ux-audit-profile-flows.md) — Playwright MCP testing of Profile, Settings, My Babies, Measures, Sharing
 
 ---
 
 ## P1 — Important
 
+### U-82 — Content hidden behind floating nav bar in Settings and Baby detail
+
+- **Effort**: Low
+- **Impact**: Critical
+- **Location**: `AccountSettingsView`, `BabyDetailView`
+- **Source**: 2026-04-10 Profile flows audit (Playwright MCP)
+- **Problem**: The floating nav bar covers the bottom of both Settings and Baby detail views. In Settings, "Sign out", "Privacy Policy", and "Delete account" are unreachable. In Baby detail, "Delete baby" is hidden and "Share baby profile" is partially obscured. The scroll container doesn't have enough bottom padding to allow scrolling past the nav.
+- **Fix**: Add bottom padding (`pb-32` or ~128px) to the scroll containers in `AccountSettingsView` and `BabyDetailView` to account for the floating nav bar height. Same root cause as the password form being cut off when expanded.
+
 ---
 
 ## P2 — Nice to have
 
-### U-73 — Personalise Step 3 with baby name (U2)
+### U-87 — No way to add a second owned baby
 
 - **Effort**: Low
 - **Impact**: Medium
-- **Location**: `OnboardingFlow` — Step 3 ("When was your baby born?")
-- **Source**: 2026-04-10 Registration flow audit (Playwright)
-- **Problem**: User enters baby name "Luna" in Step 2, but Step 3 still says generic "When was your baby born?" Missing an easy personalisation win that would make the parent feel heard.
-- **Fix**: Use the baby name from Step 2 in the heading: "When was Luna born?" Falls back to "your baby" if name is empty.
-
-### U-74 — Add subtitle to relationship step (U4)
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `OnboardingFlow` — Step 5 ("You're their...")
-- **Source**: 2026-04-10 Registration flow audit (Playwright)
-- **Problem**: The relationship step has no subtitle explaining why we ask. The heading is playful but bare.
-- **Fix**: Add a subtitle like "So we know how to talk to you" or "This helps us personalise your experience."
+- **Location**: `MyBabiesView`
+- **Source**: 2026-04-10 Profile flows audit (Playwright MCP)
+- **Problem**: When the user already owns a baby, the "Add your baby" ghost card disappears from the My Babies list. There is no "+" button or other affordance to add another baby. Parents with twins or multiple children are blocked.
+- **Fix**: Always show an "Add baby" option regardless of whether the user already owns a baby. Either keep the ghost card always visible, or add a "+" button in the header (matching the Measures pattern).
+- **Dependencies**: Related to U-63 (multi-baby backend support). This task is UI-only — the Add baby sheet already works, but backend may need schema changes for true multi-baby.
 
 ### U-75 — Real-time password strength feedback (S3)
 
@@ -47,15 +49,6 @@ Sources:
 - **Source**: 2026-04-10 Registration flow audit (Playwright)
 - **Problem**: The checkbox is small and below the fold on smaller screens. The Terms/Privacy links are `<button>` elements — unclear if clicking them navigates away and loses form data.
 - **Fix**: (1) Ensure the checkbox area is always visible without scrolling on common mobile viewports. (2) Open Terms/Privacy in a modal or new tab (not in-page navigation) so form state is preserved. (3) Consider slightly larger checkbox hit area.
-
-### U-77 — Carry baby name into signup screen (B3)
-
-- **Effort**: Low
-- **Impact**: Medium
-- **Location**: `SignUpForm` / `OnboardingFlow` — Step 6 (Create Account)
-- **Source**: 2026-04-10 Registration flow audit (Playwright)
-- **Problem**: After 5 warm, personalised onboarding steps, the user hits a generic "Create account / Start tracking your baby's sleep" form. The baby's name is not mentioned anywhere. It feels like a different app — the emotional thread is broken.
-- **Fix**: Personalise the subtitle: "Start tracking Luna's sleep" instead of "Start tracking your baby's sleep." Pass baby name from onboarding state to the signup form.
 
 ### U-78 — Add gentle micro-animations to onboarding transitions (B2)
 
@@ -231,13 +224,25 @@ Sources:
 | Priority | Count | Key themes |
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
-| P1 | 0 | ~~Resolved~~ |
-| P2 | 12 | UX polish, overdue nap UX, onboarding warmth, registration flow, step merge |
+| P1 | 1 | Nav bar scroll clipping |
+| P2 | 9 | UX polish, overdue nap UX, onboarding warmth, step merge |
 | P3 | 7 | Infrastructure, multi-baby, algorithm granularity, rescue nap gap |
-| **Total** | **21** | |
+| **Total** | **20** | |
 
 ## Completed (2026-04-10)
 
+- U-89 (P1): Active bedtime save — saving an active entry with pauses no longer terminates it; early return closes sheet without overwriting endTime
+- U-90 (P1): Pause duration edit — changed from uncontrolled defaultValue+onBlur to controlled value+onChange with local drafts; flush on blur, collapse, and save
+- U-91 (P1): Pause header stale — collapsed card header now reads from draft state, updates live as user edits duration
+- U-92 (P2): Net suffix spacing — added literal space before "(net)" in duration label
+- U-88 (P2): View-only indicator — added "View only" badge with eye icon on BabyDetailView and MeasuresView for shared babies (en/es/ca)
+- U-73 (P2): Personalise DOB step — "When was Luna born?" using baby name from step 2; falls back to generic if empty
+- U-74 (P2): Relationship subtitle — added "This helps us personalise your experience" subtitle to step 5 (en/es/ca)
+- U-77 (P2): Carry baby name to signup — subtitle now says "Start tracking Luna's sleep" instead of generic; passed via babyName prop
+- U-83 (P1): Duplicate sign out — removed sign-out card + confirmation modal from AccountSettingsView; sign out lives only in ProfileMenu
+- U-84 (P2): Greeting fallback — show just "Good evening" (no trailing "there") when name not set; subtitle nudges to Settings
+- U-85 (P2): Tap-photo text — removed redundant "Tap photo to change" from BabyDetailView and BabyEditSheet; camera icon is sufficient
+- U-86 (P2): DOB format — shared baby detail now shows formatted dd/MM/yyyy via date-fns instead of raw ISO string
 - U-70 (P1): Passive consent — replaced T&C checkbox with "By creating an account, you agree to..." text; Google OAuth always enabled
 - U-71 (P1): Signup routing — "Sign up" from login now routes through full onboarding flow
 - U-72 (P2): Step 4 subtitle — added "So we know how to greet you in the app."
@@ -269,6 +274,9 @@ Sources:
 - U-68 (P2): Latest bedtime ceiling — soft cap at config.bedtime.latest + 60min (BUG-4)
 
 ## Recommended execution order
+
+**Phase 0 — Critical fixes** (P1):
+U-82 (nav bar scroll clipping — Settings + Baby detail)
 
 **Phase 1 — Quick wins** (P2):
 U-51 (report button)

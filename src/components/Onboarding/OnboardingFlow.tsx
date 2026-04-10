@@ -103,6 +103,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
             onSubmit={signUp}
             onGoogleSignIn={signInWithGoogle}
             onSwitchToLogin={() => setAccountView('login')}
+            babyName={draft.babyName}
           />
         ) : (
           <LoginForm
@@ -247,7 +248,9 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       {step === STEP_BABY_DOB && (
         <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
-            {t('onboarding.babyDobQuestion')}
+            {draft.babyName.trim()
+              ? t('onboarding.babyDobQuestionPersonalised', { name: draft.babyName.trim() })
+              : t('onboarding.babyDobQuestion')}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
             {t('onboarding.babyDobWhy')}
@@ -338,6 +341,9 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.yourRelationshipQuestion')}
           </h2>
+          <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
+            {t('onboarding.yourRelationshipWhy')}
+          </p>
           <div className="flex-1 flex flex-col justify-center gap-2 py-6">
             {RELATIONSHIP_OPTIONS.map((opt) => (
               <button

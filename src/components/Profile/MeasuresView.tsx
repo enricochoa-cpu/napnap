@@ -118,6 +118,19 @@ export function MeasuresView({ baby, canEdit, onBack }: MeasuresViewProps) {
         )}
       </div>
 
+      {/* View-only badge for shared babies */}
+      {!canEdit && (
+        <div className="flex justify-center">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--night-color)]/15 text-[var(--night-color)] text-xs font-display font-medium">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            {t('babyDetail.viewOnly')}
+          </span>
+        </div>
+      )}
+
       {loading ? (
         <div className="py-8 flex justify-center">
           <span className="w-8 h-8 rounded-full border-2 border-[var(--nap-color)]/30 border-t-[var(--nap-color)] animate-spin" aria-hidden="true" />
