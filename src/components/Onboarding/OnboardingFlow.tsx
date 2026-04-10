@@ -299,6 +299,9 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.yourNameQuestion')}
           </h2>
+          <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
+            {t('onboarding.yourNameWhy')}
+          </p>
           <div className="flex-1 flex flex-col justify-center py-6">
             <input
               type="text"
