@@ -21,7 +21,6 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [agreedToTermsAndPrivacy, setAgreedToTermsAndPrivacy] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
 
@@ -36,11 +35,6 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
     if (password.length < 6) {
       setError(t('auth.passwordMinLength'));
-      return;
-    }
-
-    if (!agreedToTermsAndPrivacy) {
-      setError(t('auth.agreeTermsAndPrivacyRequired'));
       return;
     }
 
@@ -96,7 +90,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
 
         {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
         <div className="card p-6 w-full max-w-sm mx-auto">
-          <GoogleSignInButton onSignIn={onGoogleSignIn} disabled={!agreedToTermsAndPrivacy} />
+          <GoogleSignInButton onSignIn={onGoogleSignIn} />
 
           <AuthDivider />
 
@@ -153,41 +147,29 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin }: SignUp
               />
             </div>
 
-            {/* Consent directly above CTA: market-standard placement so agreement is tied to the action */}
-            <div className="pt-1">
-              <label className="flex items-start gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={agreedToTermsAndPrivacy}
-                  onChange={(e) => setAgreedToTermsAndPrivacy(e.target.checked)}
-                  disabled={loading}
-                  className="mt-1 w-4 h-4 rounded border-[var(--text-muted)] bg-[var(--bg-soft)] text-[var(--nap-color)] focus:ring-[var(--nap-color)]"
-                  aria-describedby="consent-desc"
-                />
-                <span id="consent-desc" className="text-sm text-[var(--text-secondary)] font-display">
-                  {t('auth.agreeTermsAndPrivacy')}{' '}
-                  <button
-                    type="button"
-                    onClick={() => setShowTermsModal(true)}
-                    className="text-[var(--nap-color)] font-medium underline underline-offset-2"
-                  >
-                    {t('auth.termsOfService')}
-                  </button>
-                  {' '}{t('auth.and')}{' '}
-                  <button
-                    type="button"
-                    onClick={() => setShowPrivacyModal(true)}
-                    className="text-[var(--nap-color)] font-medium underline underline-offset-2"
-                  >
-                    {t('auth.privacyPolicy')}
-                  </button>
-                </span>
-              </label>
-            </div>
+            {/* Passive consent: industry standard — action = agreement */}
+            <p className="text-xs text-[var(--text-muted)] font-display text-center pt-1">
+              {t('auth.byCreatingAccount')}{' '}
+              <button
+                type="button"
+                onClick={() => setShowTermsModal(true)}
+                className="text-[var(--nap-color)] underline underline-offset-2"
+              >
+                {t('auth.termsOfService')}
+              </button>
+              {' '}{t('auth.and')}{' '}
+              <button
+                type="button"
+                onClick={() => setShowPrivacyModal(true)}
+                className="text-[var(--nap-color)] underline underline-offset-2"
+              >
+                {t('auth.privacyPolicy')}
+              </button>
+            </p>
 
             <button
               type="submit"
-              disabled={loading || !agreedToTermsAndPrivacy}
+              disabled={loading || !email || password.length < 6 || password !== confirmPassword}
               className="btn btn-primary w-full min-h-[56px]"
             >
               {loading ? t('auth.creatingAccount') : t('auth.createAccountButton')}

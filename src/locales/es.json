@@ -53,6 +53,7 @@
     "passwordMinLength": "La contraseña debe tener al menos 6 caracteres",
     "agreePrivacyRequired": "Debes aceptar la Política de privacidad para continuar",
     "agreeTermsAndPrivacyRequired": "Debes aceptar los Términos de Servicio y la Política de privacidad para continuar",
+    "byCreatingAccount": "Al crear una cuenta, aceptas nuestros",
     "termsModalTitle": "Términos de Servicio de NapNap",
     "creatingAccount": "Creando cuenta...",
     "createAccountButton": "Crear cuenta",

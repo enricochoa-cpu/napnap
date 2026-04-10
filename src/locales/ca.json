@@ -53,6 +53,7 @@
     "passwordMinLength": "La contrasenya ha de tenir almenys 6 caràcters",
     "agreePrivacyRequired": "Has d'acceptar la Política de privacitat per continuar",
     "agreeTermsAndPrivacyRequired": "Has d'acceptar els Termes del servei i la Política de privacitat per continuar",
+    "byCreatingAccount": "En crear un compte, acceptes els nostres",
     "termsModalTitle": "Termes del servei de NapNap",
     "creatingAccount": "Creant compte...",
     "createAccountButton": "Crear compte",

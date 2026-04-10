@@ -53,6 +53,7 @@
     "passwordMinLength": "Password must be at least 6 characters",
     "agreePrivacyRequired": "Please agree to the Privacy Policy to continue",
     "agreeTermsAndPrivacyRequired": "Please agree to the Terms of Service and Privacy Policy to continue",
+    "byCreatingAccount": "By creating an account, you agree to our",
     "termsModalTitle": "NapNap Terms of Service",
     "creatingAccount": "Creating account...",
     "createAccountButton": "Create Account",
