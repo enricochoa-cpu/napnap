@@ -796,9 +796,12 @@ export function SleepEntrySheet({
               className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
               style={{ maxHeight: isDetailExpanded ? '90dvh' : '75dvh', transition: 'max-height 0.3s ease' }}
             >
-              {/* Handle bar — drag to dismiss */}
-              <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
-                <div className="w-10 h-1 bg-[var(--text-muted)]/30 rounded-full" />
+              {/* Handle bar — drag to dismiss, tap to expand/collapse */}
+              <div
+                className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing"
+                onClick={() => setIsDetailExpanded((v) => !v)}
+              >
+                <div className="w-10 h-1.5 bg-[var(--text-muted)]/60 rounded-full" />
               </div>
 
               {/* Header with delete and close */}
@@ -1124,7 +1127,7 @@ export function SleepEntrySheet({
 
                 {/* Start (onset quality) — multi-select, 2×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.onsetLabel')}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1142,7 +1145,7 @@ export function SleepEntrySheet({
 
                 {/* How (sleep method) — single-select, 3×3 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.howLabel')}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
@@ -1160,7 +1163,7 @@ export function SleepEntrySheet({
 
                 {/* End (wake method) — single-select, 2×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.endLabel')}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -1178,7 +1181,7 @@ export function SleepEntrySheet({
 
                 {/* Wake up mood — single-select, 3×1 */}
                 <div className="mb-5">
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.wakeMoodLabel')}
                   </p>
                   <div className="grid grid-cols-3 gap-2">
@@ -1196,7 +1199,7 @@ export function SleepEntrySheet({
 
                 {/* Notes */}
                 <div>
-                  <p className="text-[var(--text-muted)] text-xs uppercase tracking-wider font-semibold mb-2">
+                  <p className="text-[var(--text-primary)] text-xs uppercase tracking-wider font-semibold mb-2">
                     {t('sleepEntry.notesLabel')}
                   </p>
                   <textarea
