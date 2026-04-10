@@ -18,6 +18,8 @@
     "ariaGoBack": "Go back",
     "ariaDelete": "Delete",
     "ariaClose": "Close",
+    "ariaExpand": "Show more details",
+    "ariaCollapse": "Show less details",
     "ariaChangePhoto": "Change profile picture",
     "tryAgain": "Try again"
   },

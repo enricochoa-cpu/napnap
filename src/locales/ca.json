@@ -18,6 +18,8 @@
     "ariaGoBack": "Tornar",
     "ariaDelete": "Eliminar",
     "ariaClose": "Tancar",
+    "ariaExpand": "Mostrar més detalls",
+    "ariaCollapse": "Mostrar menys detalls",
     "ariaChangePhoto": "Canviar foto de perfil",
     "tryAgain": "Tornar a provar"
   },

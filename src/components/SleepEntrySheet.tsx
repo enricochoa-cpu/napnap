@@ -43,7 +43,7 @@ interface SleepEntrySheetProps {
 }
 
 import { CloudIcon, MoonIcon } from './icons/SleepIcons';
-import { TrashIcon, CloseIcon, CheckIcon } from './icons/ActionIcons';
+import { TrashIcon, CheckIcon } from './icons/ActionIcons';
 
 const PlayIcon = () => (
   <svg className="w-7 h-7 ml-1" viewBox="0 0 24 24" fill="currentColor">
@@ -335,6 +335,7 @@ export function SleepEntrySheet({
   const [now, setNow] = useState(() => new Date());
   const [isSaving, setIsSaving] = useState(false);
   const [expandedPauseId, setExpandedPauseId] = useState<string | null>(null);
+  const [isDetailExpanded, setIsDetailExpanded] = useState(false);
   const [pauseErrors, setPauseErrors] = useState<Record<string, string | null>>({});
   // Local draft durations for pause edits — committed to DB on blur/collapse/save
   const [pauseDurationDrafts, setPauseDurationDrafts] = useState<Record<string, number>>({});
@@ -369,6 +370,7 @@ export function SleepEntrySheet({
         setEndTime(initialEndTimeOverride || (defaultEndTimeToNow ? getCurrentTime() : ''));
       }
       setExpandedPauseId(null);
+      setIsDetailExpanded(false);
       setPauseErrors({});
       setPauseDurationDrafts({});
       setOnsetTags(entry?.onsetTags ?? []);
@@ -792,7 +794,7 @@ export function SleepEntrySheet({
           >
             <div
               className="bg-[var(--bg-card)] rounded-t-[2rem] shadow-[0_-8px_40px_rgba(0,0,0,0.3)] flex flex-col"
-              style={{ maxHeight: '75dvh' }}
+              style={{ maxHeight: isDetailExpanded ? '90dvh' : '75dvh', transition: 'max-height 0.3s ease' }}
             >
               {/* Handle bar — drag to dismiss */}
               <div className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing">
@@ -815,14 +817,19 @@ export function SleepEntrySheet({
                   <div className="w-11" />
                 )}
 
-                {/* Close button (right) - circle bg */}
+                {/* Expand/collapse toggle (right) - three dots */}
                 <button
-                  onClick={onClose}
+                  onClick={() => setIsDetailExpanded((v) => !v)}
                   className="w-11 h-11 rounded-full flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
                   style={{ background: 'color-mix(in srgb, var(--text-muted) 15%, transparent)' }}
-                  aria-label={t('common.ariaClose')}
+                  aria-label={isDetailExpanded ? t('common.ariaCollapse') : t('common.ariaExpand')}
+                  aria-expanded={isDetailExpanded}
                 >
-                  <CloseIcon />
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="5" cy="12" r="2" />
+                    <circle cx="12" cy="12" r="2" />
+                    <circle cx="19" cy="12" r="2" />
+                  </svg>
                 </button>
               </div>
 
@@ -941,6 +948,8 @@ export function SleepEntrySheet({
                 )}
               </div>
 
+              {/* Detail section — hidden by default, shown when ⋯ is tapped */}
+              {isDetailExpanded && <>
               {/* Pause section — for completed entries or active entries with pauses */}
               {isEditing && (entry?.endTime || pauseEntries.length > 0) && (
                 <div className="px-6 pb-4">
@@ -1199,6 +1208,7 @@ export function SleepEntrySheet({
                   />
                 </div>
               </div>
+              </>}{/* end isDetailExpanded */}
 
               {/* Save error from parent (e.g. network failure) */}
               {saveError && (
