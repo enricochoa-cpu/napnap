@@ -7,30 +7,24 @@ Sources:
 
 ---
 
-## P1 — Important
-
-### U-82 — Content hidden behind floating nav bar in Settings and Baby detail
-
-- **Effort**: Low
-- **Impact**: Critical
-- **Location**: `AccountSettingsView`, `BabyDetailView`
-- **Source**: 2026-04-10 Profile flows audit (Playwright MCP)
-- **Problem**: The floating nav bar covers the bottom of both Settings and Baby detail views. In Settings, "Sign out", "Privacy Policy", and "Delete account" are unreachable. In Baby detail, "Delete baby" is hidden and "Share baby profile" is partially obscured. The scroll container doesn't have enough bottom padding to allow scrolling past the nav.
-- **Fix**: Add bottom padding (`pb-32` or ~128px) to the scroll containers in `AccountSettingsView` and `BabyDetailView` to account for the floating nav bar height. Same root cause as the password form being cut off when expanded.
-
----
-
 ## P2 — Nice to have
 
 ### U-87 — No way to add a second owned baby
 
-- **Effort**: Low
+- **Effort**: ~~Low~~ **High** (blocked on schema migration — see Blocker)
 - **Impact**: Medium
+- **Status**: **Blocked** — re-classified as a child of U-63 on 2026-04-27
 - **Location**: `MyBabiesView`
 - **Source**: 2026-04-10 Profile flows audit (Playwright MCP)
 - **Problem**: When the user already owns a baby, the "Add your baby" ghost card disappears from the My Babies list. There is no "+" button or other affordance to add another baby. Parents with twins or multiple children are blocked.
 - **Fix**: Always show an "Add baby" option regardless of whether the user already owns a baby. Either keep the ghost card always visible, or add a "+" button in the header (matching the Measures pattern).
-- **Dependencies**: Related to U-63 (multi-baby backend support). This task is UI-only — the Add baby sheet already works, but backend may need schema changes for true multi-baby.
+- **Blocker — backend is NOT ready** (verified 2026-04-27): The schema is structurally 1 user = 1 baby.
+  - `profiles` is keyed by `auth.users.id` with baby fields as columns (`baby_name`, `baby_date_of_birth`, `baby_gender`, `baby_avatar_url`); there is no separate `babies` table.
+  - All `baby_id` FKs point at `profiles.id` (i.e. the user id) — see `baby_measurement_logs.baby_id REFERENCES profiles(id)`. Same for `baby_shares.baby_owner_id`.
+  - `sleep_entries` has only `user_id`, no baby reference at all.
+  - `useBabyProfile.createProfile` upserts on `id: user.id`, so calling it again would silently overwrite the first profile and orphan the existing sleep entries (still attached to the same `user_id` but now describing a different baby).
+  - The audit's "UI-only — the Add baby sheet already works" assessment is incorrect.
+- **Dependencies**: Blocked on **U-62** (Supabase base schema migration — new `babies` table with own PK, add `baby_id` to `sleep_entries` and `baby_shares`, RLS rewrite) and **U-63** (multi-baby frontend refactor — decouple `baby.id` from `user.id` across `useBabyProfile`, sleep hooks, storage keys, active-baby selection). U-87 cannot ship before that work lands.
 
 ### U-75 — Real-time password strength feedback (S3)
 
@@ -49,15 +43,6 @@ Sources:
 - **Source**: 2026-04-10 Registration flow audit (Playwright)
 - **Problem**: The checkbox is small and below the fold on smaller screens. The Terms/Privacy links are `<button>` elements — unclear if clicking them navigates away and loses form data.
 - **Fix**: (1) Ensure the checkbox area is always visible without scrolling on common mobile viewports. (2) Open Terms/Privacy in a modal or new tab (not in-page navigation) so form state is preserved. (3) Consider slightly larger checkbox hit area.
-
-### U-78 — Add gentle micro-animations to onboarding transitions (B2)
-
-- **Effort**: Medium
-- **Impact**: Medium
-- **Location**: `OnboardingFlow` — all steps
-- **Source**: 2026-04-10 Registration flow audit (Playwright)
-- **Problem**: Completing each step just slides to the next with no celebration. The progress dots update but there's no encouraging feedback — no checkmark, no subtle pulse, no micro-copy. The flow feels mechanical.
-- **Fix**: Add framer-motion micro-animations: (1) gentle scale/fade on step content entry, (2) progress dot fills with a spring animation, (3) optional soft checkmark or pulse when a step completes. Keep animations under 300ms — calm, not flashy. Match the app's existing spring physics (stiffness: 300, damping: 30).
 
 ### U-81 — Merge parent name + relationship into one onboarding step (U5)
 
@@ -116,14 +101,6 @@ Sources:
 - **Problem**: "Generate report (last 30 days)" entry point not visible during audit. Feature exists in code but may be unreachable.
 - **Fix**: Verify if removed or hidden by condition. Restore as prominent CTA card at bottom of "Resum de son" tab.
 
-### U-53 — Valid changes auto-save silently on back (§11.2)
-
-- **Effort**: Low
-- **Impact**: Low-Medium
-- **Location**: `BabyDetailView:145-165`
-- **Problem**: Partially addressed — a discard dialog exists for **invalid** changes (via `ConfirmationModal` + `showDiscardConfirm`). However, **valid** changes auto-save silently when tapping back, with no confirmation. User may not intend to save edits they were still reviewing.
-- **Fix**: Show "Save changes?" confirmation on back for valid dirty state, instead of auto-saving. Or add the missing save toast (U-52) so at least the auto-save is communicated.
-
 ### U-55 — Avatar picker has no crop step (§11.4)
 
 - **Effort**: Medium
@@ -144,15 +121,6 @@ Sources:
 ---
 
 ## P3 — Future / Infrastructure
-
-### U-69 — Blended nap times can exceed max wake window (BUG-2)
-
-- **Effort**: Medium
-- **Impact**: Low
-- **Location**: `dateUtils.ts` — `predictDaySchedule` / `simulateDay` interaction
-- **Source**: [2026-04-06 Algorithm Arithmetic Audit](../../audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md) — BUG-2
-- **Problem**: `simulateDay` uses config-only wake windows and can trigger rescue naps when gaps exceed max. But `predictDaySchedule` blends with historical data and can produce different nap end times, creating wake gaps that exceed `config.wakeWindows.max` (e.g., 260min gap for a 6mo baby with max=180min). Only triggers with extreme short naps + high optimization + high blending divergence. Earliest bedtime floor prevents absurd outputs.
-- **Fix**: Post-hoc check after computing all blended nap times + bedtime: if any wake gap exceeds `config.wakeWindows.max`, insert a rescue micro-nap or flag the gap.
 
 ### U-60 — Profiles table semantics — 1 user = 1 baby (§1)
 
@@ -185,6 +153,7 @@ Sources:
 - **Location**: App-wide + Supabase schema
 - **Problem**: UI has "Add your baby" and active-baby switch, but backend is 1 user = 1 profile row = 1 baby. No `baby_id` on `sleep_entries`.
 - **Fix**: (1) New `babies` table, (2) `profiles` user-only, (3) `sleep_entries` add `baby_id` FK, (4) `baby_shares` reference `baby_id`, (5) Update all hooks and RLS. See BACKLOG §4 for detailed schema plan.
+- **Children**: U-87 (add second owned baby UI) is blocked on this work — see U-87 for the schema audit.
 
 ### U-64 — Invitation emails production — Resend domain (§5)
 
@@ -224,10 +193,14 @@ Sources:
 | Priority | Count | Key themes |
 |----------|-------|------------|
 | P0 | 0 | ~~Resolved~~ |
-| P1 | 1 | Nav bar scroll clipping |
-| P2 | 9 | UX polish, overdue nap UX, onboarding warmth, step merge |
+| P1 | 0 | ~~Resolved~~ |
+| P2 | 8 | UX polish, overdue nap UX, onboarding warmth, step merge |
 | P3 | 7 | Infrastructure, multi-baby, algorithm granularity, rescue nap gap |
-| **Total** | **20** | |
+| **Total** | **18** | |
+
+## Completed (2026-04-27)
+
+- U-53 (P2): Save-on-back confirmation — replaced silent auto-save in `BabyDetailView` with a 3-action modal (Save / Discard / Cancel); overlay tap stays on screen so accidental dismiss can't drop edits; i18n en/es/ca
 
 ## Completed (2026-04-10)
 

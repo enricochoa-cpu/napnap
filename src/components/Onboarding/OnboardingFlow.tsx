@@ -5,11 +5,20 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { formatDate, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { setOnboardingDraftInSession } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
 import { SignUpForm } from '../Auth/SignUpForm';
+
+const STEP_SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
+
+const stepVariants: Variants = {
+  enter: (dir: number) => ({ opacity: 0, x: dir * 24, scale: 0.98 }),
+  center: { opacity: 1, x: 0, scale: 1 },
+  exit: (dir: number) => ({ opacity: 0, x: dir * -24, scale: 0.98 }),
+};
 
 export type OnboardingRelationship = 'dad' | 'mum' | 'other';
 
@@ -53,6 +62,7 @@ const defaultDraft = (): OnboardingDraft => ({
 export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword, onBackFromWelcome }: OnboardingFlowProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState(STEP_WELCOME);
+  const [direction, setDirection] = useState<1 | -1>(1);
   const [draft, setDraft] = useState<OnboardingDraft>(defaultDraft);
   const [accountView, setAccountView] = useState<'signup' | 'login' | 'forgot-password'>('signup');
 
@@ -64,23 +74,33 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
   }, [step, draft]);
 
   const goNext = () => {
-    if (step < STEP_ACCOUNT) setStep((s) => s + 1);
+    if (step < STEP_ACCOUNT) {
+      setDirection(1);
+      setStep((s) => s + 1);
+    }
   };
 
   const goBack = () => {
-    if (step > STEP_WELCOME) setStep((s) => s - 1);
+    if (step > STEP_WELCOME) {
+      setDirection(-1);
+      setStep((s) => s - 1);
+    }
   };
 
   const progressDots = (
     <div className="flex justify-center gap-2 mb-6" aria-label={t('onboarding.stepOf', { current: step + 1, total: TOTAL_STEPS })}>
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-        <span
-          key={i}
-          className={`h-1.5 rounded-full transition-all ${
-            i <= step ? 'w-6 bg-[var(--night-color)]' : 'w-1.5 bg-[var(--text-muted)]/40'
-          }`}
-        />
-      ))}
+      {Array.from({ length: TOTAL_STEPS }, (_, i) => {
+        const filled = i <= step;
+        return (
+          <motion.span
+            key={i}
+            className={`h-1.5 rounded-full ${filled ? 'bg-[var(--night-color)]' : 'bg-[var(--text-muted)]/40'}`}
+            initial={false}
+            animate={{ width: filled ? 24 : 6 }}
+            transition={STEP_SPRING}
+          />
+        );
+      })}
     </div>
   );
 
@@ -146,9 +166,19 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
       </div>
       {progressDots}
 
+      <AnimatePresence mode="wait" custom={direction} initial={false}>
       {/* Welcome: title, intro, benefit cards, Next (same width as Next on following screens) */}
       {step === STEP_WELCOME && (
-        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+        <motion.div
+          key="welcome"
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={STEP_SPRING}
+          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+        >
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.hiThere')}
           </h2>
@@ -202,12 +232,21 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
             </button>
             <div className="flex-1" />
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Baby name */}
       {step === STEP_BABY_NAME && (
-        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+        <motion.div
+          key="baby-name"
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={STEP_SPRING}
+          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+        >
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.babyNameQuestion')}
           </h2>
@@ -241,12 +280,21 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               {t('common.next')}
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Baby DOB */}
       {step === STEP_BABY_DOB && (
-        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+        <motion.div
+          key="baby-dob"
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={STEP_SPRING}
+          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+        >
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {draft.babyName.trim()
               ? t('onboarding.babyDobQuestionPersonalised', { name: draft.babyName.trim() })
@@ -293,12 +341,21 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               {t('common.next')}
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Your name */}
       {step === STEP_YOUR_NAME && (
-        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+        <motion.div
+          key="your-name"
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={STEP_SPRING}
+          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+        >
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.yourNameQuestion')}
           </h2>
@@ -332,12 +389,21 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               {t('common.next')}
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Your relationship */}
       {step === STEP_YOUR_RELATIONSHIP && (
-        <div className="flex flex-col flex-1 w-full max-w-sm mx-auto">
+        <motion.div
+          key="your-relationship"
+          custom={direction}
+          variants={stepVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={STEP_SPRING}
+          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+        >
           <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
             {t('onboarding.yourRelationshipQuestion')}
           </h2>
@@ -374,8 +440,9 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
               {t('common.next')}
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }
