@@ -27,8 +27,8 @@ import {
   formatAge,
 } from './utils/dateUtils';
 import {
-  getOnboardingDraftFromSession,
-  removeOnboardingDraftFromSession,
+  getOnboardingDraft,
+  removeOnboardingDraft,
   setToStorage,
   STORAGE_KEYS,
 } from './utils/storage';
@@ -83,7 +83,7 @@ function App() {
   const appliedOnboardingDraftRef = useRef(false);
   useEffect(() => {
     if (profileLoading || profile !== null || appliedOnboardingDraftRef.current) return;
-    const raw = getOnboardingDraftFromSession();
+    const raw = getOnboardingDraft();
     if (!raw) return;
     let draft: { babyName?: string; babyDob?: string; userName?: string; relationship?: 'dad' | 'mum' | 'other' };
     try {
@@ -101,7 +101,7 @@ function App() {
       userRole: draft.relationship ?? 'other',
     }).then((result) => {
       if (result) {
-        removeOnboardingDraftFromSession();
+        removeOnboardingDraft();
         setToStorage(STORAGE_KEYS.ONBOARDING_COMPLETED, true);
       } else appliedOnboardingDraftRef.current = false; // Allow retry if create failed
     });

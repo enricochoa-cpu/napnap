@@ -26,27 +26,27 @@ export function setToStorage<T>(key: string, value: T): void {
   }
 }
 
-/** Session-scoped storage for onboarding draft (cleared when tab closes). Used so draft is available after redirect (e.g. Google OAuth). */
-export function getOnboardingDraftFromSession(): string | null {
+/** Persistent storage for onboarding draft (survives refresh + tab close, e.g. Google OAuth redirect). Cleared after profile creation. */
+export function getOnboardingDraft(): string | null {
   try {
-    return sessionStorage.getItem(STORAGE_KEYS.ONBOARDING_DRAFT);
+    return localStorage.getItem(STORAGE_KEYS.ONBOARDING_DRAFT);
   } catch {
     return null;
   }
 }
 
-export function setOnboardingDraftInSession(value: string): void {
+export function setOnboardingDraft(value: string): void {
   try {
-    sessionStorage.setItem(STORAGE_KEYS.ONBOARDING_DRAFT, value);
+    localStorage.setItem(STORAGE_KEYS.ONBOARDING_DRAFT, value);
   } catch (error) {
-    console.error('Error saving onboarding draft to sessionStorage:', error);
+    console.error('Error saving onboarding draft to localStorage:', error);
   }
 }
 
-export function removeOnboardingDraftFromSession(): void {
+export function removeOnboardingDraft(): void {
   try {
-    sessionStorage.removeItem(STORAGE_KEYS.ONBOARDING_DRAFT);
+    localStorage.removeItem(STORAGE_KEYS.ONBOARDING_DRAFT);
   } catch (error) {
-    console.error('Error removing onboarding draft from sessionStorage:', error);
+    console.error('Error removing onboarding draft from localStorage:', error);
   }
 }

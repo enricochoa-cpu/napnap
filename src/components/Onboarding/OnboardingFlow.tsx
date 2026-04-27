@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { formatDate, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
-import { setOnboardingDraftInSession } from '../../utils/storage';
+import { getOnboardingDraft, setOnboardingDraft } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
 import { SignUpForm } from '../Auth/SignUpForm';
@@ -59,18 +59,47 @@ const defaultDraft = (): OnboardingDraft => ({
   relationship: 'mum',
 });
 
+// Restore persisted draft + step on mount so a refresh during onboarding doesn't lose progress (U-61).
+const loadInitialState = (): { draft: OnboardingDraft; step: number } => {
+  const fallback = { draft: defaultDraft(), step: STEP_WELCOME };
+  const raw = getOnboardingDraft();
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw) as Partial<OnboardingDraft & { step: number }>;
+    if (typeof parsed !== 'object' || parsed === null) return fallback;
+    const restoredStep =
+      typeof parsed.step === 'number' && parsed.step >= STEP_WELCOME && parsed.step <= STEP_ACCOUNT
+        ? parsed.step
+        : STEP_WELCOME;
+    const validRelationship: OnboardingRelationship =
+      parsed.relationship === 'dad' || parsed.relationship === 'mum' || parsed.relationship === 'other'
+        ? parsed.relationship
+        : 'mum';
+    return {
+      draft: {
+        babyName: typeof parsed.babyName === 'string' ? parsed.babyName : '',
+        babyDob: typeof parsed.babyDob === 'string' && parsed.babyDob ? parsed.babyDob : formatDate(new Date()),
+        userName: typeof parsed.userName === 'string' ? parsed.userName : '',
+        relationship: validRelationship,
+      },
+      step: restoredStep,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
 export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword, onBackFromWelcome }: OnboardingFlowProps) {
   const { t } = useTranslation();
-  const [step, setStep] = useState(STEP_WELCOME);
+  const [{ draft: initialDraft, step: initialStep }] = useState(loadInitialState);
+  const [step, setStep] = useState(initialStep);
   const [direction, setDirection] = useState<1 | -1>(1);
-  const [draft, setDraft] = useState<OnboardingDraft>(defaultDraft);
+  const [draft, setDraft] = useState<OnboardingDraft>(initialDraft);
   const [accountView, setAccountView] = useState<'signup' | 'login' | 'forgot-password'>('signup');
 
-  // Persist draft when on Account step so it can be applied after sign-up (email or Google redirect).
+  // Persist draft + current step on every change so a refresh restores progress (and OAuth redirect can apply the draft on the Account step).
   useEffect(() => {
-    if (step === STEP_ACCOUNT) {
-      setOnboardingDraftInSession(JSON.stringify(draft));
-    }
+    setOnboardingDraft(JSON.stringify({ ...draft, step }));
   }, [step, draft]);
 
   const goNext = () => {

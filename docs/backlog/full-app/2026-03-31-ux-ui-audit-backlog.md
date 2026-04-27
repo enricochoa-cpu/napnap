@@ -130,14 +130,6 @@ Sources:
 - **Problem**: `profiles` table stores both user-level and baby-level data in one row. One user can only have one "own" baby. Misleading schema.
 - **Note**: Awareness item for §4 (multi-baby). When implementing multi-baby, split into `profiles` (user-only) + `babies` table.
 
-### U-61 — Onboarding draft persistence across refresh (§2)
-
-- **Effort**: Low
-- **Impact**: Low
-- **Location**: `OnboardingFlow`
-- **Problem**: Refresh during onboarding loses all draft data. Optional improvement.
-- **Fix**: Persist draft to localStorage (not sessionStorage, which is tab-scoped).
-
 ### U-62 — Supabase base schema migration (§3)
 
 - **Effort**: Medium
@@ -195,8 +187,8 @@ Sources:
 | P0 | 0 | ~~Resolved~~ |
 | P1 | 0 | ~~Resolved~~ |
 | P2 | 8 | UX polish, overdue nap UX, onboarding warmth, step merge |
-| P3 | 7 | Infrastructure, multi-baby, algorithm granularity, rescue nap gap |
-| **Total** | **18** | |
+| P3 | 6 | Infrastructure, multi-baby, algorithm granularity, rescue nap gap |
+| **Total** | **17** | |
 
 ## Completed (2026-04-27)
 
