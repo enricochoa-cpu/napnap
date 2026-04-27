@@ -372,7 +372,10 @@
     "sharedCount": "{{count}} personas compartidas",
     "sharedCount_one": "1 persona compartida",
     "discardChangesTitle": "¿Descartar cambios?",
-    "discardChangesDescription": "Tienes cambios sin guardar que están incompletos. Volver atrás los descartará."
+    "discardChangesDescription": "Tienes cambios sin guardar que están incompletos. Volver atrás los descartará.",
+    "saveChangesTitle": "¿Guardar cambios?",
+    "saveChangesDescription": "Tienes cambios sin guardar. ¿Quieres guardarlos antes de volver?",
+    "discardChanges": "Descartar cambios"
   },
   "shareAccess": {
     "title": "Compartir perfil del bebé",

@@ -374,7 +374,10 @@
     "sharedCount": "{{count}} people shared",
     "sharedCount_one": "1 person shared",
     "discardChangesTitle": "Discard changes?",
-    "discardChangesDescription": "You have unsaved changes that are incomplete. Going back will discard them."
+    "discardChangesDescription": "You have unsaved changes that are incomplete. Going back will discard them.",
+    "saveChangesTitle": "Save changes?",
+    "saveChangesDescription": "You have unsaved changes. Save them before going back?",
+    "discardChanges": "Discard changes"
   },
   "shareAccess": {
     "title": "Share baby profile",

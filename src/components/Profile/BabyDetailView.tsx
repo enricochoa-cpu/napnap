@@ -64,6 +64,7 @@ export function BabyDetailView({
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
   const [showSavedToast, setShowSavedToast] = useState(false);
 
   const flashSavedToast = useCallback(() => {
@@ -150,27 +151,31 @@ export function BabyDetailView({
       ? t('babyDetail.editProfile')
       : t('babyDetail.viewProfile');
 
-  // When user taps back: save first if there are valid unsaved changes, then navigate.
+  // When user taps back: ask before saving if there are valid unsaved changes.
   // If changes exist but are invalid, warn before discarding.
-  const handleBack = async () => {
+  const handleBack = () => {
     const dobOk = validateDateOfBirth(formData.dateOfBirth).valid;
     if (isOwner && hasChanges && isValid && dobOk && !isSaving) {
-      // Valid changes — auto-save
-      setIsSaving(true);
-      try {
-        await Promise.resolve(onUpdate(formData));
-        onBack();
-      } catch (err) {
-        console.error('Save on back failed:', err);
-        // Stay on screen so user can retry or tap Save Changes
-      } finally {
-        setIsSaving(false);
-      }
+      setShowSaveConfirm(true);
     } else if (isOwner && hasChanges && !isValid) {
-      // Invalid changes — confirm discard
       setShowDiscardConfirm(true);
     } else {
       onBack();
+    }
+  };
+
+  const handleSaveAndBack = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      await Promise.resolve(onUpdate(formData));
+      setShowSaveConfirm(false);
+      onBack();
+    } catch (err) {
+      console.error('Save on back failed:', err);
+      setShowSaveConfirm(false);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -380,6 +385,54 @@ export function BabyDetailView({
         title={t('babyDetail.discardChangesTitle')}
         description={t('babyDetail.discardChangesDescription')}
       />
+
+      {/* Save-on-back confirmation: 3 actions (Save / Discard / Cancel).
+          Overlay tap = stay on screen so an accidental tap can't drop edits. */}
+      {showSaveConfirm && (
+        <div className="modal-overlay" onClick={() => !isSaving && setShowSaveConfirm(false)}>
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="save-confirm-title"
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="save-confirm-title" className="text-xl font-display font-bold text-[var(--text-primary)] text-center mb-2">
+              {t('babyDetail.saveChangesTitle')}
+            </h3>
+            <p className="text-[var(--text-muted)] text-sm text-center mb-6">
+              {t('babyDetail.saveChangesDescription')}
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleSaveAndBack}
+                disabled={isSaving}
+                className="btn btn-primary w-full"
+                aria-busy={isSaving}
+              >
+                {isSaving ? t('common.saving') : t('common.save')}
+              </button>
+              <button
+                onClick={() => {
+                  setShowSaveConfirm(false);
+                  onBack();
+                }}
+                disabled={isSaving}
+                className="w-full py-3 text-sm font-display font-medium text-[var(--danger-color)]/80 hover:text-[var(--danger-color)] transition-colors disabled:opacity-50"
+              >
+                {t('babyDetail.discardChanges')}
+              </button>
+              <button
+                onClick={() => setShowSaveConfirm(false)}
+                disabled={isSaving}
+                className="w-full py-2 text-sm font-display text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save confirmation toast */}
       <AnimatePresence>

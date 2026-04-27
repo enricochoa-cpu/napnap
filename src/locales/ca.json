@@ -370,7 +370,10 @@
     "sharedCount": "{{count}} persones compartides",
     "sharedCount_one": "1 persona compartida",
     "discardChangesTitle": "Descartar canvis?",
-    "discardChangesDescription": "Tens canvis sense desar que estan incomplets. Tornar enrere els descartarà."
+    "discardChangesDescription": "Tens canvis sense desar que estan incomplets. Tornar enrere els descartarà.",
+    "saveChangesTitle": "Desar canvis?",
+    "saveChangesDescription": "Tens canvis sense desar. Vols desar-los abans de tornar?",
+    "discardChanges": "Descartar canvis"
   },
   "shareAccess": {
     "title": "Compartir perfil del nadó",
