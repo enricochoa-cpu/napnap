@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ForgotPasswordIllustration } from '../illustrations/AuthIllustrations';
+import { BackButton } from '../common/BackButton';
 
 interface ForgotPasswordFormProps {
   onSubmit: (email: string) => Promise<{ message: string } | null>;
@@ -54,15 +56,14 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
   }
 
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
+    <div className="relative h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
+      <BackButton floating onClick={onBack} />
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top flex flex-col items-center py-8">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--nap-color)]/20 flex items-center justify-center">
-            <svg className="w-8 h-8 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-          </div>
+        {/* Illustration → title → subtitle */}
+        <div className="mx-auto w-[200px] h-[140px]" aria-hidden="true">
+          <ForgotPasswordIllustration />
+        </div>
+        <div className="text-center mt-4 mb-8">
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.resetPassword')}</h1>
           <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.resetPasswordSubtitle')}</p>
         </div>
@@ -97,14 +98,6 @@ export function ForgotPasswordForm({ onSubmit, onBack }: ForgotPasswordFormProps
               className="btn btn-primary w-full"
             >
               {loading ? t('auth.sending') : t('auth.sendResetLink')}
-            </button>
-
-            <button
-              type="button"
-              onClick={onBack}
-              className="btn btn-secondary w-full"
-            >
-              {t('auth.backToSignIn')}
             </button>
           </form>
         </div>

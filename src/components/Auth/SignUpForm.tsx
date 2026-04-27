@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TERMS_SECTION_KEYS } from '../../constants/termsOfService';
 import { AuthDivider } from './AuthDivider';
 import { GoogleSignInButton } from './GoogleSignInButton';
-import { Logo } from '../Logo';
+import { Step6Illustration } from '../illustrations/AuthIllustrations';
 
 const PRIVACY_SECTION_KEYS = ['whatWeCollect', 'howWeUse', 'accountDeletion', 'contact'] as const;
 
@@ -81,11 +81,11 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
       {/* Scroll only on account screen so Create Account button is reachable on short viewports (e.g. mobile browser) */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top">
-        {/* Logo + short info (Napper-style: clear top section) */}
-        <div className="text-center pt-2 pb-6">
-          <div className="mx-auto mb-4 flex justify-center">
-            <Logo size={64} />
-          </div>
+        {/* Illustration → title → subtitle */}
+        <div className="mx-auto mt-4 w-[200px] h-[140px]" aria-hidden="true">
+          <Step6Illustration />
+        </div>
+        <div className="text-center pt-4 pb-6">
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.createAccount')}</h1>
           <p className="text-[var(--text-muted)] font-display mt-2">
             {babyName?.trim()
@@ -94,7 +94,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName
           </p>
         </div>
 
-        {/* Form Card: Google + Continue with email (Napper-style: logo, short info, then actions) */}
+        {/* Form Card: Google + Continue with email */}
         <div className="card p-6 w-full max-w-sm mx-auto">
           <GoogleSignInButton onSignIn={onGoogleSignIn} />
 

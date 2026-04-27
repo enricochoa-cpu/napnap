@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { AuthDivider } from './AuthDivider';
-import { Logo } from '../Logo';
+import { LoginIllustration } from '../illustrations/AuthIllustrations';
+import { BackButton } from '../common/BackButton';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => Promise<{ message: string } | null>;
   onGoogleSignIn: () => Promise<{ message: string } | null>;
   onSwitchToSignUp: () => void;
   onForgotPassword: () => void;
+  /** When provided, a floating top-left back arrow is rendered. */
+  onBack?: () => void;
 }
 
-export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgotPassword }: LoginFormProps) {
+export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgotPassword, onBack }: LoginFormProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,13 +36,14 @@ export function LoginForm({ onSubmit, onGoogleSignIn, onSwitchToSignUp, onForgot
   };
 
   return (
-    <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
+    <div className="relative h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
+      {onBack && <BackButton floating onClick={onBack} />}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top">
-        {/* Logo + short info (Napper-style) */}
-        <div className="text-center pt-2 pb-6">
-          <div className="mx-auto mb-4 flex justify-center">
-            <Logo size={64} />
-          </div>
+        {/* Illustration → title → subtitle (Napper-style) */}
+        <div className="mx-auto mt-4 w-[200px] h-[140px]" aria-hidden="true">
+          <LoginIllustration />
+        </div>
+        <div className="text-center pt-4 pb-6">
           <h1 className="text-display-lg text-[var(--text-primary)]">{t('auth.welcomeBack')}</h1>
           <p className="text-[var(--text-muted)] font-display mt-2">{t('auth.signInSubtitle')}</p>
         </div>

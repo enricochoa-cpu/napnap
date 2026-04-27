@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import { useApplyCircadianTheme } from '../../hooks/useCircadianTheme';
-import { getFromStorage, STORAGE_KEYS } from '../../utils/storage';
+import { getFromStorage, removeOnboardingDraft, STORAGE_KEYS } from '../../utils/storage';
 import { EntryChoice } from '../Onboarding';
 import { OnboardingFlow } from '../Onboarding';
 import { LoginForm } from './LoginForm';
@@ -41,7 +41,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (entryChoice === null) {
     return (
       <EntryChoice
-        onNew={() => setEntryChoice('new')}
+        onNew={() => {
+          // Fresh "Get started" → wipe any stale draft so onboarding restarts at step 1.
+          // Mid-flow refreshes still restore progress because they don't pass through here.
+          removeOnboardingDraft();
+          setEntryChoice('new');
+        }}
         onHaveAccount={() => setEntryChoice('account')}
       />
     );
@@ -93,6 +98,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
           onGoogleSignIn={signInWithGoogle}
           onSwitchToSignUp={() => setAuthView('signup')}
           onForgotPassword={() => setAuthView('forgot-password')}
+          onBack={() => setEntryChoice(null)}
         />
       );
   }

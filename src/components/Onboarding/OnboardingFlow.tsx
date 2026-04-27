@@ -11,6 +11,14 @@ import { getOnboardingDraft, setOnboardingDraft } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
 import { SignUpForm } from '../Auth/SignUpForm';
+import { BackButton } from '../common/BackButton';
+import {
+  Step1Illustration,
+  Step2Illustration,
+  Step3Illustration,
+  Step4Illustration,
+  Step5Illustration,
+} from '../illustrations/AuthIllustrations';
 
 const STEP_SPRING = { type: 'spring', stiffness: 300, damping: 30 } as const;
 
@@ -116,20 +124,28 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     }
   };
 
-  const progressDots = (
-    <div className="flex justify-center gap-2 mb-6" aria-label={t('onboarding.stepOf', { current: step + 1, total: TOTAL_STEPS })}>
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => {
-        const filled = i <= step;
-        return (
-          <motion.span
-            key={i}
-            className={`h-1.5 rounded-full ${filled ? 'bg-[var(--night-color)]' : 'bg-[var(--text-muted)]/40'}`}
+  const handleBack = () => (step === STEP_WELCOME ? onBackFromWelcome?.() : goBack());
+
+  const progressPct = ((step + 1) / TOTAL_STEPS) * 100;
+  const stepperRow = (
+    <div className="flex items-center gap-3 mb-6 pt-2">
+      <BackButton onClick={handleBack} />
+      <div
+        className="flex-1 min-w-0"
+        aria-label={t('onboarding.stepOf', { current: step + 1, total: TOTAL_STEPS })}
+      >
+        <p className="text-[10px] tracking-[0.12em] uppercase text-[var(--text-muted)] font-display mb-1.5">
+          {t('onboarding.stepOf', { current: step + 1, total: TOTAL_STEPS })}
+        </p>
+        <div className="h-1 rounded-full bg-[var(--text-muted)]/20 overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-[var(--nap-color)]"
             initial={false}
-            animate={{ width: filled ? 24 : 6 }}
+            animate={{ width: `${progressPct}%` }}
             transition={STEP_SPRING}
           />
-        );
-      })}
+        </div>
+      </div>
     </div>
   );
 
@@ -160,6 +176,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
             onGoogleSignIn={signInWithGoogle}
             onSwitchToSignUp={() => setAccountView('signup')}
             onForgotPassword={() => setAccountView('forgot-password')}
+            onBack={() => setAccountView('signup')}
           />
         )}
       </div>
@@ -175,25 +192,10 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
     (step === STEP_YOUR_NAME && draft.userName.trim().length > 0) ||
     step === STEP_YOUR_RELATIONSHIP;
 
-  const handleBack = () => (step === STEP_WELCOME ? onBackFromWelcome?.() : goBack());
-
   // Napper-style: question at top, content in middle, Next at bottom. Safe-area padding so content isn't flush with browser chrome.
   return (
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col px-4 safe-pad-top">
-      <div className="flex items-center gap-2 mb-2">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors min-w-[44px] min-h-[44px]"
-          aria-label={t('common.back')}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div className="flex-1" />
-      </div>
-      {progressDots}
+      {stepperRow}
 
       <AnimatePresence mode="wait" custom={direction} initial={false}>
       {/* Welcome: title, intro, benefit cards, Next (same width as Next on following screens) */}
@@ -206,51 +208,37 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           animate="center"
           exit="exit"
           transition={STEP_SPRING}
-          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+          className="flex flex-col flex-1 w-full"
         >
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+          <div className="mx-auto mt-2 w-[160px] h-[112px]" aria-hidden="true">
+            <Step1Illustration />
+          </div>
+          <h2 className="text-display-md text-[var(--text-primary)] font-display mt-4 text-center">
             {t('onboarding.hiThere')}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm font-display mt-3 text-center">
             {t('onboarding.intro')}
           </p>
-          <div className="mt-6 space-y-3">
-            <div className="card p-4 flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-[var(--nap-color)]/20 flex items-center justify-center" aria-hidden>
-                <svg className="w-6 h-6 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                </svg>
+          <div className="w-full max-w-sm mx-auto">
+            <div className="mt-6 space-y-3">
+              <div className="card p-4 flex items-start gap-3">
+                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-[var(--nap-color)]" aria-hidden />
+                <div className="min-w-0">
+                  <p className="font-display font-semibold text-[var(--text-primary)]">{t('onboarding.welcomeCard1Title')}</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-0.5">{t('onboarding.welcomeCard1Subtitle')}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-[var(--text-primary)]">{t('onboarding.welcomeCard1Title')}</p>
-                <p className="text-sm text-[var(--text-secondary)] mt-0.5">{t('onboarding.welcomeCard1Subtitle')}</p>
-              </div>
-            </div>
-            <div className="card p-4 flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-[var(--nap-color)]/20 flex items-center justify-center" aria-hidden>
-                <svg className="w-6 h-6 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z" />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-[var(--text-primary)]">{t('onboarding.welcomeCard2Title')}</p>
-                <p className="text-sm text-[var(--text-secondary)] mt-0.5">{t('onboarding.welcomeCard2Subtitle')}</p>
-              </div>
-            </div>
-            <div className="card p-4 flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-[var(--nap-color)]/20 flex items-center justify-center" aria-hidden>
-                <svg className="w-6 h-6 text-[var(--nap-color)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="font-display font-semibold text-[var(--text-primary)]">{t('onboarding.welcomeCard3Title')}</p>
-                <p className="text-sm text-[var(--text-secondary)] mt-0.5">{t('onboarding.welcomeCard3Subtitle')}</p>
+              <div className="card p-4 flex items-start gap-3">
+                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-[var(--night-color)]" aria-hidden />
+                <div className="min-w-0">
+                  <p className="font-display font-semibold text-[var(--text-primary)]">{t('onboarding.welcomeCard2Title')}</p>
+                  <p className="text-sm text-[var(--text-secondary)] mt-0.5">{t('onboarding.welcomeCard2Subtitle')}</p>
+                </div>
               </div>
             </div>
           </div>
           <div className="flex-1 min-h-4" />
-          <div className="flex gap-3 mt-auto safe-pad-bottom">
+          <div className="flex gap-3 mt-auto safe-pad-bottom w-full max-w-sm mx-auto">
             <div className="flex-1" />
             <button
               type="button"
@@ -274,37 +262,39 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           animate="center"
           exit="exit"
           transition={STEP_SPRING}
-          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+          className="flex flex-col flex-1 w-full"
         >
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+          <div className="mx-auto mt-2 w-[200px] h-[140px]" aria-hidden="true">
+            <Step2Illustration />
+          </div>
+          <h2 className="text-display-md text-[var(--text-primary)] font-display mt-4 text-center">
             {t('onboarding.babyNameQuestion')}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
             {t('onboarding.babyNameWhy')}
           </p>
-          <div className="flex-1 flex flex-col justify-center py-6">
-            <input
-              type="text"
-              value={draft.babyName}
-              onChange={(e) => setDraft((d) => ({ ...d, babyName: e.target.value }))}
-              placeholder={t('onboarding.namePlaceholder')}
-              className="input"
-              autoComplete="off"
-            />
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex-1 flex flex-col justify-center py-6">
+              <label htmlFor="onboarding-baby-name" className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                {t('babyEdit.babyName')}
+              </label>
+              <input
+                id="onboarding-baby-name"
+                type="text"
+                value={draft.babyName}
+                onChange={(e) => setDraft((d) => ({ ...d, babyName: e.target.value }))}
+                placeholder={t('onboarding.namePlaceholder')}
+                className="input"
+                autoComplete="off"
+              />
+            </div>
           </div>
-          <div className="flex gap-3 mt-auto safe-pad-bottom">
-            <button
-              type="button"
-              onClick={goBack}
-              className="btn btn-secondary flex-1 min-h-[56px]"
-            >
-              {t('common.back')}
-            </button>
+          <div className="flex mt-auto safe-pad-bottom w-full max-w-sm mx-auto">
             <button
               type="button"
               onClick={goNext}
               disabled={!canProceed}
-              className="btn btn-primary flex-1 min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {t('common.next')}
             </button>
@@ -322,9 +312,12 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           animate="center"
           exit="exit"
           transition={STEP_SPRING}
-          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+          className="flex flex-col flex-1 w-full"
         >
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+          <div className="mx-auto mt-2 w-[200px] h-[140px]" aria-hidden="true">
+            <Step3Illustration />
+          </div>
+          <h2 className="text-display-md text-[var(--text-primary)] font-display mt-4 text-center">
             {draft.babyName.trim()
               ? t('onboarding.babyDobQuestionPersonalised', { name: draft.babyName.trim() })
               : t('onboarding.babyDobQuestion')}
@@ -332,40 +325,39 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
             {t('onboarding.babyDobWhy')}
           </p>
-          <div className="flex-1 flex flex-col justify-center py-6">
-            <input
-              type="date"
-              value={draft.babyDob}
-              onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
-              min={getDateOfBirthInputBounds().min}
-              max={getDateOfBirthInputBounds().max}
-              className="input"
-              aria-invalid={draft.babyDob.trim() !== '' && !dobValidation.valid}
-              aria-describedby={draft.babyDob.trim() !== '' && dobValidation.errorKey ? 'onboarding-dob-error' : undefined}
-            />
-            {draft.babyDob.trim() !== '' && dobValidation.errorKey && (
-              <p id="onboarding-dob-error" className="text-xs text-[var(--danger-color)] mt-2 text-center" role="alert">
-                {dobValidation.errorKey === 'babyEdit.dobFuture'
-                  ? t('babyEdit.dobFuture')
-                  : dobValidation.errorKey === 'babyEdit.dobTooOld'
-                    ? t('babyEdit.dobTooOld')
-                    : t('babyEdit.dobInvalid')}
-              </p>
-            )}
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex-1 flex flex-col justify-center py-6">
+              <label htmlFor="onboarding-baby-dob" className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                {t('babyEdit.dateOfBirth')}
+              </label>
+              <input
+                id="onboarding-baby-dob"
+                type="date"
+                value={draft.babyDob}
+                onChange={(e) => setDraft((d) => ({ ...d, babyDob: e.target.value }))}
+                min={getDateOfBirthInputBounds().min}
+                max={getDateOfBirthInputBounds().max}
+                className="input"
+                aria-invalid={draft.babyDob.trim() !== '' && !dobValidation.valid}
+                aria-describedby={draft.babyDob.trim() !== '' && dobValidation.errorKey ? 'onboarding-dob-error' : undefined}
+              />
+              {draft.babyDob.trim() !== '' && dobValidation.errorKey && (
+                <p id="onboarding-dob-error" className="text-xs text-[var(--danger-color)] mt-2 text-center" role="alert">
+                  {dobValidation.errorKey === 'babyEdit.dobFuture'
+                    ? t('babyEdit.dobFuture')
+                    : dobValidation.errorKey === 'babyEdit.dobTooOld'
+                      ? t('babyEdit.dobTooOld')
+                      : t('babyEdit.dobInvalid')}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex gap-3 mt-auto safe-pad-bottom">
-            <button
-              type="button"
-              onClick={goBack}
-              className="btn btn-secondary flex-1 min-h-[56px]"
-            >
-              {t('common.back')}
-            </button>
+          <div className="flex mt-auto safe-pad-bottom w-full max-w-sm mx-auto">
             <button
               type="button"
               onClick={goNext}
               disabled={!canProceed}
-              className="btn btn-primary flex-1 min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {t('common.next')}
             </button>
@@ -383,37 +375,39 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           animate="center"
           exit="exit"
           transition={STEP_SPRING}
-          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+          className="flex flex-col flex-1 w-full"
         >
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+          <div className="mx-auto mt-2 w-[200px] h-[140px]" aria-hidden="true">
+            <Step4Illustration />
+          </div>
+          <h2 className="text-display-md text-[var(--text-primary)] font-display mt-4 text-center">
             {t('onboarding.yourNameQuestion')}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
             {t('onboarding.yourNameWhy')}
           </p>
-          <div className="flex-1 flex flex-col justify-center py-6">
-            <input
-              type="text"
-              value={draft.userName}
-              onChange={(e) => setDraft((d) => ({ ...d, userName: e.target.value }))}
-              placeholder={t('onboarding.namePlaceholder')}
-              className="input"
-              autoComplete="name"
-            />
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex-1 flex flex-col justify-center py-6">
+              <label htmlFor="onboarding-your-name" className="block text-sm font-medium text-[var(--text-secondary)] mb-2 font-display">
+                {t('profile.yourName')}
+              </label>
+              <input
+                id="onboarding-your-name"
+                type="text"
+                value={draft.userName}
+                onChange={(e) => setDraft((d) => ({ ...d, userName: e.target.value }))}
+                placeholder={t('onboarding.namePlaceholder')}
+                className="input"
+                autoComplete="name"
+              />
+            </div>
           </div>
-          <div className="flex gap-3 mt-auto safe-pad-bottom">
-            <button
-              type="button"
-              onClick={goBack}
-              className="btn btn-secondary flex-1 min-h-[56px]"
-            >
-              {t('common.back')}
-            </button>
+          <div className="flex mt-auto safe-pad-bottom w-full max-w-sm mx-auto">
             <button
               type="button"
               onClick={goNext}
               disabled={!canProceed}
-              className="btn btn-primary flex-1 min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {t('common.next')}
             </button>
@@ -431,40 +425,38 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
           animate="center"
           exit="exit"
           transition={STEP_SPRING}
-          className="flex flex-col flex-1 w-full max-w-sm mx-auto"
+          className="flex flex-col flex-1 w-full"
         >
-          <h2 className="text-display-md text-[var(--text-primary)] font-display pt-2 text-center">
+          <div className="mx-auto mt-2 w-[200px] h-[140px]" aria-hidden="true">
+            <Step5Illustration />
+          </div>
+          <h2 className="text-display-md text-[var(--text-primary)] font-display mt-4 text-center">
             {t('onboarding.yourRelationshipQuestion')}
           </h2>
           <p className="text-[var(--text-secondary)] text-sm font-display mt-2 text-center">
             {t('onboarding.yourRelationshipWhy')}
           </p>
-          <div className="flex-1 flex flex-col justify-center gap-2 py-6">
-            {RELATIONSHIP_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setDraft((d) => ({ ...d, relationship: opt.value }))}
-                className={`btn min-h-[56px] w-full ${
-                  draft.relationship === opt.value ? 'btn-primary' : 'btn-ghost border border-[var(--night-color)]'
-                }`}
-              >
-                {t(opt.labelKey)}
-              </button>
-            ))}
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex-1 flex flex-col justify-center gap-2 py-6">
+              {RELATIONSHIP_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDraft((d) => ({ ...d, relationship: opt.value }))}
+                  className={`btn min-h-[56px] w-full ${
+                    draft.relationship === opt.value ? 'btn-primary' : 'btn-ghost border border-[var(--night-color)]'
+                  }`}
+                >
+                  {t(opt.labelKey)}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex gap-3 mt-auto safe-pad-bottom">
-            <button
-              type="button"
-              onClick={goBack}
-              className="btn btn-secondary flex-1 min-h-[56px]"
-            >
-              {t('common.back')}
-            </button>
+          <div className="flex mt-auto safe-pad-bottom w-full max-w-sm mx-auto">
             <button
               type="button"
               onClick={goNext}
-              className="btn btn-primary flex-1 min-h-[56px]"
+              className="btn btn-primary w-full min-h-[56px]"
             >
               {t('common.next')}
             </button>

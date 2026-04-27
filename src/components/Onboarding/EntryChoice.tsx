@@ -2,7 +2,7 @@
  * Landing screen (Napper-style order): app name → logo → message → buttons.
  */
 import { useTranslation } from 'react-i18next';
-import { Logo } from '../Logo';
+import { EntryIllustration } from '../illustrations/AuthIllustrations';
 
 interface EntryChoiceProps {
   onNew: () => void;
@@ -13,17 +13,17 @@ export function EntryChoice({ onNew, onHaveAccount }: EntryChoiceProps) {
   const { t } = useTranslation();
   return (
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col items-center justify-center px-4 safe-pad-top safe-pad-bottom">
-      {/* 1. App name at top (Napper-style: "NapNap") */}
-      <h1 className="text-display-lg text-[var(--text-primary)] font-display mb-8">
+      {/* 1. Illustration as visual anchor */}
+      <div className="mx-auto mb-6 w-[200px] h-[140px]" aria-hidden="true">
+        <EntryIllustration />
+      </div>
+
+      {/* 2. App name */}
+      <h1 className="text-display-lg text-[var(--text-primary)] font-display mb-3">
         NapNap
       </h1>
 
-      {/* 2. Logo — Rhythmic NN symbol */}
-      <div className="mx-auto mb-6 flex-shrink-0 flex items-center justify-center">
-        <Logo size={80} />
-      </div>
-
-      {/* 3. Short sentence (Napper: "The fastest way to a happy sleeping baby") */}
+      {/* 3. Short sentence */}
       <p className="text-[var(--text-primary)] font-body text-center text-lg max-w-[280px] mb-10">
         {t('entry.tagline')}
       </p>
