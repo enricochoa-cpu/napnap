@@ -577,8 +577,8 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 
 - **Problem:** `simulateDay` decides day structure (nap count, rescue naps) using config-only wake windows. `predictDaySchedule` then overrides those wake windows with history-blended values. In extreme cases (short naps + aggressive blending), the blended schedule produces wake gaps exceeding `config.wakeWindows.max`, which `simulateDay` would have caught with a rescue nap.
 - **Root Cause:** Structural decisions (rescue nap? compression?) are made before blending is applied. The two layers don't communicate.
-- **Current mitigation:** Bedtime floor at `config.bedtime.earliest` and wake window floor at `config.wakeWindows.first` prevent dangerous outputs. The gap only occurs in extreme scenarios (consecutive very short naps + optimized-tier blending).
-- **Future fix:** Post-hoc check in `predictDaySchedule` after all blended naps + bedtime: if any wake gap exceeds `config.wakeWindows.max`, flag or insert a rescue nap. Documented as BUG-2 / U-69 in `docs/audits/prediction-engine/2026-04-06-algorithm-arithmetic-audit.md`.
+- **Permanent Fix (2026-04-27):** Post-hoc trailing-gap check in `predictDaySchedule` after all blended naps + bedtime are computed. If `bedtime - lastEndTime > config.wakeWindows.max`, insert a single rescue micro-nap at `lastEndTime + config.wakeWindows.mid` (duration = `config.napDurations.micro`) and recompute bedtime from the rescue end. Verified with Scenario 2 (6mo, three 30min naps): gap drops from 260min → 130min, bedtime stays at 18:30 floor.
+- **Reusable rule:** When a downstream layer overrides upstream values that drove structural decisions, add a post-hoc consistency check on the final output rather than re-running the structural pass.
 
 ### 21.5 Safety Floor Inverts Bedtime for 1-Nap Toddlers
 **Date:** 2026-04-06

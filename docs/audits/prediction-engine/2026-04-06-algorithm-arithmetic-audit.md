@@ -399,17 +399,7 @@ But simulateDay said this should be a 20min micro to preserve the bedtime window
 
 ## Open issues
 
-### BUG-2 — Blended nap times can exceed max wake window (LOW)
-
-**Backlog**: U-69 (P3)
-
-In Scenario 2, after short naps + penalties + aggressive blending, the last nap ends at 14:10 and the next event is bedtime at 18:30. That's a **260min** gap — well above the 6mo `config.wakeWindows.max` of 180min.
-
-**Root cause**: `simulateDay` (structure) uses config-only wake windows and can trigger rescue naps when gaps exceed max. But `predictDaySchedule` (blended times) produces different nap end times. The structural decision (no rescue nap needed) was made with config times, but the actual blended schedule has longer gaps.
-
-**Impact**: Low — only triggers with extreme short naps + high optimization + high blending divergence. Earliest bedtime floor prevents absurd outputs, but the baby would be overtired.
-
-**Fix**: Post-hoc check after computing all blended nap times + bedtime: if any wake gap exceeds `config.wakeWindows.max`, insert a rescue micro-nap or flag the gap.
+_None — BUG-2 was resolved on 2026-04-27. See "Fixes applied" below._
 
 ---
 
@@ -424,6 +414,7 @@ In Scenario 2, after short naps + penalties + aggressive blending, the last nap 
 | Bug | Severity | Description | Fix | Backlog |
 |-----|----------|-------------|-----|---------|
 | BUG-1 | Medium | Wake excess formula was algebraically identical to sleep deficit (measured same axis) | Replaced with config-based `expectedTotalAwake = first + (targetNaps-1)×mid + final` | — |
+| BUG-2 | Low | Blended nap times could produce a trailing wake gap > `config.wakeWindows.max` when bedtime got floored to earliest | Post-hoc trailing-gap check in `predictDaySchedule`: insert one rescue micro-nap at `mid` wake window, then recompute bedtime (resolved 2026-04-27) | U-69 |
 | BUG-3 | High | Safety floor `Math.max(final, first)` inverted bedtime for 1-nap toddlers (15-24mo) — all debt shifts absorbed | Age-aware floor: `targetNaps === 1 ? round(final × 0.75) : first` | U-66 |
 | BUG-4 | Low | No latest bedtime ceiling — late-waking babies got uncapped 22:00+ bedtime | Soft cap at `config.bedtime.latest + 60min` | U-68 |
 | BUG-5 | Low | Learned nap duration overrode simulation's micro/catnap structural decision | Cap to `config.napDurations.micro` when `isCatnap \|\| isMicroNap` | U-67 |

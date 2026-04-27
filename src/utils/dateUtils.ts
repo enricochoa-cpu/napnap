@@ -1722,12 +1722,58 @@ export function predictDaySchedule(params: {
   const totalElapsedMinutes = Math.round((lastEndTime.getTime() - morningWakeTime.getTime()) / 60_000);
   const totalAwakeMinutes = Math.max(0, totalElapsedMinutes - accumulatedSleepMinutes);
 
-  const bedtime = calculateDynamicBedtime(
+  let bedtime = calculateDynamicBedtime(
     dateOfBirth,
     lastEndTime.toISOString(),
     accumulatedSleepMinutes,
     totalAwakeMinutes
   );
+
+  // --- Step 4: Trailing gap rescue (U-69) ---
+  // When bedtime is floored to config.bedtime.earliest after very short naps +
+  // optimized blending, the gap from the last activity to bedtime can exceed
+  // config.wakeWindows.max — simulateDay would have caught this with config-only
+  // wake windows but the post-blend clock times diverge. Insert a single rescue
+  // micro-nap so the wake gap stays within the safe ceiling.
+  const trailingGapMinutes = Math.round((bedtime.getTime() - lastEndTime.getTime()) / 60_000);
+  if (trailingGapMinutes > config.wakeWindows.max) {
+    const rescueWakeWindow = config.wakeWindows.mid;
+    const rescueStart = new Date(lastEndTime.getTime() + rescueWakeWindow * 60_000);
+    const rescueDuration = config.napDurations.micro;
+    const rescueEnd = new Date(rescueStart.getTime() + rescueDuration * 60_000);
+
+    if (rescueEnd.getTime() < bedtime.getTime()) {
+      const rescueIdx = effectiveNapCount + naps.length;
+      const rescueNapIndex: NapIndex =
+        rescueIdx === 0 ? 'first' : rescueIdx === 1 ? 'second' : 'third_plus';
+      const isRescueCatnap = rescueStart.getHours() >= CATNAP_CUTOFF_HOUR;
+      const rescueConfidence = firstCalibration?.confidenceScore ?? 0.5;
+      const rescueIsCalibrating = firstCalibration?.isCalibrating ?? true;
+      const rescueCalibrationReason = firstCalibration?.calibrationReason;
+
+      naps.push({
+        time: rescueStart,
+        expectedDurationMinutes: rescueDuration,
+        napIndex: rescueNapIndex,
+        isCatnap: isRescueCatnap,
+        isMicroNap: true,
+        confidenceScore: rescueConfidence,
+        isCalibrating: rescueIsCalibrating,
+        calibrationReason: rescueCalibrationReason,
+      });
+
+      lastEndTime = rescueEnd;
+      accumulatedSleepMinutes += rescueDuration;
+      const newElapsed = Math.round((rescueEnd.getTime() - morningWakeTime.getTime()) / 60_000);
+      const newAwake = Math.max(0, newElapsed - accumulatedSleepMinutes);
+      bedtime = calculateDynamicBedtime(
+        dateOfBirth,
+        rescueEnd.toISOString(),
+        accumulatedSleepMinutes,
+        newAwake
+      );
+    }
+  }
 
   return { naps, bedtime, firstCalibration };
 }
