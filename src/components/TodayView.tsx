@@ -112,6 +112,14 @@ function getExpectedWakeTime(
 // Sun icon for morning wake up (Gold)
 import { SunIcon, CloudIcon, MoonIcon } from './icons/SleepIcons';
 
+// Storm cloud icon — used to indicate completed night-waking pauses on bedtime cards
+const StormCloudIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" opacity="0.7" />
+    <path d="M13 16l-2 4m3-6l-2 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+  </svg>
+);
+
 export function TodayView({
   profile,
   entries,
@@ -712,10 +720,19 @@ export function TodayView({
                       {formatTime(activeSleep.startTime)} — ...
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex flex-col items-end gap-0.5">
                     <p className="text-[var(--text-on-accent)]/80 font-display text-sm font-medium">
                       {formatDuration(currentSleepDuration)}
                     </p>
+                    {(activeSleep.pauses?.length ?? 0) > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 text-xs text-[var(--text-on-accent)]/70"
+                        aria-label={t('sleepEntrySheet.nightWaking')}
+                      >
+                        <StormCloudIcon />
+                        {activeSleep.pauses!.length}
+                      </span>
+                    )}
                   </div>
                 </button>
               </motion.div>
@@ -871,29 +888,57 @@ export function TodayView({
               </motion.div>
             ))}
 
-            {/* Morning Wake Up - Glassmorphism Gold - OLDEST, at bottom */}
-            {morningWakeUp && morningWakeUpEntry && (
-              <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
-                <button
-                  type="button"
-                  onClick={() => onEdit?.(morningWakeUpEntry)}
-                  className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl backdrop-blur-xl border border-[var(--wake-color)]/30"
-                  style={{ background: 'color-mix(in srgb, var(--wake-color) 8%, var(--bg-card))', boxShadow: 'var(--shadow-sm)' }}
-                >
-                  <div className="w-10 h-10 rounded-full bg-[var(--wake-color)] flex items-center justify-center text-[var(--bg-deep)] flex-shrink-0 z-10">
-                    <SunIcon className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[var(--wake-color)] font-display text-xs uppercase tracking-wider">
-                      {t('today.morningWakeUp')}
-                    </p>
-                    <p className="text-[var(--text-primary)] font-display font-semibold text-base">
-                      {formatTime(morningWakeUp)}
-                    </p>
-                  </div>
-                </button>
-              </motion.div>
-            )}
+            {/* Morning Wake Up (if night started yesterday) OR completed bedtime tile (if started AND ended today) */}
+            {morningWakeUp && morningWakeUpEntry && (() => {
+              const isSameDayBedtime = !isToday(parseISO(morningWakeUpEntry.endTime!)) ? false : isToday(parseISO(morningWakeUpEntry.startTime));
+              const accentColor = isSameDayBedtime ? 'var(--night-color)' : 'var(--wake-color)';
+              const label = isSameDayBedtime ? t('today.bedtimeCompleted') : t('today.morningWakeUp');
+              const timeLabel = isSameDayBedtime
+                ? `${formatTime(parseISO(morningWakeUpEntry.startTime))} – ${formatTime(morningWakeUp)}`
+                : formatTime(morningWakeUp);
+              return (
+                <motion.div variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 400, damping: 30 } } }}>
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(morningWakeUpEntry)}
+                    className="relative py-3 px-4 flex items-center gap-3 w-full text-left rounded-2xl backdrop-blur-xl border"
+                    style={{
+                      borderColor: `color-mix(in srgb, ${accentColor} 30%, transparent)`,
+                      background: `color-mix(in srgb, ${accentColor} 8%, var(--bg-card))`,
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 z-10"
+                      style={{
+                        background: accentColor,
+                        color: isSameDayBedtime ? 'var(--text-on-accent)' : 'var(--bg-deep)',
+                      }}
+                    >
+                      {isSameDayBedtime ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-display text-xs uppercase tracking-wider" style={{ color: accentColor }}>
+                        {label}
+                      </p>
+                      <p className="text-[var(--text-primary)] font-display font-semibold text-base">
+                        {timeLabel}
+                      </p>
+                    </div>
+                    {(morningWakeUpEntry.pauses?.length ?? 0) > 0 && (
+                      <span
+                        className="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] shrink-0"
+                        style={{ color: 'var(--wake-color)' }}
+                        aria-label={t('sleepEntrySheet.nightWaking')}
+                      >
+                        <StormCloudIcon />
+                        {morningWakeUpEntry.pauses!.length}
+                      </span>
+                    )}
+                  </button>
+                </motion.div>
+              );
+            })()}
           </motion.div>
         </div>
       </div>

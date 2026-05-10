@@ -134,7 +134,9 @@ function App() {
     error: entriesError,
   } = useSleepEntries({ babyId: activeBabyId });
 
-  const hasNightEntry = !!(activeSleep?.type === 'night' || lastCompletedSleep?.type === 'night');
+  // Night-waking CTA is only meaningful when a bedtime is actively in progress — adding
+  // a pause to an already-ended night sleep belongs in the entry editor, not the global FAB.
+  const hasNightEntry = activeSleep?.type === 'night';
 
   const { weightLogs, heightLogs, headLogs, error: growthError } = useGrowthLogs({ babyId: activeBabyId });
 

@@ -337,8 +337,17 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
   }, [entries]);
 
+  // Active sleep = an entry without an end time that started recently.
+  // We cap at 18h so an abandoned/forgotten entry from days ago doesn't lock the UI
+  // into "baby is asleep" state (would block Nap/Bedtime FAB actions and skew predictions).
+  // The orphaned entry is still editable from History — only the live "active" treatment is dropped.
+  const ACTIVE_SLEEP_MAX_AGE_MS = 18 * 60 * 60 * 1000;
   const activeSleep = useMemo(() => {
-    return entries.find((entry) => entry.endTime === null) || null;
+    const candidate = entries.find((entry) => entry.endTime === null);
+    if (!candidate) return null;
+    const ageMs = Date.now() - new Date(candidate.startTime).getTime();
+    if (ageMs > ACTIVE_SLEEP_MAX_AGE_MS) return null;
+    return candidate;
   }, [entries]);
 
   // Get the last completed sleep (most recent with endTime)

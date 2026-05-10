@@ -136,7 +136,8 @@
     "shortNap": "Migdiada curta",
     "napOrdinal": "Migdiada {{n}}",
     "nappingNow": "Dormint la migdiada",
-    "morningWakeUp": "Despertar matinal"
+    "morningWakeUp": "Despertar matinal",
+    "bedtimeCompleted": "Son nocturn"
   },
   "quickActions": {
     "ariaLabel": "Accions ràpides",
@@ -516,6 +517,14 @@
     "pauseExceedsEnd": "La pausa s'estén més enllà del final",
     "pauseZeroDuration": "La pausa ha de tenir una durada",
     "pauseOverlap": "Les pauses no es poden solapar",
+    "pauseNoRoom": "No queda temps de son — allarga l'hora d'anar a dormir primer",
+    "pauseSaveFailed": "No s'ha pogut desar el despertar — torna-ho a provar",
+    "pauseDeleteFailed": "No s'ha pogut eliminar el despertar — torna-ho a provar",
+    "nightWakingsSummaryOne": "{{count}} despertar · {{minutes}}min",
+    "nightWakingsSummaryMany": "{{count}} despertars · {{minutes}}min",
+    "pausesSummaryOne": "{{count}} pausa · {{minutes}}min",
+    "pausesSummaryMany": "{{count}} pauses · {{minutes}}min",
+    "tapToView": "Toca per veure",
     "pauseAction": "Pausar",
     "resumeAction": "Reprendre",
     "pausedStatus": "En pausa",

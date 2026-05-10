@@ -337,6 +337,8 @@ export function SleepEntrySheet({
   const [expandedPauseId, setExpandedPauseId] = useState<string | null>(null);
   const [isDetailExpanded, setIsDetailExpanded] = useState(false);
   const [pauseErrors, setPauseErrors] = useState<Record<string, string | null>>({});
+  // Top-level pause-section error (for add/save/delete failures that aren't tied to a specific existing pause card)
+  const [addPauseError, setAddPauseError] = useState<string | null>(null);
   // Local draft durations for pause edits — committed to DB on blur/collapse/save
   const [pauseDurationDrafts, setPauseDurationDrafts] = useState<Record<string, number>>({});
   const [onsetTags, setOnsetTags] = useState<string[]>([]);
@@ -372,6 +374,7 @@ export function SleepEntrySheet({
       setExpandedPauseId(null);
       setIsDetailExpanded(false);
       setPauseErrors({});
+      setAddPauseError(null);
       setPauseDurationDrafts({});
       setOnsetTags(entry?.onsetTags ?? []);
       setSleepMethod(entry?.sleepMethod);
@@ -461,14 +464,14 @@ export function SleepEntrySheet({
     [t, selectedDate, endTime, now, isActiveEntry]
   );
 
-  // Icon state: Play (new, no end), Stop (active + no changes = end sleep), Check (save edits)
+  // Icon state: Play (new, no end), Stop (active + no metadata edits = end sleep),
+  // Check (saving metadata edits — entry stays active until user explicitly stops).
+  // Pauses no longer flip the icon to Check; otherwise users get stuck unable to end the sleep.
   const saveIcon = useMemo(() => {
     if (!isEditing && !endTime) return 'play';
-    // Show stop icon only when no changes AND no pauses — user intends to end the sleep.
-    // If pauses exist, show check icon — user is saving night waking edits, not ending sleep.
-    if (isActiveEntry && !endTime && !hasChanges && pauseEntries.length === 0) return 'stop';
+    if (isActiveEntry && !endTime && !hasChanges) return 'stop';
     return 'check';
-  }, [isEditing, endTime, isActiveEntry, hasChanges, pauseEntries.length]);
+  }, [isEditing, endTime, isActiveEntry, hasChanges]);
 
   // Temporal validation — returns i18n keys for error/warning so component can translate
   const validation = useMemo((): { isValid: boolean; warningKey: string | null; errorKey: string | null } => {
@@ -557,16 +560,10 @@ export function SleepEntrySheet({
     // Flush any pending pause duration edits before saving
     await flushPauseDurationDrafts();
 
-    // Active entry with pauses but no other changes: pauses are already persisted to DB,
-    // so just close the sheet without re-saving the entry (which would be a no-op).
-    if (isActiveEntry && !endTime && !hasChanges && pauseEntries.length > 0) {
-      onClose();
-      return;
-    }
-
-    // Only auto-fill end time (stop sleep) when the user explicitly wants to end it:
-    // active entry + no end time + no metadata changes + no pauses.
-    const shouldAutoStop = isActiveEntry && !endTime && !hasChanges && pauseEntries.length === 0;
+    // Auto-fill end time (stop sleep) when the right button is the Stop icon:
+    // active entry + no end time + no unsaved metadata changes. Pauses on the entry
+    // do not block stopping — the user can have logged wakings and still end the sleep.
+    const shouldAutoStop = isActiveEntry && !endTime && !hasChanges;
     const resolvedEndTime = shouldAutoStop ? getCurrentTime() : endTime;
     let payload: Omit<SleepEntry, 'id' | 'date'>;
 
@@ -642,24 +639,52 @@ export function SleepEntrySheet({
     if (!entry || !onAddPause || !entry.endTime) return;
     if (pauseEntries.length >= 5) return;
 
-    // Default: right after the last pause, or midpoint of nap if no pauses yet
+    setAddPauseError(null);
+
     const entryStartMs = parseISO(entry.startTime).getTime();
     const entryEndMs = parseISO(entry.endTime).getTime();
+    const grossMins = Math.round((entryEndMs - entryStartMs) / 60000);
+    const completedPauseMins = pauseEntries.reduce((sum, p) => sum + p.durationMinutes, 0);
+    // Reserve at least 1 min of net sleep so the entry stays meaningful.
+    const remainingMins = grossMins - completedPauseMins - 1;
+    if (remainingMins < 1) {
+      setAddPauseError('sleepEntrySheet.pauseNoRoom');
+      return;
+    }
 
+    // Default start: right after the last pause, or midpoint of entry if no pauses yet.
     let defaultStartMs: number;
     if (pauseEntries.length > 0) {
       const lastPause = pauseEntries[pauseEntries.length - 1];
-      const lastPauseEnd = parseISO(lastPause.startTime).getTime() + lastPause.durationMinutes * 60 * 1000;
-      defaultStartMs = lastPauseEnd;
+      defaultStartMs = parseISO(lastPause.startTime).getTime() + lastPause.durationMinutes * 60 * 1000;
     } else {
-      // First pause: default to midpoint of the nap (more likely than nap start)
       defaultStartMs = entryStartMs + Math.floor((entryEndMs - entryStartMs) / 2);
     }
+    // Clamp so the pause start sits inside the entry window.
+    defaultStartMs = Math.min(Math.max(defaultStartMs, entryStartMs), entryEndMs - 60000);
 
-    const defaultStart = new Date(defaultStartMs).toISOString();
-    const result = await onAddPause(entry.id, { startTime: defaultStart, durationMinutes: 5 });
-    if (result) {
-      setExpandedPauseId(result.id);
+    // Cap default duration to fit within remaining net sleep (max 5 min).
+    const defaultDuration = Math.max(1, Math.min(5, remainingMins));
+    const proposed = {
+      startTime: new Date(defaultStartMs).toISOString(),
+      durationMinutes: defaultDuration,
+    };
+
+    const validationError = validatePause(proposed, '__new__');
+    if (validationError) {
+      setAddPauseError(validationError);
+      return;
+    }
+
+    try {
+      const result = await onAddPause(entry.id, proposed);
+      if (result) {
+        setExpandedPauseId(result.id);
+      } else {
+        setAddPauseError('sleepEntrySheet.pauseSaveFailed');
+      }
+    } catch {
+      setAddPauseError('sleepEntrySheet.pauseSaveFailed');
     }
   };
 
@@ -683,7 +708,14 @@ export function SleepEntrySheet({
                       (data.durationMinutes !== undefined && data.durationMinutes !== currentPause.durationMinutes);
     if (!hasChange) return;
 
-    await onUpdatePause(pauseId, data);
+    try {
+      const ok = await onUpdatePause(pauseId, data);
+      if (!ok) {
+        setPauseErrors((prev) => ({ ...prev, [pauseId]: 'sleepEntrySheet.pauseSaveFailed' }));
+      }
+    } catch {
+      setPauseErrors((prev) => ({ ...prev, [pauseId]: 'sleepEntrySheet.pauseSaveFailed' }));
+    }
   };
 
   // Flush any pending draft duration edits to the DB (called before save and on card collapse)
@@ -700,7 +732,16 @@ export function SleepEntrySheet({
 
   const handleDeletePause = async (pauseId: string) => {
     if (!onDeletePause) return;
-    await onDeletePause(pauseId);
+    try {
+      const ok = await onDeletePause(pauseId);
+      if (!ok) {
+        setAddPauseError('sleepEntrySheet.pauseDeleteFailed');
+        return;
+      }
+    } catch {
+      setAddPauseError('sleepEntrySheet.pauseDeleteFailed');
+      return;
+    }
     setPauseErrors((prev) => {
       const next = { ...prev };
       delete next[pauseId];
@@ -716,10 +757,19 @@ export function SleepEntrySheet({
   const handleResume = async () => {
     if (!activePauseStart || !onPauseEnd || !onAddPause || !entry) return;
     const durationMinutes = Math.max(1, Math.round((Date.now() - activePauseStart.getTime()) / 60000));
-    await onAddPause(entry.id, {
-      startTime: activePauseStart.toISOString(),
-      durationMinutes,
-    });
+    try {
+      const result = await onAddPause(entry.id, {
+        startTime: activePauseStart.toISOString(),
+        durationMinutes,
+      });
+      if (!result) {
+        setAddPauseError('sleepEntrySheet.pauseSaveFailed');
+        return;
+      }
+    } catch {
+      setAddPauseError('sleepEntrySheet.pauseSaveFailed');
+      return;
+    }
     onPauseEnd();
   };
 
@@ -946,6 +996,35 @@ export function SleepEntrySheet({
                   </p>
                 )}
 
+                {/* Pause summary chip — visible whenever there are completed pauses so users
+                    discover that records exist without expanding the detail panel. When the
+                    detail panel is open, the full pause cards below replace this affordance. */}
+                {pauseEntries.length > 0 && !isDetailExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDetailExpanded(true)}
+                    className="mt-3 mx-auto flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-display transition-colors hover:brightness-110"
+                    style={{
+                      background: 'color-mix(in srgb, var(--wake-color) 12%, transparent)',
+                      border: '1px solid color-mix(in srgb, var(--wake-color) 30%, transparent)',
+                      color: 'var(--wake-color)',
+                    }}
+                    aria-label={t('sleepEntrySheet.tapToView')}
+                  >
+                    {isNightEntry ? <StormCloudIcon className="w-3.5 h-3.5" /> : <span aria-hidden>⏸</span>}
+                    <span>
+                      {(() => {
+                        const count = pauseEntries.length;
+                        const minutes = pauseEntries.reduce((sum, p) => sum + p.durationMinutes, 0);
+                        const key = isNightEntry
+                          ? (count === 1 ? 'sleepEntrySheet.nightWakingsSummaryOne' : 'sleepEntrySheet.nightWakingsSummaryMany')
+                          : (count === 1 ? 'sleepEntrySheet.pausesSummaryOne' : 'sleepEntrySheet.pausesSummaryMany');
+                        return t(key, { count, minutes });
+                      })()}
+                    </span>
+                  </button>
+                )}
+
                 {/* Validation messages */}
                 {validation.errorKey && (
                   <p className="text-xs text-center mt-3" style={{ color: 'var(--danger-color)' }}>
@@ -1112,7 +1191,16 @@ export function SleepEntrySheet({
                   )}
 
                   {/* Add pause button — only for completed entries (active entries use Pause/Play button) */}
-                  {entry?.endTime && <div className="flex justify-center">
+                  {entry?.endTime && <div className="flex flex-col items-center gap-2">
+                    {addPauseError && (
+                      <p
+                        role="alert"
+                        className="text-xs text-center"
+                        style={{ color: 'var(--danger-color)' }}
+                      >
+                        {t(addPauseError)}
+                      </p>
+                    )}
                     <button
                       type="button"
                       onClick={handleAddPause}
@@ -1233,6 +1321,12 @@ export function SleepEntrySheet({
               {saveError && (
                 <p className="text-center text-sm text-[var(--danger-color)] px-6 pb-2" role="alert">
                   {saveError}
+                </p>
+              )}
+              {/* Pause add/resume error for active entries (completed entries have their own banner inline) */}
+              {addPauseError && isActiveEntry && (
+                <p className="text-center text-sm text-[var(--danger-color)] px-6 pb-2" role="alert">
+                  {t(addPauseError)}
                 </p>
               )}
               </div>{/* end scrollable content */}
