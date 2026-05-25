@@ -55,9 +55,13 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
         targetBabyId = user.id;
       }
 
+      // Embed pauses via Postgrest foreign-key join so we don't have to send a second
+      // request with a giant `in.(uuid,uuid,…)` filter. Heavy users (~600+ entries) hit
+      // URL-length limits in Cloudflare/nginx and the request hangs without resolving,
+      // leaving loading=true forever and the Today view empty. See lessons.md.
       const { data, error: fetchError } = await supabase
         .from('sleep_entries')
-        .select('*')
+        .select('*, sleep_pauses(*)')
         .eq('user_id', targetBabyId)
         .order('start_time', { ascending: false });
 
@@ -67,39 +71,26 @@ export function useSleepEntries({ babyId }: UseSleepEntriesOptions = { babyId: n
       }
 
       if (data && data.length > 0) {
-        const entryIds = data.map((e) => e.id);
+        const mappedEntries: SleepEntry[] = data.map((entry) => {
+          const embeddedPauses = (entry.sleep_pauses as DbSleepPause[] | null) ?? [];
+          const pauses = embeddedPauses
+            .map(mapDbPause)
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-        // Fetch all pauses for these entries in one query
-        const { data: pauseData } = await supabase
-          .from('sleep_pauses')
-          .select('*')
-          .in('sleep_entry_id', entryIds)
-          .order('start_time', { ascending: true });
-
-        // Group pauses by entry id
-        const pausesByEntry = new Map<string, SleepPause[]>();
-        if (pauseData) {
-          for (const row of pauseData) {
-            const pause = mapDbPause(row as DbSleepPause);
-            const list = pausesByEntry.get(pause.sleepEntryId) ?? [];
-            list.push(pause);
-            pausesByEntry.set(pause.sleepEntryId, list);
-          }
-        }
-
-        const mappedEntries: SleepEntry[] = data.map((entry) => ({
-          id: entry.id,
-          date: format(parseISO(entry.start_time), 'yyyy-MM-dd'),
-          startTime: entry.start_time,
-          endTime: entry.end_time ?? null,
-          type: entry.type as 'nap' | 'night',
-          notes: entry.notes || undefined,
-          pauses: pausesByEntry.get(entry.id) ?? [],
-          onsetTags: entry.onset_tags ?? undefined,
-          sleepMethod: entry.sleep_method ?? undefined,
-          wakeMethod: entry.wake_method ?? undefined,
-          wakeMood: entry.wake_mood ?? undefined,
-        }));
+          return {
+            id: entry.id,
+            date: format(parseISO(entry.start_time), 'yyyy-MM-dd'),
+            startTime: entry.start_time,
+            endTime: entry.end_time ?? null,
+            type: entry.type as 'nap' | 'night',
+            notes: entry.notes || undefined,
+            pauses,
+            onsetTags: entry.onset_tags ?? undefined,
+            sleepMethod: entry.sleep_method ?? undefined,
+            wakeMethod: entry.wake_method ?? undefined,
+            wakeMood: entry.wake_mood ?? undefined,
+          };
+        });
         setEntries(mappedEntries);
       } else {
         setEntries([]);
