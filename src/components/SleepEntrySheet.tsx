@@ -1337,10 +1337,11 @@ export function SleepEntrySheet({
                   background: 'linear-gradient(transparent, var(--bg-card))',
                 }}
               />
-              {/* Action buttons */}
-              <div className="flex items-center justify-center gap-6 pb-8 pt-4">
+              {/* Action buttons — captioned for active entries so the two circles aren't ambiguous (KF-05) */}
+              <div className="flex items-start justify-center gap-6 pb-8 pt-4">
                 {/* Pause/Play button — only for active entries */}
                 {isActiveEntry && (
+                  <div className="flex flex-col items-center gap-1.5">
                   <motion.button
                     onClick={activePauseStart ? handleResume : handlePause}
                     whileTap={{ scale: 0.9 }}
@@ -1361,9 +1362,14 @@ export function SleepEntrySheet({
                     )}
                     {activePauseStart ? <PlayIcon /> : <PauseIcon />}
                   </motion.button>
+                  <span className="text-xs font-medium text-[var(--text-secondary)]" aria-hidden="true">
+                    {activePauseStart ? t('sleepEntrySheet.resumeAction') : (isNightEntry ? t('sleepEntrySheet.nightWaking') : t('sleepEntrySheet.pauseAction'))}
+                  </span>
+                  </div>
                 )}
 
                 {/* Stop / Save button */}
+                <div className="flex flex-col items-center gap-1.5">
                 <motion.button
                   onClick={handleSave}
                   disabled={!validation.isValid || (isEditing && !hasChanges && !isActiveEntry) || isSaving}
@@ -1378,7 +1384,7 @@ export function SleepEntrySheet({
                     backgroundColor: (validation.isValid && (!isEditing || hasChanges || isActiveEntry) && !isSaving) ? themeBg : 'var(--text-muted)',
                     color: sleepType === 'night' ? 'var(--text-on-accent)' : 'var(--bg-deep)',
                   }}
-                  aria-label={isSaving ? t('common.saving') : t('sleepEntrySheet.save')}
+                  aria-label={isSaving ? t('common.saving') : (isActiveEntry ? (isNightEntry ? t('sleepEntrySheet.endNight') : t('sleepEntrySheet.endNap')) : t('sleepEntrySheet.save'))}
                   aria-busy={isSaving}
                 >
                   {isSaving ? (
@@ -1387,6 +1393,12 @@ export function SleepEntrySheet({
                     saveIcon === 'play' ? <PlayIcon /> : saveIcon === 'stop' ? <StopIcon /> : <CheckIcon />
                   )}
                 </motion.button>
+                {isActiveEntry && (
+                  <span className="text-xs font-medium text-[var(--text-secondary)]" aria-hidden="true">
+                    {isNightEntry ? t('sleepEntrySheet.endNight') : t('sleepEntrySheet.endNap')}
+                  </span>
+                )}
+                </div>
               </div>
             </div>
           </motion.div>

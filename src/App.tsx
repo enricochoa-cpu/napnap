@@ -138,6 +138,11 @@ function App() {
   // a pause to an already-ended night sleep belongs in the entry editor, not the global FAB.
   const hasNightEntry = activeSleep?.type === 'night';
 
+  // Wake Up only makes sense when there's something asleep to wake from: an active sleep, or an
+  // unended night entry (incl. a stale one past the active-sleep age cap — handleLogWakeUp's
+  // branch 2). Without either, the Wake Up tile dead-ends in a >14h night-sleep error (KF-01).
+  const canWakeUp = !!activeSleep || entries.some((e) => e.type === 'night' && e.endTime === null);
+
   const { weightLogs, heightLogs, headLogs, error: growthError } = useGrowthLogs({ babyId: activeBabyId });
 
   const hasPendingBabyInvite = pendingInvitations.length > 0;
@@ -862,6 +867,7 @@ function App() {
           setShowActionMenu(false);
         }}
         hasActiveSleep={!!activeSleep}
+        canWakeUp={canWakeUp}
         onEndSleep={activeSleep ? () => {
           handleEndSleep(activeSleep.id);
         } : undefined}

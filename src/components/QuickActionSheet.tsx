@@ -17,6 +17,9 @@ interface QuickActionSheetProps {
   onSelectNap: () => void;
   onSelectBedtime: () => void;
   hasActiveSleep: boolean;
+  /** Whether a wake-up can be logged (an active or unended sleep exists). When false the Wake Up
+   *  tile is hidden — without something asleep it dead-ends in a >14h night-sleep error (KF-01). */
+  canWakeUp: boolean;
   onEndSleep?: () => void;
   hasNightEntry: boolean;
   onNightWaking?: () => void;
@@ -29,6 +32,7 @@ export function QuickActionSheet({
   onSelectNap,
   onSelectBedtime,
   hasActiveSleep,
+  canWakeUp,
   onEndSleep,
   hasNightEntry,
   onNightWaking,
@@ -101,9 +105,10 @@ export function QuickActionSheet({
                 </div>
               ) : (
                 <>
-                {/* Quick Action Grid - 3 columns */}
-                <div className="grid grid-cols-3 gap-4">
+                {/* Quick Action Grid — Wake Up only shown when something is asleep to wake from (KF-01) */}
+                <div className={`grid ${canWakeUp ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
                   {/* Wake Up */}
+                  {canWakeUp && (
                   <button
                     onClick={onSelectWakeUp}
                     className="flex flex-col items-center gap-3 p-4 rounded-3xl bg-[var(--wake-color)]/10 active:bg-[var(--wake-color)]/20 active:scale-95 transition-all"
@@ -115,6 +120,7 @@ export function QuickActionSheet({
                       {t('quickActions.wakeUp')}
                     </span>
                   </button>
+                  )}
 
                   {/* Nap */}
                   <button

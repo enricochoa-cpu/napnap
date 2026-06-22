@@ -535,7 +535,9 @@
     "nightWaking": "Night waking",
     "nightWakingNumber": "Night waking {{number}}",
     "addNightWaking": "Add night waking",
-    "nightWakingStatus": "Night waking"
+    "nightWakingStatus": "Night waking",
+    "endNight": "End night",
+    "endNap": "End nap"
   },
   "wakeUpSheet": {
     "title": "Wake up",

@@ -531,7 +531,9 @@
     "nightWaking": "Despertar nocturn",
     "nightWakingNumber": "Despertar nocturn {{number}}",
     "addNightWaking": "Afegir despertar nocturn",
-    "nightWakingStatus": "Despertar nocturn"
+    "nightWakingStatus": "Despertar nocturn",
+    "endNight": "Acabar la nit",
+    "endNap": "Acabar la migdiada"
   },
   "wakeUpSheet": {
     "title": "Despertar",

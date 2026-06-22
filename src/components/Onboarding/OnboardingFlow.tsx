@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { formatDate, validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
+import { validateDateOfBirth, getDateOfBirthInputBounds } from '../../utils/dateUtils';
 import { getOnboardingDraft, setOnboardingDraft } from '../../utils/storage';
 import { ForgotPasswordForm } from '../Auth/ForgotPasswordForm';
 import { LoginForm } from '../Auth/LoginForm';
@@ -62,7 +62,7 @@ interface OnboardingFlowProps {
 
 const defaultDraft = (): OnboardingDraft => ({
   babyName: '',
-  babyDob: formatDate(new Date()), // Default to today; user can change
+  babyDob: '', // Empty so the user must explicitly pick a date — age drives every prediction (lessons §11.18; KF-02)
   userName: '',
   relationship: 'mum',
 });
@@ -86,7 +86,7 @@ const loadInitialState = (): { draft: OnboardingDraft; step: number } => {
     return {
       draft: {
         babyName: typeof parsed.babyName === 'string' ? parsed.babyName : '',
-        babyDob: typeof parsed.babyDob === 'string' && parsed.babyDob ? parsed.babyDob : formatDate(new Date()),
+        babyDob: typeof parsed.babyDob === 'string' ? parsed.babyDob : '',
         userName: typeof parsed.userName === 'string' ? parsed.userName : '',
         relationship: validRelationship,
       },
