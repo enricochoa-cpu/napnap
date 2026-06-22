@@ -134,9 +134,15 @@ function App() {
     error: entriesError,
   } = useSleepEntries({ babyId: activeBabyId });
 
-  // Night-waking CTA is only meaningful when a bedtime is actively in progress — adding
-  // a pause to an already-ended night sleep belongs in the entry editor, not the global FAB.
-  const hasNightEntry = activeSleep?.type === 'night';
+  // Night-waking CTA shows while a bedtime is active, OR the morning after a night just ended
+  // (within ~16h) so a forgotten night waking can be logged retrospectively (KF-06). In the
+  // completed-night case handleNightWaking opens that night's editor — the actual editing still
+  // lives in the entry editor, just made discoverable from the global FAB.
+  const hasNightEntry =
+    activeSleep?.type === 'night' ||
+    (lastCompletedSleep?.type === 'night' &&
+      !!lastCompletedSleep.endTime &&
+      Date.now() - new Date(lastCompletedSleep.endTime).getTime() < 16 * 60 * 60 * 1000);
 
   // Wake Up only makes sense when there's something asleep to wake from: an active sleep, or an
   // unended night entry (incl. a stale one past the active-sleep age cap — handleLogWakeUp's

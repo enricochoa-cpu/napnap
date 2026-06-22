@@ -599,6 +599,12 @@ export function TodayView({
         : undefined;
     const primaryCtaLabel = showInviteEmpty ? t('today.reviewInvite') : t('today.addABaby');
 
+    // KF-13: time-based greeting (matches ProfileMenu's <12 / <18 / else thresholds) instead of
+    // a hardcoded "Good morning" that was wrong all afternoon/evening.
+    const greetingHour = now.getHours();
+    const timeGreeting =
+      greetingHour < 12 ? t('today.goodMorning') : greetingHour < 18 ? t('today.goodAfternoon') : t('today.goodEvening');
+
     return (
       <div className="flex flex-col pb-40 px-6 fade-in">
         <div className="pt-10 pb-6">
@@ -611,7 +617,7 @@ export function TodayView({
                 ? showInviteEmpty
                   ? t('today.youHaveBabyInvite')
                   : t('today.addABabySubtitle')
-                : t('today.goodMorning')}
+                : timeGreeting}
             </h1>
             <p className="text-[var(--text-secondary)] font-display text-sm max-w-xs mx-auto leading-relaxed mb-6">
               {hasNoBaby ? (

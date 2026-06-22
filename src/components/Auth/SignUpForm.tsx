@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TERMS_SECTION_KEYS } from '../../constants/termsOfService';
 import { AuthDivider } from './AuthDivider';
 import { GoogleSignInButton } from './GoogleSignInButton';
+import { BackButton } from '../common/BackButton';
 import { Step6Illustration } from '../illustrations/AuthIllustrations';
 
 const PRIVACY_SECTION_KEYS = ['whatWeCollect', 'howWeUse', 'accountDeletion', 'contact'] as const;
@@ -13,9 +14,11 @@ interface SignUpFormProps {
   onSwitchToLogin: () => void;
   /** Baby name from onboarding draft, used to personalise the subtitle. */
   babyName?: string;
+  /** Back to the previous onboarding step (e.g. to fix name/relationship). KF-07. */
+  onBack?: () => void;
 }
 
-export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName }: SignUpFormProps) {
+export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName, onBack }: SignUpFormProps) {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -79,6 +82,7 @@ export function SignUpForm({ onSubmit, onGoogleSignIn, onSwitchToLogin, babyName
 
   return (
     <div className="h-screen max-h-dvh overflow-hidden bg-[var(--bg-deep)] flex flex-col">
+      {onBack && <BackButton floating onClick={onBack} />}
       {/* Scroll only on account screen so Create Account button is reachable on short viewports (e.g. mobile browser) */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 safe-pad-top">
         {/* Illustration → title → subtitle */}

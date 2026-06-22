@@ -169,6 +169,7 @@ export function OnboardingFlow({ signUp, signIn, signInWithGoogle, resetPassword
             onGoogleSignIn={signInWithGoogle}
             onSwitchToLogin={() => setAccountView('login')}
             babyName={draft.babyName}
+            onBack={goBack}
           />
         ) : (
           <LoginForm

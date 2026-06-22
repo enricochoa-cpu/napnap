@@ -42,7 +42,7 @@ interface SleepEntrySheetProps {
   onPauseEnd?: () => void;
 }
 
-import { CloudIcon, MoonIcon } from './icons/SleepIcons';
+import { CloudIcon, MoonIcon, SunriseIcon } from './icons/SleepIcons';
 import { TrashIcon, CheckIcon } from './icons/ActionIcons';
 
 const PlayIcon = () => (
@@ -227,9 +227,12 @@ const getRelativeDateLabel = (
   dateStr: string,
   endTime: string | null,
   now: Date,
-  isActiveEntry: boolean
+  isActiveEntry: boolean,
+  isPaused: boolean
 ): string => {
-  if (!endTime) return isActiveEntry ? t('sleepEntrySheet.sleeping') : '';
+  // KF-14: while a night waking is open (paused), the dedicated "Night waking" status line is the
+  // source of truth — don't also render "Sleeping..." (the baby is awake right now).
+  if (!endTime) return isActiveEntry && !isPaused ? t('sleepEntrySheet.sleeping') : '';
   if (isToday(dateStr)) return getRelativeAgo(t, endTime, dateStr, now) || '';
   if (isYesterday(dateStr)) return t('time.yesterday');
   const date = parseISO(dateStr + 'T12:00:00');
@@ -460,8 +463,8 @@ export function SleepEntrySheet({
   const showNetSuffix = pauseEntries.length > 0 && !!entry?.endTime;
 
   const relativeDateLabel = useMemo(
-    () => getRelativeDateLabel(t, selectedDate, endTime, now, isActiveEntry),
-    [t, selectedDate, endTime, now, isActiveEntry]
+    () => getRelativeDateLabel(t, selectedDate, endTime, now, isActiveEntry, !!activePauseStart),
+    [t, selectedDate, endTime, now, isActiveEntry, activePauseStart]
   );
 
   // Icon state: Play (new, no end), Stop (active + no metadata edits = end sleep),
@@ -502,6 +505,8 @@ export function SleepEntrySheet({
       if (mins > 4 * 60) return { isValid: true, warningKey: 'sleepEntrySheet.unusuallyLongNap', errorKey: null };
       // Cross-midnight nap → warn but allow
       if (crossesMidnight) return { isValid: true, warningKey: 'sleepEntrySheet.napCrossesMidnight', errorKey: null };
+      // Very short nap (< 5 min) → likely a mistap that quietly skews predictions; gentle warn, still allow (KF-16)
+      if (mins < 5) return { isValid: true, warningKey: 'sleepEntrySheet.veryShortNap', errorKey: null };
     } else {
       // Night > 14h → block
       if (mins > 14 * 60) return { isValid: false, warningKey: null, errorKey: 'sleepEntrySheet.nightExceeds14h' };
@@ -793,7 +798,14 @@ export function SleepEntrySheet({
 
   const themeColor = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
   const themeBg = sleepType === 'nap' ? 'var(--nap-color)' : 'var(--night-color)';
-  const typeLabel = sleepType === 'nap' ? t('sleepEntry.nap') : t('sleepEntry.nightSleep');
+  // KF-10: the "Wake Up" entry point logs a night sleep but should READ as a wake-up — warm
+  // parchment + sunrise + "Wake up" heading instead of a periwinkle moon "Night sleep" sheet.
+  // Header treatment only (the entry stays type 'night'); buttons keep themeBg to avoid contrast shifts.
+  const isWakeUpLog = !isEditing && defaultEndTimeToNow && sleepType === 'night';
+  const headerColor = isWakeUpLog ? 'var(--wake-color)' : themeColor;
+  const typeLabel = isWakeUpLog
+    ? t('sleepEntry.wakeUp')
+    : sleepType === 'nap' ? t('sleepEntry.nap') : t('sleepEntry.nightSleep');
 
   const dialogRef = useFocusTrap(isOpen, onClose);
 
@@ -911,15 +923,15 @@ export function SleepEntrySheet({
                   transition={{ delay: 0.1, type: 'spring', stiffness: 400, damping: 20 }}
                   className="w-20 h-20 rounded-full flex items-center justify-center mb-3"
                   style={{
-                    backgroundColor: `color-mix(in srgb, ${themeBg} 15%, transparent)`,
-                    color: themeColor
+                    backgroundColor: `color-mix(in srgb, ${headerColor} 15%, transparent)`,
+                    color: headerColor
                   }}
                 >
-                  {sleepType === 'nap' ? <CloudIcon className="w-12 h-12" /> : <MoonIcon className="w-12 h-12" />}
+                  {isWakeUpLog ? <SunriseIcon className="w-12 h-12" /> : sleepType === 'nap' ? <CloudIcon className="w-12 h-12" /> : <MoonIcon className="w-12 h-12" />}
                 </motion.div>
                 <span
                   className="font-display font-semibold text-lg"
-                  style={{ color: themeColor }}
+                  style={{ color: headerColor }}
                 >
                   {typeLabel}
                 </span>
@@ -1025,9 +1037,11 @@ export function SleepEntrySheet({
                   </button>
                 )}
 
-                {/* Validation messages */}
+                {/* Validation messages — normal-flow errors use the calm amber lane, not red.
+                    Red (--danger-color) is reserved for destructive confirmations per PRD §4.2 (KF-09);
+                    the disabled Save button already signals "can't proceed". */}
                 {validation.errorKey && (
-                  <p className="text-xs text-center mt-3" style={{ color: 'var(--danger-color)' }}>
+                  <p className="text-xs text-center mt-3" style={{ color: 'var(--wake-color)' }}>
                     {t(validation.errorKey)}
                   </p>
                 )}

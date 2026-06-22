@@ -15,7 +15,7 @@ interface SubViewHeaderProps {
 export function SubViewHeader({ title, subtitle, onBack }: SubViewHeaderProps) {
   const { t } = useTranslation();
   return (
-    <div className="relative flex items-center justify-center">
+    <div className="relative flex items-center justify-center px-12">
       <button
         onClick={onBack}
         className="absolute left-0 w-11 h-11 -ml-1 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
