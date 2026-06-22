@@ -8,7 +8,12 @@
 - **Evidence**: 25 screenshots in [docs/audits/key-flows/shots/](shots/)
 - **Rubric**: graded against [.context/core/prd.md](../../../.context/core/prd.md), [.context/guidelines/brand_guidelines.md](../../../.context/guidelines/brand_guidelines.md), [.context/reference/lessons.md](../../../.context/reference/lessons.md), and [.context/guidelines/design_critique.md](../../../.context/guidelines/design_critique.md)
 
-> **Implementation status (2026-06-22, branch `ux/key-flows-mvp-fixes`):** the minimum-viable set — **KF-01, KF-02, KF-05** — is implemented and verified live (shots [26](shots/26-fix-kf01-quickactions-2tile.png)–[28](shots/28-fix-kf02-dob-empty-next-disabled.png)); build + lint pass. The remaining P1/P2 items are still open.
+> **Implementation status (2026-06-22, branch `ux/key-flows-mvp-fixes`):**
+> - **MVP set — KF-01, KF-02, KF-05** — implemented + verified live (shots [26](shots/26-fix-kf01-quickactions-2tile.png)–[28](shots/28-fix-kf02-dob-empty-next-disabled.png)). Commit `80b4a7d`.
+> - **Task Group C — KF-03, KF-04, KF-08** (prediction correctness) — implemented; build + lint green. Commit `a778865`. Validated against a seeded realistic week (see below): the 9-month-old's day renders a coherent 2-nap plan with no phantom third nap and no nap-after-bedtime (KF-08), and an active night shows no nap ghost (KF-03). KF-04's mid-day "NAP NOW" path is gated to fire only when overtired *and* a nap still fits before bedtime, so it correctly stays out near/after bedtime (couldn't be shown at the test clock of ~20:30; logic verified by code + the gate behaving in the past-bedtime state).
+> - Remaining P1/P2 items (KF-06, KF-07, KF-09–KF-16) are still open.
+>
+> **Algorithm exercise (2026-06-22):** repurposed the test baby to **Àgata (9-month-old girl)** on `enric@graavia.com` (one-owned-baby constraint, KF-11), cleared prior test logs, and seeded a realistic week — 7 nights (~19:00→07:00, 3 with night-wakings) + 14 naps (2/day). The algorithm reached a stable 2-nap "Optimised" profile: Today shows a learned bedtime + "Expected wake at 07:26", Trends shows Night 83% / Nap 17% with consistent ~1h15 naps. **KF-13 (empty-Today greeting "Good morning")** re-confirmed live during the cold-start. Àgata is currently left with tonight's bedtime active.
 
 > **Test data note:** This audit created throwaway entries on Júlia (a "Wake up 06:00", last night's "Night sleep 10h", a 2-min "Nap 1"). I deleted the active test night and cleared the onboarding draft, but those three benign entries remain — delete them at leisure. No new accounts were created.
 
