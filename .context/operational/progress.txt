@@ -1,6 +1,26 @@
 # Progress
 
-**Last updated:** 2026-04-06 — Full backlog sweep (20 tasks resolved).
+**Last updated:** 2026-06-22 — Key-Flows UX audit (14 of 16 fixes implemented).
+
+## Key-Flows UX Audit (2026-06-22) [14/16]
+
+Live Playwright audit of the 5 core logging flows; 16 findings (8 P1, 8 P2). Report: docs/audits/key-flows/ · Lessons: §22
+- [x] KF-01: "Wake Up" with no active sleep no longer dead-ends (tile gated on canWakeUp)
+- [x] KF-02: onboarding DOB defaults empty; Next disabled until picked
+- [x] KF-03: nap predictions suppressed during active night sleep
+- [x] KF-04: gated "NAP NOW" for overtired baby (never overrides head-to-bedtime)
+- [x] KF-05: active-entry controls labeled (Night waking / End night)
+- [x] KF-06: night-waking FAB shows morning-after for retrospective logging
+- [x] KF-07: back button on onboarding account step
+- [x] KF-08: bedtime clamped ≥ last projected nap end (no nap-after-bedtime)
+- [x] KF-09: validation errors amber (not red) + softened copy
+- [x] KF-10: "log wake-up" sheet reads as a wake-up (sunrise/parchment)
+- [x] KF-12: SubViewHeader px-12 (subtitle no longer clips under back button)
+- [x] KF-13: empty-Today greeting time-based
+- [x] KF-14: no "Sleeping…" status while a night waking is open
+- [x] KF-16: very-short-nap warning (<5min)
+- [~] KF-15: evaluative labels softened; emoji→SVG visual deferred
+- [ ] KF-11: multi-owned-baby (schema/product decision — intentionally not changed)
 
 ## Full Backlog Sweep (2026-04-06) [COMPLETED]
 

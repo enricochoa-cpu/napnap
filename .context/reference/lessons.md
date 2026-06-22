@@ -603,3 +603,51 @@ Format: **Problem** → **Root Cause** → **Permanent Fix**
 - **Root Cause:** Learned duration blending didn't respect the simulation's structural constraints.
 - **Permanent Fix:** When `projected.isCatnap || projected.isMicroNap`, cap learned duration to `config.napDurations.micro`: `expectedDuration = Math.min(expectedDuration, config.napDurations.micro)`.
 - **Reusable rule:** When one layer makes a structural decision and another layer refines values, the refinement must respect the structure's constraints. Learned/blended values should be capped by structural bounds, not free to override them.
+
+---
+
+## 22. Key-Flows UX Audit (2026-06-22)
+
+Live Playwright audit of the five core logging flows (create baby, wake-up, nap, bedtime, night-wakings). Full report: `docs/audits/key-flows/2026-06-22-key-flows-ux-ui-horizontal-audit.md`. IDs below are that report's `KF-##`.
+
+### 22.1 "Wake Up" with no active sleep dead-ends (KF-01)
+**Date:** 2026-06-22
+
+- **Problem:** Tapping the QuickActionSheet "Wake Up" tile when nothing was asleep opened a "Log night sleep" sheet pre-filled *yesterday 20:00 → now*, which tripped the >14h hard block and **disabled Save** — a dead-end for most of the day.
+- **Root Cause:** The tile rendered unconditionally in the no-active-sleep branch; `handleLogWakeUp`'s fallback (App.tsx) opened a night entry with a hard-coded `20:00` start the previous day.
+- **Permanent Fix:** Pass `canWakeUp = !!activeSleep || entries.some(e => e.type==='night' && e.endTime===null)` to QuickActionSheet; hide the Wake Up tile (render a 2-tile Nap/Bedtime grid) when false. Wake Up only appears when there's an active or unended sleep to wake from.
+- **Reusable rule:** Never open a primary action straight into a disabled-Save error state. Gate the entry point on whether the action can succeed.
+
+### 22.2 Onboarding DOB defaulted to today (KF-02)
+- **Problem:** Onboarding step 3 pre-filled today's date with Next enabled, so a parent could skip past it and create a "born today" baby → wrong age-based wake windows.
+- **Root Cause:** `defaultDraft()` set `babyDob: formatDate(new Date())`; `validateDateOfBirth` treats today as valid, so `canProceed` was true. Drifted from the §11.18 decision.
+- **Permanent Fix:** `babyDob: ''` (and the localStorage-restore fallback); `canProceed` already requires a non-empty valid date, so Next stays disabled until picked.
+
+### 22.3 Validation errors used alarming red + clinical copy (KF-09)
+- **Problem:** Duration-validation messages ("Night sleep exceeds 14 hours") rendered in `--danger-color` (red) with clinical wording — violates PRD §4.2 (red reserved for destructive; errors should be empathetic).
+- **Permanent Fix:** Normal-flow validation errors render in `var(--wake-color)` (the existing amber soft-warn lane); the disabled Save already signals "can't proceed". Copy softened in en/es/ca. Red stays for destructive confirmations only.
+
+### 22.4 Active-sleep controls were two unlabeled identical circles (KF-05)
+- **Problem:** For an active entry, the pause ("Night waking") and stop ("end") buttons were same-color, same-shape, same-size icon-only circles — ambiguous at 3am which ends the night.
+- **Permanent Fix:** Added visible captions under each (`Night waking`/`Resume` and `End night`/`End nap`); end-button aria-label now matches.
+
+### 22.5 No discoverable way to log a *past* night waking (KF-06)
+- **Problem:** The night-waking FAB only showed while a bedtime was active; the morning-after case (log a forgotten 2am waking) had no entry point.
+- **Permanent Fix:** `hasNightEntry` also true when a night ended within ~16h; `handleNightWaking` already opened the completed entry's editor for that case. (Editing still lives in the entry editor — the FAB is just a discoverable entry point.)
+
+### 22.6 Prediction timeline could contradict itself (KF-03 / KF-04 / KF-08)
+- **Problem:** (a) a predicted nap still showed during an active *night* sleep; (b) a long-awake/overtired baby got bedtime-only with no nap guidance; (c) a late rescue catnap could be predicted to end *after* the predicted bedtime.
+- **Root Cause:** (a) the nap-ghost render lacked the lesson-1.3 night guard the bedtime card had; (b) all naps >60min overdue were silently dropped (violates §1.4); (c) `calculateDynamicBedtime` floors bedtime to `earliest`, which can land before a late nap's end.
+- **Permanent Fix:** (a) `predictedNapsWithMetadata` early-returns `[]` when `activeSleep.type==='night'`; (b) after the overdue loop, surface one `NAP NOW` card when past the age `wakeWindows.max`, naps still owed, and a nap still fits before bedtime (so it never overrides head-to-bedtime); (c) clamp `bedtime` to the last projected nap's end in `predictDaySchedule`.
+
+### 22.7 Smaller fixes (KF-07, KF-10, KF-12, KF-13, KF-14, KF-16)
+- **KF-07:** Onboarding account step had no back button. Added `onBack` to `SignUpForm` (floating `BackButton`, mirroring `LoginForm`) wired to `goBack`.
+- **KF-10:** The "log wake-up" sheet now reads as a wake-up (sunrise + parchment + "Wake up" heading) instead of moon/"Night sleep" — header only; entry stays `night`. Now defensive since KF-01 removed the dead-end entry point.
+- **KF-12:** `SubViewHeader` got `px-12` so a long centered subtitle can't slide under the absolute back button (was clipping, worse in ES/CA).
+- **KF-13:** Empty-Today greeting is time-based (matches `ProfileMenu`), not hardcoded "Good morning".
+- **KF-14:** While a night waking is open, the status no longer reads "Sleeping…" alongside "Night waking" (`getRelativeDateLabel` is now paused-aware).
+- **KF-16:** Very-short-nap (<5min) shows a gentle amber warning (Save still allowed) — catches mistaps that skew prediction learning.
+
+### 22.8 Deferred / not changed
+- **KF-15 (partial):** Evaluative chip labels softened (Upset→Fussy, Bad mood→Grumpy). The emoji→SVG visual swap is **deferred** — needs a cohesive ~15-icon set designed deliberately; rushing it risks regressing the aesthetic vs recognizable emoji.
+- **KF-11 (not changed):** Multi-owned-baby is a schema migration + product decision (one `profiles` row per user, keyed by `user.id`), not a UI sweep. Plural "Baby profiles" title is acceptable because the gallery mixes the owned baby with shared ones.
