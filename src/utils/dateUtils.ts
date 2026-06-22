@@ -1775,6 +1775,14 @@ export function predictDaySchedule(params: {
     }
   }
 
+  // --- Step 5: Never let bedtime fall before the last projected nap ends (KF-08) ---
+  // calculateDynamicBedtime floors bedtime to config.bedtime.earliest; after a late catnap
+  // that floor can land before the nap's own end, yielding a contradictory plan (a nap that
+  // ends after bedtime). Clamp bedtime to the last activity end so the timeline stays coherent.
+  if (bedtime.getTime() < lastEndTime.getTime()) {
+    bedtime = new Date(lastEndTime.getTime());
+  }
+
   return { naps, bedtime, firstCalibration };
 }
 

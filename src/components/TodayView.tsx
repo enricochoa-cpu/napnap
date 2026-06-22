@@ -14,6 +14,8 @@ import {
   getLearnedNapDurationMinutes,
   getExpectedNightWakeTime,
   predictDaySchedule,
+  getSleepConfigForAge,
+  MIN_RESTORATIVE_NAP_DURATION,
   type NapIndex,
   type NapPrediction,
 } from '../utils/dateUtils';
@@ -125,7 +127,6 @@ export function TodayView({
   entries,
   activeSleep,
   lastCompletedSleep,
-  awakeMinutes: _awakeMinutesProp,
   onEdit,
   loading = false,
   hasNoBaby = false,
@@ -261,6 +262,10 @@ export function TodayView({
   const predictedNapsWithMetadata = useMemo(() => {
     if (!daySchedule) return { predictions: [], calibrationInfo: null };
 
+    // KF-03: once the baby is down for the night, don't keep suggesting naps (cf lesson 1.3,
+    // which guards the bedtime ghost card — the nap predictions need the same guard).
+    if (activeSleep && activeSleep.type === 'night') return { predictions: [], calibrationInfo: null };
+
     const hasActiveNap = activeSleep && activeSleep.type === 'nap';
     const activeNapExpectedEnd = hasActiveNap && daySchedule.naps.length >= 0
       ? (() => {
@@ -304,6 +309,42 @@ export function TodayView({
       // else: past prediction with future ones already queued — skip
     }
 
+    // KF-04: if every projected nap is too far overdue to surface (all >60min past) the loop
+    // leaves predictions empty and the UI falls back to bedtime-only — going silent exactly when
+    // an overtired baby most needs a "do this now". Surface a single NAP NOW instead (cf lesson 1.4),
+    // but only when the baby is genuinely overtired, still owed a nap, and a real nap still fits
+    // before bedtime — so we never override the legitimate "head to bedtime" case.
+    if (
+      predictions.length === 0 &&
+      !hasActiveNap &&
+      daySchedule.naps.length > 0 &&
+      profile?.dateOfBirth &&
+      awakeMinutes != null
+    ) {
+      const maxWakeWindow = getSleepConfigForAge(profile.dateOfBirth).wakeWindows.max;
+      const recommendedNaps = getRecommendedSchedule(profile.dateOfBirth).numberOfNaps;
+      const roomBeforeBedtime = differenceInMinutes(daySchedule.bedtime, now);
+      const isOvertired = awakeMinutes > maxWakeWindow;
+      const hasNapsLeft = todayNaps.length < recommendedNaps;
+      const fitsBeforeBedtime = roomBeforeBedtime >= MIN_RESTORATIVE_NAP_DURATION;
+
+      if (isOvertired && hasNapsLeft && fitsBeforeBedtime) {
+        const nap = daySchedule.naps[0];
+        predictions.push({
+          time: now,
+          isCatnap: nap.isCatnap,
+          expectedDuration: nap.expectedDurationMinutes,
+          prediction: {
+            predictedTime: nap.time,
+            confidenceScore: nap.confidenceScore,
+            isCalibrating: nap.isCalibrating,
+            calibrationReason: nap.calibrationReason as NapPrediction['calibrationReason'],
+          },
+          isOverdue: true,
+        });
+      }
+    }
+
     const calibrationInfo: NapPrediction | null = daySchedule.firstCalibration
       ? {
           predictedTime: predictions[0]?.time ?? null,
@@ -314,7 +355,7 @@ export function TodayView({
       : null;
 
     return { predictions, calibrationInfo };
-  }, [daySchedule, now, activeSleep, profile, todayNaps, entries, napDurationHistory]);
+  }, [daySchedule, now, activeSleep, profile, todayNaps, entries, napDurationHistory, awakeMinutes]);
 
   // Convenience accessor for predictions (backward compatible)
   const predictedNaps = predictedNapsWithMetadata.predictions;
